@@ -1,0 +1,52 @@
+:root{--bg:#faf8f3;--card:#fff;--ink:#1d2330;--muted:#6b7280;--line:#e6e1d6;--accent:#7c3aed;--accent-ink:#fff;--warn:#b45309;--bad:#b91c1c;--good:#15803d;--lib:#f59e0b}
+@media (prefers-color-scheme:dark){:root{--bg:#14161c;--card:#1c1f27;--ink:#eceae4;--muted:#9aa0ab;--line:#2c303a;--accent:#a78bfa;--accent-ink:#14161c;--warn:#fbbf24;--bad:#f87171;--good:#4ade80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Iowan Old Style",serif}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+header{border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:5}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:12px;flex-wrap:wrap}
+h1{margin:0;font-size:1.3rem;letter-spacing:.18em}
+h2{font-size:1.1rem;margin:24px 0 8px}
+h3{font-size:1rem;margin:0 0 6px}
+.muted{color:var(--muted);font:13px system-ui,sans-serif}
+.tabs{display:flex;gap:2px;overflow-x:auto;padding-top:8px}
+.tabs button{font:14px system-ui,sans-serif;border:0;background:none;color:var(--muted);padding:8px 12px;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-color:var(--accent)}
+main{padding-bottom:60px}
+button,input,select,textarea{font:14px system-ui,sans-serif;color:var(--ink)}
+input,select,textarea{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);width:100%}
+textarea{min-height:70px;resize:vertical}
+button.btn{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer}
+button.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.btn.danger{color:var(--bad)}
+button.btn.sm{padding:3px 9px;font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+.row>*{flex:0 0 auto}.row>.grow{flex:1 1 220px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px}
+.login{max-width:420px;margin:60px auto}
+.login .card{padding:22px}
+.notice{padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);font:14px system-ui,sans-serif;margin:12px 0}
+.notice.err{border-color:var(--bad);color:var(--bad)}.notice.ok{border-color:var(--good);color:var(--good)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font:13px/1.4 system-ui,sans-serif}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;white-space:nowrap;position:sticky;top:0;background:var(--card)}
+td.wrapcell{min-width:180px;white-space:pre-wrap}
+tr:last-child td{border-bottom:0}
+.sec{border-left:4px solid var(--accent);padding-left:12px;margin:0 0 16px}
+.sec.shared{border-left-color:var(--lib)}
+.entry{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:6px 0;white-space:pre-wrap;font:14px/1.45 system-ui,sans-serif;display:flex;justify-content:space-between;gap:8px}
+.entry .acts{display:flex;gap:4px;flex:0 0 auto}
+.pill{font:11px system-ui,sans-serif;padding:1px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.grid th:first-child,.grid td:first-child{position:sticky;left:0;background:var(--card);min-width:130px;font-weight:600;z-index:1}
+.grid td{min-width:140px;white-space:pre-wrap}
+.grid td.today,.grid th.today{background:color-mix(in srgb,var(--lib) 18%,var(--card))}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);width:min(560px,94vw);padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+label{display:block;font:13px system-ui,sans-serif;color:var(--muted);margin:10px 0 3px}
+.total{font:600 15px system-ui,sans-serif;margin:10px 2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:7px 12px;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+a{color:var(--accent)}
+@media (max-width:560px){.bar{padding-bottom:4px}}

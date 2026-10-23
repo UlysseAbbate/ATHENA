@@ -1,7 +1,7 @@
 """Collector for the policy tracker.
 
 Gathers: select committee publications, think tank outputs, Lib Dem media
-coverage and polling. Writes JSON into site/data/ for the static front end.
+coverage and polling. Writes JSON into site/ulysse/data/ for the static front end.
 
 Run:  python tracker/update.py
 """
@@ -24,7 +24,7 @@ from bs4 import BeautifulSoup
 from dateutil import parser as dtparse
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA = ROOT / "site" / "data"
+DATA = ROOT / "site" / "ulysse" / "data"
 CONFIG = yaml.safe_load((ROOT / "config" / "sources.yml").read_text())
 NOW = datetime.now(timezone.utc)
 KEEP_DAYS = 180
