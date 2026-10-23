@@ -33,18 +33,9 @@ function notice(msg, kind = "err") { const n = document.createElement("div"); n.
 function showError(err) { main.prepend(notice(err.message || String(err))); window.scrollTo(0, 0); }
 
 /* ------------------------------------------------------------------ auth */
-function renderLogin(msg) {
+function renderLogin() {
   $("#tabs").hidden = true; $("#who").textContent = "";
-  main.innerHTML = `<div class="login"><div class="card"><h2 style="margin-top:0">Sign in</h2>
-    <p class="muted">Enter your email and we'll send you a one-time sign-in link. After you first sign in, a core team member needs to give you access.</p>
-    <form id="lf"><label for="em">Email</label><input id="em" type="email" required autocomplete="email">
-    <div class="row"><button class="btn primary" type="submit">Email me a link</button></div></form><div id="lm"></div></div></div>`;
-  if (msg) $("#lm").append(notice(msg, "ok"));
-  $("#lf").onsubmit = async e => {
-    e.preventDefault(); const email = $("#em").value.trim();
-    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
-    $("#lm").replaceChildren(error ? notice(error.message) : notice("Check your email for the sign-in link.", "ok"));
-  };
+  AuthUI.render(sb, main, { title: "THE MALL" });
 }
 
 async function boot() {
@@ -54,8 +45,9 @@ async function boot() {
   const { data: prof, error } = await sb.from("profiles").select("*").eq("id", S.user.id).maybeSingle();
   if (error) return showError(error);
   S.profile = prof;
-  $("#who").innerHTML = `${esc(S.user.email)} · ${esc(prof?.role ? ROLES[prof.role] : "no role yet")} <button class="btn sm" id="so">Sign out</button>`;
+  $("#who").innerHTML = `${esc(S.user.email)} · ${esc(prof?.role ? ROLES[prof.role] : "no role yet")} <button class="btn sm" id="pw">Password</button> <button class="btn sm" id="so">Sign out</button>`;
   $("#so").onclick = async () => { await sb.auth.signOut(); location.reload(); };
+  $("#pw").onclick = () => { $("#tabs").hidden = true; AuthUI.changePassword(sb, main); };
   if (!prof?.role) {
     $("#tabs").hidden = true;
     main.innerHTML = `<div class="login"><div class="card"><h2 style="margin-top:0">Waiting for access</h2>
@@ -84,7 +76,8 @@ function buildTabs() {
   const nav = $("#tabs"); nav.hidden = false;
   nav.innerHTML = vis.map(t => `<button data-t="${t[0]}">${esc(t[1])}</button>`).join("");
   nav.onclick = e => { const b = e.target.closest("button"); if (b) go(b.dataset.t); };
-  go(S.tab && vis.some(t => t[0] === S.tab) ? S.tab : vis[0]?.[0]);
+  const hash = location.hash.slice(1);
+  go(vis.some(t => t[0] === hash) ? hash : S.tab && vis.some(t => t[0] === S.tab) ? S.tab : vis[0]?.[0]);
 }
 async function go(id) {
   S.tab = id;
@@ -335,5 +328,5 @@ async function renderTeam() {
   };
 }
 
-sb.auth.onAuthStateChange((ev) => { if (ev === "SIGNED_IN" && !S.user) boot(); });
+AuthUI.watchRecovery(sb, main);
 boot();

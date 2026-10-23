@@ -10,12 +10,7 @@ async function load(name){
   return error ? null : data?.body ?? null;
 }
 function gate(html){ document.body.innerHTML = html; }
-async function signIn(){
-  gate(`<main style="max-width:320px;margin:20vh auto;padding:0 16px;font:14px system-ui"><form id="lf"><input id="em" type="email" required placeholder="Email" style="width:100%;padding:9px;border:1px solid #888;margin-bottom:8px"><button style="padding:8px 14px">Email me a link</button></form><p id="lm"></p></main>`);
-  document.getElementById("lf").onsubmit = async e => { e.preventDefault();
-    const { error } = await sb.auth.signInWithOtp({ email: document.getElementById("em").value.trim(), options: { emailRedirectTo: location.href } });
-    document.getElementById("lm").textContent = error ? error.message : "Check your email."; };
-}
+function signIn(){ AuthUI.render(sb, document.body, { title: "ULYSSE" }); }
 
 function ago(iso){
   if(!iso) return "undated";
