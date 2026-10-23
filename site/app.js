@@ -71,7 +71,7 @@ function render(){
 }
 
 function renderPolls(){
-  const rows = (state.polls || []).filter(r => r.end).sort((a,b) => a.end.localeCompare(b.end));
+  const rows = (state.polls || []).filter(r => r.end && !r.mrp).sort((a,b) => a.end.localeCompare(b.end));
   $("pollsrc").textContent = rows.length ? `· ${rows.length} polls from Wikipedia's table` : "· no table data yet";
   const svg = $("chart");
   if(!rows.length){ svg.innerHTML = ""; $("legend").innerHTML = ""; $("polltable").innerHTML = ""; return; }
@@ -84,7 +84,7 @@ function renderPolls(){
   const y = v => H - B - v / max * (H - T - B);
   let out = "";
   for(let g = 0; g <= max; g += 5) out += `<line x1="${L}" x2="${W-R}" y1="${y(g)}" y2="${y(g)}" stroke="currentColor" opacity=".12"/><text x="${L-6}" y="${y(g)+4}" text-anchor="end">${g}%</text>`;
-  [t0, (t0+t1)/2, t1].forEach(t => out += `<text x="${x(t)}" y="${H-6}" text-anchor="middle">${new Date(t).toLocaleDateString("en-GB",{month:"short",year:"2-digit"})}</text>`);
+  [[t0,"start"], [(t0+t1)/2,"middle"], [t1,"end"]].forEach(([t,anchor]) => out += `<text x="${x(t)}" y="${H-6}" text-anchor="${anchor}">${new Date(t).toLocaleDateString("en-GB",{month:"short",year:"2-digit"})}</text>`);
   parties.forEach(p => {
     const pts = rows.filter(r => r[p] != null);
     // dots per poll + 7-poll rolling average line
@@ -99,7 +99,7 @@ function renderPolls(){
     return `<span><i style="background:${COLORS[p]}"></i>${p} ${a}%</span>`;
   }).join("") + '<span class="muted">(avg of last 7 polls; line = 7-poll rolling average)</span>';
   $("polltable").innerHTML = "<tr><th>Pollster</th><th>Fieldwork</th><th>N</th>" + parties.map(p=>`<th>${p}</th>`).join("") + "</tr>" +
-    rows.slice(-30).reverse().map(r => `<tr><td>${esc(r.pollster)}</td><td>${esc(r.dates)}</td><td>${esc(r.sample)}</td>${parties.map(p=>`<td>${r[p] ?? ""}</td>`).join("")}</tr>`).join("");
+    rows.slice(-30).reverse().map(r => `<tr><td>${esc(r.pollster)}</td><td>${esc(r.dates)}</td><td>${r.sample ?? ""}</td>${parties.map(p=>`<td>${r[p] ?? ""}</td>`).join("")}</tr>`).join("");
 }
 
 function renderHealth(){
