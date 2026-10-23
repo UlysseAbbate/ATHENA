@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-23T21:42:17.127133+00:00",
+ "updated": "2026-10-23T23:44:37.068583+00:00",
  "sources": [
   {
    "group": "committees",
@@ -13,478 +13,555 @@
    "name": "Adam Smith Institute",
    "ok": true,
    "items": 20,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.adamsmith.org/research?format=rss",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Bright Blue",
-   "ok": false,
-   "items": 0,
-   "error": "403 Client Error: Forbidden for url: https://brightblue.org.uk/research/"
+   "ok": true,
+   "items": 18,
+   "method": "google-news",
+   "via": "site:brightblue.org.uk",
+   "error": "brightblue.org.uk/research/: HTTP 403; www.brightblue.org.uk/research/: HTTP 403"
   },
   {
    "group": "thinktanks",
    "name": "British Foreign Policy Group",
    "ok": true,
    "items": 40,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://bfpg.co.uk/analysis/rss.xml",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "British Future",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.britishfuture.org/feed",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Carnegie UK",
    "ok": true,
    "items": 16,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://carnegieuk.org/feed",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Centre for Cities",
-   "ok": false,
-   "items": 0,
-   "error": "404 Client Error: Not Found for url: https://www.centreforcities.org/publications/"
+   "ok": true,
+   "items": 25,
+   "method": "google-news",
+   "via": "site:centreforcities.org",
+   "error": "www.centreforcities.org: page loads but lists no publication links (JavaScript?); centreforcities.org: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "Centre for European Reform",
-   "ok": false,
-   "items": 0,
-   "error": "403 Client Error: Forbidden for url: https://www.cer.eu/publications"
+   "ok": true,
+   "items": 25,
+   "method": "google-news",
+   "via": "site:cer.eu",
+   "error": "www.cer.eu/publications: HTTP 403; cer.eu/publications: HTTP 403"
   },
   {
    "group": "thinktanks",
    "name": "Centre for Local Economic Strategies (CLES)",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://cles.org.uk/feed/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Centre for London",
-   "ok": false,
-   "items": 0,
-   "error": "404 Client Error: Not Found for url: https://centreforlondon.org/publications/"
+   "ok": true,
+   "items": 8,
+   "method": "google-news",
+   "via": "site:centreforlondon.org",
+   "error": "centreforlondon.org: page loads but lists no publication links (JavaScript?); www.centreforlondon.org: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "Centre for Policy Studies",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://cps.org.uk/research/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Centre for Public Data",
    "ok": true,
    "items": 20,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.centreforpublicdata.org/blog?format=rss",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Centre for Social Justice",
    "ok": true,
-   "items": 40,
-   "error": "",
-   "method": "feed"
+   "items": 22,
+   "method": "google-news",
+   "via": "site:centreforsocialjustice.org.uk",
+   "error": "www.centreforsocialjustice.org.uk: page loads but lists no publication links (JavaScript?); centreforsocialjustice.org.uk: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "CEPEO",
-   "ok": false,
-   "items": 0,
-   "error": "HTTPSConnectionPool(host='cepeo.ucl.ac.uk', port=443): Max retries exceeded with url: /publications/ (Caused by NameResolutionError(\"HTTPSConnection(host='cepeo.ucl.ac.uk', port=443): Failed to resolv"
+   "ok": true,
+   "items": 22,
+   "method": "google-news",
+   "via": "\"CEPEO\" site:ucl.ac.uk",
+   "error": "www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo: HTTP 404; ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo: HTTP 404"
   },
   {
    "group": "thinktanks",
    "name": "Chatham House",
-   "ok": false,
-   "items": 0,
-   "error": "403 Client Error: Forbidden for url: https://www.chathamhouse.org/publications"
+   "ok": true,
+   "items": 25,
+   "method": "google-news",
+   "via": "site:chathamhouse.org",
+   "error": "www.chathamhouse.org/publications: HTTP 403; chathamhouse.org/publications: HTTP 403"
   },
   {
    "group": "thinktanks",
    "name": "City-REDI",
    "ok": true,
    "items": 30,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://www.birmingham.ac.uk/research/city-redi/publications",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Civitas",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.civitas.org.uk/feed/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Demos",
    "ok": true,
    "items": 15,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://demos.co.uk/research/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "EDSK",
    "ok": false,
    "items": 0,
-   "error": "no feed or listing links found"
+   "error": "www.edsk.org: page loads but lists no publication links (JavaScript?); edsk.org: page loads but lists no publication links (JavaScript?); Google News had nothing for it either"
   },
   {
    "group": "thinktanks",
    "name": "Education Policy Institute",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://epi.org.uk/publications-and-research/feed",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "European Council on Foreign Relations",
    "ok": true,
-   "items": 10,
-   "error": "",
-   "method": "html"
+   "items": 25,
+   "method": "google-news",
+   "via": "site:ecfr.eu",
+   "error": "ecfr.eu: page loads but lists no publication links (JavaScript?); www.ecfr.eu: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "Fabian Society",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://fabians.org.uk/feed/?post_type=publication",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Future Governance Forum",
-   "ok": false,
-   "items": 0,
-   "error": "HTTPSConnectionPool(host='www.futuregovernance.org.uk', port=443): Max retries exceeded with url: /publications (Caused by NameResolutionError(\"HTTPSConnection(host='www.futuregovernance.org.uk', port"
+   "ok": true,
+   "items": 5,
+   "method": "google-news",
+   "via": "site:futuregovernanceforum.co.uk",
+   "error": "www.futuregovernanceforum.co.uk: page loads but lists no publication links (JavaScript?); futuregovernanceforum.co.uk: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "Green Alliance",
    "ok": true,
    "items": 20,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://green-alliance.org.uk/publications/feed/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Growth and Reform Network",
    "ok": true,
    "items": 12,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://growthandreform.org/ign-insights",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "HEPI",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.hepi.ac.uk/feed",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "IIED",
-   "ok": false,
-   "items": 0,
-   "error": "no feed or listing links found"
+   "ok": true,
+   "items": 25,
+   "method": "google-news",
+   "via": "site:iied.org",
+   "error": "www.iied.org: page loads but lists no publication links (JavaScript?); iied.org: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "IISS",
-   "ok": false,
-   "items": 0,
-   "error": "no feed or listing links found"
+   "ok": true,
+   "items": 25,
+   "method": "google-news",
+   "via": "site:iiss.org",
+   "error": "www.iiss.org: page loads but lists no publication links (JavaScript?); iiss.org: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "Institute for Fiscal Studies",
-   "ok": false,
-   "items": 0,
-   "error": "403 Client Error: Forbidden for url: https://ifs.org.uk/publications"
+   "ok": true,
+   "items": 25,
+   "method": "google-news",
+   "via": "site:ifs.org.uk",
+   "error": "ifs.org.uk/publications: HTTP 403; www.ifs.org.uk/publications: HTTP 403"
   },
   {
    "group": "thinktanks",
    "name": "Institute for Government",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.instituteforgovernment.org.uk/rss",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Institute for Policy Research (Bath)",
-   "ok": false,
-   "items": 0,
-   "error": "403 Client Error: Forbidden for url: https://search.bath.ac.uk/s/search.html?collection=bath~sp-cms-production-publications"
+   "ok": true,
+   "items": 15,
+   "method": "google-news",
+   "via": "site:bath.ac.uk \"Institute for Policy Research\"",
+   "error": "www.bath.ac.uk/publications/: HTTP 403; bath.ac.uk/publications/: HTTP 403"
   },
   {
    "group": "thinktanks",
    "name": "Institute of Development Studies",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.ids.ac.uk/publications/feed",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Institute of Economic Affairs",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://iea.org.uk/publications/feed/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Institute of Welsh Affairs",
-   "ok": false,
-   "items": 0,
-   "error": "404 Client Error: Not Found for url: https://www.iwa.wales/publications/"
+   "ok": true,
+   "items": 10,
+   "method": "feed",
+   "via": "https://www.iwa.wales/feed/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "IPPR",
    "ok": true,
    "items": 39,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.ippr.org/feed.rss",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Joseph Rowntree Foundation",
-   "ok": false,
-   "items": 0,
-   "error": "404 Client Error: Not Found for url: https://www.jrf.org.uk/our-work/publications"
+   "ok": true,
+   "items": 10,
+   "method": "feed",
+   "via": "https://www.jrf.org.uk/rss.xml",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Localis",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.localis.org.uk/research/feed",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "NIESR",
    "ok": true,
-   "items": 10,
-   "error": "",
-   "method": "feed"
+   "items": 21,
+   "method": "html",
+   "via": "https://www.niesr.ac.uk/publications",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "NCUB",
-   "ok": false,
-   "items": 0,
-   "error": "403 Client Error: Forbidden for url: https://www.ncub.co.uk/reports/"
+   "ok": true,
+   "items": 21,
+   "method": "google-news",
+   "via": "site:ncub.co.uk",
+   "error": "www.ncub.co.uk/reports/: HTTP 403; ncub.co.uk/reports/: HTTP 403"
   },
   {
    "group": "thinktanks",
    "name": "Nesta",
-   "ok": false,
-   "items": 0,
-   "error": "no feed or listing links found"
+   "ok": true,
+   "items": 25,
+   "method": "google-news",
+   "via": "site:nesta.org.uk",
+   "error": "www.nesta.org.uk: page loads but lists no publication links (JavaScript?); nesta.org.uk: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "New Economics Foundation",
    "ok": true,
    "items": 20,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://neweconomics.org/feed",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "New Local",
    "ok": true,
-   "items": 10,
-   "error": "",
-   "method": "feed"
+   "items": 22,
+   "method": "google-news",
+   "via": "site:newlocal.org.uk",
+   "error": "www.newlocal.org.uk: page loads but lists no publication links (JavaScript?); newlocal.org.uk: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "Onward",
    "ok": true,
    "items": 8,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://www.ukonward.com/reports/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "PBE",
    "ok": false,
    "items": 0,
-   "error": "HTTPSConnectionPool(host='pbe.org.uk', port=443): Max retries exceeded with url: /publications (Caused by SSLError(SSLError(1, '[SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:101"
+   "error": "www.pbe.org.uk/research: SSLError; pbe.org.uk/research: SSLError; www.pbe.org.uk/: SSLError; pbe.org.uk/: SSLError; www.probonoeconomics.com/research: ConnectTimeout; probonoeconomics.com/research: ConnectTimeout; Google News had nothing for it either"
   },
   {
    "group": "thinktanks",
    "name": "PolicyWISE",
-   "ok": false,
-   "items": 0,
-   "error": "404 Client Error: Not Found for url: https://policywise.com/publications/"
+   "ok": true,
+   "items": 5,
+   "method": "html",
+   "via": "https://policywise.com/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Power to Change",
    "ok": true,
    "items": 16,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://www.powertochange.org.uk/research/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Re:State",
    "ok": false,
    "items": 0,
-   "error": "HTTPSConnectionPool(host='www.restateuk.com', port=443): Max retries exceeded with url: /publications (Caused by SSLError(SSLCertVerificationError(1, \"[SSL: CERTIFICATE_VERIFY_FAILED] certificate veri"
+   "error": "restate.org.uk/research/: ConnectionError; www.restate.org.uk/research/: ConnectionError; restate.org.uk/: ConnectionError; www.restate.org.uk/: ConnectionError; Google News had nothing for it either"
   },
   {
    "group": "thinktanks",
    "name": "Resolution Foundation",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.resolutionfoundation.org/publications/feed/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "RUSI",
    "ok": true,
    "items": 20,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.rusi.org/rss/latest-commentary.xml",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Social Market Foundation",
-   "ok": false,
-   "items": 0,
-   "error": "403 Client Error: Forbidden for url: https://www.smf.co.uk/publications/"
+   "ok": true,
+   "items": 25,
+   "method": "google-news",
+   "via": "site:smf.co.uk",
+   "error": "www.smf.co.uk/publications/: HTTP 403; smf.co.uk/publications/: HTTP 403"
   },
   {
    "group": "thinktanks",
    "name": "The Coalition for Global Prosperity",
-   "ok": false,
-   "items": 0,
-   "error": "HTTPSConnectionPool(host='www.coalitionforglobalprosperity.org', port=443): Max retries exceeded with url: /publications (Caused by NameResolutionError(\"HTTPSConnection(host='www.coalitionforglobalpro"
+   "ok": true,
+   "items": 20,
+   "method": "feed",
+   "via": "https://www.coalitionforglobalprosperity.com/news?format=rss",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "The Constitution Unit",
    "ok": true,
    "items": 5,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://www.ucl.ac.uk/constitution-unit/publications",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "The David Hume Institute",
    "ok": false,
    "items": 0,
-   "error": "404 Client Error: Not Found for url: https://davidhumeinstitute.org/publications/"
+   "error": "www.davidhumeinstitute.com/publication: HTTP 404; davidhumeinstitute.com/publication: HTTP 404; Google News had nothing for it either"
   },
   {
    "group": "thinktanks",
    "name": "The Foreign Policy Centre",
    "ok": true,
-   "items": 10,
-   "error": "",
-   "method": "feed"
+   "items": 9,
+   "method": "google-news",
+   "via": "site:fpc.org.uk",
+   "error": "fpc.org.uk: page loads but lists no publication links (JavaScript?); www.fpc.org.uk: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "The Henry Jackson Society",
    "ok": true,
    "items": 27,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://henryjacksonsociety.org/",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "The Jobs Foundation",
    "ok": false,
    "items": 0,
-   "error": "401 Client Error: Unauthorized for url: https://www.jobsfoundation.org/research"
+   "error": "www.jobsfoundation.org: page loads but lists no publication links (JavaScript?); jobsfoundation.org/research: HTTP 404; jobsfoundation.org.uk/research: ConnectionError; www.jobsfoundation.org.uk/research: ConnectionError; www.jobsfoundation.org.uk/: ConnectionError; jobsfoundation.org.uk/: Connectio"
   },
   {
    "group": "thinktanks",
    "name": "The King's Fund",
-   "ok": false,
-   "items": 0,
-   "error": "403 Client Error: Forbidden for url: https://www.kingsfund.org.uk/insight-and-analysis/reports"
+   "ok": true,
+   "items": 25,
+   "method": "google-news",
+   "via": "site:kingsfund.org.uk",
+   "error": "www.kingsfund.org.uk/insight-and-analysis/reports: HTTP 403; kingsfund.org.uk/insight-and-analysis/reports: HTTP 403"
   },
   {
    "group": "thinktanks",
    "name": "The Nuffield Trust",
    "ok": true,
-   "items": 9,
-   "error": "",
-   "method": "html"
+   "items": 25,
+   "method": "google-news",
+   "via": "site:nuffieldtrust.org.uk",
+   "error": "www.nuffieldtrust.org.uk: page loads but lists no publication links (JavaScript?); nuffieldtrust.org.uk: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "The Policy Institute (KCL)",
    "ok": true,
    "items": 3,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://www.kcl.ac.uk/policy-institute/research-analysis",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "The Sutton Trust",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.suttontrust.com/feed",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "The Work Foundation",
-   "ok": false,
-   "items": 0,
-   "error": "no feed or listing links found"
+   "ok": true,
+   "items": 22,
+   "method": "google-news",
+   "via": "site:lancaster.ac.uk/work-foundation",
+   "error": "www.lancaster.ac.uk: page loads but lists no publication links (JavaScript?); lancaster.ac.uk: page loads but lists no publication links (JavaScript?)"
   },
   {
    "group": "thinktanks",
    "name": "Theos",
    "ok": true,
    "items": 25,
-   "error": "",
-   "method": "feed"
+   "method": "feed",
+   "via": "https://www.theosthinktank.co.uk/rss/research",
+   "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Think Labour",
    "ok": false,
    "items": 0,
-   "error": "no feed or listing links found"
+   "error": "www.thinklabour.org: page loads but lists no publication links (JavaScript?); thinklabour.org: page loads but lists no publication links (JavaScript?); www.thinklabour.co.uk: page loads but lists no publication links (JavaScript?); thinklabour.co.uk: page loads but lists no publication links (JavaSc"
   },
   {
    "group": "thinktanks",
    "name": "UK in a Changing Europe",
    "ok": true,
    "items": 10,
-   "error": "",
-   "method": "html"
+   "method": "html",
+   "via": "https://ukandeu.ac.uk/reports/",
+   "error": ""
   },
   {
    "group": "media",
@@ -623,7 +700,7 @@
    "group": "polling",
    "name": "YouGov",
    "ok": true,
-   "items": 16,
+   "items": 17,
    "error": ""
   },
   {
@@ -644,7 +721,7 @@
    "group": "polling",
    "name": "Ipsos",
    "ok": true,
-   "items": 16,
+   "items": 17,
    "error": ""
   },
   {
