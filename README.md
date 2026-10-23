@@ -14,7 +14,7 @@ A static site, refreshed every three hours by GitHub Actions, that tracks:
 1. Create a GitHub repo and push this folder to `main`.
 2. Settings → Pages → Source: **GitHub Actions**.
 3. Actions → *Update tracker and deploy* → Run workflow.
-4. Open the site and check the **Source health** tab. Think-tank and poll-firm URLs were written from memory and not verified, so expect some to need a corrected URL or a `feed:` override in `config/sources.yml`.
+4. Open the site and check the **Source health** tab. Committees, media and polling were verified against live responses on 2026-10-23. Only ~14 of the 63 think tank entries were verified live (the verification sandbox could not reach the rest), so expect some to need a corrected URL or a `feed:` override in `config/sources.yml` (`feed: false` forces the HTML scrape instead of feed autodiscovery).
 
 Run locally:
 
@@ -27,10 +27,11 @@ cd site && python -m http.server    # then open http://localhost:8000
 
 ## Known limitations
 
-- The Parliament Committees API field names are read defensively but were not checked against a live response; if "Parliament Committees API" fails in the health tab, inspect `https://committees-api.parliament.uk/api/Publications` and adjust `_committee_row`.
-- Google News RSS returns headlines and links, not article text, and coverage of paywalled outlets is headline-only.
-- HTML-scrape fallbacks are heuristic and can pick up non-publication links; add a `feed:` where one exists.
-- Wikipedia's table layout changes occasionally; the VI chart degrades to empty rather than failing the run.
+- Committees: only Report, Special Report and Government Response publications are kept (`keep_types`). Correspondence was ~70% of the API's volume, add `"correspondence"` to include it. Committee links point at `committees.parliament.uk/publications/<id>/` (the site's standard pattern; not fetched during verification).
+- Media: Google News RSS matches keywords anywhere in an article, so results are filtered to headlines matching `media.title_pattern`. Only headlines and Google redirect links are available (no article text), and a quiet outlet shows as "quiet" in Source health, not as a failure. Daily Mail, Spectator and Reuters returned nothing from Google News.
+- Polling: the Wikipedia parser assumes the first table is the current year (the table gives no year in its date column), keeps GB/UK rows only and tags MRPs (excluded from the chart). Several smaller firms (Techne, BMG, JL Partners, Deltapoll, Verian, Whitestone, Merlin, Stonehaven) are only sparsely indexed by Google News. YouGov News Trackers are collected from the YouGov articles page plus the earlier editions linked from the newest one.
+- Bright Blue and the IFS return HTTP 403 to all automated requests (including robots.txt); they are left in the config and will show as failing.
+- HTML-scrape fallbacks are heuristic; add a `feed:` where one exists.
 - If any site's terms forbid automated access, remove it from the config.
 
 ## Next steps
