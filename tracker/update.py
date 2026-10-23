@@ -28,6 +28,7 @@ DATA = ROOT / "data" / "ulysse"   # not under site/: the site is public, this is
 CONFIG = yaml.safe_load((ROOT / "config" / "sources.yml").read_text())
 NOW = datetime.now(timezone.utc)
 KEEP_DAYS = 180
+ENRICH = True   # fetch article pages for missing publication dates (capped per run)
 LONDON = ZoneInfo("Europe/London")
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; PolicyTracker/1.0; personal research tool)"}
@@ -494,6 +495,133 @@ def collect_vi_table() -> list[dict]:
         return []
 
 
+# --------------------------------------------------------------- categorisation
+TAX = yaml.safe_load((ROOT / "config" / "taxonomy.yml").read_text())
+_AREA_RX = {a: [re.compile(p, re.I) for p in pats] for a, pats in TAX["areas"].items()}
+_PLACE_RX = {n: (v["group"], re.compile(v["pattern"], re.I)) for n, v in TAX["geography"]["places"].items()}
+_DROP_T = re.compile(TAX["drop_title_pattern"], re.I)
+_DROP_S = re.compile(TAX["drop_summary_pattern"], re.I)
+_COMMITTEE_RX = [(re.compile(p, re.I), a) for p, a in TAX["committee_areas"].items()]
+_COMMITTEE_PLACE = [(re.compile(p, re.I), a) for p, a in TAX["geography"]["committee_places"].items()]
+_TYPE_RX = [(t[0], re.compile(t[1], re.I)) for t in TAX["types"]["thinktank"] if len(t) == 2 and isinstance(t, list)]
+_TYPE_DEFAULT = next(t["default"] for t in TAX["types"]["thinktank"] if isinstance(t, dict))
+UK_WIDE = TAX["geography"]["default"]
+GEO_ORDER = list(TAX["geography"]["places"])
+
+
+def is_noise(it: dict) -> bool:
+    """Staff bios, job adverts and site housekeeping that the generic scraper picks up."""
+    return it["category"] == "thinktank" and bool(_DROP_T.search(it["title"]) or _DROP_S.search(it.get("summary", "")))
+
+
+def classify(it: dict) -> dict:
+    """Adds areas (max 2), geo (max 2) and kind. Deterministic keyword rules from config/taxonomy.yml."""
+    title, summ = it["title"], it.get("summary", "")
+    score: dict[str, float] = {}
+    for area, rxs in _AREA_RX.items():
+        t = sum(len(rx.findall(title)) for rx in rxs)
+        d = sum(len(rx.findall(summ)) for rx in rxs)
+        sc = 2 * min(t, 2) + min(d, 2)
+        if sc:
+            score[area] = sc
+    for key, areas in TAX["source_defaults"].items():
+        if key.lower() in it["source"].lower():
+            for a in areas:
+                score[a] = score.get(a, 0) + 2
+    if it["category"] == "committee":
+        for rx, a in _COMMITTEE_RX:
+            if rx.search(it["source"]):
+                score[a] = score.get(a, 0) + 3
+    if it["category"] in ("polling", "media") and not score:
+        score["Party politics & polling"] = 2
+    ranked = sorted(score.items(), key=lambda kv: -kv[1])
+    areas = [a for a, sc in ranked[:2] if sc >= 2 and (a == ranked[0][0] or sc >= 0.5 * ranked[0][1])]
+    # geography
+    hits = []
+    for name, (_g, rx) in _PLACE_RX.items():
+        t, d = len(rx.findall(title)), len(rx.findall(summ))
+        if t or d:
+            hits.append((name, 2 * t + d))
+    if it["category"] == "committee":
+        for rx, name in _COMMITTEE_PLACE:
+            if rx.search(it["source"]):
+                hits.append((name, 5))
+    hits.sort(key=lambda h: (-h[1], GEO_ORDER.index(h[0])))
+    geo = [n for n, _ in hits]
+    if len(geo) > 1 and "England" in geo and any(_PLACE_RX[g][0] == "UK" and g not in ("England", "London") for g in geo):
+        geo.remove("England")
+    geo = geo[:2] or [UK_WIDE]
+    # kind
+    cat = it["category"]
+    if cat == "committee":
+        kind = TAX["types"]["committee"].get((it["tags"] or [""])[0], "Committee report")
+    elif cat == "media":
+        kind = TAX["types"]["media"]
+    elif cat == "polling":
+        pt = TAX["types"]["polling"]
+        kind = next((pt[t] for t in it["tags"] if t in pt), pt["default"])
+    else:
+        kind = next((n for n, rx in _TYPE_RX if rx.search(title)), _TYPE_DEFAULT)
+    it["areas"] = areas or [TAX["areas_other"]]
+    it["geo"] = geo
+    it["kind"] = kind
+    return it
+
+
+_URL_DATE = re.compile(r"/(20\d\d)[/-](\d{1,2})[/-](\d{1,2})(?:/|$|-)")
+
+
+def date_from_url(url: str) -> datetime | None:
+    m = _URL_DATE.search(url)
+    if not m:
+        return None
+    try:
+        return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def page_published_date(url: str) -> datetime | None:
+    """Reads the publication date from the article page itself (meta tags, <time>, JSON-LD)."""
+    soup = BeautifulSoup(get(url).text, "lxml")
+    for sel, attr in (('meta[property="article:published_time"]', "content"), ('meta[name="date"]', "content"),
+                      ('meta[name="publication_date"]', "content"), ('meta[itemprop="datePublished"]', "content"),
+                      ('meta[name="DC.date.issued"]', "content"), ('time[itemprop="datePublished"]', "datetime"),
+                      ("time[datetime]", "datetime")):
+        el = soup.select_one(sel)
+        if el and el.get(attr):
+            d = parse_date(el[attr])
+            if d:
+                return d
+    for sc in soup.find_all("script", type="application/ld+json"):
+        m = re.search(r'"datePublished"\s*:\s*"([^"]+)"', sc.string or "")
+        if m:
+            d = parse_date(m.group(1))
+            if d:
+                return d
+    return None
+
+
+def enrich_dates(items: list[dict], limit: int = 40) -> None:
+    """Fills in missing publication dates for think tank items: URL first (free), then the page (polite, capped per run)."""
+    fetched = 0
+    for it in items:
+        if it.get("published") or it["category"] != "thinktank":
+            continue
+        d = date_from_url(it["url"]) or date_from_title(it["title"])
+        if not d and fetched < limit and not it.get("date_checked") and it.get("date_tries", 0) < 3:
+            fetched += 1
+            try:
+                d = page_published_date(it["url"])
+                if not d:
+                    it["date_checked"] = True   # page fetched fine but states no date: do not ask again
+            except Exception:  # noqa: BLE001
+                it["date_tries"] = it.get("date_tries", 0) + 1   # network problem: retry on later runs, up to 3 times
+            time.sleep(1)
+        if d:
+            it["published"] = d.isoformat()
+
+
 # -------------------------------------------------------------------- main
 def merge(new_items: list[dict]) -> list[dict]:
     path = DATA / "feed.json"
@@ -512,6 +640,13 @@ def merge(new_items: list[dict]) -> list[dict]:
         old[it["id"]] = {**(prev or {}), **it}
     cutoff = NOW - timedelta(days=KEEP_DAYS)
     kept = []
+    for it in list(old.values()):
+        if is_noise(it):
+            del old[it["id"]]
+    if ENRICH:
+        enrich_dates(list(old.values()))
+    for it in old.values():
+        classify(it)
     for it in old.values():
         d = parse_date(it.get("published")) or parse_date(it.get("first_seen")) or NOW
         if d >= cutoff:
@@ -544,7 +679,14 @@ def upload() -> bool:
 
 def main() -> int:
     DATA.mkdir(parents=True, exist_ok=True)
+    global ENRICH
     only = set(sys.argv[1:])  # e.g. `update.py media polling`
+    if "reclassify" in only:      # re-apply taxonomy to stored items without collecting
+        ENRICH = False
+        feed = merge([])
+        (DATA / "feed.json").write_text(json.dumps({"updated": NOW.isoformat(), "items": feed}, indent=1))
+        print(f"{len(feed)} items re-classified")
+        return 0
     run = lambda k: not only or k in only  # noqa: E731
     items: list[dict] = []
     if run("committees"):

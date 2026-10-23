@@ -1,0 +1,159 @@
+# How Ulysse categorises items. Everything here is keyword matching on the title + summary (case-insensitive
+# regular expressions), plus per-source defaults. It is deliberately simple and transparent: to change how
+# something is categorised, edit a pattern here and re-run the collector (old items are re-classified too).
+#
+# An item gets up to 2 policy areas (highest score) and up to 2 geographies. Scoring: each keyword hit = 1,
+# a source/committee default = +2 (strong: +3 for committee names). Items scoring nothing fall into "Other / general".
+
+# Items whose title matches are dropped at collection (staff bios, job adverts, site housekeeping).
+drop_title_pattern: '^(associate (director|fellow|policy|researcher|head)|senior (policy|research|communications|digital|fundraising|manager|officer|analyst|advis)|head of|deputy (director|head)|assistant (director|researcher|policy)|director (of|,)|research (fellow|assistant)|policy (analyst|officer|manager)|communications (officer|manager|assistant)|events? (manager|officer)|vacanc|jobs? at|we.re hiring|join (us|our)|not a member|our (team|people|trustees)|about us|contact (us|details)|board changes|new (trustees?|associate fellows?|fellows?)|.*associate fellows.*new additions|welcome to|-\s*liberal democrat voice$)'
+# Items whose SUMMARY matches are dropped too (profile pages).
+drop_summary_pattern: 'is an independent (think tank|charity|research)|joined .* as a (trainee|senior|research)|is a (senior )?(research|policy) (fellow|analyst|officer)'
+
+areas:
+  "Economy & tax":
+    - '\b(tax(es|ed|ing|ation)?|budget|fiscal|chancellor|treasury|inflation|economy|economic|growth|productivity|gdp|wealth|debt|borrowing|public finances?|spending review|stagnation|recession|interest rates?|revenue|cost of living|prices?)\b'
+  "Business & industry":
+    - '\b(business(es)?|industr(y|ial)|trade|invest(ment|ors?)|innovation|compan(y|ies)|corporate|regulat(ion|ory|or)|competition|enterprise|manufactur\w*|financial services|insurance|fca|advertising|startups?|sme|smes|supply chains?|procurement|crypto|screening)\b'
+  "Work & skills":
+    - '\b(jobs?|employment|employers?|workers?|workforce|wages?|pay (gap|rise)|labour market|unemploy\w*|neets?|training|apprentice\w*|skills?|vocational|working from home|vacancies|good work|world of work|workplace)\b'
+  "Welfare & poverty":
+    - '\b(welfare|benefits?|poverty|universal credit|(?-i:PIP)|pensions?|pensioners?|triple lock|social security|inequalit(y|ies)|disadvantage[d]?|social mobility|food banks?|deprivation|low[- ]income|child poverty|disabled|disabilit(y|ies)|emergency expense|social class|living standards)\b'
+  "Health & social care":
+    - '\b(health\w*|nhs|social care|hospitals?|clinical|patients?|(?-i:GPs?)|obesity|mental|medical|doctors?|nurses?|diagnos\w*|cancer|dementia|wellbeing|prevention|public health|ambulance|care homes?|adult social)\b'
+  "Education":
+    - '\b(schools?|teachers?|pupils?|students?|education|sats|gcse|a-levels?|curriculum|ofsted|inspection|early years|childcare|universit(y|ies)|higher education|hepi|tuition|graduates?|learning|sen(d)?|key stage|attainment|academies)\b'
+  "Housing & planning":
+    - '\b(housing|homes?|homeless\w*|planning|rents?|renters?|landlords?|mortgages?|house prices?|social housing|tenants?|built environment|new towns?|green belt|high streets?|residential)\b'
+  "Local & regional government":
+    - '\b(devolution|devolved|councils?|council tax|mayors?|mayoral|local (government|authorit\w*|areas?|leadership|economy|economies)|regional|regions?|strategic authorit\w*|combined authorit\w*|place-based|placemaking|left-behind places|civic|neighbourhoods?|community (wealth|business|ownership|power|empowerment)|levelling up|towns|cities|city regions?)\b'
+  "Environment & energy":
+    - '\b(energy|climate|net[- ]zero|carbon|nature|biodiversity|water|wildfire|waste|recycling|renewables?|solar|wind|nuclear|gas|oil|emissions|pollution|farming|agricultur\w*|food|environment\w*|throwaway|just transitions?|heat pumps?|energy bills)\b'
+  "Transport":
+    - '\b(transport\w*|rail|railways?|buses|bus|tfl|aviation|airports?|heathrow|roads|road (safety|pricing|network|building)|cycling|cyclists?|driving|motorists?|fares|trains?|electric vehicles?|evs?|e-bikes?|hs2|tram)\b'
+  "Crime, justice & policing":
+    - '\b(crime|criminal|police|policing|prisons?|justice|sentenc\w*|courts?|victims?|antisocial|anti-social|offenders?|probation|law and order|knife|violence|shoplifting|fraud|rule of law|human rights|legal)\b'
+  "Defence & security":
+    - '\b(defence|military|armed forces|nato|security|sanctions|terror\w*|nuclear weapons|army|navy|troops|intelligence|war|warfare|deterrence|geopolitic\w*|hybrid|irgc|espionage|resilience)\b'
+  "Foreign affairs":
+    - '\b(foreign (policy|affairs|office)|diplomat\w*|international|ukraine|russia\w*|china|chinese|middle east|gaza|israel\w*|iran\w*|hamas|g7|g20|united nations|(?-i:UN)|aid|international development|development (aid|assistance|cooperation|finance)|geoeconomic|trump|sanctions|beyond brexit|belarus\w*|kazakhstan|india|africa\w*|somalia|sahel|asia\w*|indo-pacific|conflict)\b'
+  "Europe & Brexit":
+    - '\b(eu|europe\w*|brexit|uk-eu|single market|customs union|brussels|ecthr|echr|council of europe|eu membership|reset)\b'
+  "Immigration & identity":
+    - '\b(immigra\w*|asylum|migrants?|migration|refugees?|border|belonging|integration|race|racism|ethnic\w*|citizenship|identity|nationhood|patriotism|pride|multicultural\w*|diaspora|antisemit\w*|islamophob\w*|hate)\b'
+  "Constitution & democracy":
+    - '\b(democra\w*|parliament\w*|constitution\w*|elections?|electoral|voting|voters?|lords|commons|standards|accountability|trust in (politics|government)|political (leaders?|system|reform)|referendum|citizens.? assembl\w*|disinformation|legislation|statutory instruments?|delegated powers?|procedure|politicians?|epistemic|information (resilience|ecosystems?)|legitimacy)\b'
+  "Technology & digital":
+    - '\b((?-i:AI)|artificial intelligence|digital|online|cyber\w*|tech(nology)?|social media|algorithms?|internet|broadband|connectivity|platforms?|robots?|automation|semiconductors?|science|research and development|r&d)\b'
+  "Culture, media & society":
+    - '\b(culture|cultural|media|creative|arts|music|sport\w*|football|theatre|heritage|museums?|broadcast\w*|bbc|journalism|faith|religio\w*|church|charit(y|ies)|civil society|volunteer\w*|loneliness|women|gender|lgbt\w*)\b'
+  "Government & public services":
+    - '\b(whitehall|civil service|public services?|public sector|state capacity|rewiring the state|government (reform|efficiency|spending)|reform of the state|public accounts|value for money|nao|auditor|machinery of government|spad|special advisers?|cabinet office)\b'
+  "Party politics & polling":
+    - '\b(labour|conservatives?|tories|reform uk|lib dems?|liberal democrats?|greens|snp|plaid|poll(s|ing)?|voting intention|parties|party conference|by-election|burnham|badenoch|farage|davey|starmer|favourab\w*|coalition|manifesto)\b'
+
+# Per-source defaults (+2). Keys are matched against the item's source name, case-insensitively, as substrings.
+source_defaults:
+  "Nuffield Trust": ["Health & social care"]
+  "King's Fund": ["Health & social care"]
+  "Education Policy Institute": ["Education"]
+  "Sutton Trust": ["Education", "Welfare & poverty"]
+  "HEPI": ["Education"]
+  "CEPEO": ["Education"]
+  "Green Alliance": ["Environment & energy"]
+  "IIED": ["Environment & energy", "Foreign affairs"]
+  "RUSI": ["Defence & security", "Foreign affairs"]
+  "IISS": ["Defence & security", "Foreign affairs"]
+  "Henry Jackson": ["Foreign affairs", "Defence & security"]
+  "British Foreign Policy Group": ["Foreign affairs"]
+  "Foreign Policy Centre": ["Foreign affairs"]
+  "European Council on Foreign Relations": ["Foreign affairs", "Europe & Brexit"]
+  "Chatham House": ["Foreign affairs"]
+  "Centre for European Reform": ["Europe & Brexit"]
+  "UK in a Changing Europe": ["Europe & Brexit"]
+  "Constitution Unit": ["Constitution & democracy"]
+  "Institute for Government": ["Government & public services"]
+  "Localis": ["Local & regional government"]
+  "New Local": ["Local & regional government"]
+  "CLES": ["Local & regional government"]
+  "Growth and Reform Network": ["Local & regional government", "Economy & tax"]
+  "City-REDI": ["Local & regional government", "Economy & tax"]
+  "Power to Change": ["Local & regional government"]
+  "Centre for Cities": ["Local & regional government", "Economy & tax"]
+  "Centre for London": ["Local & regional government"]
+  "NIESR": ["Economy & tax"]
+  "Institute for Fiscal Studies": ["Economy & tax"]
+  "Resolution Foundation": ["Economy & tax", "Welfare & poverty"]
+  "Institute of Economic Affairs": ["Economy & tax"]
+  "Adam Smith Institute": ["Economy & tax"]
+  "New Economics Foundation": ["Economy & tax"]
+  "Joseph Rowntree": ["Welfare & poverty"]
+  "Centre for Social Justice": ["Welfare & poverty"]
+  "British Future": ["Immigration & identity"]
+  "Theos": ["Culture, media & society"]
+  "Carnegie UK": ["Culture, media & society"]
+  "Work Foundation": ["Work & skills"]
+  "Fabian Society": ["Party politics & polling"]
+  "Lib Dem Voice": ["Party politics & polling"]
+  "Policy Institute": ["Government & public services"]
+  "Demos": ["Constitution & democracy"]
+
+# Committee name patterns (+3), matched against the committee name.
+committee_areas:
+  'health|social care': "Health & social care"
+  'defence': "Defence & security"
+  'work and pensions': "Welfare & poverty"
+  'treasury|economic affairs|finance': "Economy & tax"
+  'transport': "Transport"
+  'justice|home affairs|crime|police': "Crime, justice & policing"
+  'foreign affairs|international relations|international development|international agreements|national security': "Foreign affairs"
+  'european|eu ': "Europe & Brexit"
+  'environment|energy|net zero|climate|food and rural|agricultur': "Environment & energy"
+  'science|technology|communications and digital|ai ': "Technology & digital"
+  'culture|media|sport|digital, culture': "Culture, media & society"
+  'education|children|skills': "Education"
+  'housing|levelling|communities|built environment|planning': "Housing & planning"
+  'business|trade|industry|financial services|economic': "Business & industry"
+  'constitution|procedure|standards|political and constitutional|house of commons commission|privileges|lords|democracy': "Constitution & democracy"
+  'public accounts|public administration|public bill|delegated powers|statutory instruments|secondary legislation|regulatory reform|liaison|public services': "Government & public services"
+  'scottish|welsh|northern ireland|devolved|local government': "Local & regional government"
+  'immigration|asylum|migration': "Immigration & identity"
+  'women|equalit|human rights': "Culture, media & society"
+
+areas_other: "Other / general"
+
+geography:
+  # (name, group, patterns). First two matching are kept; no match = "UK-wide / unspecified".
+  default: "UK-wide / unspecified"
+  places:
+    "London":            {group: UK, pattern: '\b(london|tfl|mayor of london|city hall|gla|greater london|londoners?)\b'}
+    "Scotland":          {group: UK, pattern: '\b(scotland|scottish|scots|holyrood|edinburgh|glasgow|aberdeen)\b'}
+    "Wales":             {group: UK, pattern: '\b(wales|welsh|cardiff|senedd|swansea)\b'}
+    "Northern Ireland":  {group: UK, pattern: '\b(northern ireland|belfast|stormont|ulster)\b'}
+    "North of England":  {group: UK, pattern: '\b(north east|north west|the north\b|northern england|yorkshire|manchester|liverpool|leeds|newcastle|sheffield|tyne|merseyside|cumbria|lancashire|hull|teesside|rotherham|bradford)\b'}
+    "Midlands":          {group: UK, pattern: '\b(midlands|birmingham|nottingham|leicester|coventry|derby|stoke|wolverhampton)\b'}
+    "South & East of England": {group: UK, pattern: '\b(south east|south west|east of england|bristol|brighton|kent|essex|oxford|cambridge|cornwall|devon|southampton|portsmouth|norfolk|suffolk|surrey)\b'}
+    "England":           {group: UK, pattern: '\b(england|english)\b'}
+    "Europe & EU":       {group: International, pattern: '\b(eu|europe\w*|brussels|germany|german|france|french|poland|polish|italy|spain|netherlands|nordic|brexit|uk-eu)\b'}
+    "United States":     {group: International, pattern: '\b((?-i:US)|usa|united states|american?s?|america|washington|trump|congress|midterms?|white house)\b'}
+    "Russia & Ukraine":  {group: International, pattern: '\b(russia\w*|ukrain\w*|kremlin|putin|belarus\w*|moscow|kyiv|kiev|crimea)\b'}
+    "Middle East":       {group: International, pattern: '\b(middle east|gaza|israel\w*|iran\w*|hamas|hormuz|syria\w*|lebanon|yemen|saudi|gulf|tehran|palestin\w*|irgc|houthi)\b'}
+    "China & Asia":      {group: International, pattern: '\b(china|chinese|beijing|taiwan|india\w*|japan\w*|asia\w*|indo-pacific|kazakhstan|pakistan|korea\w*|singapore|vietnam)\b'}
+    "Africa":            {group: International, pattern: '\b(africa\w*|somalia|sahel|nigeria|kenya|sudan|ethiopia|ghana|south africa|congo)\b'}
+    "Global / other":    {group: International, pattern: '\b(global|worldwide|g7|g20|united nations|(?-i:UN)|commonwealth|latin america|brazil\w*|canada|canadian|australia\w*)\b'}
+  # committee names that imply a place
+  committee_places:
+    'scottish': "Scotland"
+    'welsh': "Wales"
+    'northern ireland': "Northern Ireland"
+
+# Item "type", from the section and keywords in the title.
+types:
+  committee: {"Special Report": "Special report", "Government Response": "Government response", "Report": "Committee report"}
+  media: "News coverage"
+  polling: {"voting-intention": "Voting intention", "party-support": "Party support", "news-cycle": "News tracker", default: "Poll / survey"}
+  thinktank:
+    - ["Response / reaction", '\b(response|responds?|reaction|reacts?|statement|says|call(s)? for|urges?|welcomes?)\b']
+    - ["Briefing / data", '\b(tracker|index|briefing|data|figures|statistics|stats|monitor|dashboard|explainer|explains|factsheet|review of the month|\d{4} review|(january|february|march|april|may|june|july|august|september|october|november|december) \d{4} review)\b']
+    - ["Report / paper", '\b(report|evaluation|review|commission|inquiry|findings|strategy|agenda|plan|guide|toolkit|paper|case for|blueprint|playbook|manifesto|lessons|evidence|study|analysis)\b']
+    - default: "Article / analysis"
