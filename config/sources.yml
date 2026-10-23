@@ -1,9 +1,16 @@
 # ---------------------------------------------------------------------------
-# Source configuration for the tracker.
-# Every URL below is a best guess from memory and has NOT been verified live.
-# After the first run, open site/data/health.json (or the "Source health" tab
-# on the site) to see which sources returned nothing, then fix the url or add
-# a `feed:` override for that entry.
+# Source configuration for the tracker. Last verified live on 2026-10-23.
+#
+# committees, media and polling: checked against live responses.
+# thinktanks: only the entries with a "verified" note below were checked live. The sandbox
+# used for verification could only reach ~16 of the ~60 think tank hosts, so the remaining
+# URLs are STILL FROM MEMORY. Check the Source health tab after the first real run and fix
+# any that fail (correct the url, or add `feed:`; `feed: false` forces the HTML scrape).
+#
+# Verified live: Demos, CPS, ECFR, Fabian Society, Green Alliance, EPI, IEA, BFPG, FPC, CLES,
+#   NEF, HJS, UK in a Changing Europe, Growth and Reform Network.
+# Refuse automated access (HTTP 403 for every request incl. robots.txt, a WAF block that we
+#   deliberately do not work around): Bright Blue, Institute for Fiscal Studies.
 # ---------------------------------------------------------------------------
 
 committees:
@@ -11,8 +18,10 @@ committees:
   api: https://committees-api.parliament.uk/api/Publications
   lookback_days: 30
   # Publication types to keep (matched case-insensitively as substrings).
-  # Remove the filter (set to []) to also include written/oral evidence.
-  keep_types: ["report", "government response", "special report", "correspondence"]
+  # Live type names: Report, Special Report, Government Response, Correspondence,
+  # Formal Minutes, Engagement document, ... "report" also covers "Special Report".
+  # Correspondence was ~70% of all volume, so it is left out; add it back to include letters.
+  keep_types: ["report", "government response"]
 
 media:
   # Google News RSS is used per outlet because most newspapers paywall or block
@@ -22,7 +31,11 @@ media:
     - '"Lib Dems"'
     - '"Ed Davey"'
     - '"Lib Dem"'
-  lookback: 7d
+  # Headline must match this regex (Google News matches body text, so without
+  # this, stories that merely mention the party leak in). Outlets with `all: true`
+  # are the party's own sites and skip the check.
+  title_pattern: '\bLib(eral)?[ -]?Dems?\b|Liberal Democrats?|\bDavey\b|Daisy Cooper|Munira Wilson|Layla Moran'
+  lookback: 14d
   outlets:
     - {name: The Telegraph, domain: telegraph.co.uk}
     - {name: The Times, domain: thetimes.com}
@@ -33,6 +46,8 @@ media:
     - {name: BBC News, domain: bbc.co.uk}
     - {name: The Independent, domain: independent.co.uk}
     - {name: Sky News, domain: news.sky.com}
+    # Daily Mail, Spectator and Reuters returned no Google News results at all on 2026-10-23.
+    # Kept in case Google's index picks them up; remove if they stay empty.
     - {name: Daily Mail, domain: dailymail.co.uk}
     - {name: Daily Express, domain: express.co.uk}
     - {name: New Statesman, domain: newstatesman.com}
@@ -40,17 +55,25 @@ media:
     - {name: PoliticsHome, domain: politicshome.com}
     - {name: Reuters, domain: reuters.com}
     - {name: Evening Standard, domain: standard.co.uk}
-    - {name: Lib Dem Voice, domain: libdemvoice.org}
+    - {name: Lib Dem Voice, domain: libdemvoice.org, all: true}
 
 polling:
   wikipedia_page: https://en.wikipedia.org/wiki/Opinion_polling_for_the_next_United_Kingdom_general_election
   lookback: 30d
   # British Polling Council members whose published write-ups we search for.
+  # Domains with a path (yougov.com/en-gb, ipsos.com/en-uk) restrict the search to the UK
+  # sites; the global sites are mostly US/Canada content. Google News indexes some firms
+  # only sparsely (Techne, BMG, JL Partners, Deltapoll, Verian, Whitestone, Merlin,
+  # Stonehaven returned nothing in the last 30 days on 2026-10-23); their voting
+  # intention still appears in the Wikipedia chart. Whitestone / Merlin / BMG domains
+  # could not be confirmed (no results for any query) and may be wrong.
   firms:
-    - {name: YouGov, domain: yougov.com}
+    - {name: YouGov, domain: yougov.com/en-gb}
+    # Separate search so the fortnightly news trackers are not crowded out by YouGov's volume.
+    - {name: YouGov, domain: yougov.com/en-gb, terms: ['"news tracker"']}
     - {name: Opinium, domain: opinium.com}
     - {name: More in Common, domain: moreincommon.org.uk}
-    - {name: Ipsos, domain: ipsos.com}
+    - {name: Ipsos, domain: ipsos.com/en-uk}
     - {name: Survation, domain: survation.com}
     - {name: Find Out Now, domain: findoutnow.co.uk}
     - {name: Techne, domain: techneuk.com}
@@ -59,28 +82,33 @@ polling:
     - {name: JL Partners, domain: jlpartners.co.uk}
     - {name: Deltapoll, domain: deltapoll.co.uk}
     - {name: Savanta, domain: savanta.com}
-    - {name: Freshwater Strategy, domain: freshwater-strategy.com}
+    - {name: Freshwater Strategy, domain: freshwaterstrategy.com}
     - {name: Verian, domain: veriangroup.com}
     - {name: Whitestone Insight, domain: whitestone-insight.com}
     - {name: Public First, domain: publicfirst.co.uk}
     - {name: Merlin Strategy, domain: merlinstrategy.co.uk}
     - {name: Lord Ashcroft Polls, domain: lordashcroftpolls.com}
     - {name: Stonehaven, domain: stonehavenglobal.com}
+  # Headlines matching this are dropped: hub pages, US politics, celebrity-fame trackers.
+  exclude_pattern: 'fame & popularity|polls & surveys|^topline|^insights hub|Global Market Research|^Ipsos - Ipsos|midterm|Republican|Democrat\b|generic ballot'
   search_terms: ['"voting intention"', 'poll', 'tracker', '"news tracker"', 'favourability']
   # Direct YouGov feeds / pages checked in addition to the search above.
   direct:
-    - {name: YouGov, url: "https://yougov.com/en-gb/articles"}
+    # `harvest` follows the newest matching article and adds the earlier editions it links to
+    # (the listing page only shows the latest few; the topic page needs JavaScript).
+    - {name: YouGov, url: "https://yougov.com/en-gb/articles", harvest: "yougov-news-tracker"}
 
 thinktanks:
   # name, url (publications page), optional feed (explicit RSS/Atom URL)
   - {name: Adam Smith Institute, url: "https://www.adamsmith.org/research"}
-  - {name: Bright Blue, url: "https://brightblue.org.uk/research/"}
-  - {name: British Foreign Policy Group, url: "https://bfpg.co.uk/publications/"}
+  # 403 to all automated requests (WAF) on 2026-10-23: left in place, will show as failing. Decision needed.
+  - {name: Bright Blue, url: "https://brightblue.org.uk/research/"}  # 403 to all automated requests (WAF), 2026-10-23: decision needed
+  - {name: British Foreign Policy Group, url: "https://bfpg.co.uk/reports"}  # /publications/ redirects here; autodiscovered feed also carries analysis pieces
   - {name: British Future, url: "https://www.britishfuture.org/publications/"}
   - {name: Carnegie UK, url: "https://carnegieuk.org/publications/"}
   - {name: Centre for Cities, url: "https://www.centreforcities.org/publications/"}
   - {name: Centre for European Reform, url: "https://www.cer.eu/publications"}
-  - {name: Centre for Local Economic Strategies (CLES), url: "https://cles.org.uk/publications/"}
+  - {name: Centre for Local Economic Strategies (CLES), url: "https://cles.org.uk/", feed: "https://cles.org.uk/feed/"}  # /publications/ 404s; site-wide feed (blog + publications)
   - {name: Centre for London, url: "https://www.centreforlondon.org/publications/"}
   - {name: Centre for Policy Studies, url: "https://cps.org.uk/research/"}
   - {name: Centre for Public Data, url: "https://www.centreforpublicdata.org/blog"}
@@ -93,18 +121,19 @@ thinktanks:
   - {name: EDSK, url: "https://www.edsk.org/publications/"}
   - {name: Education Policy Institute, url: "https://epi.org.uk/publications-and-research/"}
   - {name: European Council on Foreign Relations, url: "https://ecfr.eu/publications/"}
-  - {name: Fabian Society, url: "https://fabians.org.uk/publications/"}
+  - {name: Fabian Society, url: "https://fabians.org.uk/publications/", feed: "https://fabians.org.uk/feed/?post_type=publication"}
   - {name: Future Governance Forum, url: "https://www.futuregovernance.org.uk/publications"}
   - {name: Green Alliance, url: "https://green-alliance.org.uk/publications/"}
-  - {name: Growth and Reform Network, url: "https://growthandreform.org/"}
+  - {name: Growth and Reform Network, url: "https://growthandreform.org/ign-insights"}  # homepage only lists network members
   - {name: HEPI, url: "https://www.hepi.ac.uk/reports/"}
   - {name: IIED, url: "https://www.iied.org/publications"}
   - {name: IISS, url: "https://www.iiss.org/publications/"}
-  - {name: Institute for Fiscal Studies, url: "https://ifs.org.uk/publications"}
+  # 403 to all automated requests (WAF) on 2026-10-23, as above. Decision needed.
+  - {name: Institute for Fiscal Studies, url: "https://ifs.org.uk/publications"}  # 403 to all automated requests (WAF), 2026-10-23: decision needed
   - {name: Institute for Government, url: "https://www.instituteforgovernment.org.uk/publications"}
   - {name: Institute for Policy Research (Bath), url: "https://www.bath.ac.uk/publications/"}
   - {name: Institute of Development Studies, url: "https://www.ids.ac.uk/publications/"}
-  - {name: Institute of Economic Affairs, url: "https://iea.org.uk/publications/"}
+  - {name: Institute of Economic Affairs, url: "https://iea.org.uk/publications", feed: "https://iea.org.uk/publications/feed/"}  # autodiscovery picked the generic /feed/ (blog), not publications
   - {name: Institute of Welsh Affairs, url: "https://www.iwa.wales/publications/"}
   - {name: IPPR, url: "https://www.ippr.org/research/publications"}
   - {name: Joseph Rowntree Foundation, url: "https://www.jrf.org.uk/our-work/publications"}
@@ -112,7 +141,7 @@ thinktanks:
   - {name: NIESR, url: "https://www.niesr.ac.uk/publications"}
   - {name: NCUB, url: "https://www.ncub.co.uk/reports/"}
   - {name: Nesta, url: "https://www.nesta.org.uk/report/"}
-  - {name: New Economics Foundation, url: "https://neweconomics.org/campaigns/research"}
+  - {name: New Economics Foundation, url: "https://neweconomics.org/", feed: "https://neweconomics.org/feed"}  # /campaigns/research 404s; site-wide feed (news + research)
   - {name: New Local, url: "https://www.newlocal.org.uk/publications/"}
   - {name: Onward, url: "https://www.ukonward.com/reports/"}
   - {name: PBE, url: "https://pbe.org.uk/publications"}
@@ -126,7 +155,7 @@ thinktanks:
   - {name: The Constitution Unit, url: "https://www.ucl.ac.uk/constitution-unit/publications"}
   - {name: The David Hume Institute, url: "https://davidhumeinstitute.com/publications/"}
   - {name: The Foreign Policy Centre, url: "https://fpc.org.uk/publications/"}
-  - {name: The Henry Jackson Society, url: "https://henryjacksonsociety.org/publications/"}
+  - {name: The Henry Jackson Society, url: "https://henryjacksonsociety.org/", feed: false}  # /publications/ 404s; homepage lists latest /publications/<slug>/ and PDF reports. Its /feed/ has only one item
   - {name: The Jobs Foundation, url: "https://www.jobsfoundation.org/research"}
   - {name: The King's Fund, url: "https://www.kingsfund.org.uk/insight-and-analysis/reports"}
   - {name: The Nuffield Trust, url: "https://www.nuffieldtrust.org.uk/research"}
@@ -135,4 +164,4 @@ thinktanks:
   - {name: The Work Foundation, url: "https://www.lancaster.ac.uk/work-foundation/publications/"}
   - {name: Theos, url: "https://www.theosthinktank.co.uk/research"}
   - {name: Think Labour, url: "https://www.thinklabour.org/"}
-  - {name: UK in a Changing Europe, url: "https://ukandeu.ac.uk/research-papers/"}
+  - {name: UK in a Changing Europe, url: "https://ukandeu.ac.uk/reports/", feed: false}  # /research-papers/ 404s; listing has no dates (first-seen used)
