@@ -30,23 +30,28 @@ jobs:
           INGEST_URL: https://fbsoibmtvapmxdlfdgxc.supabase.co/functions/v1/ulysse-ingest
           INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
       - name: Commit data (keeps first-seen timestamps between runs)
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "policy-tracker-bot"
           git config user.email "actions@users.noreply.github.com"
           git add data/ulysse
           git diff --cached --quiet || git commit -m "Update data"
           git push
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
 
+  # Optional: publish to GitHub Pages. Fails harmlessly (and does not fail the run) if Pages is not enabled,
+  # e.g. when the site is hosted on Cloudflare instead.
   deploy:
     needs: update
     runs-on: ubuntu-latest
+    continue-on-error: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4
