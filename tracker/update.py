@@ -24,7 +24,7 @@ from bs4 import BeautifulSoup
 from dateutil import parser as dtparse
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA = ROOT / "site" / "ulysse" / "data"
+DATA = ROOT / "data" / "ulysse"   # not under site/: the site is public, this is uploaded to the private database
 CONFIG = yaml.safe_load((ROOT / "config" / "sources.yml").read_text())
 NOW = datetime.now(timezone.utc)
 KEEP_DAYS = 180
@@ -520,6 +520,28 @@ def merge(new_items: list[dict]) -> list[dict]:
     return kept
 
 
+def upload() -> bool:
+    """Push feed/polls/health to the ulysse-ingest function. Skipped (with a notice) if not configured."""
+    import os
+    url, token = os.environ.get("INGEST_URL"), os.environ.get("INGEST_TOKEN")
+    if not (url and token):
+        print("INGEST_URL / INGEST_TOKEN not set: data written locally only, not uploaded")
+        return True
+    ok = True
+    for name in ("feed", "polls", "health"):
+        f = DATA / f"{name}.json"
+        if not f.exists():
+            continue
+        try:
+            r = requests.post(url, headers={"x-ingest-token": token, "content-type": "application/json"},
+                              data=json.dumps({"name": name, "body": json.loads(f.read_text())}), timeout=60)
+            r.raise_for_status()
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            print(f"upload of {name} failed: {e}", file=sys.stderr)
+    return ok
+
+
 def main() -> int:
     DATA.mkdir(parents=True, exist_ok=True)
     only = set(sys.argv[1:])  # e.g. `update.py media polling`
@@ -542,7 +564,7 @@ def main() -> int:
     (DATA / "health.json").write_text(json.dumps({"updated": NOW.isoformat(), "sources": health}, indent=1))
     ok = sum(h["ok"] for h in health)
     print(f"{len(feed)} items stored; {ok}/{len(health)} sources returned data")
-    return 0
+    return 0 if upload() else 1
 
 
 if __name__ == "__main__":

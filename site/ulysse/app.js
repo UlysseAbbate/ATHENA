@@ -4,9 +4,17 @@ const NEW_HOURS = 48;
 const state = {tab:"all", items:[], polls:[], health:[]};
 const $ = id => document.getElementById(id);
 
+const sb = window.supabase.createClient(window.MALL_CONFIG.url, window.MALL_CONFIG.key, { auth: { persistSession: true } });
 async function load(name){
-  try{ const r = await fetch(`data/${name}.json`, {cache:"no-cache"}); return r.ok ? await r.json() : null; }
-  catch(e){ return null; }
+  const { data, error } = await sb.from("ulysse_data").select("body").eq("name", name).maybeSingle();
+  return error ? null : data?.body ?? null;
+}
+function gate(html){ document.body.innerHTML = html; }
+async function signIn(){
+  gate(`<main style="max-width:320px;margin:20vh auto;padding:0 16px;font:14px system-ui"><form id="lf"><input id="em" type="email" required placeholder="Email" style="width:100%;padding:9px;border:1px solid #888;margin-bottom:8px"><button style="padding:8px 14px">Email me a link</button></form><p id="lm"></p></main>`);
+  document.getElementById("lf").onsubmit = async e => { e.preventDefault();
+    const { error } = await sb.auth.signInWithOtp({ email: document.getElementById("em").value.trim(), options: { emailRedirectTo: location.href } });
+    document.getElementById("lm").textContent = error ? error.message : "Check your email."; };
 }
 
 function ago(iso){
@@ -112,6 +120,10 @@ function renderHealth(){
 }
 
 (async function init(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session) return signIn();
+  const { data: isAdmin } = await sb.rpc("is_admin");
+  if(!isAdmin) return gate('<main style="font:14px system-ui;padding:20vh 16px;text-align:center">Not found</main>');
   const [feed, polls, health] = await Promise.all([load("feed"), load("polls"), load("health")]);
   state.items = feed?.items || []; state.polls = polls?.rows || []; state.health = health?.sources || [];
   $("updated").textContent = feed ? `Updated ${ago(feed.updated)}` : "No data yet — run the collector";
