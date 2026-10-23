@@ -72,3 +72,7 @@ A sign-in-protected campaign workspace modelled on the campaign Google Sheet. It
 - **Staff bios, job adverts and housekeeping pages** picked up by the generic scraper are dropped (`drop_title_pattern`, `drop_summary_pattern` in the taxonomy).
 - **Publication dates** are shown on every item. If a listing gives none, the collector tries the date in the URL, then the article page's own metadata (up to 40 pages per run, polite 1s delay, up to 3 tries each). Items whose source never states a date are grouped as "Date not shown by the source" with the date first seen.
 - **Read / not read** is a per-item toggle stored in the admin-only `ulysse_read` table (row-level security), so it syncs across your devices. Filter by Unread / Read, or "Mark all shown as read".
+
+## How think-tank collection copes with awkward sites
+
+For each organisation the collector tries, in order: explicit `feed:`/`feeds:` -> the page (and its `www`/bare-host twin, plus any `urls:` alternates) -> feed autodiscovery and common feed paths -> a scrape of the listing page -> finally a Google News search restricted to the organisation's own domain (`site:`), which is how sites that block automated requests (HTTP 403) or render with JavaScript still get tracked. Google News items are headlines and redirect links only. A feed is only trusted if it has at least 3 entries. `feed: false` skips feeds, `news: false` disables the Google News fallback, and `news_query:` overrides its search. The **Source health** tab shows which method each source used and why earlier attempts failed.

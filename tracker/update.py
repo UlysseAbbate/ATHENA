@@ -40,12 +40,20 @@ health: list[dict] = []
 
 # ----------------------------------------------------------------- helpers
 def get(url: str, **kw) -> requests.Response:
+    """GET with one retry for network errors / 5xx / 429. Other 4xx (403 blocked, 404 wrong URL) are permanent: no retry."""
     last = None
     for attempt in range(2):
         try:
             r = S.get(url, timeout=25, **kw)
+            if 400 <= r.status_code < 500 and r.status_code != 429:
+                r.raise_for_status()      # permanent
             r.raise_for_status()
             return r
+        except requests.HTTPError as e:
+            last = e
+            if e.response is not None and 400 <= e.response.status_code < 500 and e.response.status_code != 429:
+                break
+            time.sleep(1.5)
         except Exception as e:  # noqa: BLE001
             last = e
             time.sleep(1.5)
@@ -159,8 +167,19 @@ FEED_SUFFIXES = ["feed", "feed/", "rss", "rss.xml", "feed.xml", "atom.xml"]
 
 
 def _feed_entries(feed_url: str):
-    d = feedparser.parse(feed_url, request_headers=UA)
-    return d.entries if d.entries else []
+    """Fetch a feed with a timeout and parse it; returns [] for HTML pages (some sites answer feed URLs with their
+    home page), errors and empty feeds."""
+    try:
+        r = S.get(feed_url, timeout=15)
+        if r.status_code != 200:
+            return []
+        head = r.content[:600].lstrip().lower()
+        if not (head.startswith((b"<?xml", b"<rss", b"<feed", b"<rdf")) or b"<rss" in head or b"<feed" in head):
+            return []
+        d = feedparser.parse(r.content)
+        return d.entries if d.entries else []
+    except Exception:  # noqa: BLE001
+        return []
 
 
 def discover_feeds(page_url: str, html: str) -> list[str]:
@@ -229,47 +248,115 @@ def scrape_links(page_url: str, html: str, limit: int = 30):
     return rows
 
 
-def collect_thinktank(tt: dict) -> list[dict]:
-    name, url = tt["name"], tt["url"]
-    items: list[dict] = []
-    try:
-        feeds = [tt["feed"]] if tt.get("feed") else []
-        no_feed = tt.get("feed") is False  # `feed: false` = skip autodiscovery, scrape the listing page
-        html = ""
-        try:
-            html = get(url).text
-        except Exception as e:  # noqa: BLE001
-            if not feeds:
-                raise e
-        if not feeds and html and not no_feed:
-            feeds = discover_feeds(url, html)
-        method = ""
-        for f in feeds:
-            try:
-                entries = _feed_entries(f)
-            except Exception:  # noqa: BLE001
-                continue
-            if entries:
-                for e in entries[:40]:
-                    link = e.get("link")
-                    if not link:
-                        continue
-                    d = parse_date(e.get("published") or e.get("updated"))
-                    items.append(make_item("thinktank", name, e.get("title", ""), link, d,
-                                           e.get("summary", "")))
-                method = "feed"
-                break
-        if not items and html:
-            for text, href, d in scrape_links(url, html):
-                items.append(make_item("thinktank", name, text, href, d))
-            method = "html"
-        record("thinktanks", name, bool(items), len(items),
-               "" if items else "no feed or listing links found")
-        if items:
-            health[-1]["method"] = method
-    except Exception as e:  # noqa: BLE001
-        record("thinktanks", name, False, 0, e)
+def _variants(url: str) -> list[str]:
+    """The URL plus its www/bare-host twin (some sites only serve one of them, or have a cert for one)."""
+    p = urlparse(url)
+    host = p.netloc
+    twin = host[4:] if host.startswith("www.") else "www." + host
+    return [url, p._replace(netloc=twin).geturl()]
+
+
+def _news_site(url: str) -> str:
+    """site: scope for the Google News fallback. University-hosted centres share a domain, so keep their path."""
+    p = urlparse(url)
+    host = p.netloc.removeprefix("www.")
+    if host.endswith((".ac.uk", ".edu")):
+        segs = [x for x in p.path.split("/") if x]
+        if segs and segs[-1].lower() in ("publications", "research", "reports", "blog", "research-analysis", "library"):
+            segs = segs[:-1]
+        return host + ("/" + "/".join(segs[:2]) if segs else "")
+    return host
+
+
+def _entries_to_items(name: str, entries) -> list[dict]:
+    items = []
+    for e in entries[:40]:
+        link = e.get("link")
+        if link:
+            items.append(make_item("thinktank", name, e.get("title", ""), link,
+                                   parse_date(e.get("published") or e.get("updated")), e.get("summary", "")))
     return items
+
+
+def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
+    """Self-healing: primary page (+ www/bare twin, + alternates) -> feeds -> HTML scrape -> Google News site: search.
+    Returns (items, health record). Never raises."""
+    name = tt["name"]
+    pages = [u for u in [tt["url"], *tt.get("urls", [])] for u in _variants(u)]
+    explicit_feeds = ([tt["feed"]] if tt.get("feed") else []) + list(tt.get("feeds", []))
+    no_feed = tt.get("feed") is False
+    notes: list[str] = []
+    seen_pages: set[str] = set()
+    tried_feeds: set[str] = set()
+
+    def try_feeds(feeds: list[str]):
+        for f in feeds:
+            if f in tried_feeds:
+                continue
+            tried_feeds.add(f)
+            time.sleep(0.3)
+            entries = _feed_entries(f)
+            if len(entries) >= 3:    # a 1-2 item feed is usually a site's "promoted" feed, not its publications
+                return f, entries
+        return None, []
+
+    try:
+        # explicit feeds first: they need no page at all (works even when the site 403s the HTML pages)
+        f, entries = try_feeds(explicit_feeds)
+        if entries:
+            return _done(name, _entries_to_items(name, entries), "feed", f, notes)
+        for page in pages:
+            if page in seen_pages:
+                continue
+            seen_pages.add(page)
+            try:
+                html = get(page).text
+            except Exception as e:  # noqa: BLE001
+                m = re.search(r"\b(40\d|50\d)\b", str(e))
+                notes.append(f"{urlparse(page).netloc}{urlparse(page).path}: {'HTTP ' + m.group(1) if m else type(e).__name__}")
+                if not no_feed:   # even if the page is blocked, common feed paths often are not
+                    base = f"{urlparse(page).scheme}://{urlparse(page).netloc}/"
+                    f, entries = try_feeds([urljoin(base, x) for x in FEED_SUFFIXES])
+                    if entries:
+                        return _done(name, _entries_to_items(name, entries), "feed", f, notes)
+                continue
+            if not no_feed:
+                f, entries = try_feeds(discover_feeds(page, html))
+                if entries:
+                    return _done(name, _entries_to_items(name, entries), "feed", f, notes)
+            rows = scrape_links(page, html)
+            if rows:
+                return _done(name, [make_item("thinktank", name, t, h, d) for t, h, d in rows], "html", page, notes)
+            notes.append(f"{urlparse(page).netloc}: page loads but lists no publication links (JavaScript?)")
+        # last resort: what Google News has indexed for the organisation's own site
+        if tt.get("news") is not False:
+            q = tt.get("news_query") or f"site:{_news_site(tt['url'])}"
+            entries = google_news(q, "90d")
+            items = []
+            want = (re.search(r"site:([\w.-]+)", q) or [None, ""])[1]   # the organisation's own domain
+            for e in entries[:40]:
+                title = _gn_title(e).lstrip("-– ").strip()
+                src = urlparse((e.get("source") or {}).get("href", "")).netloc.removeprefix("www.")
+                if want and not src.endswith(want):
+                    continue           # Google's site: filter is loose: keep only the organisation's own pages
+                if len(title.split()) < 3 or title.lower() in (name.lower(), "home"):
+                    continue           # site chrome, tags, staff pages
+                items.append(make_item("thinktank", name, title, e.get("link", ""), parse_date(e.get("published"))))
+                if len(items) >= 25:
+                    break
+            if items:
+                return _done(name, items, "google-news", q, notes)
+            notes.append("Google News had nothing for it either")
+    except Exception as e:  # noqa: BLE001
+        notes.append(f"unexpected: {e}")
+    return [], {"group": "thinktanks", "name": name, "ok": False, "items": 0, "error": "; ".join(dict.fromkeys(notes))[:300]}
+
+
+def _done(name, items, method, via, notes):
+    items = [i for i in items if i["url"]]
+    rec = {"group": "thinktanks", "name": name, "ok": bool(items), "items": len(items), "method": method, "via": via,
+           "error": ("; ".join(dict.fromkeys(notes))[:300] if notes else "")}
+    return items, rec
 
 
 # ------------------------------------------------------------------- media
@@ -643,6 +730,19 @@ def merge(new_items: list[dict]) -> list[dict]:
     for it in list(old.values()):
         if is_noise(it):
             del old[it["id"]]
+    # The same article can arrive twice if a source's method flips between runs (direct feed vs Google News redirect):
+    # keep one per (source, title), preferring the direct link.
+    by_title: dict = {}
+    for it in list(old.values()):
+        k = (it["source"], re.sub(r"\W+", " ", it["title"].lower()).strip())
+        cur = by_title.get(k)
+        if cur is None:
+            by_title[k] = it
+            continue
+        keep, drop = (it, cur) if ("news.google.com" in cur["url"] and "news.google.com" not in it["url"]) else (cur, it)
+        keep["first_seen"] = min(keep["first_seen"], drop["first_seen"])
+        by_title[k] = keep
+        old.pop(drop["id"], None)
     if ENRICH:
         enrich_dates(list(old.values()))
     for it in old.values():
@@ -692,9 +792,11 @@ def main() -> int:
     if run("committees"):
         items += collect_committees()
     if run("thinktanks"):
-        for tt in CONFIG["thinktanks"]:
-            items += collect_thinktank(tt)
-            time.sleep(1)
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            for got, rec in ex.map(collect_thinktank, CONFIG["thinktanks"]):
+                items += got
+                health.append(rec)
     if run("media"):
         items += collect_media()
     if run("polling"):

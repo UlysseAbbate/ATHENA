@@ -35,8 +35,14 @@ jobs:
           git config user.name "policy-tracker-bot"
           git config user.email "actions@users.noreply.github.com"
           git add data/ulysse
-          git diff --cached --quiet || git commit -m "Update data"
-          git push
+          git diff --cached --quiet && exit 0
+          git commit -m "Update data"
+          # main can move while the collector runs (it takes minutes): rebase onto it and retry instead of failing
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push && exit 0
+            echo "push attempt $i failed, retrying"; sleep $((i * 3))
+          done
+          exit 1
 
   # Optional: publish to GitHub Pages. Fails harmlessly (and does not fail the run) if Pages is not enabled,
   # e.g. when the site is hosted on Cloudflare instead.
