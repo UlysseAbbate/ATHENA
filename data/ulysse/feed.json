@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-23T23:10:06.457470+00:00",
+ "updated": "2026-10-23T23:35:21.581935+00:00",
  "items": [
   {
    "id": "2df24fb41a3804cc",
@@ -449,25 +449,6 @@
    "first_seen": "2026-10-23T21:42:17.127133+00:00",
    "areas": [
     "Local & regional government",
-    "Work & skills"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "26f82c1a85c4e74e",
-   "category": "thinktank",
-   "source": "City-REDI",
-   "title": "Working from home: Impacts on residential mobility and spatial inequality",
-   "url": "https://www.cpc.ac.uk/docs/2025_Working_from_home_Impacts_on_residential_mobility_and_spatial_inequality.pdf",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Housing & planning",
     "Work & skills"
    ],
    "geo": [
@@ -1325,60 +1306,6 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "8a73779e9d7aa815",
-   "category": "thinktank",
-   "source": "Demos",
-   "title": "Beyond the Usual Suspects: A New Model for MP Citizen Engagement",
-   "url": "https://demos.co.uk/research/beyond-the-usual-suspects-a-new-model-for-mp-citizen-engagement/",
-   "published": "2026-10-15T12:00:55+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Constitution & democracy"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "f907787e2f125f7f",
-   "category": "thinktank",
-   "source": "Demos",
-   "title": "Politician Presenters: How UK Regulation of Politicians Presenting News & Current Affairs Programmes Compares with Europe",
-   "url": "https://demos.co.uk/research/politician-presenters-how-uk-regulation-of-politicians-presenting-news-current-affairs-programmes-compares-with-europe/",
-   "published": "2026-10-14T23:01:30+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Constitution & democracy"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "c9a4e79d55dcb951",
-   "category": "thinktank",
-   "source": "Demos",
-   "title": "Fairer Feeds: Demos response to the DCMS Green Paper",
-   "url": "https://demos.co.uk/research/fairer-feeds-demos-response-to-the-dcms-green-paper/",
-   "published": "2026-08-28T13:48:50+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Constitution & democracy"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Response / reaction"
-  },
-  {
    "id": "cf09fe78413cda5f",
    "category": "thinktank",
    "source": "The Henry Jackson Society",
@@ -1438,625 +1365,6 @@
    ],
    "kind": "Article / analysis",
    "date_checked": true
-  },
-  {
-   "id": "9ac3e9eb1a8ca116",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "The Case Against The Chagos Deal",
-   "url": "https://henryjacksonsociety.org/publications/chagos-deal/",
-   "published": "2026-03-12T14:05:41+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "a14755dc56068140",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Confronting the Illicit Finance Hydra in Crypto Markets",
-   "url": "https://henryjacksonsociety.org/publications/crypto/",
-   "published": "2026-03-03T13:27:42+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Business & industry",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "66589333daad7f41",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Tactical Lessons from Gaza",
-   "url": "https://henryjacksonsociety.org/publications/tactical-lessons-from-gaza/",
-   "published": "2026-01-02T13:02:37+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Report / paper"
-  },
-  {
-   "id": "0d4606d790824db5",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Cash to Terror: How Humanitarian Aid Funds Extremism",
-   "url": "https://henryjacksonsociety.org/publications/cash-to-terror-how-humanitarian-aid-funds-extremism/",
-   "published": "2025-12-16T05:30:37+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "4306713175b24a07",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Breaking the Echo Chamber: Enhancing Disinformation Resilience in the UK",
-   "url": "https://henryjacksonsociety.org/publications/breaking-the-echo-chamber-enhancing-disinformation-resilience-in-the-uk/",
-   "published": "2025-11-18T17:00:25+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Constitution & democracy"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "1ed1cb53d4bac76e",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Russia\u2019s Malicious Migration: Predicting the Use of Instrumentalised Migration Against NATO and the EU",
-   "url": "https://henryjacksonsociety.org/publications/russias-malicious-migration-predicting-the-use-of-instrumentalised-migration-against-nato-and-the-eu/",
-   "published": "2025-11-05T09:00:48+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "Europe & EU",
-    "Russia & Ukraine"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "59209ecb8921bce9",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "How Russia Has Used Farmers\u2019 Protests As A Trojan Horse",
-   "url": "https://henryjacksonsociety.org/publications/how-russia-has-used-farmers-protests-as-a-trojan-horse/",
-   "published": "2025-10-27T09:47:17+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "Russia & Ukraine"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "f5efedb0b40cdac3",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "War in the Twenty-First Century",
-   "url": "https://henryjacksonsociety.org/publications/war-in-the-twenty-first-century/",
-   "published": "2025-09-26T22:00:46+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "61ad5d063db34769",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Information Manoeuvre: Lessons from Gaza for Future Hybrid Warfare",
-   "url": "https://henryjacksonsociety.org/publications/information-manoeuvre-lessons-from-gaza-for-future-hybrid-warfare/",
-   "published": "2025-09-03T15:19:00+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Report / paper"
-  },
-  {
-   "id": "38ce2c6cd5a1eef6",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Regime Collapse in Iran: A Necessity for Regional Stability?",
-   "url": "https://henryjacksonsociety.org/publications/regime-collapse-in-iran-a-necessity-for-regional-stability/",
-   "published": "2025-08-28T04:00:51+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Local & regional government"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "1b6ed7a9e1d6ce9e",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "European Defence Autonomy: Identifying Key Companies and Projects to Replace US Capabilities",
-   "url": "https://henryjacksonsociety.org/publications/european-defence-autonomy-identifying-key-companies-and-projects-to-replace-us-capabilities/",
-   "published": "2025-08-13T11:09:10+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Business & industry"
-   ],
-   "geo": [
-    "Europe & EU",
-    "United States"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "d0b38626cca8d8b2",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "The Gaza Humanitarian Foundation \u2013 Separating the Truth from the Lies",
-   "url": "https://henryjacksonsociety.org/publications/the-gaza-humanitarian-foundation-separating-the-truth-from-the-lies/",
-   "published": "2025-08-01T15:39:05+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "588b975679e595f2",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "A New Playbook: Making Sanctions More Effective",
-   "url": "https://henryjacksonsociety.org/publications/a-new-playbook-making-sanctions-more-effective/",
-   "published": "2025-07-29T13:00:20+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Report / paper"
-  },
-  {
-   "id": "04e0dba70e32a315",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "How to Proscribe the IRGC: Learning Comparative Lessons From Our Allies",
-   "url": "https://henryjacksonsociety.org/publications/how-to-proscribe-the-irgc-learning-comparative-lessons-from-our-allies/",
-   "published": "2025-06-24T08:00:32+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Education"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Report / paper"
-  },
-  {
-   "id": "03c5324a19226b1f",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Disinformation on Campus: The Rise of Antisemitism and the Failure to Respond",
-   "url": "https://henryjacksonsociety.org/publications/disinformation-on-campus-the-rise-of-antisemitism-and-the-failure-to-respond/",
-   "published": "2025-05-18T06:27:34+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Immigration & identity",
-    "Constitution & democracy"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Response / reaction"
-  },
-  {
-   "id": "ac642d69f618c934",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Human Rights NGOs: A Crisis of Trust - The Root Causes and Recommended Remedies",
-   "url": "https://henryjacksonsociety.org/publications/human-rights-ngos-a-crisis-of-trust-the-root-causes-and-recommended-remedies/",
-   "published": "2025-05-08T08:10:05+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Crime, justice & policing",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "a02f8825acd6bc95",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Hamas's Human Shield Strategy in Gaza",
-   "url": "https://henryjacksonsociety.org/publications/hamass-human-shield-strategy-in-gaza/",
-   "published": "2025-05-04T21:28:38+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Foreign affairs"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Report / paper"
-  },
-  {
-   "id": "3e8db170eb9728a6",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Russia Reality Check: How to Destabilise the Kremlin",
-   "url": "https://henryjacksonsociety.org/publications/russia-reality-check-how-to-destabilise-the-kremlin/",
-   "published": "2025-04-28T22:59:15+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "Russia & Ukraine"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "5991c1baa9177a52",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "The Long Arm of Tehran: Why the UK Should Ban the IRGC",
-   "url": "https://henryjacksonsociety.org/publications/the-long-arm-of-tehran-why-the-uk-should-ban-the-irgc/",
-   "published": "2025-04-30T09:24:25+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "3e7da72d4a505d07",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Hamas Casualty Reports are a Tangle of Technical Problems",
-   "url": "https://henryjacksonsociety.org/publications/hamas-casualty-reports-are-a-tangle-of-technical-problems/",
-   "published": "2025-04-27T09:36:12+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "17cc425d64a0bb0d",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Reform to Conserve: A Novel Approach to the UK and the ECtHR via the Council of Europe",
-   "url": "https://henryjacksonsociety.org/publications/reform-to-conserve-a-novel-approach-to-the-uk-and-the-ecthr-via-the-council-of-europe/",
-   "published": "2025-04-18T21:30:50+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit",
-    "Local & regional government"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "c2e4dbadd4bd86d6",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "The Geopolitics of Critical Minerals",
-   "url": "https://henryjacksonsociety.org/publications/the-geopolitics-of-critical-minerals/",
-   "published": "2025-03-05T14:23:14+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "6772f3bca64566cf",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Harnessing The Power Of The Atom",
-   "url": "https://henryjacksonsociety.org/publications/harnessing-the-power-of-the-atom/",
-   "published": "2025-02-11T17:00:51+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "d9eea758e98e2f47",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "UK-EU Divergence Tracker Q2 \u2013 Q3 2026",
-   "url": "https://ukandeu.ac.uk/reports/uk-eu-divergence-tracker-q2-q3-2026/",
-   "published": "2026-09-28T23:01:43+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
-   "id": "80be79ebfc4c6e02",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "Ten years on: What next for UK-EU relations?",
-   "url": "https://ukandeu.ac.uk/reports/ten-years-on-what-next-for-uk-eu-relations/",
-   "published": "2026-06-14T23:01:33+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "754e6265e80691bb",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "UK-EU Divergence Tracker Q1 2026",
-   "url": "https://ukandeu.ac.uk/reports/uk-eu-divergence-tracker-q1-2026/",
-   "published": "2026-04-13T23:01:31+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
-   "id": "a1fdcf812289e28b",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "UK-EU alignment and divergence: the road ahead",
-   "url": "https://ukandeu.ac.uk/reports/uk-eu-alignment-and-divergence-the-road-ahead/",
-   "published": "2026-02-24T00:01:24+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "5dce25ea1dcb0fc3",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "UK-EU Divergence Tracker Q4 2025",
-   "url": "https://ukandeu.ac.uk/reports/uk-eu-divergence-tracker-q4-2025/",
-   "published": "2026-01-20T10:36:36+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
-   "id": "2d2a4186c6bc91f6",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "The crisis in multilateralism: what can Europe do?",
-   "url": "https://ukandeu.ac.uk/reports/multilateralism-in-crisis/",
-   "published": "2025-12-09T00:01:37+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "01b5d77e4d8e3a7a",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "UK-EU Divergence Tracker Q3 2025",
-   "url": "https://ukandeu.ac.uk/reports/uk-eu-divergence-tracker-q3-2025/",
-   "published": "2025-10-20T23:01:21+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
-   "id": "bd1a16fa7845aeb5",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "From protest to power? Inside Reform UK\u2019s changing support base",
-   "url": "https://ukandeu.ac.uk/reports/from-protest-to-power-inside-reform-uks-changing-support-base/",
-   "published": "2025-09-05T07:38:34+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Party politics & polling",
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "d8888e2b63d3add1",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "UK-EU Divergence Tracker Q4 2024 \u2013 Q2 2025",
-   "url": "https://ukandeu.ac.uk/reports/uk-eu-divergence-tracker-q4-2024-q2-2025/",
-   "published": "2025-07-16T09:19:01+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
-   "id": "f37f81c6ef137a8b",
-   "category": "thinktank",
-   "source": "UK in a Changing Europe",
-   "title": "What to expect from the UK-EU Summit",
-   "url": "https://ukandeu.ac.uk/reports/what-to-expect-from-the-uk-eu-summit/",
-   "published": "2025-05-15T09:03:11+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T20:27:41.429010+00:00",
-   "areas": [
-    "Europe & Brexit"
-   ],
-   "geo": [
-    "Europe & EU"
-   ],
-   "kind": "Article / analysis"
   },
   {
    "id": "001402c2da5b9618",
@@ -4809,6 +4117,24 @@
    "kind": "Briefing / data"
   },
   {
+   "id": "8a73779e9d7aa815",
+   "category": "thinktank",
+   "source": "Demos",
+   "title": "Beyond the Usual Suspects: A New Model for MP Citizen Engagement",
+   "url": "https://demos.co.uk/research/beyond-the-usual-suspects-a-new-model-for-mp-citizen-engagement/",
+   "published": "2026-10-15T12:00:55+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T20:27:41.429010+00:00",
+   "areas": [
+    "Constitution & democracy"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "9b305a29e02ef503",
    "category": "thinktank",
    "source": "Institute for Government",
@@ -5005,6 +4331,24 @@
    ],
    "geo": [
     "Wales"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "f907787e2f125f7f",
+   "category": "thinktank",
+   "source": "Demos",
+   "title": "Politician Presenters: How UK Regulation of Politicians Presenting News & Current Affairs Programmes Compares with Europe",
+   "url": "https://demos.co.uk/research/politician-presenters-how-uk-regulation-of-politicians-presenting-news-current-affairs-programmes-compares-with-europe/",
+   "published": "2026-10-14T23:01:30+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T20:27:41.429010+00:00",
+   "areas": [
+    "Constitution & democracy"
+   ],
+   "geo": [
+    "Europe & EU"
    ],
    "kind": "Article / analysis"
   },
@@ -7606,25 +6950,6 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "a5bd0bac2dcf7a1a",
-   "category": "thinktank",
-   "source": "New Local",
-   "title": "How We Did It: Prevention through an experimentation lens",
-   "url": "https://www.newlocal.org.uk/events/how-we-did-it-prevention-through-an-experimentation-lens/",
-   "published": "2026-09-29T07:23:55+00:00",
-   "summary": "This How We Did is in collaboration with the Cabinet Office\u2019s Test, Learn and Grow (TLG) Programme team and will give insight into one of their Accelerator projects partnering with [\u2026] The post How We Did It: Prevention through an experimentation lens appeared first on New Local .",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Health & social care",
-    "Local & regional government"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
    "id": "134bb3df7e6596da",
    "category": "polling",
    "source": "YouGov",
@@ -7767,6 +7092,24 @@
     "UK-wide / unspecified"
    ],
    "kind": "Poll / survey"
+  },
+  {
+   "id": "d9eea758e98e2f47",
+   "category": "thinktank",
+   "source": "UK in a Changing Europe",
+   "title": "UK-EU Divergence Tracker Q2 \u2013 Q3 2026",
+   "url": "https://ukandeu.ac.uk/reports/uk-eu-divergence-tracker-q2-q3-2026/",
+   "published": "2026-09-28T23:01:43+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T20:27:41.429010+00:00",
+   "areas": [
+    "Europe & Brexit"
+   ],
+   "geo": [
+    "Europe & EU"
+   ],
+   "kind": "Briefing / data"
   },
   {
    "id": "11a76bf1414c8baf",
@@ -9508,6 +8851,24 @@
     "Global / other"
    ],
    "kind": "Article / analysis"
+  },
+  {
+   "id": "c9a4e79d55dcb951",
+   "category": "thinktank",
+   "source": "Demos",
+   "title": "Fairer Feeds: Demos response to the DCMS Green Paper",
+   "url": "https://demos.co.uk/research/fairer-feeds-demos-response-to-the-dcms-green-paper/",
+   "published": "2026-08-28T13:48:50+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T20:27:41.429010+00:00",
+   "areas": [
+    "Constitution & democracy"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Response / reaction"
   },
   {
    "id": "f4c62465ba8fe20b",
@@ -11654,6 +11015,24 @@
    "kind": "Report / paper"
   },
   {
+   "id": "80be79ebfc4c6e02",
+   "category": "thinktank",
+   "source": "UK in a Changing Europe",
+   "title": "Ten years on: What next for UK-EU relations?",
+   "url": "https://ukandeu.ac.uk/reports/ten-years-on-what-next-for-uk-eu-relations/",
+   "published": "2026-06-14T23:01:33+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T20:27:41.429010+00:00",
+   "areas": [
+    "Europe & Brexit"
+   ],
+   "geo": [
+    "Europe & EU"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "c110c832bf11f306",
    "category": "thinktank",
    "source": "Centre for Social Justice",
@@ -11838,25 +11217,6 @@
     "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
-  },
-  {
-   "id": "271037c4f7d7bdfc",
-   "category": "thinktank",
-   "source": "Centre for Social Justice",
-   "title": "School Exclusions Tracker",
-   "url": "https://www.centreforsocialjustice.org.uk/library/school-exclusions-tracker_apr26",
-   "published": "2026-05-02T21:00:51+00:00",
-   "summary": "Government figures reveal soaring numbers of pupils permanently excluded in Spring 2025 England\u2019s schools are in the midst of a \u201cbehaviour crisis\u201d with rising levels Read more",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Education",
-    "Welfare & poverty"
-   ],
-   "geo": [
-    "England"
-   ],
-   "kind": "Briefing / data"
   },
   {
    "id": "2aa3755322e7c5d8",

@@ -102,66 +102,66 @@ thinktanks:
   # name, url (publications page), optional feed (explicit RSS/Atom URL)
   - {name: Adam Smith Institute, url: "https://www.adamsmith.org/research"}
   # 403 to all automated requests (WAF) on 2026-10-23: left in place, will show as failing. Decision needed.
-  - {name: Bright Blue, url: "https://brightblue.org.uk/research/"}  # 403 to all automated requests (WAF), 2026-10-23: decision needed
+  - {name: Bright Blue, url: "https://brightblue.org.uk/research/", feeds: ["https://brightblue.org.uk/feed/"]}  # 403 to GitHub's runners (bot WAF): falls back to Google News for the domain
   - {name: British Foreign Policy Group, url: "https://bfpg.co.uk/reports"}  # /publications/ redirects here; autodiscovered feed also carries analysis pieces
   - {name: British Future, url: "https://www.britishfuture.org/publications/"}
   - {name: Carnegie UK, url: "https://carnegieuk.org/publications/"}
-  - {name: Centre for Cities, url: "https://www.centreforcities.org/publications/"}
-  - {name: Centre for European Reform, url: "https://www.cer.eu/publications"}
+  - {name: Centre for Cities, url: "https://www.centreforcities.org/research/", urls: ["https://www.centreforcities.org/publications/", "https://www.centreforcities.org/reports/"], feeds: ["https://www.centreforcities.org/feed/"]}  # old /publications/ 404ed
+  - {name: Centre for European Reform, url: "https://www.cer.eu/publications", feeds: ["https://www.cer.eu/rss.xml", "https://www.cer.eu/feed"]}  # 403 to GitHub's runners
   - {name: Centre for Local Economic Strategies (CLES), url: "https://cles.org.uk/", feed: "https://cles.org.uk/feed/"}  # /publications/ 404s; site-wide feed (blog + publications)
-  - {name: Centre for London, url: "https://www.centreforlondon.org/publications/"}
+  - {name: Centre for London, url: "https://centreforlondon.org/publications/", urls: ["https://centreforlondon.org/research/"], feeds: ["https://centreforlondon.org/feed/"]}  # old www URL 404ed; the real site is centreforlondon.org (WordPress)
   - {name: Centre for Policy Studies, url: "https://cps.org.uk/research/"}
   - {name: Centre for Public Data, url: "https://www.centreforpublicdata.org/blog"}
   - {name: Centre for Social Justice, url: "https://www.centreforsocialjustice.org.uk/library"}
-  - {name: CEPEO, url: "https://cepeo.ucl.ac.uk/publications/"}
-  - {name: Chatham House, url: "https://www.chathamhouse.org/publications"}
+  - {name: CEPEO, url: "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo", news_query: '"CEPEO" site:ucl.ac.uk'}  # cepeo.ucl.ac.uk no longer resolves; now part of UCL IOE
+  - {name: Chatham House, url: "https://www.chathamhouse.org/publications", feeds: ["https://www.chathamhouse.org/rss.xml", "https://www.chathamhouse.org/publications/rss"]}  # 403 to GitHub's runners
   - {name: City-REDI, url: "https://www.birmingham.ac.uk/research/city-redi/publications"}
   - {name: Civitas, url: "https://www.civitas.org.uk/publications/"}
   - {name: Demos, url: "https://demos.co.uk/research/"}
-  - {name: EDSK, url: "https://www.edsk.org/publications/"}
+  - {name: EDSK, url: "https://www.edsk.org/publications/", urls: ["https://www.edsk.org/"], feeds: ["https://www.edsk.org/feed/"]}  # WordPress; page lists nothing a scraper can see
   - {name: Education Policy Institute, url: "https://epi.org.uk/publications-and-research/"}
   - {name: European Council on Foreign Relations, url: "https://ecfr.eu/publications/"}
   - {name: Fabian Society, url: "https://fabians.org.uk/publications/", feed: "https://fabians.org.uk/feed/?post_type=publication"}
-  - {name: Future Governance Forum, url: "https://www.futuregovernance.org.uk/publications"}
+  - {name: Future Governance Forum, url: "https://www.futuregovernanceforum.co.uk/blogs/", urls: ["https://www.futuregovernanceforum.co.uk/publications/", "https://www.futuregovernanceforum.co.uk/"], feeds: ["https://www.futuregovernanceforum.co.uk/feed/"]}  # was futuregovernance.org.uk (does not exist)
   - {name: Green Alliance, url: "https://green-alliance.org.uk/publications/"}
   - {name: Growth and Reform Network, url: "https://growthandreform.org/ign-insights"}  # homepage only lists network members
   - {name: HEPI, url: "https://www.hepi.ac.uk/reports/"}
-  - {name: IIED, url: "https://www.iied.org/publications"}
-  - {name: IISS, url: "https://www.iiss.org/publications/"}
+  - {name: IIED, url: "https://www.iied.org/publications", feeds: ["https://www.iied.org/rss.xml", "https://www.iied.org/feeds/publications"]}  # page loads but is JavaScript-rendered
+  - {name: IISS, url: "https://www.iiss.org/publications/", feeds: ["https://www.iiss.org/rss/", "https://www.iiss.org/feed/"]}  # page loads but is JavaScript-rendered
   # 403 to all automated requests (WAF) on 2026-10-23, as above. Decision needed.
-  - {name: Institute for Fiscal Studies, url: "https://ifs.org.uk/publications"}  # 403 to all automated requests (WAF), 2026-10-23: decision needed
+  - {name: Institute for Fiscal Studies, url: "https://ifs.org.uk/publications", feeds: ["https://ifs.org.uk/publications/rss.xml", "https://ifs.org.uk/rss.xml"]}  # web pages 403 to automated requests (WAF); /rss.xml is only the front-page feed (1 item), so Google News fills in
   - {name: Institute for Government, url: "https://www.instituteforgovernment.org.uk/publications"}
-  - {name: Institute for Policy Research (Bath), url: "https://www.bath.ac.uk/publications/"}
+  - {name: Institute for Policy Research (Bath), url: "https://www.bath.ac.uk/publications/", news_query: 'site:bath.ac.uk "Institute for Policy Research"'}  # 403 to GitHub's runners; generic bath.ac.uk/publications/ is the whole university
   - {name: Institute of Development Studies, url: "https://www.ids.ac.uk/publications/"}
   - {name: Institute of Economic Affairs, url: "https://iea.org.uk/publications", feed: "https://iea.org.uk/publications/feed/"}  # autodiscovery picked the generic /feed/ (blog), not publications
-  - {name: Institute of Welsh Affairs, url: "https://www.iwa.wales/publications/"}
+  - {name: Institute of Welsh Affairs, url: "https://www.iwa.wales/our-work/themes/reports/", feeds: ["https://www.iwa.wales/feed/"]}  # old /publications/ 404ed
   - {name: IPPR, url: "https://www.ippr.org/research/publications"}
-  - {name: Joseph Rowntree Foundation, url: "https://www.jrf.org.uk/our-work/publications"}
+  - {name: Joseph Rowntree Foundation, url: "https://www.jrf.org.uk/reports", urls: ["https://www.jrf.org.uk/our-work", "https://www.jrf.org.uk/"], feeds: ["https://www.jrf.org.uk/rss.xml", "https://www.jrf.org.uk/feed"]}  # old /our-work/publications 404ed
   - {name: Localis, url: "https://www.localis.org.uk/research/"}
   - {name: NIESR, url: "https://www.niesr.ac.uk/publications"}
-  - {name: NCUB, url: "https://www.ncub.co.uk/reports/"}
-  - {name: Nesta, url: "https://www.nesta.org.uk/report/"}
+  - {name: NCUB, url: "https://www.ncub.co.uk/reports/", feeds: ["https://www.ncub.co.uk/feed/"]}  # 403 to GitHub's runners
+  - {name: Nesta, url: "https://www.nesta.org.uk/report/", feeds: ["https://www.nesta.org.uk/feed/", "https://www.nesta.org.uk/rss/"]}  # page loads but is JavaScript-rendered
   - {name: New Economics Foundation, url: "https://neweconomics.org/", feed: "https://neweconomics.org/feed"}  # /campaigns/research 404s; site-wide feed (news + research)
   - {name: New Local, url: "https://www.newlocal.org.uk/publications/"}
   - {name: Onward, url: "https://www.ukonward.com/reports/"}
-  - {name: PBE, url: "https://pbe.org.uk/publications"}
-  - {name: PolicyWISE, url: "https://policywise.com/publications/"}
+  - {name: PBE, url: "https://www.pbe.org.uk/research", urls: ["https://www.pbe.org.uk/", "https://www.probonoeconomics.com/research"], feeds: ["https://www.pbe.org.uk/feed/"]}  # formerly Pro Bono Economics; the bare pbe.org.uk host had a certificate error
+  - {name: PolicyWISE, url: "https://policywise.com/", urls: ["https://policywise.com/wise-in-5/", "https://policywise.com/news/"], feeds: ["https://policywise.com/feed/"]}  # run by the Open University; /publications/ 404ed
   - {name: Power to Change, url: "https://www.powertochange.org.uk/research/"}
-  - {name: Re:State, url: "https://www.restateuk.com/publications"}
+  - {name: Re:State, url: "https://restate.org.uk/research/", urls: ["https://restate.org.uk/", "https://www.restate.org.uk/"], feeds: ["https://restate.org.uk/feed/"]}  # was restateuk.com (certificate error)
   - {name: Resolution Foundation, url: "https://www.resolutionfoundation.org/publications/"}
   - {name: RUSI, url: "https://www.rusi.org/explore-our-research/publications"}
-  - {name: Social Market Foundation, url: "https://www.smf.co.uk/publications/"}
-  - {name: The Coalition for Global Prosperity, url: "https://www.coalitionforglobalprosperity.org/publications"}
+  - {name: Social Market Foundation, url: "https://www.smf.co.uk/publications/", feeds: ["https://www.smf.co.uk/feed/"]}  # 403 to GitHub's runners
+  - {name: The Coalition for Global Prosperity, url: "https://www.coalitionforglobalprosperity.com/news", feeds: ["https://www.coalitionforglobalprosperity.com/news?format=rss", "https://www.coalitionforglobalprosperity.com/feed/"]}  # is .com, not .org
   - {name: The Constitution Unit, url: "https://www.ucl.ac.uk/constitution-unit/publications"}
-  - {name: The David Hume Institute, url: "https://davidhumeinstitute.com/publications/"}
+  - {name: The David Hume Institute, url: "https://www.davidhumeinstitute.com/publication", feeds: ["https://www.davidhumeinstitute.com/publication?format=rss", "https://www.davidhumeinstitute.com/feed/"]}  # is .com, not .org
   - {name: The Foreign Policy Centre, url: "https://fpc.org.uk/publications/"}
   - {name: The Henry Jackson Society, url: "https://henryjacksonsociety.org/", feed: false}  # /publications/ 404s; homepage lists latest /publications/<slug>/ and PDF reports. Its /feed/ has only one item
-  - {name: The Jobs Foundation, url: "https://www.jobsfoundation.org/research"}
-  - {name: The King's Fund, url: "https://www.kingsfund.org.uk/insight-and-analysis/reports"}
+  - {name: The Jobs Foundation, url: "https://www.jobsfoundation.org/research", urls: ["https://jobsfoundation.org.uk/research", "https://www.jobsfoundation.org.uk/"], news: false}  # 401 (login) at the old URL; real domain unconfirmed; Google News fallback disabled because a name search only finds coverage
+  - {name: The King's Fund, url: "https://www.kingsfund.org.uk/insight-and-analysis/reports", feeds: ["https://www.kingsfund.org.uk/rss.xml", "https://www.kingsfund.org.uk/feeds/all"]}  # 403 to GitHub's runners
   - {name: The Nuffield Trust, url: "https://www.nuffieldtrust.org.uk/research"}
   - {name: The Policy Institute (KCL), url: "https://www.kcl.ac.uk/policy-institute/research-analysis"}
   - {name: The Sutton Trust, url: "https://www.suttontrust.com/our-research/"}
-  - {name: The Work Foundation, url: "https://www.lancaster.ac.uk/work-foundation/publications/"}
+  - {name: The Work Foundation, url: "https://www.lancaster.ac.uk/work-foundation/publications/", news_query: 'site:lancaster.ac.uk/work-foundation'}  # page loads but is JavaScript-rendered
   - {name: Theos, url: "https://www.theosthinktank.co.uk/research"}
-  - {name: Think Labour, url: "https://www.thinklabour.org/"}
+  - {name: Think Labour, url: "https://www.thinklabour.org/", urls: ["https://www.thinklabour.co.uk/", "https://thinklabour.org/reports", "https://thinklabour.org/research"], feeds: ["https://www.thinklabour.org/feed/", "https://www.thinklabour.org/rss.xml"]}  # rebranded from Labour Together in 2026; site renders with JavaScript
   - {name: UK in a Changing Europe, url: "https://ukandeu.ac.uk/reports/", feed: false}  # /research-papers/ 404s; listing has no dates (first-seen used)
