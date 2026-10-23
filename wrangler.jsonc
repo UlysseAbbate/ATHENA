@@ -1,0 +1,6 @@
+{
+  // Cloudflare Workers Builds is connected to this repo; serve the static site as-is.
+  "name": "athena",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./site" }
+}
