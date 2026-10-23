@@ -16,6 +16,20 @@ a:hover,a:focus-visible{background:var(--ink);color:var(--bg);outline:none}
 </style>
 </head>
 <body>
-<nav><a href="ulysse/">ULYSSE</a><a href="mall/">THE MALL</a></nav>
+<nav id="n"><a href="mall/">THE MALL</a></nav>
+<script src="mall/vendor/supabase.js"></script>
+<script src="mall/config.js"></script>
+<script>
+// The ULYSSE button is only added for the signed-in admin. The data behind it is protected server-side regardless.
+(async () => {
+  try {
+    const sb = window.supabase.createClient(MALL_CONFIG.url, MALL_CONFIG.key, { auth: { persistSession: true } });
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const { data: admin } = await sb.rpc("is_admin");
+    if (admin) document.getElementById("n").insertAdjacentHTML("afterbegin", '<a href="ulysse/">ULYSSE</a>');
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>

@@ -14,7 +14,7 @@ A static site, refreshed every three hours by GitHub Actions, that tracks:
 3. **Lib Dems in the media**: Telegraph, Times, Guardian, Politico, FT, Economist and others, via per-outlet Google News RSS searches (keywords are in the config).
 4. **Polling**: a voting-intention chart and table (from the Wikipedia table of BPC-member polls) plus new write-ups and trackers from BPC member firms, tagged *voting-intention*, *party-support* or *news-cycle*.
 
-"NEW" means first seen in the last 48 hours (and not an old backlog item). `site/ulysse/data/feed.json` is committed back to the repo each run, which is how first-seen times persist.
+"NEW" means first seen in the last 48 hours (and not an old backlog item). `data/ulysse/feed.json` is committed back to the repo each run, which is how first-seen times persist.
 
 ## Setup
 
@@ -58,3 +58,10 @@ A sign-in-protected campaign workspace modelled on the campaign Google Sheet. It
 **One-time setup in Supabase** (Authentication → URL Configuration): set *Site URL* and add *Redirect URLs* for the deployed address (e.g. `https://<user>.github.io/<repo>/mall/`), or magic links will not return to the site. For real use, configure a custom SMTP sender (Authentication → SMTP): the built-in mailer is limited to a few emails per hour.
 
 **Data:** the sheet's contents were loaded into the database, not committed to this repo (they include names, phone numbers and emails).
+
+## Admin and privacy
+
+- `/admin/` is an owner-only dashboard (links to Ulysse and the Mall, plus counts). Anyone who is not the admin sees "Not found".
+- **Admin = the confirmed email in the `admins` table** (`ulysse.abbate@gmail.com`). The check is `public.is_admin()`, enforced in Postgres. The admin has full access to the Mall (`can()` always returns true) and nobody else can change the admin's role.
+- **Ulysse is admin-only.** Its data no longer ships with the site: the collector writes `data/ulysse/*.json` (private repo, used for first-seen timestamps) and uploads it through the `ulysse-ingest` Edge Function into `public.ulysse_data`, which only the admin can read. The ULYSSE button on the home page appears only after the admin signs in.
+- **Needed once:** the same random value (24+ characters) stored as the Supabase Edge Function secret `INGEST_TOKEN` and the GitHub Actions secret `INGEST_TOKEN`. Until then uploads are rejected and Ulysse shows no data.

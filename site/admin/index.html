@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--bg:#fff;--ink:#111;--muted:#767676;--line:#e5e5e5}
+@media (prefers-color-scheme:dark){:root{--bg:#111;--ink:#f2f2f2;--muted:#8a8a8a;--line:#2a2a2a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:48px 16px}
+h1{font-size:13px;letter-spacing:.2em;font-weight:600;margin:0 0 28px}
+h2{font-size:13px;font-weight:600;margin:28px 0 6px}
+a{color:inherit}.muted{color:var(--muted);font-size:13px}
+nav{display:flex;gap:12px;flex-wrap:wrap}
+nav a{padding:14px 24px;border:1px solid var(--ink);text-decoration:none;letter-spacing:.2em;font-size:13px;min-width:160px;text-align:center}
+nav a:hover{background:var(--ink);color:var(--bg)}
+table{border-collapse:collapse;width:100%;font-size:13px}td{padding:6px 0;border-bottom:1px solid var(--line)}td:last-child{text-align:right}
+input,button{font:inherit;padding:8px 10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:0}
+button{cursor:pointer;border-color:var(--ink)}
+</style>
+</head>
+<body><main id="m"></main>
+<script src="../mall/vendor/supabase.js"></script>
+<script src="../mall/config.js"></script>
+<script>
+const sb = window.supabase.createClient(MALL_CONFIG.url, MALL_CONFIG.key, { auth: { persistSession: true } });
+const m = document.getElementById("m");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ago = iso => { if(!iso) return "never"; const h=(Date.now()-new Date(iso))/36e5; return h<1?"just now":h<24?`${Math.floor(h)}h ago`:`${Math.floor(h/24)}d ago`; };
+function notFound(){ m.innerHTML = '<p style="text-align:center;padding-top:20vh">Not found</p>'; }
+function login(){
+  m.innerHTML = '<h1>ADMIN</h1><form id="f"><input id="e" type="email" required placeholder="Email"> <button>Email me a link</button></form><p class="muted" id="msg"></p>';
+  document.getElementById("f").onsubmit = async ev => { ev.preventDefault();
+    const { error } = await sb.auth.signInWithOtp({ email: document.getElementById("e").value.trim(), options: { emailRedirectTo: location.href } });
+    document.getElementById("msg").textContent = error ? error.message : "Check your email."; };
+}
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return login();
+  const { data: admin } = await sb.rpc("is_admin");
+  if (!admin) return notFound();
+  const q = (t, f) => f(sb.from(t).select("*", { count: "exact", head: true }));
+  const [pend, people, vols, stk, cov, feed, health] = await Promise.all([
+    q("profiles", b => b.is("role", null)), q("profiles", b => b), q("volunteers", b => b), q("stakeholders", b => b), q("media_coverage", b => b),
+    sb.from("ulysse_data").select("body,updated_at").eq("name", "feed").maybeSingle(), sb.from("ulysse_data").select("body").eq("name", "health").maybeSingle()]);
+  const src = health.data?.body?.sources || [], okN = src.filter(s => s.ok).length;
+  m.innerHTML = `<h1>ADMIN</h1><nav><a href="../ulysse/">ULYSSE</a><a href="../mall/">THE MALL</a></nav>
+    <h2>The Mall</h2><table>
+      <tr><td>People signed up</td><td>${people.count ?? "–"}</td></tr>
+      <tr><td>Awaiting a role</td><td>${pend.count ?? "–"}</td></tr>
+      <tr><td>Volunteers</td><td>${vols.count ?? "–"}</td></tr>
+      <tr><td>Stakeholders</td><td>${stk.count ?? "–"}</td></tr>
+      <tr><td>Coverage entries</td><td>${cov.count ?? "–"}</td></tr></table>
+    <p class="muted">Assign roles and edit permissions in The Mall → Team &amp; access.</p>
+    <h2>Ulysse</h2><table>
+      <tr><td>Items stored</td><td>${feed.data?.body?.items?.length ?? "no data yet"}</td></tr>
+      <tr><td>Last upload</td><td>${esc(ago(feed.data?.updated_at))}</td></tr>
+      <tr><td>Sources returning data</td><td>${src.length ? `${okN} / ${src.length}` : "–"}</td></tr></table>
+    <p class="muted">Signed in as ${esc(session.user.email)} · <a href="#" id="so">Sign out</a></p>`;
+  document.getElementById("so").onclick = async e => { e.preventDefault(); await sb.auth.signOut(); location.reload(); };
+})();
+</script>
+</body>
+</html>
