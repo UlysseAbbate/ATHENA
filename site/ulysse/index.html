@@ -11,10 +11,10 @@
 <body>
 <header>
   <div class="wrap bar">
-    <h1>Ulysse <a class="muted" href="../">Home</a></h1>
-    <span id="updated" class="muted"></span>
+    <h1><i class="dot"></i>Ulysse</h1>
+    <div class="right"><span id="updated" class="muted"></span><a class="muted" href="../">Home</a></div>
   </div>
-  <nav class="wrap tabs" id="tabs">
+  <nav class="wrap tabs" id="tabs" aria-label="Sections">
     <button data-tab="all" class="on">Everything</button>
     <button data-tab="committee">Select committees</button>
     <button data-tab="thinktank">Think tanks</button>
@@ -25,38 +25,52 @@
 </header>
 
 <main class="wrap">
+  <section id="pollpanel" hidden>
+    <div id="pollstats" class="stats"></div>
+    <div class="panel">
+      <div class="panel-head"><h2>Voting intention</h2><div id="pollctl" class="chips"></div></div>
+      <div class="chartwrap"><svg id="chart" viewBox="0 0 800 300" role="img" aria-label="Voting intention over time"></svg><div id="tip" class="tip" hidden></div></div>
+      <div id="legend" class="legend"></div>
+    </div>
+    <details class="panel"><summary>Latest individual polls</summary><div class="tablewrap"><table id="polltable"></table></div></details>
+    <h2 class="sect">Poll write-ups &amp; trackers</h2>
+  </section>
+
+  <section id="overview" class="overview">
+    <div id="stats" class="stats"></div>
+    <div class="charts">
+      <div class="panel"><div class="panel-head"><h2>Publishing activity</h2><span class="muted" id="actnote"></span></div><div class="chartwrap"><svg id="activity" viewBox="0 0 520 170" role="img" aria-label="Items published per day"></svg><div id="atip" class="tip" hidden></div></div><div id="alegend" class="legend"></div></div>
+      <div class="panel"><div class="panel-head"><h2>By policy area</h2><span class="muted">click to filter</span></div><div id="areabars" class="bars"></div></div>
+    </div>
+  </section>
+
   <section id="controls" class="controls">
-    <input id="q" type="search" placeholder="Search titles and sources…">
-    <select id="source"><option value="">All sources</option></select>
-    <select id="range">
+    <input id="q" type="search" placeholder="Search titles, sources, topics…" aria-label="Search">
+    <select id="area" aria-label="Policy area"></select>
+    <select id="geo" aria-label="Geography"></select>
+    <select id="kind" aria-label="Type"></select>
+    <select id="source" aria-label="Source"></select>
+    <select id="house" aria-label="House" hidden></select>
+    <select id="range" aria-label="Date range">
       <option value="2">Last 2 days</option>
       <option value="7" selected>Last 7 days</option>
       <option value="30">Last 30 days</option>
       <option value="180">All stored</option>
     </select>
-    <select id="tag" hidden>
-      <option value="">All poll types</option>
-      <option value="voting-intention">Voting intention</option>
-      <option value="party-support">Party support</option>
-      <option value="news-cycle">News cycle</option>
-      <option value="poll">Other</option>
+    <select id="status" aria-label="Read status">
+      <option value="">All</option>
+      <option value="unread">Unread</option>
+      <option value="read">Read</option>
     </select>
     <label class="chk"><input id="onlyNew" type="checkbox"> New only</label>
+    <button id="reset" class="ghost" type="button">Reset</button>
   </section>
 
-  <section id="pollpanel" hidden>
-    <h2>Voting intention <span class="muted" id="pollsrc"></span></h2>
-    <div class="chartbox"><svg id="chart" viewBox="0 0 800 280" role="img" aria-label="Voting intention over time"></svg>
-      <div id="legend" class="legend"></div></div>
-    <details><summary>Latest individual polls</summary>
-      <div class="tablewrap"><table id="polltable"></table></div></details>
-    <h2>Poll write-ups &amp; trackers</h2>
-  </section>
-
-  <div id="count" class="muted"></div>
-  <ul id="list" class="list"></ul>
+  <div class="listhead"><span id="count" class="muted"></span><button id="markall" class="ghost" type="button">Mark all shown as read</button></div>
+  <div id="list" class="list"></div>
   <section id="healthpanel" hidden></section>
 </main>
+<div id="toast" class="toast" hidden></div>
 <script src="../mall/vendor/supabase.js"></script>
 <script src="../mall/config.js"></script>
 <script src="../mall/authui.js"></script>
