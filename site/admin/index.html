@@ -26,18 +26,15 @@ button{cursor:pointer;border-color:var(--ink)}
 <body><main id="m"></main>
 <script src="../mall/vendor/supabase.js"></script>
 <script src="../mall/config.js"></script>
+<script src="../mall/authui.js"></script>
 <script>
 const sb = window.supabase.createClient(MALL_CONFIG.url, MALL_CONFIG.key, { auth: { persistSession: true } });
 const m = document.getElementById("m");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ago = iso => { if(!iso) return "never"; const h=(Date.now()-new Date(iso))/36e5; return h<1?"just now":h<24?`${Math.floor(h)}h ago`:`${Math.floor(h/24)}d ago`; };
 function notFound(){ m.innerHTML = '<p style="text-align:center;padding-top:20vh">Not found</p>'; }
-function login(){
-  m.innerHTML = '<h1>ADMIN</h1><form id="f"><input id="e" type="email" required placeholder="Email"> <button>Email me a link</button></form><p class="muted" id="msg"></p>';
-  document.getElementById("f").onsubmit = async ev => { ev.preventDefault();
-    const { error } = await sb.auth.signInWithOtp({ email: document.getElementById("e").value.trim(), options: { emailRedirectTo: location.href } });
-    document.getElementById("msg").textContent = error ? error.message : "Check your email."; };
-}
+function login(){ AuthUI.render(sb, m, { title: "ADMIN" }); }
+AuthUI.watchRecovery(sb, m);
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return login();
@@ -55,7 +52,7 @@ function login(){
       <tr><td>Volunteers</td><td>${vols.count ?? "–"}</td></tr>
       <tr><td>Stakeholders</td><td>${stk.count ?? "–"}</td></tr>
       <tr><td>Coverage entries</td><td>${cov.count ?? "–"}</td></tr></table>
-    <p class="muted">Assign roles and edit permissions in The Mall → Team &amp; access.</p>
+    <p class="muted">Assign roles and edit permissions in <a href="../mall/#team">The Mall → Team &amp; access</a>.</p>
     <h2>Ulysse</h2><table>
       <tr><td>Items stored</td><td>${feed.data?.body?.items?.length ?? "no data yet"}</td></tr>
       <tr><td>Last upload</td><td>${esc(ago(feed.data?.updated_at))}</td></tr>
