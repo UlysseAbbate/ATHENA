@@ -1,0 +1,138 @@
+# ---------------------------------------------------------------------------
+# Source configuration for the tracker.
+# Every URL below is a best guess from memory and has NOT been verified live.
+# After the first run, open site/data/health.json (or the "Source health" tab
+# on the site) to see which sources returned nothing, then fix the url or add
+# a `feed:` override for that entry.
+# ---------------------------------------------------------------------------
+
+committees:
+  # Parliament Committees API (https://committees-api.parliament.uk)
+  api: https://committees-api.parliament.uk/api/Publications
+  lookback_days: 30
+  # Publication types to keep (matched case-insensitively as substrings).
+  # Remove the filter (set to []) to also include written/oral evidence.
+  keep_types: ["report", "government response", "special report", "correspondence"]
+
+media:
+  # Google News RSS is used per outlet because most newspapers paywall or block
+  # direct scraping. Query = (any keyword) site:domain
+  keywords:
+    - '"Liberal Democrats"'
+    - '"Lib Dems"'
+    - '"Ed Davey"'
+    - '"Lib Dem"'
+  lookback: 7d
+  outlets:
+    - {name: The Telegraph, domain: telegraph.co.uk}
+    - {name: The Times, domain: thetimes.com}
+    - {name: The Guardian, domain: theguardian.com}
+    - {name: Politico Europe, domain: politico.eu}
+    - {name: Financial Times, domain: ft.com}
+    - {name: The Economist, domain: economist.com}
+    - {name: BBC News, domain: bbc.co.uk}
+    - {name: The Independent, domain: independent.co.uk}
+    - {name: Sky News, domain: news.sky.com}
+    - {name: Daily Mail, domain: dailymail.co.uk}
+    - {name: Daily Express, domain: express.co.uk}
+    - {name: New Statesman, domain: newstatesman.com}
+    - {name: The Spectator, domain: spectator.co.uk}
+    - {name: PoliticsHome, domain: politicshome.com}
+    - {name: Reuters, domain: reuters.com}
+    - {name: Evening Standard, domain: standard.co.uk}
+    - {name: Lib Dem Voice, domain: libdemvoice.org}
+
+polling:
+  wikipedia_page: https://en.wikipedia.org/wiki/Opinion_polling_for_the_next_United_Kingdom_general_election
+  lookback: 30d
+  # British Polling Council members whose published write-ups we search for.
+  firms:
+    - {name: YouGov, domain: yougov.com}
+    - {name: Opinium, domain: opinium.com}
+    - {name: More in Common, domain: moreincommon.org.uk}
+    - {name: Ipsos, domain: ipsos.com}
+    - {name: Survation, domain: survation.com}
+    - {name: Find Out Now, domain: findoutnow.co.uk}
+    - {name: Techne, domain: techneuk.com}
+    - {name: Focaldata, domain: focaldata.com}
+    - {name: BMG Research, domain: bmgresearch.co.uk}
+    - {name: JL Partners, domain: jlpartners.co.uk}
+    - {name: Deltapoll, domain: deltapoll.co.uk}
+    - {name: Savanta, domain: savanta.com}
+    - {name: Freshwater Strategy, domain: freshwater-strategy.com}
+    - {name: Verian, domain: veriangroup.com}
+    - {name: Whitestone Insight, domain: whitestone-insight.com}
+    - {name: Public First, domain: publicfirst.co.uk}
+    - {name: Merlin Strategy, domain: merlinstrategy.co.uk}
+    - {name: Lord Ashcroft Polls, domain: lordashcroftpolls.com}
+    - {name: Stonehaven, domain: stonehavenglobal.com}
+  search_terms: ['"voting intention"', 'poll', 'tracker', '"news tracker"', 'favourability']
+  # Direct YouGov feeds / pages checked in addition to the search above.
+  direct:
+    - {name: YouGov, url: "https://yougov.com/en-gb/articles"}
+
+thinktanks:
+  # name, url (publications page), optional feed (explicit RSS/Atom URL)
+  - {name: Adam Smith Institute, url: "https://www.adamsmith.org/research"}
+  - {name: Bright Blue, url: "https://brightblue.org.uk/research/"}
+  - {name: British Foreign Policy Group, url: "https://bfpg.co.uk/publications/"}
+  - {name: British Future, url: "https://www.britishfuture.org/publications/"}
+  - {name: Carnegie UK, url: "https://carnegieuk.org/publications/"}
+  - {name: Centre for Cities, url: "https://www.centreforcities.org/publications/"}
+  - {name: Centre for European Reform, url: "https://www.cer.eu/publications"}
+  - {name: Centre for Local Economic Strategies (CLES), url: "https://cles.org.uk/publications/"}
+  - {name: Centre for London, url: "https://www.centreforlondon.org/publications/"}
+  - {name: Centre for Policy Studies, url: "https://cps.org.uk/research/"}
+  - {name: Centre for Public Data, url: "https://www.centreforpublicdata.org/blog"}
+  - {name: Centre for Social Justice, url: "https://www.centreforsocialjustice.org.uk/library"}
+  - {name: CEPEO, url: "https://cepeo.ucl.ac.uk/publications/"}
+  - {name: Chatham House, url: "https://www.chathamhouse.org/publications"}
+  - {name: City-REDI, url: "https://www.birmingham.ac.uk/research/city-redi/publications"}
+  - {name: Civitas, url: "https://www.civitas.org.uk/publications/"}
+  - {name: Demos, url: "https://demos.co.uk/research/"}
+  - {name: EDSK, url: "https://www.edsk.org/publications/"}
+  - {name: Education Policy Institute, url: "https://epi.org.uk/publications-and-research/"}
+  - {name: European Council on Foreign Relations, url: "https://ecfr.eu/publications/"}
+  - {name: Fabian Society, url: "https://fabians.org.uk/publications/"}
+  - {name: Future Governance Forum, url: "https://www.futuregovernance.org.uk/publications"}
+  - {name: Green Alliance, url: "https://green-alliance.org.uk/publications/"}
+  - {name: Growth and Reform Network, url: "https://growthandreform.org/"}
+  - {name: HEPI, url: "https://www.hepi.ac.uk/reports/"}
+  - {name: IIED, url: "https://www.iied.org/publications"}
+  - {name: IISS, url: "https://www.iiss.org/publications/"}
+  - {name: Institute for Fiscal Studies, url: "https://ifs.org.uk/publications"}
+  - {name: Institute for Government, url: "https://www.instituteforgovernment.org.uk/publications"}
+  - {name: Institute for Policy Research (Bath), url: "https://www.bath.ac.uk/publications/"}
+  - {name: Institute of Development Studies, url: "https://www.ids.ac.uk/publications/"}
+  - {name: Institute of Economic Affairs, url: "https://iea.org.uk/publications/"}
+  - {name: Institute of Welsh Affairs, url: "https://www.iwa.wales/publications/"}
+  - {name: IPPR, url: "https://www.ippr.org/research/publications"}
+  - {name: Joseph Rowntree Foundation, url: "https://www.jrf.org.uk/our-work/publications"}
+  - {name: Localis, url: "https://www.localis.org.uk/research/"}
+  - {name: NIESR, url: "https://www.niesr.ac.uk/publications"}
+  - {name: NCUB, url: "https://www.ncub.co.uk/reports/"}
+  - {name: Nesta, url: "https://www.nesta.org.uk/report/"}
+  - {name: New Economics Foundation, url: "https://neweconomics.org/campaigns/research"}
+  - {name: New Local, url: "https://www.newlocal.org.uk/publications/"}
+  - {name: Onward, url: "https://www.ukonward.com/reports/"}
+  - {name: PBE, url: "https://pbe.org.uk/publications"}
+  - {name: PolicyWISE, url: "https://policywise.com/publications/"}
+  - {name: Power to Change, url: "https://www.powertochange.org.uk/research/"}
+  - {name: Re:State, url: "https://www.restateuk.com/publications"}
+  - {name: Resolution Foundation, url: "https://www.resolutionfoundation.org/publications/"}
+  - {name: RUSI, url: "https://www.rusi.org/explore-our-research/publications"}
+  - {name: Social Market Foundation, url: "https://www.smf.co.uk/publications/"}
+  - {name: The Coalition for Global Prosperity, url: "https://www.coalitionforglobalprosperity.org/publications"}
+  - {name: The Constitution Unit, url: "https://www.ucl.ac.uk/constitution-unit/publications"}
+  - {name: The David Hume Institute, url: "https://davidhumeinstitute.com/publications/"}
+  - {name: The Foreign Policy Centre, url: "https://fpc.org.uk/publications/"}
+  - {name: The Henry Jackson Society, url: "https://henryjacksonsociety.org/publications/"}
+  - {name: The Jobs Foundation, url: "https://www.jobsfoundation.org/research"}
+  - {name: The King's Fund, url: "https://www.kingsfund.org.uk/insight-and-analysis/reports"}
+  - {name: The Nuffield Trust, url: "https://www.nuffieldtrust.org.uk/research"}
+  - {name: The Policy Institute (KCL), url: "https://www.kcl.ac.uk/policy-institute/research-analysis"}
+  - {name: The Sutton Trust, url: "https://www.suttontrust.com/our-research/"}
+  - {name: The Work Foundation, url: "https://www.lancaster.ac.uk/work-foundation/publications/"}
+  - {name: Theos, url: "https://www.theosthinktank.co.uk/research"}
+  - {name: Think Labour, url: "https://www.thinklabour.org/"}
+  - {name: UK in a Changing Europe, url: "https://ukandeu.ac.uk/research-papers/"}
