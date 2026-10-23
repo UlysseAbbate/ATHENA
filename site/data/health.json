@@ -1,0 +1,740 @@
+{
+ "updated": "2026-10-23T20:27:41.429010+00:00",
+ "sources": [
+  {
+   "group": "committees",
+   "name": "Parliament Committees API",
+   "ok": true,
+   "items": 45,
+   "error": ""
+  },
+  {
+   "group": "thinktanks",
+   "name": "Adam Smith Institute",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.adamsmith.org', port=443): Max retries exceeded with url: /research (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Bright Blue",
+   "ok": false,
+   "items": 0,
+   "error": "403 Client Error: Forbidden for url: https://brightblue.org.uk/research/"
+  },
+  {
+   "group": "thinktanks",
+   "name": "British Foreign Policy Group",
+   "ok": true,
+   "items": 40,
+   "error": "",
+   "method": "feed"
+  },
+  {
+   "group": "thinktanks",
+   "name": "British Future",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.britishfuture.org', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Fo"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Carnegie UK",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='carnegieuk.org', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Centre for Cities",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.centreforcities.org', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 "
+  },
+  {
+   "group": "thinktanks",
+   "name": "Centre for European Reform",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.cer.eu', port=443): Max retries exceeded with url: /publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Centre for Local Economic Strategies (CLES)",
+   "ok": true,
+   "items": 10,
+   "error": "",
+   "method": "feed"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Centre for London",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.centreforlondon.org', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 "
+  },
+  {
+   "group": "thinktanks",
+   "name": "Centre for Policy Studies",
+   "ok": true,
+   "items": 10,
+   "error": "",
+   "method": "html"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Centre for Public Data",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.centreforpublicdata.org', port=443): Max retries exceeded with url: /blog (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbi"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Centre for Social Justice",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.centreforsocialjustice.org.uk', port=443): Max retries exceeded with url: /library (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: "
+  },
+  {
+   "group": "thinktanks",
+   "name": "CEPEO",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='cepeo.ucl.ac.uk', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidde"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Chatham House",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.chathamhouse.org', port=443): Max retries exceeded with url: /publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forb"
+  },
+  {
+   "group": "thinktanks",
+   "name": "City-REDI",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.birmingham.ac.uk', port=443): Max retries exceeded with url: /research/city-redi/publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connecti"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Civitas",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.civitas.org.uk', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbi"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Demos",
+   "ok": true,
+   "items": 15,
+   "error": "",
+   "method": "html"
+  },
+  {
+   "group": "thinktanks",
+   "name": "EDSK",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.edsk.org', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Education Policy Institute",
+   "ok": true,
+   "items": 10,
+   "error": "",
+   "method": "feed"
+  },
+  {
+   "group": "thinktanks",
+   "name": "European Council on Foreign Relations",
+   "ok": true,
+   "items": 10,
+   "error": "",
+   "method": "html"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Fabian Society",
+   "ok": true,
+   "items": 10,
+   "error": "",
+   "method": "feed"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Future Governance Forum",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.futuregovernance.org.uk', port=443): Max retries exceeded with url: /publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 4"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Green Alliance",
+   "ok": true,
+   "items": 20,
+   "error": "",
+   "method": "feed"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Growth and Reform Network",
+   "ok": true,
+   "items": 12,
+   "error": "",
+   "method": "html"
+  },
+  {
+   "group": "thinktanks",
+   "name": "HEPI",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.hepi.ac.uk', port=443): Max retries exceeded with url: /reports/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))"
+  },
+  {
+   "group": "thinktanks",
+   "name": "IIED",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.iied.org', port=443): Max retries exceeded with url: /publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden'))"
+  },
+  {
+   "group": "thinktanks",
+   "name": "IISS",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.iiss.org', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Institute for Fiscal Studies",
+   "ok": false,
+   "items": 0,
+   "error": "403 Client Error: Forbidden for url: https://ifs.org.uk/publications"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Institute for Government",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.instituteforgovernment.org.uk', port=443): Max retries exceeded with url: /publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection fai"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Institute for Policy Research (Bath)",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.bath.ac.uk', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Institute of Development Studies",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.ids.ac.uk', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden'"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Institute of Economic Affairs",
+   "ok": true,
+   "items": 10,
+   "error": "",
+   "method": "feed"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Institute of Welsh Affairs",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.iwa.wales', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden'"
+  },
+  {
+   "group": "thinktanks",
+   "name": "IPPR",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.ippr.org', port=443): Max retries exceeded with url: /research/publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 For"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Joseph Rowntree Foundation",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.jrf.org.uk', port=443): Max retries exceeded with url: /our-work/publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 F"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Localis",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.localis.org.uk', port=443): Max retries exceeded with url: /research/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden"
+  },
+  {
+   "group": "thinktanks",
+   "name": "NIESR",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.niesr.ac.uk', port=443): Max retries exceeded with url: /publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden"
+  },
+  {
+   "group": "thinktanks",
+   "name": "NCUB",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.ncub.co.uk', port=443): Max retries exceeded with url: /reports/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Nesta",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.nesta.org.uk', port=443): Max retries exceeded with url: /report/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))"
+  },
+  {
+   "group": "thinktanks",
+   "name": "New Economics Foundation",
+   "ok": true,
+   "items": 20,
+   "error": "",
+   "method": "feed"
+  },
+  {
+   "group": "thinktanks",
+   "name": "New Local",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.newlocal.org.uk', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forb"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Onward",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.ukonward.com', port=443): Max retries exceeded with url: /reports/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden'))"
+  },
+  {
+   "group": "thinktanks",
+   "name": "PBE",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='pbe.org.uk', port=443): Max retries exceeded with url: /publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))"
+  },
+  {
+   "group": "thinktanks",
+   "name": "PolicyWISE",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='policywise.com', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Power to Change",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.powertochange.org.uk', port=443): Max retries exceeded with url: /research/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 For"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Re:State",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.restateuk.com', port=443): Max retries exceeded with url: /publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidd"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Resolution Foundation",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.resolutionfoundation.org', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed:"
+  },
+  {
+   "group": "thinktanks",
+   "name": "RUSI",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.rusi.org', port=443): Max retries exceeded with url: /explore-our-research/publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection fai"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Social Market Foundation",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.smf.co.uk', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden'"
+  },
+  {
+   "group": "thinktanks",
+   "name": "The Coalition for Global Prosperity",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.coalitionforglobalprosperity.org', port=443): Max retries exceeded with url: /publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection "
+  },
+  {
+   "group": "thinktanks",
+   "name": "The Constitution Unit",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.ucl.ac.uk', port=443): Max retries exceeded with url: /constitution-unit/publications (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection faile"
+  },
+  {
+   "group": "thinktanks",
+   "name": "The David Hume Institute",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='davidhumeinstitute.org', port=443): Max retries exceeded with url: /publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 F"
+  },
+  {
+   "group": "thinktanks",
+   "name": "The Foreign Policy Centre",
+   "ok": true,
+   "items": 10,
+   "error": "",
+   "method": "feed"
+  },
+  {
+   "group": "thinktanks",
+   "name": "The Henry Jackson Society",
+   "ok": true,
+   "items": 27,
+   "error": "",
+   "method": "html"
+  },
+  {
+   "group": "thinktanks",
+   "name": "The Jobs Foundation",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.jobsfoundation.org', port=443): Max retries exceeded with url: /research (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbid"
+  },
+  {
+   "group": "thinktanks",
+   "name": "The King's Fund",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.kingsfund.org.uk', port=443): Max retries exceeded with url: /insight-and-analysis/reports (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection "
+  },
+  {
+   "group": "thinktanks",
+   "name": "The Nuffield Trust",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.nuffieldtrust.org.uk', port=443): Max retries exceeded with url: /research (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forb"
+  },
+  {
+   "group": "thinktanks",
+   "name": "The Policy Institute (KCL)",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.kcl.ac.uk', port=443): Max retries exceeded with url: /policy-institute/research-analysis (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection f"
+  },
+  {
+   "group": "thinktanks",
+   "name": "The Sutton Trust",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.suttontrust.com', port=443): Max retries exceeded with url: /our-research/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forb"
+  },
+  {
+   "group": "thinktanks",
+   "name": "The Work Foundation",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.lancaster.ac.uk', port=443): Max retries exceeded with url: /work-foundation/publications/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection "
+  },
+  {
+   "group": "thinktanks",
+   "name": "Theos",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.theosthinktank.co.uk', port=443): Max retries exceeded with url: /research (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forb"
+  },
+  {
+   "group": "thinktanks",
+   "name": "Think Labour",
+   "ok": false,
+   "items": 0,
+   "error": "HTTPSConnectionPool(host='www.thinklabour.org', port=443): Max retries exceeded with url: / (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))"
+  },
+  {
+   "group": "thinktanks",
+   "name": "UK in a Changing Europe",
+   "ok": true,
+   "items": 10,
+   "error": "",
+   "method": "html"
+  },
+  {
+   "group": "media",
+   "name": "The Telegraph",
+   "ok": true,
+   "items": 0,
+   "error": "quiet: 40 off-topic results dropped"
+  },
+  {
+   "group": "media",
+   "name": "The Times",
+   "ok": true,
+   "items": 4,
+   "error": ""
+  },
+  {
+   "group": "media",
+   "name": "The Guardian",
+   "ok": true,
+   "items": 1,
+   "error": ""
+  },
+  {
+   "group": "media",
+   "name": "Politico Europe",
+   "ok": true,
+   "items": 1,
+   "error": ""
+  },
+  {
+   "group": "media",
+   "name": "Financial Times",
+   "ok": true,
+   "items": 1,
+   "error": ""
+  },
+  {
+   "group": "media",
+   "name": "The Economist",
+   "ok": true,
+   "items": 0,
+   "error": "quiet: 13 off-topic results dropped"
+  },
+  {
+   "group": "media",
+   "name": "BBC News",
+   "ok": true,
+   "items": 0,
+   "error": "quiet: 40 off-topic results dropped"
+  },
+  {
+   "group": "media",
+   "name": "The Independent",
+   "ok": true,
+   "items": 1,
+   "error": ""
+  },
+  {
+   "group": "media",
+   "name": "Sky News",
+   "ok": true,
+   "items": 2,
+   "error": ""
+  },
+  {
+   "group": "media",
+   "name": "Daily Mail",
+   "ok": false,
+   "items": 0,
+   "error": "no results from Google News"
+  },
+  {
+   "group": "media",
+   "name": "Daily Express",
+   "ok": true,
+   "items": 0,
+   "error": "quiet: 31 off-topic results dropped"
+  },
+  {
+   "group": "media",
+   "name": "New Statesman",
+   "ok": true,
+   "items": 0,
+   "error": "quiet: 8 off-topic results dropped"
+  },
+  {
+   "group": "media",
+   "name": "The Spectator",
+   "ok": false,
+   "items": 0,
+   "error": "no results from Google News"
+  },
+  {
+   "group": "media",
+   "name": "PoliticsHome",
+   "ok": true,
+   "items": 2,
+   "error": ""
+  },
+  {
+   "group": "media",
+   "name": "Reuters",
+   "ok": true,
+   "items": 1,
+   "error": ""
+  },
+  {
+   "group": "media",
+   "name": "Evening Standard",
+   "ok": true,
+   "items": 2,
+   "error": ""
+  },
+  {
+   "group": "media",
+   "name": "Lib Dem Voice",
+   "ok": true,
+   "items": 24,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "YouGov (direct)",
+   "ok": true,
+   "items": 9,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "YouGov",
+   "ok": true,
+   "items": 21,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "YouGov",
+   "ok": true,
+   "items": 10,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Opinium",
+   "ok": true,
+   "items": 4,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "More in Common",
+   "ok": false,
+   "items": 0,
+   "error": "no results"
+  },
+  {
+   "group": "polling",
+   "name": "Ipsos",
+   "ok": true,
+   "items": 16,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Survation",
+   "ok": true,
+   "items": 9,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Find Out Now",
+   "ok": true,
+   "items": 6,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Techne",
+   "ok": false,
+   "items": 0,
+   "error": "no results"
+  },
+  {
+   "group": "polling",
+   "name": "Focaldata",
+   "ok": true,
+   "items": 2,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "BMG Research",
+   "ok": false,
+   "items": 0,
+   "error": "no results"
+  },
+  {
+   "group": "polling",
+   "name": "JL Partners",
+   "ok": false,
+   "items": 0,
+   "error": "no results"
+  },
+  {
+   "group": "polling",
+   "name": "Deltapoll",
+   "ok": false,
+   "items": 0,
+   "error": "no results"
+  },
+  {
+   "group": "polling",
+   "name": "Savanta",
+   "ok": true,
+   "items": 8,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Freshwater Strategy",
+   "ok": true,
+   "items": 1,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Verian",
+   "ok": false,
+   "items": 0,
+   "error": "no results"
+  },
+  {
+   "group": "polling",
+   "name": "Whitestone Insight",
+   "ok": false,
+   "items": 0,
+   "error": "no results"
+  },
+  {
+   "group": "polling",
+   "name": "Public First",
+   "ok": true,
+   "items": 1,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Merlin Strategy",
+   "ok": false,
+   "items": 0,
+   "error": "no results"
+  },
+  {
+   "group": "polling",
+   "name": "Lord Ashcroft Polls",
+   "ok": true,
+   "items": 3,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Stonehaven",
+   "ok": false,
+   "items": 0,
+   "error": "no results"
+  },
+  {
+   "group": "polling",
+   "name": "Wikipedia VI table",
+   "ok": true,
+   "items": 257,
+   "error": ""
+  }
+ ]
+}
