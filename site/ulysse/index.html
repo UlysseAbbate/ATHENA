@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ulysse</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <h1>Ulysse <a class="muted" href="../">Home</a></h1>
+    <span id="updated" class="muted"></span>
+  </div>
+  <nav class="wrap tabs" id="tabs">
+    <button data-tab="all" class="on">Everything</button>
+    <button data-tab="committee">Select committees</button>
+    <button data-tab="thinktank">Think tanks</button>
+    <button data-tab="media">Lib Dems in the media</button>
+    <button data-tab="polling">Polling</button>
+    <button data-tab="health">Source health</button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section id="controls" class="controls">
+    <input id="q" type="search" placeholder="Search titles and sources…">
+    <select id="source"><option value="">All sources</option></select>
+    <select id="range">
+      <option value="2">Last 2 days</option>
+      <option value="7" selected>Last 7 days</option>
+      <option value="30">Last 30 days</option>
+      <option value="180">All stored</option>
+    </select>
+    <select id="tag" hidden>
+      <option value="">All poll types</option>
+      <option value="voting-intention">Voting intention</option>
+      <option value="party-support">Party support</option>
+      <option value="news-cycle">News cycle</option>
+      <option value="poll">Other</option>
+    </select>
+    <label class="chk"><input id="onlyNew" type="checkbox"> New only</label>
+  </section>
+
+  <section id="pollpanel" hidden>
+    <h2>Voting intention <span class="muted" id="pollsrc"></span></h2>
+    <div class="chartbox"><svg id="chart" viewBox="0 0 800 280" role="img" aria-label="Voting intention over time"></svg>
+      <div id="legend" class="legend"></div></div>
+    <details><summary>Latest individual polls</summary>
+      <div class="tablewrap"><table id="polltable"></table></div></details>
+    <h2>Poll write-ups &amp; trackers</h2>
+  </section>
+
+  <div id="count" class="muted"></div>
+  <ul id="list" class="list"></ul>
+  <section id="healthpanel" hidden></section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
