@@ -1,17 +1,18 @@
 {
- "updated": "2026-10-23T23:44:37.068583+00:00",
+ "updated": "2026-10-24T00:02:28.085673+00:00",
  "items": [
   {
-   "id": "8e6ca45c461c4231",
+   "id": "db7d282f2ae8f6c0",
    "category": "thinktank",
-   "source": "NIESR",
-   "title": "Market Anatomy: Why Have Gilt Yields Risen So Much This Year?",
-   "url": "https://niesr.ac.uk/reports/market-anatomy-why-have-gilt-yields-risen-so-much-year",
+   "source": "Centre for Cities",
+   "title": "Rewiring council housebuilding: A programme for the 21st century",
+   "url": "https://www.centreforcities.org/publication/rewiring-council-housebuilding-a-programme-for-the-21st-century/",
    "published": null,
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
    "areas": [
+    "Local & regional government",
     "Economy & tax"
    ],
    "geo": [
@@ -20,161 +21,187 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "3131ebed4a3f493a",
+   "id": "7131974f59b64307",
    "category": "thinktank",
-   "source": "NIESR",
-   "title": "Term Premium Tracker: Bond Yield Surge to Multi-Decade Highs",
-   "url": "https://niesr.ac.uk/reports/term-premium-tracker-bond-yield-surge-multi-decade-highs",
+   "source": "Centre for Cities",
+   "title": "Adding up: How to deliver fiscal devolution",
+   "url": "https://www.centreforcities.org/publication/adding-up-how-to-deliver-fiscal-devolution/",
    "published": null,
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
-   "id": "9852c13621f5d028",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Economic Outlook: A Challenging Inheritance",
-   "url": "https://niesr.ac.uk/reports/economic-outlook-summer-2026",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "01d06e5721c7abb3",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Term Premium Tracker: Bond Markets Unfazed",
-   "url": "https://niesr.ac.uk/reports/term-premium-tracker-bond-markets-unfazed",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
-   "id": "dab96323600ab049",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Economic Outlook: New Shock, Old Vulnerabilities",
-   "url": "https://niesr.ac.uk/reports/economic-outlook-spring-2026",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "ca0532086067cb99",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Term Premium Tracker: Bond Markets Brace",
-   "url": "https://niesr.ac.uk/reports/term-premium-tracker-bond-markets-brace",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
-   "id": "da316c5de2ec0717",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Economic Outlook: Normality Under Strain",
-   "url": "https://niesr.ac.uk/reports/economic-outlook-winter-2026",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "bf1b7cb07474680e",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Economic Outlook: Stability First",
-   "url": "https://niesr.ac.uk/reports/economic-outlook-autumn-2025",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "61bb4d2263d991b3",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Petrol and Diesel Fuel Inflation",
-   "url": "https://niesr.ac.uk/publications/petrol-and-diesel-fuel-inflation",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "213d1d2778375fb0",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Labour Market Proves Stronger Than Expected Into The Budget",
-   "url": "https://niesr.ac.uk/publications/labour-market-proves-stronger-expected-budget",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
    "areas": [
     "Economy & tax",
+    "Local & regional government"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "1004ae6348e644e6",
+   "category": "thinktank",
+   "source": "Centre for Cities",
+   "title": "Fiscal devolution: The case for corporation tax",
+   "url": "https://www.centreforcities.org/publication/fiscal-devolution-the-case-for-corporation-tax/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Economy & tax",
+    "Local & regional government"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Report / paper"
+  },
+  {
+   "id": "b4e4a27ffd3231e7",
+   "category": "thinktank",
+   "source": "Centre for Cities",
+   "title": "Mind the density gap: How Britain\u2019s big cities can build more homes near train stations",
+   "url": "https://www.centreforcities.org/publication/mind-the-density-gap-how-britains-big-cities-can-build-more-homes-near-train-stations/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Local & regional government",
+    "Housing & planning"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "9c76264f9bd5e67c",
+   "category": "thinktank",
+   "source": "Centre for Cities",
+   "title": "Pay pals: The geography of the minimum wage across G7 countries",
+   "url": "https://www.centreforcities.org/publication/pay-pals-the-geography-of-the-minimum-wage-across-g7-countries/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Work & skills",
+    "Foreign affairs"
+   ],
+   "geo": [
+    "Global / other"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "ce00804d5ff194e7",
+   "category": "thinktank",
+   "source": "Centre for Cities",
+   "title": "Everything you need to know about metro mayors",
+   "url": "https://www.centreforcities.org/publication/everything-need-know-metro-mayors/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Local & regional government",
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "ffb6d07211af1c8e",
+   "category": "thinktank",
+   "source": "Centre for Cities",
+   "title": "Understanding England\u2019s mayors: The powers they have and the role they can play in delivering devolution",
+   "url": "https://www.centreforcities.org/publication/understanding-englands-mayors-the-powers-they-have-and-the-role-they-can-play-in-delivering-devolution/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Local & regional government"
+   ],
+   "geo": [
+    "England"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "601b07557ee12155",
+   "category": "thinktank",
+   "source": "Centre for Cities",
+   "title": "Fiscal devolution for London",
+   "url": "https://www.centreforcities.org/publication/fiscal-devolution-for-london/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Economy & tax",
+    "Local & regional government"
+   ],
+   "geo": [
+    "London"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "3345f4bde513f28b",
+   "category": "thinktank",
+   "source": "City-REDI",
+   "title": "Local labour market buoyancy holds the key to solving the UK\u2019s NEET \u2018crisis\u2019",
+   "url": "https://www.birmingham.ac.uk/research/centres-institutes/city-region-economic-development-institute/publications/2026/local-labour-market-buoyancy-holds-the-key-to-solving-the-uks-neet-crisis",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Work & skills",
+    "Party politics & polling"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "b1d0eebb0dbd1d9a",
+   "category": "thinktank",
+   "source": "City-REDI",
+   "title": "Bridging the innovation gap: Innovation intermediaries as place-based policy measures",
+   "url": "https://www.birmingham.ac.uk/research/centres-institutes/city-region-economic-development-institute/publications/2025/bridging-the-innovation-gap",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Business & industry",
+    "Local & regional government"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "f7c59e9fb5bad3c3",
+   "category": "thinktank",
+   "source": "City-REDI",
+   "title": "Working from home: Impacts on residential mobility and spatial inequality",
+   "url": "https://www.birmingham.ac.uk/research/centres-institutes/city-region-economic-development-institute/publications/2025/working-from-home-impacts-on-residential-mobility-and-spatial-inequality",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Housing & planning",
     "Work & skills"
    ],
    "geo": [
@@ -183,15 +210,452 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "9945c08bd6a84bee",
+   "id": "a8b97d69560ab55c",
    "category": "thinktank",
-   "source": "NIESR",
-   "title": "Macroeconomic Implications of Carbon Taxation and Revenue Recycling under Climate Policy Uncertainty",
-   "url": "https://niesr.ac.uk/publications/macroeconomic-implications-carbon-taxation-and-revenue-recycling",
+   "source": "Future Governance Forum",
+   "title": "submitting a blog to FGF here.",
+   "url": "https://www.futuregovernanceforum.co.uk/write-for-us/",
    "published": null,
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "43f6c10607763af8",
+   "category": "thinktank",
+   "source": "Onward",
+   "title": "Conservative Party Conference 2026 Events",
+   "url": "https://ukonward.com/cpc26/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Party politics & polling"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "6fc4c54205c00709",
+   "category": "thinktank",
+   "source": "Onward",
+   "title": "The Hidden Benefits Bill: How Universal Credit claimants get \u00a310 billion in extra benefits",
+   "url": "https://ukonward.com/reports/the-hidden-benefits-bill-how-universal-credit-claimants-get-10-billion-in-extra-benefits/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Welfare & poverty"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "a013cc4aea264866",
+   "category": "thinktank",
+   "source": "Onward",
+   "title": "Onward\u2019s Response to the 2025/26 Budget",
+   "url": "https://ukonward.com/reports/onward-response-to-the-budget/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Response / reaction"
+  },
+  {
+   "id": "de6f8dc1291e651e",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Re-industrialisation: economists versus politicians",
+   "url": "https://thinklabour.co.uk/thinking/re-industrialisation-economists-versus-politicians",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Constitution & democracy"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "92b8c27ce65d0628",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Spanish Practices: Giving Our Mayors The Right Powers For Growth",
+   "url": "https://thinklabour.co.uk/thinking/spanish-practices",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Economy & tax",
+    "Local & regional government"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "1c72afcf6e914165",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Labour's Second Chance with Muslim Voters",
+   "url": "https://thinklabour.co.uk/thinking/labours-second-chance-with-muslim-voters",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Constitution & democracy",
+    "Party politics & polling"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "37bb23abd8c9291e",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Can the government really stop consulting on microchipping cats?",
+   "url": "https://thinklabour.co.uk/thinking/can-the-government-really-stop-consulting-on-microchipping-cats",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "ba2d2ba7a740c9e8",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Gas, water and bonds - the Labour case for a municipal bond market",
+   "url": "https://thinklabour.co.uk/thinking/gas-water-and-bonds-the-labour-case-for-a-municipal-bond-market",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Environment & energy",
+    "Party politics & polling"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Report / paper"
+  },
+  {
+   "id": "30b3fa514fc75a0a",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "CEO Recruitment - ThinkLabour",
+   "url": "https://thinklabour.co.uk/thinking/ceo-thinklabour",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "8fddc305597fd5cd",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Labour members take a surprisingly tough view on welfare",
+   "url": "https://thinklabour.co.uk/thinking/labour-members-take-a-surprisingly-tough-view-on-welfare",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Welfare & poverty",
+    "Party politics & polling"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "a0c8269290146757",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Why Josh Widdicombe\u2019s wife is a victim of the cost of living",
+   "url": "https://thinklabour.co.uk/thinking/why-josh-widdecombes-wife-is-a-victim-of-the-cost-of-living",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Economy & tax",
+    "Crime, justice & policing"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "844aefcea0c2ecc5",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "The debt of dignity - reviving the National Care Service",
+   "url": "https://thinklabour.co.uk/thinking/the-debt-of-dignity-reviving-the-national-care-service",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "e534cb82c1d2b6fb",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Turn and Face the Strange",
+   "url": "https://thinklabour.co.uk/thinking/turn-and-face-the-strange",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "ab7d4b9bd52e9844",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "The Real Lesson of Makerfield",
+   "url": "https://thinklabour.co.uk/thinking/the-real-lesson-of-makerfield",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "202e165f5436f59b",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Why Labour must fight - not befriend - the Greens",
+   "url": "https://thinklabour.co.uk/thinking/why-labour-why-labour-must-fight-not-befriend-the-greens",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Party politics & polling"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "a0e5b3512fe0fa08",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Gone, but not forever: Why many British Muslims fell out of love with Labour - but remain open to return",
+   "url": "https://thinklabour.co.uk/thinking/gone-but-not-forever",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Party politics & polling"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "9411bd55a57e11c7",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "The Croydon Story: How losing an election taught us how to win",
+   "url": "https://thinklabour.co.uk/thinking/the-croydon-story-how-losing-an-election-taught-us-how-to-win",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Constitution & democracy"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "f3e112b794b60183",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Burnley to 2029 and Beyond",
+   "url": "https://thinklabour.co.uk/thinking/burnley-to-2029-and-beyond",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "abc3e7bb0fddc039",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Time for compulsory voting?",
+   "url": "https://thinklabour.co.uk/thinking/time-for-compulsory-voting",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Constitution & democracy"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "7486899609a8a9dd",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "There is nothing leftwing about nationalising Thames Water",
+   "url": "https://thinklabour.co.uk/thinking/there-is-nothing-leftwing-about-nationalising-thames-water",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Environment & energy"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "e21373a774f997de",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "The Next Big Housing Lever: Street Votes",
+   "url": "https://thinklabour.co.uk/thinking/the-next-big-housing-lever-street-votes",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Housing & planning"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "0380a319eed0de2f",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Restoring the public sector as a vocation",
+   "url": "https://thinklabour.co.uk/thinking/restoring-the-public-sector-as-a-vocation",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Government & public services"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "91605302f43d3f42",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Fixing the shop front of the state",
+   "url": "https://thinklabour.co.uk/thinking/fixing-the-shop-front-of-the-state",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "38b8e78d2889472e",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Cap energy prices, raise taxes",
+   "url": "https://thinklabour.co.uk/thinking/cap-energy-prices-raise-taxes",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
    "areas": [
     "Economy & tax",
     "Environment & energy"
@@ -202,17 +666,17 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "77e72c702a7d10d4",
+   "id": "e05b9fc2fe9cd786",
    "category": "thinktank",
-   "source": "NIESR",
-   "title": "Wage Growth Determining the Triple Lock and Adding Fiscal Pressure on the Government",
-   "url": "https://niesr.ac.uk/publications/wage-growth-determining-triple-lock-and-adding-fiscal-pressure-government",
+   "source": "Think Labour",
+   "title": "Build the rail! Save the snails!",
+   "url": "https://thinklabour.co.uk/thinking/build-the-rail-save-the-snails",
    "published": null,
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
    "areas": [
-    "Economy & tax"
+    "Transport"
    ],
    "geo": [
     "UK-wide / unspecified"
@@ -220,180 +684,15 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "ae166bcb9bbf6b01",
+   "id": "073143c34ff9ea0e",
    "category": "thinktank",
-   "source": "NIESR",
-   "title": "Growth Surprises But Risks Remain",
-   "url": "https://niesr.ac.uk/publications/growth-surprises-risks-remain",
+   "source": "Think Labour",
+   "title": "Project Hawking: Tripling the size of Ox-Cam by 2050",
+   "url": "https://thinklabour.co.uk/thinking/project-hawking-tripling-the-size-of-ox-cam-by-2050",
    "published": null,
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "a4da20fd0b8d936f",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Structural Amplification in UK Production Networks",
-   "url": "https://niesr.ac.uk/publications/structural-amplification-uk-production-networks",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "fd52041b516e29de",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "(Why) Can\u2019t We Just Borrow A Bit More?",
-   "url": "https://niesr.ac.uk/publications/why-cant-we-just-borrow-bit-more",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "05598933d817818d",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Digital Skill Demand by Region and Industry in the UK",
-   "url": "https://niesr.ac.uk/publications/digital-skill-demand-region-and-industry-uk",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Business & industry",
-    "Work & skills"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "1e05ed73a93ca251",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Ofgem Price Cap Re-energises Inflation",
-   "url": "https://niesr.ac.uk/publications/ofgem-price-cap-re-energises-inflation",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "63bc6a1c22305f1c",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Weak Employment Demand Keeps A Lid On Pay",
-   "url": "https://niesr.ac.uk/publications/weak-employment-demand-keeps-lid-pay",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Work & skills",
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "ce33456b67a2cf67",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Introduction to the Special Issue on \u2018Fiscal Frameworks and Public Investment\u2019",
-   "url": "https://niesr.ac.uk/publications/introduction-fiscal-framework",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax",
-    "Business & industry"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "8ab4877af9ca38c5",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Rethinking the UK Fiscal Framework",
-   "url": "https://niesr.ac.uk/publications/rethinking-uk-fiscal-framework",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "92ca2dc57c599ec1",
-   "category": "thinktank",
-   "source": "NIESR",
-   "title": "Reforming the UK Fiscal Framework",
-   "url": "https://niesr.ac.uk/publications/reforming-uk-fiscal-framework",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "13c6837f7c7ae46e",
-   "category": "thinktank",
-   "source": "PolicyWISE",
-   "title": "Sign Up For Our Newsletter!",
-   "url": "https://policywise.com/newsletters/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
    "areas": [
     "Other / general"
    ],
@@ -403,15 +702,51 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "855bca57076fb48d",
+   "id": "f11bc0134dc92689",
    "category": "thinktank",
-   "source": "PolicyWISE",
-   "title": "What does the success of Bill C-34 look like?",
-   "url": "https://policywise.com/news/what-does-the-success-of-bill-c-34-look-like/",
+   "source": "Think Labour",
+   "title": "The case for contribution",
+   "url": "https://thinklabour.co.uk/thinking/the-case-for-contribution",
    "published": null,
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Report / paper"
+  },
+  {
+   "id": "1c118d2900b31bf6",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "A progressive case for state reform",
+   "url": "https://thinklabour.co.uk/thinking/a-progressive-case-for-state-reform",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Report / paper"
+  },
+  {
+   "id": "de07438252c5c049",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Getting Britain off the ground",
+   "url": "https://thinklabour.co.uk/thinking/getting-britain-off-the-ground",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
    "areas": [
     "Other / general"
    ],
@@ -421,33 +756,52 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "db5c3834106ccb3c",
+   "id": "0a61c85478982168",
    "category": "thinktank",
-   "source": "PolicyWISE",
-   "title": "Why Evidence Matters More Than Ever: Launching Raising Canada 2026",
-   "url": "https://policywise.com/news/why-evidence-matters-more-than-ever-launching-raising-canada-2026/",
+   "source": "Think Labour",
+   "title": "BritCard: a progressive digital identity for Britain",
+   "url": "https://thinklabour.co.uk/thinking/britcard-a-progressive-digital-identity-for-britain",
    "published": null,
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Immigration & identity",
+    "Technology & digital"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "05fcd6e9f8fc4145",
+   "category": "thinktank",
+   "source": "Think Labour",
+   "title": "Nation Rebalanced: How do we create a country that works for all places?",
+   "url": "https://thinklabour.co.uk/thinking/nation-rebalanced-how-do-we-create-a-country-that-works-for-all-places",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
    "areas": [
     "Other / general"
    ],
    "geo": [
-    "Global / other"
+    "UK-wide / unspecified"
    ],
-   "kind": "Report / paper"
+   "kind": "Article / analysis"
   },
   {
-   "id": "f1109f26b5355b73",
+   "id": "38d9828ac18cdc1d",
    "category": "thinktank",
-   "source": "PolicyWISE",
-   "title": "PolicyWise issued RFP for Brand and Website Redesign",
-   "url": "https://policywise.com/news/rfp-for-brand-website-redesign/",
+   "source": "Think Labour",
+   "title": "Charm Offensive: Resetting the UK\u2019s soft power approach for a more dangerous and competitive world",
+   "url": "https://thinklabour.co.uk/thinking/charm-offensive-resetting-the-uks-soft-power-approach-for-a-more-dangerous-and-competitive-world",
    "published": null,
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
    "areas": [
     "Other / general"
    ],
@@ -457,288 +811,20 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "1f6de53bacae956c",
+   "id": "04dbaa87cba3e18c",
    "category": "thinktank",
-   "source": "PolicyWISE",
-   "title": "Identifying and mitigating risk in youth homelessness data sharing",
-   "url": "https://policywise.com/news/identifying-and-mitigating-risk-in-youth-homelessness-data-sharing/",
+   "source": "Think Labour",
+   "title": "Focusing on our strengths: refining the UK\u2019s critical minerals strategy",
+   "url": "https://thinklabour.co.uk/thinking/focusing-on-our-strengths-refining-the-uks-critical-minerals-strategy",
    "published": null,
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
    "areas": [
-    "Housing & planning"
+    "Other / general"
    ],
    "geo": [
     "UK-wide / unspecified"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
-   "id": "9ac3e9eb1a8ca116",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "The Case Against The Chagos Deal",
-   "url": "https://henryjacksonsociety.org/publications/chagos-deal/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "a14755dc56068140",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Confronting the Illicit Finance Hydra in Crypto Markets",
-   "url": "https://henryjacksonsociety.org/publications/crypto/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Business & industry",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "66589333daad7f41",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Tactical Lessons from Gaza",
-   "url": "https://henryjacksonsociety.org/publications/tactical-lessons-from-gaza/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Report / paper"
-  },
-  {
-   "id": "0d4606d790824db5",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Cash to Terror: How Humanitarian Aid Funds Extremism",
-   "url": "https://henryjacksonsociety.org/publications/cash-to-terror-how-humanitarian-aid-funds-extremism/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "4306713175b24a07",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Breaking the Echo Chamber: Enhancing Disinformation Resilience in the UK",
-   "url": "https://henryjacksonsociety.org/publications/breaking-the-echo-chamber-enhancing-disinformation-resilience-in-the-uk/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Defence & security",
-    "Constitution & democracy"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "1ed1cb53d4bac76e",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Russia\u2019s Malicious Migration: Predicting the Use of Instrumentalised Migration Against NATO and the EU",
-   "url": "https://henryjacksonsociety.org/publications/russias-malicious-migration-predicting-the-use-of-instrumentalised-migration-against-nato-and-the-eu/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "Europe & EU",
-    "Russia & Ukraine"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "59209ecb8921bce9",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "How Russia Has Used Farmers\u2019 Protests As A Trojan Horse",
-   "url": "https://henryjacksonsociety.org/publications/how-russia-has-used-farmers-protests-as-a-trojan-horse/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "Russia & Ukraine"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "f5efedb0b40cdac3",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "War in the Twenty-First Century",
-   "url": "https://henryjacksonsociety.org/publications/war-in-the-twenty-first-century/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "61ad5d063db34769",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Information Manoeuvre: Lessons from Gaza for Future Hybrid Warfare",
-   "url": "https://henryjacksonsociety.org/publications/information-manoeuvre-lessons-from-gaza-for-future-hybrid-warfare/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Report / paper"
-  },
-  {
-   "id": "38ce2c6cd5a1eef6",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "Regime Collapse in Iran: A Necessity for Regional Stability?",
-   "url": "https://henryjacksonsociety.org/publications/regime-collapse-in-iran-a-necessity-for-regional-stability/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Local & regional government"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "1b6ed7a9e1d6ce9e",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "European Defence Autonomy: Identifying Key Companies and Projects to Replace US Capabilities",
-   "url": "https://henryjacksonsociety.org/publications/european-defence-autonomy-identifying-key-companies-and-projects-to-replace-us-capabilities/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Defence & security",
-    "Business & industry"
-   ],
-   "geo": [
-    "Europe & EU",
-    "United States"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "d0b38626cca8d8b2",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "The Gaza Humanitarian Foundation \u2013 Separating the Truth from the Lies",
-   "url": "https://henryjacksonsociety.org/publications/the-gaza-humanitarian-foundation-separating-the-truth-from-the-lies/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Foreign affairs",
-    "Defence & security"
-   ],
-   "geo": [
-    "Middle East"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "588b975679e595f2",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "A New Playbook: Making Sanctions More Effective",
-   "url": "https://henryjacksonsociety.org/publications/a-new-playbook-making-sanctions-more-effective/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Defence & security",
-    "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Report / paper"
-  },
-  {
-   "id": "04e0dba70e32a315",
-   "category": "thinktank",
-   "source": "The Henry Jackson Society",
-   "title": "How to Proscribe the IRGC: Learning Comparative Lessons From Our Allies",
-   "url": "https://henryjacksonsociety.org/publications/how-to-proscribe-the-irgc-learning-comparative-lessons-from-our-allies/",
-   "published": null,
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Defence & security",
-    "Education"
-   ],
-   "geo": [
-    "Middle East"
    ],
    "kind": "Report / paper"
   },
@@ -1054,6 +1140,44 @@
    ],
    "geo": [
     "Europe & EU"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "866abbfc024e90e3",
+   "category": "thinktank",
+   "source": "Centre for Cities",
+   "title": "Licence to build: Delivering urban transport infrastructure through devolution",
+   "url": "https://www.centreforcities.org/publication/licence-to-build-delivering-urban-transport-infrastructure-through-devolution/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Local & regional government",
+    "Transport"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "e906d440b9e8a4d8",
+   "category": "thinktank",
+   "source": "Centre for Cities",
+   "title": "Good growth: What, where, how?",
+   "url": "https://www.centreforcities.org/publication/good-growth-what-where-how/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax",
+    "Local & regional government"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
   },
@@ -2130,6 +2254,153 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "e178674953176abd",
+   "category": "thinktank",
+   "source": "Onward",
+   "title": "Assessing the Implications of Inheritance Tax Reforms in the UK",
+   "url": "https://ukonward.com/reports/assessing-the-implications-of-inheritance-tax-reforms-in-the-uk/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T21:42:17.127133+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "778986bbc6029fe9",
+   "category": "thinktank",
+   "source": "Onward",
+   "title": "Through the Roof: How to reduce housing benefits spending",
+   "url": "https://ukonward.com/reports/through-the-roof-how-to-reduce-housing-benefits-spending/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T21:42:17.127133+00:00",
+   "areas": [
+    "Welfare & poverty",
+    "Housing & planning"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "ccacbf8c02c614e2",
+   "category": "thinktank",
+   "source": "Onward",
+   "title": "Up and Atom: Unlocking SMRs and Large Nuclear",
+   "url": "https://ukonward.com/reports/up-and-atom/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T21:42:17.127133+00:00",
+   "areas": [
+    "Environment & energy"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "fbf62e35e747b5ee",
+   "category": "thinktank",
+   "source": "Onward",
+   "title": "Firm Foundations: The case for cheap and reliable power",
+   "url": "https://ukonward.com/reports/firm-foundations/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T21:42:17.127133+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Report / paper"
+  },
+  {
+   "id": "cd03f5fce4c80d90",
+   "category": "thinktank",
+   "source": "Power to Change",
+   "title": "Keys to the future: How we build a new era of community ownership",
+   "url": "https://www.powertochange.org.uk/evidence-and-ideas/research-and-reports/keys-to-the-future-how-we-build-a-new-era-of-community-ownership/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T21:42:17.127133+00:00",
+   "areas": [
+    "Local & regional government"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "db6b67953a4fdf27",
+   "category": "thinktank",
+   "source": "Onward",
+   "title": "From Triple Lock to Family Support",
+   "url": "https://ukonward.com/reports/from-triple-lock-to-family-support/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T21:42:17.127133+00:00",
+   "areas": [
+    "Welfare & poverty"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "ff4ca5c115e5faef",
+   "category": "thinktank",
+   "source": "Power to Change",
+   "title": "Briefing: The civic high street",
+   "url": "https://www.powertochange.org.uk/evidence-and-ideas/research-and-reports/briefing-the-civic-high-street/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T21:42:17.127133+00:00",
+   "areas": [
+    "Local & regional government",
+    "Housing & planning"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Briefing / data"
+  },
+  {
+   "id": "295be07a3a0d4300",
+   "category": "thinktank",
+   "source": "Power to Change",
+   "title": "The new high street playbook: Community-led innovation in action",
+   "url": "https://www.powertochange.org.uk/evidence-and-ideas/research-and-reports/the-new-high-street-playbook-community-led-innovation-in-action/",
+   "published": null,
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T21:42:17.127133+00:00",
+   "areas": [
+    "Business & industry",
+    "Housing & planning"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Report / paper"
+  },
+  {
    "id": "7d76c05eea5ec07d",
    "category": "thinktank",
    "source": "The Foreign Policy Centre",
@@ -2145,6 +2416,25 @@
    ],
    "geo": [
     "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "b243d65da7c93245",
+   "category": "thinktank",
+   "source": "Chatham House",
+   "title": "Trump, midterms and the Middle East: What comes next?",
+   "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQOXAxSDc5M2Fsd0RzS1c0dEtNVEgzalQtUDlFR0ZLcDRyWjlUX29tSGhVTkZkVmVqVkpUTHdoc01YckFyMGUwV1VhSGl4SVlsc2FEQW04c0xpNXV1MjRoRzVBUzFzcERRa0JVcU9SSEJUY0hfakFkZDhoLTg1WFRNN3dYN2NUVXkwc0dWR2lEeEhyWVNNR1RvRG5PMWVIc2hfdHpn?oc=5",
+   "published": "2026-10-23T21:32:31+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Foreign affairs"
+   ],
+   "geo": [
+    "United States",
+    "Middle East"
    ],
    "kind": "Article / analysis"
   },
@@ -4068,6 +4358,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "61bb4d2263d991b3",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Petrol and Diesel Fuel Inflation",
+   "url": "https://niesr.ac.uk/publications/petrol-and-diesel-fuel-inflation",
+   "published": "2026-10-21T11:00:09+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "940c9192ba03484f",
    "category": "thinktank",
    "source": "New Economics Foundation",
@@ -4771,6 +5079,46 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "cbb8515354cd0bee",
+   "category": "polling",
+   "source": "Ipsos",
+   "title": "Nearly half favour improving the economy nationally over regional development as most Brits say economy growth does more good than harm",
+   "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNQk1GODF6Z2I4ZzNKSEFDT2IzUml5TEFRQ3ByWWtSUnF3Um5UQlRXal84cnpLT1ZQVm5GZjlsbGphVjJQQk5jT0lPR0p0WjlkMm5sWVhrNEEwX2V2NEZQbEpWQ3BlRjBmWkxsSV9Mb3paR013clhCSW9wQklBQzREdDBiSWFodVF3UGlEUXlBZmZiM0U3WDdta1NxUUZfQllBUmZidzdHdmJyNmZiZHRkVjFNOU5vamFkZFVkWVE1bVgyQQ?oc=5",
+   "published": "2026-10-20T10:46:33+00:00",
+   "summary": "",
+   "tags": [
+    "poll"
+   ],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Economy & tax",
+    "Local & regional government"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Poll / survey"
+  },
+  {
+   "id": "213d1d2778375fb0",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Labour Market Proves Stronger Than Expected Into The Budget",
+   "url": "https://niesr.ac.uk/publications/labour-market-proves-stronger-expected-budget",
+   "published": "2026-10-20T10:43:49+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax",
+    "Work & skills"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "50d22751416bd8fe",
    "category": "thinktank",
    "source": "CEPEO",
@@ -5226,6 +5574,26 @@
    "kind": "Report / paper"
   },
   {
+   "id": "833b0095fd5c44f6",
+   "category": "thinktank",
+   "source": "IISS",
+   "title": "The Iran war and the depletion of the US munitions arsenal",
+   "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNUHd4S1g0bVVyRTJkMy1GQlhDcVYtYzk1NTNrQXdqSkN5cVpqbFBhNWoxNU83V2xFTXVyRWdIamJpNWVaWDkxZ2JnUGhkSVZoVlNJRTB6VDU0TmMzLWZCZC1YMjhPY2xhTjhSOHEwZ2JDcXV3ZWFGbnNPaGhwbXhUZlRMVHNfZ21mYTF6bEFfSkpWYjJfVG9EX2tBbVJlYVNFbjlueU9NQUVReElqZ0R1bUlFSWRqdmFkajI3TA?oc=5",
+   "published": "2026-10-20T04:51:42+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Defence & security",
+    "Foreign affairs"
+   ],
+   "geo": [
+    "United States",
+    "Middle East"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "36479c6a827264f8",
    "category": "thinktank",
    "source": "The Nuffield Trust",
@@ -5313,25 +5681,6 @@
    "first_seen": "2026-10-23T23:44:37.068583+00:00",
    "areas": [
     "Health & social care"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "f02b8b87526959d6",
-   "category": "thinktank",
-   "source": "Centre for Cities",
-   "title": "Licence to build: Delivering urban transport infrastructure through devolution",
-   "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPVDExWXQ0TEY4RUJDRU5WMnI5VnFQa3M4Z08tUVpETzhQZWIyUk43S2hBX0RkOFdpRm95WDdDelBsTXc0bkVTM3ZIOFBHZ0VvanJnZElUZnZzZHlJbTI2RnB2NnJJRTlXR1ZFRTBTb3Z1OWVEOWYwaThvWm9scVhhTUxrckhQdDU3SkhDZmpIYWlJeWNLb19Ud001MS1SLUdhTlpXVTFSZWZ0dlFHQmhEMlZaLWRXNkg0NGticFpsSQ?oc=5",
-   "published": "2026-10-19T23:04:16+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Local & regional government",
-    "Transport"
    ],
    "geo": [
     "UK-wide / unspecified"
@@ -5919,25 +6268,6 @@
    ],
    "geo": [
     "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "b243d65da7c93245",
-   "category": "thinktank",
-   "source": "Chatham House",
-   "title": "Trump, midterms and the Middle East: What comes next?",
-   "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQOXAxSDc5M2Fsd0RzS1c0dEtNVEgzalQtUDlFR0ZLcDRyWjlUX29tSGhVTkZkVmVqVkpUTHdoc01YckFyMGUwV1VhSGl4SVlsc2FEQW04c0xpNXV1MjRoRzVBUzFzcERRa0JVcU9SSEJUY0hfakFkZDhoLTg1WFRNN3dYN2NUVXkwc0dWR2lEeEhyWVNNR1RvRG5PMWVIc2hfdHpn?oc=5",
-   "published": "2026-10-19T03:18:22+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Foreign affairs"
-   ],
-   "geo": [
-    "United States",
-    "Middle East"
    ],
    "kind": "Article / analysis"
   },
@@ -7824,25 +8154,6 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "488906f7e08b77c6",
-   "category": "thinktank",
-   "source": "Centre for Cities",
-   "title": "Good growth: What, where, how?",
-   "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE9BUFpBM0RlWHJWb05CQkd5b0M5S0N6NHBCX1B2WXV4RkxxeHhaZk1oc1VPM2E0ZE1aUlBxWnN4dUlBdFFMVGZhbmVMbVV1cVN2cTlyTkh1Tm1aNm50bnpkaGdoYnk5XzA2b0RRZEVienJfMTZxaW42azFibw?oc=5",
-   "published": "2026-10-14T23:06:52+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T23:44:37.068583+00:00",
-   "areas": [
-    "Economy & tax",
-    "Local & regional government"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
    "id": "e279e24171556e89",
    "category": "thinktank",
    "source": "Resolution Foundation",
@@ -8912,6 +9223,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "8e6ca45c461c4231",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Market Anatomy: Why Have Gilt Yields Risen So Much This Year?",
+   "url": "https://niesr.ac.uk/reports/market-anatomy-why-have-gilt-yields-risen-so-much-year",
+   "published": "2026-10-13T10:27:36+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "8002c953fa1f34d0",
    "category": "thinktank",
    "source": "Institute for Policy Research (Bath)",
@@ -9283,6 +9612,25 @@
    ],
    "geo": [
     "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "80459acc9a0819e7",
+   "category": "thinktank",
+   "source": "IISS",
+   "title": "Japan\u2019s nuclear policy in a changing East Asia",
+   "url": "https://news.google.com/rss/articles/CBMi9gFBVV95cUxPZFJYMExwRHMxcVpfTjBnVlVTU242a2VnNXBaSk80SHh5REdRSDBoREZrc090TVM0TXYtNGd6bm44M2pySVFhOF9zeHpyZzBXeGViZHZsRUNVTWdzTVgzUnpxeGFWakxZQTBjM3F5X0dHUzJMOGxaMmtkVFV3VXlFYk0xNldxZ3E5QXRBMUEyWW40RjZSVWhQODI0MzZ3Nnd2dTlVQ2tMcUl5dng5SlR3bU1qckZTaDA0czhNeVZFTHYwV004Qjk4ZU5VWU1mazJlSm1wYW44SENZenhqVGVGQlYzdXlzblNudzE3OHJlZG4waFVqVmc?oc=5",
+   "published": "2026-10-13T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Foreign affairs",
+    "Environment & energy"
+   ],
+   "geo": [
+    "China & Asia"
    ],
    "kind": "Article / analysis"
   },
@@ -9789,6 +10137,25 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "33e0af16818ee981",
+   "category": "media",
+   "source": "The Guardian",
+   "title": "The Guardian view on the Liberal Democrats: now is not the time to change leader | Editorial",
+   "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxQNjNVZWgzSDkzS01FWmcyTnZvekphN01MLTd0ejQtNTNwa211eGkzR3BQc3BBN3F6RG1HbVNtMFk0X29fZzVMZ3BGbktoRExLa0RwX3BIRGxrRHY5clEwS0FOY3I4R0Rpd2dmbVgtU3BGNUgyMER5bElmaXZ2V2RsaDBva0pVek9fdDVBSXU5eUVyMmZPTXducHFaeHZpNmxyVnV5dHNLNHE5VU9hMVhzNEJldU5sUHdrZnY0OTJqYm4ydXQ1SGRQdExFdW53dw?oc=5",
+   "published": "2026-10-12T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Constitution & democracy",
+    "Party politics & polling"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "News coverage"
+  },
+  {
    "id": "89ac265db99243e0",
    "category": "thinktank",
    "source": "The King's Fund",
@@ -10180,6 +10547,25 @@
    "first_seen": "2026-10-23T23:44:37.068583+00:00",
    "areas": [
     "Welfare & poverty"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "9945c08bd6a84bee",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Macroeconomic Implications of Carbon Taxation and Revenue Recycling under Climate Policy Uncertainty",
+   "url": "https://niesr.ac.uk/publications/macroeconomic-implications-carbon-taxation-and-revenue-recycling",
+   "published": "2026-10-09T08:59:15+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax",
+    "Environment & energy"
    ],
    "geo": [
     "UK-wide / unspecified"
@@ -11187,24 +11573,6 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "e178674953176abd",
-   "category": "thinktank",
-   "source": "Onward",
-   "title": "Assessing the Implications of Inheritance Tax Reforms in the UK",
-   "url": "https://ukonward.com/reports/assessing-the-implications-of-inheritance-tax-reforms-in-the-uk/",
-   "published": "2026-10-07T11:45:30+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Economy & tax"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
    "id": "a733afbead633870",
    "category": "thinktank",
    "source": "Carnegie UK",
@@ -11597,25 +11965,6 @@
    ],
    "geo": [
     "Europe & EU"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "778986bbc6029fe9",
-   "category": "thinktank",
-   "source": "Onward",
-   "title": "Through the Roof: How to reduce housing benefits spending",
-   "url": "https://ukonward.com/reports/through-the-roof-how-to-reduce-housing-benefits-spending/",
-   "published": "2026-10-06T09:09:57+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Welfare & poverty",
-    "Housing & planning"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
   },
@@ -12489,6 +12838,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "3131ebed4a3f493a",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Term Premium Tracker: Bond Yield Surge to Multi-Decade Highs",
+   "url": "https://niesr.ac.uk/reports/term-premium-tracker-bond-yield-surge-multi-decade-highs",
+   "published": "2026-10-02T09:47:06+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Briefing / data"
+  },
+  {
    "id": "f08d2d9e3eea09bf",
    "category": "polling",
    "source": "Public First",
@@ -13087,24 +13454,6 @@
    "areas": [
     "Defence & security",
     "Foreign affairs"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "ccacbf8c02c614e2",
-   "category": "thinktank",
-   "source": "Onward",
-   "title": "Up and Atom: Unlocking SMRs and Large Nuclear",
-   "url": "https://ukonward.com/reports/up-and-atom/",
-   "published": "2026-10-01T06:55:16+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Environment & energy"
    ],
    "geo": [
     "UK-wide / unspecified"
@@ -15440,6 +15789,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "855bca57076fb48d",
+   "category": "thinktank",
+   "source": "PolicyWISE",
+   "title": "What does the success of Bill C-34 look like?",
+   "url": "https://policywise.com/news/what-does-the-success-of-bill-c-34-look-like/",
+   "published": "2026-09-18T21:39:11+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "32881bee88e99ff4",
    "category": "thinktank",
    "source": "Carnegie UK",
@@ -15904,6 +16271,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "77e72c702a7d10d4",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Wage Growth Determining the Triple Lock and Adding Fiscal Pressure on the Government",
+   "url": "https://niesr.ac.uk/publications/wage-growth-determining-triple-lock-and-adding-fiscal-pressure-government",
+   "published": "2026-09-15T14:26:39+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "88ff8a7a927ca45f",
    "category": "thinktank",
    "source": "European Council on Foreign Relations",
@@ -16239,6 +16624,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "ae166bcb9bbf6b01",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Growth Surprises But Risks Remain",
+   "url": "https://niesr.ac.uk/publications/growth-surprises-risks-remain",
+   "published": "2026-09-11T11:53:44+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "33123523387b3eb8",
    "category": "thinktank",
    "source": "New Economics Foundation",
@@ -16439,6 +16842,24 @@
     "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
+  },
+  {
+   "id": "170342a559dbda78",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "Performance stats: NHS now facing twin crisis of summer and winter",
+   "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQNEJfa1Q0WVJRVkNvVU5oN0NIQmxHN2dOaHNiRFVvcHNwYngyOV9fMUxWa2htcnJRLW9KNWtWQTFUZVBLQk0wSjhTeUtiV1JfTm5VcktySzBOaEJHMXpUX28xTHdjSXdJWEhFbVYwTUlQMW9sSUIxR2h2THFYYW9UOFZVTEF1TUJpYTdOd1BUNF9BMHhTSWd0Uw?oc=5",
+   "published": "2026-09-10T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Briefing / data"
   },
   {
    "id": "07e3e35e6c5d2a57",
@@ -16645,6 +17066,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "db5c3834106ccb3c",
+   "category": "thinktank",
+   "source": "PolicyWISE",
+   "title": "Why Evidence Matters More Than Ever: Launching Raising Canada 2026",
+   "url": "https://policywise.com/news/why-evidence-matters-more-than-ever-launching-raising-canada-2026/",
+   "published": "2026-09-08T21:19:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "Global / other"
+   ],
+   "kind": "Report / paper"
+  },
+  {
    "id": "d6f4149f560ac6b8",
    "category": "thinktank",
    "source": "The Sutton Trust",
@@ -16662,6 +17101,24 @@
     "UK-wide / unspecified"
    ],
    "kind": "Response / reaction"
+  },
+  {
+   "id": "a4da20fd0b8d936f",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Structural Amplification in UK Production Networks",
+   "url": "https://niesr.ac.uk/publications/structural-amplification-uk-production-networks",
+   "published": "2026-09-08T07:27:17+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
   },
   {
    "id": "57dd429c0f0842ee",
@@ -16920,6 +17377,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "fd52041b516e29de",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "(Why) Can\u2019t We Just Borrow A Bit More?",
+   "url": "https://niesr.ac.uk/publications/why-cant-we-just-borrow-bit-more",
+   "published": "2026-09-04T07:14:11+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "da58ac899a70688a",
    "category": "thinktank",
    "source": "The Nuffield Trust",
@@ -16994,6 +17469,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "25173146bef80860",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "24-Hour Prevention People: How Is Greater Manchester Putting Prevention Into Practice?",
+   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNNUxvOEdncEs0SjlQZkM1VjRjUWtfN016Y253YVNPcDh3SVo0bkw5UmEtQm1yZG81ZWg5MmRGZnhRRncxTi12RGRhMmxWR1VsdF8wWkFJWWdlQWRaT2VxMFp5dXI0SERBN0MxTkdLRmg2VjY4b0NVOF8yVTVNWnRkUW1OVkZGZ2hEc283Z3lWaktRUFpBYkNnVEdn?oc=5",
+   "published": "2026-09-03T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "North of England"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "2ea25daefce8395b",
    "category": "thinktank",
    "source": "Institute of Economic Affairs",
@@ -17046,6 +17539,24 @@
    ],
    "geo": [
     "Scotland"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "19e95e042667dc81",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "The uncomfortable \u2018Make America Healthy Again\u2019 breakthrough that\u2019s eluded public health for decades",
+   "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOeEtlLVBzcUZaQzVrUThJZDJHNjdzeUdzcHctdUhWRUc1bzB5NzdoV1VxR2VyQ1F5S3NmOHg4bHk4dXcxVDZxN041U3YxbXFJR0s5VVBQVDNudlMxZzdxS0dYU21nNkdPSTBOU05qTXNacWRuR3o5T1pPeGMwYzNuTzdSb0NDM3NkelRLQkZsb3JBSDkyQzVTLWNoZEFkWVFHUHBpZ3FQWGctVU8yTnZB?oc=5",
+   "published": "2026-09-02T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "United States"
    ],
    "kind": "Article / analysis"
   },
@@ -17123,6 +17634,25 @@
     "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
+  },
+  {
+   "id": "604a3d2ddac22184",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "\u2018Social care stealth tax\u2019: 15 years of frozen thresholds can set some care users back \u00a312,400, new analysis finds",
+   "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxNRW9NOVQ1dDdiU2xoZVJSaEpoLWRYcGZnSEF0UG9SMkVRZHdpQ25IbmZ2NDJaczlJYkNJSEVZSDRRSWZPb3dFZGZLOVFGU2x0b1V4U0RMSWtZeUNFSXp3Z3dyMWZ6ckFHdmJqVjl4LUtiZE5PQ183LWZLNlh1TjNJMm9oOU9KcFpSN0pXSTNBSUhfdw?oc=5",
+   "published": "2026-09-01T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care",
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Report / paper"
   },
   {
    "id": "575693e197ad1eeb",
@@ -17229,6 +17759,25 @@
    "first_seen": "2026-10-23T23:44:37.068583+00:00",
    "areas": [
     "Transport"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "05598933d817818d",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Digital Skill Demand by Region and Industry in the UK",
+   "url": "https://niesr.ac.uk/publications/digital-skill-demand-region-and-industry-uk",
+   "published": "2026-08-27T09:27:17+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Business & industry",
+    "Work & skills"
    ],
    "geo": [
     "UK-wide / unspecified"
@@ -17440,20 +17989,75 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "b525597ca7124a51",
+   "id": "cdc41174b58c8c6d",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "Productivity In The NHS And Health Care Sector",
+   "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPMWdRdDBhTWQwUTBqT25DUUhSUFRETHpOUEtaM2lLWVNTWC02YVRuRnBhdUN3ZGM5amZnLVN0elgzVmgxdnFMN2ZaTF9adkdsbGEyaE1fSEpQT21wNEQ1YnhQSWpSMXE3WF9IdXVDX1dIS0VtSlNrZDFUNDNSWkdwblVtT0hDVm1KNTh0X3lwT0dNU09wRVgwVGR3OWNoeUE2cmRv?oc=5",
+   "published": "2026-08-25T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "98a3de6702e997b7",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "Have we kicked the habit? The rise of youth vaping and the next phase of tobacco control",
+   "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxObVZvU053ZzB5dlp5VFpOcUY2a3FfSUNMYjNzbjk4TnhSbEhqU3NXaERrV0ZUQ2tTZmV3U05BSE5xN2NhN21SZTFiRnRfTDhwYU1oTkVWejFlX0ZRX2I5bXpMTHJIcUdaeF94NTRHenBTTTd2bVNRLXVoVF9PT2hnUEVja0JOOUQ5UUZ5Y2VWbFpUUHlLY1ZEWUM1WQ?oc=5",
+   "published": "2026-08-25T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "f1109f26b5355b73",
+   "category": "thinktank",
+   "source": "PolicyWISE",
+   "title": "PolicyWise issued RFP for Brand and Website Redesign",
+   "url": "https://policywise.com/news/rfp-for-brand-website-redesign/",
+   "published": "2026-08-24T16:03:33+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Other / general"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "dad90f506d5982aa",
    "category": "thinktank",
    "source": "Centre for London",
    "title": "What does London\u2019s population decline mean for the capital?",
-   "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTFBXS0JUUDNmWTVkTmQyYkdyUm9iY3RoWmgxUjlLRHVEVXUxYW9EM1hhVXN2ekZIV2FwX1c4bkZ3SEYwcklyVDU5TDRFWGFrTXlmekF0VmdldC1vWFc2YmNQcTh0ZnpRbkdJbm4w?oc=5",
-   "published": "2026-08-24T07:00:00+00:00",
-   "summary": "",
+   "url": "https://centreforlondon.org/blog/london-population-falling/",
+   "published": "2026-08-24T09:24:01+00:00",
+   "summary": "London\u2019s population has fallen. That should worry Andy Burnham. London\u2019s population has fallen. That is a sentence we do not get to write very often. According to the latest ONS mid-year population estimates, London\u2019s population fell by 26,737 people in the year to mid-2025, a decline of 0.29%. London was the only English region to [\u2026]",
    "tags": [],
    "first_seen": "2026-10-23T23:44:37.068583+00:00",
    "areas": [
     "Local & regional government"
    ],
    "geo": [
-    "London"
+    "London",
+    "England"
    ],
    "kind": "Article / analysis"
   },
@@ -17552,6 +18156,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "546c142f798252bf",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "From afterthought to priority \u2013 what will it take to make real progress on children\u2019s health?",
+   "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOR2NXWFpYTVMzeHVwazFHZ2hsNVl1bGFrZG4zbm4wUWNHcDlLOWNCdllSa1psd2lnT1NBQjFqcHdSU0xTeFZOZmp4U3JXcGJaTFVtal9aaXUwSEQyZGNMVk5VLTNyRERsOFhpLXl5Wkp5U292alV4MmRZMkZTbVo4SHJFeEp1ekMyeGN1bmxwVUw5T01hSUZSV1lldVhKRHBkVGREdQ?oc=5",
+   "published": "2026-08-20T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "f4740a1deb911552",
    "category": "thinktank",
    "source": "Demos",
@@ -17608,6 +18230,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "1e05ed73a93ca251",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Ofgem Price Cap Re-energises Inflation",
+   "url": "https://niesr.ac.uk/publications/ofgem-price-cap-re-energises-inflation",
+   "published": "2026-08-19T10:32:17+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "068909fa09372627",
    "category": "thinktank",
    "source": "The Work Foundation",
@@ -17626,22 +18266,23 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "fbf62e35e747b5ee",
+   "id": "63bc6a1c22305f1c",
    "category": "thinktank",
-   "source": "Onward",
-   "title": "Firm Foundations: The case for cheap and reliable power",
-   "url": "https://ukonward.com/reports/firm-foundations/",
-   "published": "2026-08-18T23:00:00+00:00",
+   "source": "NIESR",
+   "title": "Weak Employment Demand Keeps A Lid On Pay",
+   "url": "https://niesr.ac.uk/publications/weak-employment-demand-keeps-lid-pay",
+   "published": "2026-08-18T09:40:38+00:00",
    "summary": "",
    "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
    "areas": [
-    "Other / general"
+    "Work & skills",
+    "Economy & tax"
    ],
    "geo": [
     "UK-wide / unspecified"
    ],
-   "kind": "Report / paper"
+   "kind": "Article / analysis"
   },
   {
    "id": "24c3ac2b0c55715a",
@@ -17660,6 +18301,25 @@
     "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
+  },
+  {
+   "id": "ca015d2de4fdf7f8",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "Housing, homelessness and health: lessons from Birmingham's joined-up approach",
+   "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQVHRIVFdkUHNLNVVNTmNGd3hRd0RFemk1OEk5bi1zREpaSF93cnRycG9zOFZJcUZJSTBKUkEyUVRsRVg0NzVoZEFyeWRLbmgyR1Q4RktsOVExeGpLaTVyVl9EdlQ0c3ZORDBoRElpci1lTG5CRGY0dHBmRlhaNS1HVVZlMmtfWHJyTFBRamFDaEhPTmdsblh2WVVZZWp6T2Q4RzlaOGdNNERZNnc?oc=5",
+   "published": "2026-08-18T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care",
+    "Housing & planning"
+   ],
+   "geo": [
+    "Midlands"
+   ],
+   "kind": "Report / paper"
   },
   {
    "id": "7ee96f5a1fcc687a",
@@ -17790,6 +18450,61 @@
     "UK-wide / unspecified"
    ],
    "kind": "Briefing / data"
+  },
+  {
+   "id": "ce33456b67a2cf67",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Introduction to the Special Issue on \u2018Fiscal Frameworks and Public Investment\u2019",
+   "url": "https://niesr.ac.uk/publications/introduction-fiscal-framework",
+   "published": "2026-08-17T10:55:31+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax",
+    "Business & industry"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "8ab4877af9ca38c5",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Rethinking the UK Fiscal Framework",
+   "url": "https://niesr.ac.uk/publications/rethinking-uk-fiscal-framework",
+   "published": "2026-08-17T10:54:47+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "92ca2dc57c599ec1",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Reforming the UK Fiscal Framework",
+   "url": "https://niesr.ac.uk/publications/reforming-uk-fiscal-framework",
+   "published": "2026-08-17T10:53:57+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
   },
   {
    "id": "3084819540910b8c",
@@ -17923,6 +18638,25 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "c2f81cceb1c9be1d",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "More Human, Less Machine: An Honest Conversation About Leading Through AI Transformation",
+   "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxQM0JYNi1QM3VlanpZWWVCVWRxWHpGNFJaWEU2ZUxpMW9waW8zMEk3QWFheFVxY1h4dmFwdU4yWER1RnBFa3FsOGp0TTNUNWpGS1k0SGY3OVl4dVRaenBDZmdyeW1FM1pldzVvaXBXUE84X3RqY0FuYUN5LUhYc21MYWROVGRIczNSaXhUUmkzU1A0YWE0aXpqRlhqcnZXTkI1dHpFUndVc2pJTVlQSUVDeFR0RFlqSU1QV2tOaFM1SFE3M3Js?oc=5",
+   "published": "2026-08-13T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Technology & digital",
+    "Health & social care"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "106fe7ee7c4a2994",
    "category": "thinktank",
    "source": "Carnegie UK",
@@ -17961,6 +18695,25 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "fc680ecf64319ff3",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "How Far Could Andy Burnham Take Devolution In Health And Care?",
+   "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxOZTE1MDJEQUNtYVJ5RnJ1R2N4Q1U5S3ZwRjZ2WU1mY1JvOWY1SlpWcnE0eGZ2RDM1LWRsdkZha3hFdDJLYV9ZdjMtcGhRa3hmNW5KcDhMekp0S3FreVBtTDU0NXNYQ19VSGQySVgwZVNYSzVjcVJiNDlWcksweUxXVklrdUY3Wng4aHdqYkoweE5DRi13b3pvalFJNA?oc=5",
+   "published": "2026-08-12T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care",
+    "Local & regional government"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "f148d3f641b88684",
    "category": "thinktank",
    "source": "The Work Foundation",
@@ -17978,6 +18731,24 @@
     "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
+  },
+  {
+   "id": "226b3f2798180f65",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "Key facts and figures about the NHS",
+   "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOQnhNdGxxT1g2aEVnb2Z6bnVPa19DMTFNZ1I4cGZSRzhVMU9jMjkySWFNUU5BWnI4WE9CUXVmbF9EYy1iYmtaWnVVT0x0QzZQLWJHRGxWclNSZ2lPVms5T2laUE9PZmpCWkk1LVo2SURlRHhHVGFTeUstRWVUeFg4Yk5VaFM1dWxka0E1SG9WZjQ?oc=5",
+   "published": "2026-08-11T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Briefing / data"
   },
   {
    "id": "37fdb37727ce23c8",
@@ -18108,6 +18879,43 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "c49d115ee478dda8",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "What Direction for Obesity Policy? Where Innovation, Wicked Issues and Many Actors Collide",
+   "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOV1d4VHFJY3l3UFVySDRNdFZaaWZ6WktBbkZpbHF3LWJ2QXRic1dJdmkwM3pQdTJoMC1iVzZIMWxTdXBaWHFvZ0xDUWdwNTc0U3k3a3NteG42VFV1NGlKT3hpdDBBRjNyM3EyMUZuMG9KU193ZGl4MUUzTG9KQVl2UmxHemFrTUdsNUw0YzRkZFk1Nmh6ZHRVN2VSc011YUZQek1McXNIclluSmlIbU5vaXh5RDMyNVNjWUdpYlVneUNoSThHQkRXWHh3?oc=5",
+   "published": "2026-08-07T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care",
+    "Business & industry"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "9557f87fd8f1e7de",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "At least 7.2 million more adults living with obesity than would have been if rates stayed the same as when first obesity strategy published in 1992",
+   "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPbzkxS2ppRWNDUjBScTN3RjcxbUZUcThoNjBzOEl2RndhWDFRNzliU0U0OTJhNTJfWjRPMkktR044RHNhZEJWV2VoOGd0V0VlSDR5Rm5EQlhWMHlCZ0JKc1UwR2pDZFBVMkRrakNfQXZXVUNRYlpOdENYSTlEMkxnalp5bU9COWpfc0o3R19ic21IUUpFQ0E?oc=5",
+   "published": "2026-08-07T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Report / paper"
+  },
+  {
    "id": "cac35c90172ecd24",
    "category": "thinktank",
    "source": "Fabian Society",
@@ -18236,6 +19044,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "22f7d85f0163d91f",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "NHS paper use no longer A4-ordable as King\u2019s Fund finds health service spending nearly \u00a3240 million a year on storing records and calls for acceleration of Single Patient Record",
+   "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQQlJ2UmJUb3BBWDRfUnRjcTNCc3FJUFZ3dmE4dFlMN05PU1lWYzNJQUZvT2tMN2JlaE13cnhQUVBHcWRMVU9vcTZGOWdXTUw2UklkMFU1QTFDUDd0eE43a2docWZSWGhrRUE3b2g3aGxIY1lKbDFWZ25zNlZzdkE4YU1TdzlFMV9oNkRlcTB4ZFpyaXRyTzdYaHRYd3d0MWVZODF4cUVTS2w?oc=5",
+   "published": "2026-08-05T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Response / reaction"
+  },
+  {
    "id": "7c6fd1433c719ad2",
    "category": "thinktank",
    "source": "Demos",
@@ -18291,6 +19117,24 @@
     "Europe & EU"
    ],
    "kind": "Report / paper"
+  },
+  {
+   "id": "cbc325c48993bcc5",
+   "category": "thinktank",
+   "source": "The King's Fund",
+   "title": "The single patient record explained: what could it mean for patients and the health and care system",
+   "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxORmlhVFZReGdqdHAxdV9RMmc3REN5Ums4SUdvWUlJNjBqTDJyWnFJN0hWVGl0Z3VTM1VTY3hCSU9zWjNSTUpUWGZhb2R1amowS05MSW1SRTFUQURXWmtuS3p5a09wcFo5emd0T2VUUzJaQTdJS2hsOUpVZTZQaGp1MzZuS0RWd25UMGpobTFHN0VEbGhmS0ZMdkh2M1V5b2NaSGhNZkZVZ1NqMm1HU0xEWVZJdy1vWElJdVJ4Vk0wdjFTbE1mOG5uSE10NWdxcjA2dDhMOFprLUxUVkJVVURNY08wODA3X0RPeWhoSlJRYS0?oc=5",
+   "published": "2026-08-04T07:00:00+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Health & social care"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
   },
   {
    "id": "5cdda72b667fdaa0",
@@ -18620,6 +19464,24 @@
    "areas": [
     "Business & industry",
     "Foreign affairs"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "9852c13621f5d028",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Economic Outlook: A Challenging Inheritance",
+   "url": "https://niesr.ac.uk/reports/economic-outlook-summer-2026",
+   "published": "2026-07-28T23:14:30+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
    ],
    "geo": [
     "UK-wide / unspecified"
@@ -19725,24 +20587,6 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "cd03f5fce4c80d90",
-   "category": "thinktank",
-   "source": "Power to Change",
-   "title": "Keys to the future: How we build a new era of community ownership",
-   "url": "https://www.powertochange.org.uk/evidence-and-ideas/research-and-reports/keys-to-the-future-how-we-build-a-new-era-of-community-ownership/",
-   "published": "2026-07-07T11:15:30+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Local & regional government"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
    "id": "60b29b17ccf52ca8",
    "category": "thinktank",
    "source": "Centre for Policy Studies",
@@ -19795,6 +20639,24 @@
     "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
+  },
+  {
+   "id": "01d06e5721c7abb3",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Term Premium Tracker: Bond Markets Unfazed",
+   "url": "https://niesr.ac.uk/reports/term-premium-tracker-bond-markets-unfazed",
+   "published": "2026-07-02T15:39:16+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Briefing / data"
   },
   {
    "id": "1d70a6bbdf150f5e",
@@ -19859,24 +20721,6 @@
    "url": "https://www.centreforsocialjustice.org.uk/library/the_social_contract",
    "published": "2026-06-28T10:34:51+00:00",
    "summary": "The CSJ is embarking on a new area of research into the state of the British social contract: what, if it exists at all, does Read more",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Welfare & poverty"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Article / analysis"
-  },
-  {
-   "id": "db6b67953a4fdf27",
-   "category": "thinktank",
-   "source": "Onward",
-   "title": "From Triple Lock to Family Support",
-   "url": "https://ukonward.com/reports/from-triple-lock-to-family-support/",
-   "published": "2026-06-28T08:14:07+00:00",
-   "summary": "",
    "tags": [],
    "first_seen": "2026-10-23T21:42:17.127133+00:00",
    "areas": [
@@ -20058,6 +20902,24 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "1f6de53bacae956c",
+   "category": "thinktank",
+   "source": "PolicyWISE",
+   "title": "Identifying and mitigating risk in youth homelessness data sharing",
+   "url": "https://policywise.com/news/identifying-and-mitigating-risk-in-youth-homelessness-data-sharing/",
+   "published": "2026-06-17T18:03:43+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Housing & planning"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Briefing / data"
+  },
+  {
    "id": "291d46658993f437",
    "category": "thinktank",
    "source": "Education Policy Institute",
@@ -20093,6 +20955,25 @@
     "UK-wide / unspecified"
    ],
    "kind": "Report / paper"
+  },
+  {
+   "id": "eef0cf7e17405909",
+   "category": "thinktank",
+   "source": "Centre for London",
+   "title": "What next for Reflective and Relational practice in housing systems?",
+   "url": "https://centreforlondon.org/blog/reflective-relational-practice-housing/",
+   "published": "2026-06-12T15:21:52+00:00",
+   "summary": "Roland Karthaus, Managing Consultant at Inner Circle, considers the importance of relationship building and learning in Housing Services and speculates about what might come next in a future of automation and AI.",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Housing & planning",
+    "Technology & digital"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
+   ],
+   "kind": "Article / analysis"
   },
   {
    "id": "c110c832bf11f306",
@@ -20207,25 +21088,6 @@
    "kind": "Article / analysis"
   },
   {
-   "id": "ff4ca5c115e5faef",
-   "category": "thinktank",
-   "source": "Power to Change",
-   "title": "Briefing: The civic high street",
-   "url": "https://www.powertochange.org.uk/evidence-and-ideas/research-and-reports/briefing-the-civic-high-street/",
-   "published": "2026-05-28T16:19:51+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Local & regional government",
-    "Housing & planning"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Briefing / data"
-  },
-  {
    "id": "66616e38dacf6eb4",
    "category": "thinktank",
    "source": "British Future",
@@ -20242,25 +21104,6 @@
     "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
-  },
-  {
-   "id": "295be07a3a0d4300",
-   "category": "thinktank",
-   "source": "Power to Change",
-   "title": "The new high street playbook: Community-led innovation in action",
-   "url": "https://www.powertochange.org.uk/evidence-and-ideas/research-and-reports/the-new-high-street-playbook-community-led-innovation-in-action/",
-   "published": "2026-05-20T10:26:41+00:00",
-   "summary": "",
-   "tags": [],
-   "first_seen": "2026-10-23T21:42:17.127133+00:00",
-   "areas": [
-    "Business & industry",
-    "Housing & planning"
-   ],
-   "geo": [
-    "UK-wide / unspecified"
-   ],
-   "kind": "Report / paper"
   },
   {
    "id": "f93c50a8c9602a9a",
@@ -20338,6 +21181,25 @@
    "kind": "Article / analysis"
   },
   {
+   "id": "ae3fe7c0268bd636",
+   "category": "thinktank",
+   "source": "Centre for London",
+   "title": "London Local elections: what should your councillors be promising in their manifestos?",
+   "url": "https://centreforlondon.org/blog/london-local-elections-2027/",
+   "published": "2026-05-06T12:54:53+00:00",
+   "summary": "Local elections. Concrete recommendations. And what can be promised to make actual change in your neighbourhood. With Londoners heading to the polls in local elections this week, Centre for London has written to all the major political parties standing across the capital with a short set of practical, evidence-based policies that councils can use now [\u2026]",
+   "tags": [],
+   "first_seen": "2026-10-24T00:02:28.085673+00:00",
+   "areas": [
+    "Local & regional government",
+    "Constitution & democracy"
+   ],
+   "geo": [
+    "London"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
    "id": "2aa3755322e7c5d8",
    "category": "thinktank",
    "source": "Centre for Social Justice",
@@ -20409,6 +21271,24 @@
    "geo": [
     "United States",
     "London"
+   ],
+   "kind": "Article / analysis"
+  },
+  {
+   "id": "dab96323600ab049",
+   "category": "thinktank",
+   "source": "NIESR",
+   "title": "Economic Outlook: New Shock, Old Vulnerabilities",
+   "url": "https://niesr.ac.uk/reports/economic-outlook-spring-2026",
+   "published": "2026-04-28T23:01:56+00:00",
+   "summary": "",
+   "tags": [],
+   "first_seen": "2026-10-23T23:44:37.068583+00:00",
+   "areas": [
+    "Economy & tax"
+   ],
+   "geo": [
+    "UK-wide / unspecified"
    ],
    "kind": "Article / analysis"
   },

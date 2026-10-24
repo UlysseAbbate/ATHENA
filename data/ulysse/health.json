@@ -1,11 +1,11 @@
 {
- "updated": "2026-10-23T23:44:37.068583+00:00",
+ "updated": "2026-10-24T00:02:28.085673+00:00",
  "sources": [
   {
    "group": "committees",
    "name": "Parliament Committees API",
    "ok": true,
-   "items": 45,
+   "items": 44,
    "error": ""
   },
   {
@@ -15,6 +15,7 @@
    "items": 20,
    "method": "feed",
    "via": "https://www.adamsmith.org/research?format=rss",
+   "seconds": 4,
    "error": ""
   },
   {
@@ -24,6 +25,7 @@
    "items": 18,
    "method": "google-news",
    "via": "site:brightblue.org.uk",
+   "seconds": 9,
    "error": "brightblue.org.uk/research/: HTTP 403; www.brightblue.org.uk/research/: HTTP 403"
   },
   {
@@ -33,6 +35,7 @@
    "items": 40,
    "method": "feed",
    "via": "https://bfpg.co.uk/analysis/rss.xml",
+   "seconds": 1,
    "error": ""
   },
   {
@@ -42,6 +45,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.britishfuture.org/feed",
+   "seconds": 5,
    "error": ""
   },
   {
@@ -51,16 +55,18 @@
    "items": 16,
    "method": "feed",
    "via": "https://carnegieuk.org/feed",
+   "seconds": 10,
    "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Centre for Cities",
    "ok": true,
-   "items": 25,
-   "method": "google-news",
-   "via": "site:centreforcities.org",
-   "error": "www.centreforcities.org: page loads but lists no publication links (JavaScript?); centreforcities.org: page loads but lists no publication links (JavaScript?)"
+   "items": 10,
+   "method": "html",
+   "via": "https://www.centreforcities.org/research/",
+   "seconds": 15,
+   "error": ""
   },
   {
    "group": "thinktanks",
@@ -69,6 +75,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:cer.eu",
+   "seconds": 5,
    "error": "www.cer.eu/publications: HTTP 403; cer.eu/publications: HTTP 403"
   },
   {
@@ -78,16 +85,18 @@
    "items": 10,
    "method": "feed",
    "via": "https://cles.org.uk/feed/",
+   "seconds": 0,
    "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Centre for London",
    "ok": true,
-   "items": 8,
-   "method": "google-news",
-   "via": "site:centreforlondon.org",
-   "error": "centreforlondon.org: page loads but lists no publication links (JavaScript?); www.centreforlondon.org: page loads but lists no publication links (JavaScript?)"
+   "items": 10,
+   "method": "feed",
+   "via": "https://centreforlondon.org/feed/",
+   "seconds": 2,
+   "error": ""
   },
   {
    "group": "thinktanks",
@@ -96,6 +105,7 @@
    "items": 10,
    "method": "html",
    "via": "https://cps.org.uk/research/",
+   "seconds": 22,
    "error": ""
   },
   {
@@ -105,16 +115,18 @@
    "items": 20,
    "method": "feed",
    "via": "https://www.centreforpublicdata.org/blog?format=rss",
+   "seconds": 1,
    "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Centre for Social Justice",
    "ok": true,
-   "items": 22,
-   "method": "google-news",
-   "via": "site:centreforsocialjustice.org.uk",
-   "error": "www.centreforsocialjustice.org.uk: page loads but lists no publication links (JavaScript?); centreforsocialjustice.org.uk: page loads but lists no publication links (JavaScript?)"
+   "items": 40,
+   "method": "feed",
+   "via": "https://www.centreforsocialjustice.org.uk/library/feed",
+   "seconds": 2,
+   "error": ""
   },
   {
    "group": "thinktanks",
@@ -123,6 +135,7 @@
    "items": 22,
    "method": "google-news",
    "via": "\"CEPEO\" site:ucl.ac.uk",
+   "seconds": 18,
    "error": "www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo: HTTP 404; ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo: HTTP 404"
   },
   {
@@ -132,6 +145,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:chathamhouse.org",
+   "seconds": 7,
    "error": "www.chathamhouse.org/publications: HTTP 403; chathamhouse.org/publications: HTTP 403"
   },
   {
@@ -141,6 +155,7 @@
    "items": 30,
    "method": "html",
    "via": "https://www.birmingham.ac.uk/research/city-redi/publications",
+   "seconds": 15,
    "error": ""
   },
   {
@@ -150,6 +165,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.civitas.org.uk/feed/",
+   "seconds": 3,
    "error": ""
   },
   {
@@ -159,6 +175,7 @@
    "items": 15,
    "method": "html",
    "via": "https://demos.co.uk/research/",
+   "seconds": 7,
    "error": ""
   },
   {
@@ -166,7 +183,8 @@
    "name": "EDSK",
    "ok": false,
    "items": 0,
-   "error": "www.edsk.org: page loads but lists no publication links (JavaScript?); edsk.org: page loads but lists no publication links (JavaScript?); Google News had nothing for it either"
+   "seconds": 38,
+   "error": "www.edsk.org: page loads (139KB, title 'The EDSK think tank') but lists no publication links; edsk.org: page loads (139KB, title 'The EDSK think tank') but lists no publication links; Google News had nothing for it either; feed probes: 13x empty feed, 12x HTTP 404"
   },
   {
    "group": "thinktanks",
@@ -175,16 +193,18 @@
    "items": 10,
    "method": "feed",
    "via": "https://epi.org.uk/publications-and-research/feed",
+   "seconds": 5,
    "error": ""
   },
   {
    "group": "thinktanks",
    "name": "European Council on Foreign Relations",
    "ok": true,
-   "items": 25,
-   "method": "google-news",
-   "via": "site:ecfr.eu",
-   "error": "ecfr.eu: page loads but lists no publication links (JavaScript?); www.ecfr.eu: page loads but lists no publication links (JavaScript?)"
+   "items": 10,
+   "method": "html",
+   "via": "https://ecfr.eu/publications/",
+   "seconds": 17,
+   "error": ""
   },
   {
    "group": "thinktanks",
@@ -193,16 +213,18 @@
    "items": 10,
    "method": "feed",
    "via": "https://fabians.org.uk/feed/?post_type=publication",
+   "seconds": 2,
    "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Future Governance Forum",
    "ok": true,
-   "items": 5,
-   "method": "google-news",
-   "via": "site:futuregovernanceforum.co.uk",
-   "error": "www.futuregovernanceforum.co.uk: page loads but lists no publication links (JavaScript?); futuregovernanceforum.co.uk: page loads but lists no publication links (JavaScript?)"
+   "items": 1,
+   "method": "html",
+   "via": "https://www.futuregovernanceforum.co.uk/blogs/",
+   "seconds": 13,
+   "error": ""
   },
   {
    "group": "thinktanks",
@@ -211,6 +233,7 @@
    "items": 20,
    "method": "feed",
    "via": "https://green-alliance.org.uk/publications/feed/",
+   "seconds": 4,
    "error": ""
   },
   {
@@ -220,6 +243,7 @@
    "items": 12,
    "method": "html",
    "via": "https://growthandreform.org/ign-insights",
+   "seconds": 15,
    "error": ""
   },
   {
@@ -229,6 +253,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.hepi.ac.uk/feed",
+   "seconds": 8,
    "error": ""
   },
   {
@@ -238,7 +263,8 @@
    "items": 25,
    "method": "google-news",
    "via": "site:iied.org",
-   "error": "www.iied.org: page loads but lists no publication links (JavaScript?); iied.org: page loads but lists no publication links (JavaScript?)"
+   "seconds": 25,
+   "error": "www.iied.org: page loads (122KB, title 'IIED Publications Library | Internationa') but lists no publication links; iied.org: page loads (117KB, title 'IIED Publications Library | Internationa') but lists no publication links"
   },
   {
    "group": "thinktanks",
@@ -247,7 +273,8 @@
    "items": 25,
    "method": "google-news",
    "via": "site:iiss.org",
-   "error": "www.iiss.org: page loads but lists no publication links (JavaScript?); iiss.org: page loads but lists no publication links (JavaScript?)"
+   "seconds": 10,
+   "error": "www.iiss.org: page loads (54KB, title 'IISS Books and Publications') but lists no publication links; iiss.org: page loads (54KB, title 'IISS Books and Publications') but lists no publication links"
   },
   {
    "group": "thinktanks",
@@ -256,6 +283,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:ifs.org.uk",
+   "seconds": 5,
    "error": "ifs.org.uk/publications: HTTP 403; www.ifs.org.uk/publications: HTTP 403"
   },
   {
@@ -265,6 +293,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.instituteforgovernment.org.uk/rss",
+   "seconds": 5,
    "error": ""
   },
   {
@@ -274,6 +303,7 @@
    "items": 15,
    "method": "google-news",
    "via": "site:bath.ac.uk \"Institute for Policy Research\"",
+   "seconds": 9,
    "error": "www.bath.ac.uk/publications/: HTTP 403; bath.ac.uk/publications/: HTTP 403"
   },
   {
@@ -283,6 +313,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.ids.ac.uk/publications/feed",
+   "seconds": 2,
    "error": ""
   },
   {
@@ -292,6 +323,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://iea.org.uk/publications/feed/",
+   "seconds": 1,
    "error": ""
   },
   {
@@ -301,6 +333,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.iwa.wales/feed/",
+   "seconds": 2,
    "error": ""
   },
   {
@@ -310,6 +343,7 @@
    "items": 39,
    "method": "feed",
    "via": "https://www.ippr.org/feed.rss",
+   "seconds": 2,
    "error": ""
   },
   {
@@ -319,6 +353,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.jrf.org.uk/rss.xml",
+   "seconds": 1,
    "error": ""
   },
   {
@@ -328,15 +363,17 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.localis.org.uk/research/feed",
+   "seconds": 2,
    "error": ""
   },
   {
    "group": "thinktanks",
    "name": "NIESR",
    "ok": true,
-   "items": 21,
-   "method": "html",
-   "via": "https://www.niesr.ac.uk/publications",
+   "items": 10,
+   "method": "feed",
+   "via": "https://niesr.ac.uk/feed",
+   "seconds": 4,
    "error": ""
   },
   {
@@ -346,6 +383,7 @@
    "items": 21,
    "method": "google-news",
    "via": "site:ncub.co.uk",
+   "seconds": 7,
    "error": "www.ncub.co.uk/reports/: HTTP 403; ncub.co.uk/reports/: HTTP 403"
   },
   {
@@ -355,7 +393,8 @@
    "items": 25,
    "method": "google-news",
    "via": "site:nesta.org.uk",
-   "error": "www.nesta.org.uk: page loads but lists no publication links (JavaScript?); nesta.org.uk: page loads but lists no publication links (JavaScript?)"
+   "seconds": 17,
+   "error": "www.nesta.org.uk: page loads (81KB, title 'Reports | Nesta') but lists no publication links; nesta.org.uk: page loads (81KB, title 'Reports | Nesta') but lists no publication links"
   },
   {
    "group": "thinktanks",
@@ -364,16 +403,18 @@
    "items": 20,
    "method": "feed",
    "via": "https://neweconomics.org/feed",
+   "seconds": 1,
    "error": ""
   },
   {
    "group": "thinktanks",
    "name": "New Local",
    "ok": true,
-   "items": 22,
-   "method": "google-news",
-   "via": "site:newlocal.org.uk",
-   "error": "www.newlocal.org.uk: page loads but lists no publication links (JavaScript?); newlocal.org.uk: page loads but lists no publication links (JavaScript?)"
+   "items": 10,
+   "method": "feed",
+   "via": "https://www.newlocal.org.uk/feed/",
+   "seconds": 3,
+   "error": ""
   },
   {
    "group": "thinktanks",
@@ -382,6 +423,7 @@
    "items": 8,
    "method": "html",
    "via": "https://www.ukonward.com/reports/",
+   "seconds": 37,
    "error": ""
   },
   {
@@ -389,7 +431,8 @@
    "name": "PBE",
    "ok": false,
    "items": 0,
-   "error": "www.pbe.org.uk/research: SSLError; pbe.org.uk/research: SSLError; www.pbe.org.uk/: SSLError; pbe.org.uk/: SSLError; www.probonoeconomics.com/research: ConnectTimeout; probonoeconomics.com/research: ConnectTimeout; Google News had nothing for it either"
+   "seconds": 70,
+   "error": "www.pbe.org.uk/research: SSLError; pbe.org.uk/research: SSLError; www.pbe.org.uk/: SSLError; pbe.org.uk/: SSLError; www.probonoeconomics.com: page loads (105KB, title 'PBE | Research and Policy Analyst (withd') but lists no publication links; probonoeconomics.com: page loads (105KB, title 'PBE | Research and Policy Analyst (withd') but lists no publication links; Google News had nothing for it eit"
   },
   {
    "group": "thinktanks",
@@ -398,6 +441,7 @@
    "items": 5,
    "method": "html",
    "via": "https://policywise.com/",
+   "seconds": 7,
    "error": ""
   },
   {
@@ -407,6 +451,7 @@
    "items": 16,
    "method": "html",
    "via": "https://www.powertochange.org.uk/research/",
+   "seconds": 20,
    "error": ""
   },
   {
@@ -414,7 +459,8 @@
    "name": "Re:State",
    "ok": false,
    "items": 0,
-   "error": "restate.org.uk/research/: ConnectionError; www.restate.org.uk/research/: ConnectionError; restate.org.uk/: ConnectionError; www.restate.org.uk/: ConnectionError; Google News had nothing for it either"
+   "seconds": 5,
+   "error": "restate.org.uk/research/: ConnectionError; www.restate.org.uk/research/: ConnectionError; restate.org.uk/: ConnectionError; www.restate.org.uk/: ConnectionError; Google News had nothing for it either; feed probes: 12x ConnectionError"
   },
   {
    "group": "thinktanks",
@@ -423,6 +469,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.resolutionfoundation.org/publications/feed/",
+   "seconds": 2,
    "error": ""
   },
   {
@@ -432,6 +479,7 @@
    "items": 20,
    "method": "feed",
    "via": "https://www.rusi.org/rss/latest-commentary.xml",
+   "seconds": 1,
    "error": ""
   },
   {
@@ -441,6 +489,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:smf.co.uk",
+   "seconds": 5,
    "error": "www.smf.co.uk/publications/: HTTP 403; smf.co.uk/publications/: HTTP 403"
   },
   {
@@ -450,6 +499,7 @@
    "items": 20,
    "method": "feed",
    "via": "https://www.coalitionforglobalprosperity.com/news?format=rss",
+   "seconds": 1,
    "error": ""
   },
   {
@@ -459,6 +509,7 @@
    "items": 5,
    "method": "html",
    "via": "https://www.ucl.ac.uk/constitution-unit/publications",
+   "seconds": 11,
    "error": ""
   },
   {
@@ -466,16 +517,18 @@
    "name": "The David Hume Institute",
    "ok": false,
    "items": 0,
-   "error": "www.davidhumeinstitute.com/publication: HTTP 404; davidhumeinstitute.com/publication: HTTP 404; Google News had nothing for it either"
+   "seconds": 9,
+   "error": "www.davidhumeinstitute.com/publication: HTTP 404; davidhumeinstitute.com/publication: HTTP 404; Google News had nothing for it either; feed probes: 13x HTTP 404"
   },
   {
    "group": "thinktanks",
    "name": "The Foreign Policy Centre",
    "ok": true,
-   "items": 9,
-   "method": "google-news",
-   "via": "site:fpc.org.uk",
-   "error": "fpc.org.uk: page loads but lists no publication links (JavaScript?); www.fpc.org.uk: page loads but lists no publication links (JavaScript?)"
+   "items": 10,
+   "method": "feed",
+   "via": "https://fpc.org.uk/feed/",
+   "seconds": 2,
+   "error": ""
   },
   {
    "group": "thinktanks",
@@ -484,6 +537,7 @@
    "items": 27,
    "method": "html",
    "via": "https://henryjacksonsociety.org/",
+   "seconds": 2,
    "error": ""
   },
   {
@@ -491,7 +545,8 @@
    "name": "The Jobs Foundation",
    "ok": false,
    "items": 0,
-   "error": "www.jobsfoundation.org: page loads but lists no publication links (JavaScript?); jobsfoundation.org/research: HTTP 404; jobsfoundation.org.uk/research: ConnectionError; www.jobsfoundation.org.uk/research: ConnectionError; www.jobsfoundation.org.uk/: ConnectionError; jobsfoundation.org.uk/: Connectio"
+   "seconds": 18,
+   "error": "www.jobsfoundation.org/research: HTTP 401; jobsfoundation.org/research: HTTP 404; jobsfoundation.org.uk/research: ConnectionError; www.jobsfoundation.org.uk/research: ConnectionError; www.jobsfoundation.org.uk/: ConnectionError; jobsfoundation.org.uk/: ConnectionError; feed probes: 12x ConnectionError, 6x HTTP 401, 6x HTTP 404"
   },
   {
    "group": "thinktanks",
@@ -500,16 +555,18 @@
    "items": 25,
    "method": "google-news",
    "via": "site:kingsfund.org.uk",
+   "seconds": 5,
    "error": "www.kingsfund.org.uk/insight-and-analysis/reports: HTTP 403; kingsfund.org.uk/insight-and-analysis/reports: HTTP 403"
   },
   {
    "group": "thinktanks",
    "name": "The Nuffield Trust",
    "ok": true,
-   "items": 25,
-   "method": "google-news",
-   "via": "site:nuffieldtrust.org.uk",
-   "error": "www.nuffieldtrust.org.uk: page loads but lists no publication links (JavaScript?); nuffieldtrust.org.uk: page loads but lists no publication links (JavaScript?)"
+   "items": 9,
+   "method": "html",
+   "via": "https://www.nuffieldtrust.org.uk/research",
+   "seconds": 9,
+   "error": ""
   },
   {
    "group": "thinktanks",
@@ -518,6 +575,7 @@
    "items": 3,
    "method": "html",
    "via": "https://www.kcl.ac.uk/policy-institute/research-analysis",
+   "seconds": 17,
    "error": ""
   },
   {
@@ -527,6 +585,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.suttontrust.com/feed",
+   "seconds": 22,
    "error": ""
   },
   {
@@ -536,7 +595,8 @@
    "items": 22,
    "method": "google-news",
    "via": "site:lancaster.ac.uk/work-foundation",
-   "error": "www.lancaster.ac.uk: page loads but lists no publication links (JavaScript?); lancaster.ac.uk: page loads but lists no publication links (JavaScript?)"
+   "seconds": 26,
+   "error": "www.lancaster.ac.uk: page loads (172KB, title 'Work Foundation Publications - Lancaster') but lists no publication links; lancaster.ac.uk: page loads (172KB, title 'Work Foundation Publications - Lancaster') but lists no publication links"
   },
   {
    "group": "thinktanks",
@@ -545,14 +605,18 @@
    "items": 25,
    "method": "feed",
    "via": "https://www.theosthinktank.co.uk/rss/research",
+   "seconds": 3,
    "error": ""
   },
   {
    "group": "thinktanks",
    "name": "Think Labour",
-   "ok": false,
-   "items": 0,
-   "error": "www.thinklabour.org: page loads but lists no publication links (JavaScript?); thinklabour.org: page loads but lists no publication links (JavaScript?); www.thinklabour.co.uk: page loads but lists no publication links (JavaScript?); thinklabour.co.uk: page loads but lists no publication links (JavaSc"
+   "ok": true,
+   "items": 30,
+   "method": "html",
+   "via": "https://thinklabour.co.uk/thinking",
+   "seconds": 5,
+   "error": ""
   },
   {
    "group": "thinktanks",
@@ -561,6 +625,7 @@
    "items": 10,
    "method": "html",
    "via": "https://ukandeu.ac.uk/reports/",
+   "seconds": 1,
    "error": ""
   },
   {
@@ -581,7 +646,7 @@
    "group": "media",
    "name": "The Guardian",
    "ok": true,
-   "items": 1,
+   "items": 2,
    "error": ""
   },
   {
@@ -721,7 +786,7 @@
    "group": "polling",
    "name": "Ipsos",
    "ok": true,
-   "items": 17,
+   "items": 18,
    "error": ""
   },
   {
