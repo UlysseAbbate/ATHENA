@@ -13,6 +13,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -29,6 +37,12 @@ jobs:
           node-version: "20"
       - name: JavaScript syntax
         run: for f in site/*.js site/*/*.js; do node --check "$f"; done
+      - name: Database rules (migrations on a throwaway Postgres)
+        run: bash tests/db/run.sh
+        env:
+          DATABASE_URL: postgresql://postgres:test@localhost:5432/postgres
+      - name: Design tokens (contrast, light and dark)
+        run: node tests/contrast.js && node tests/libby-css.js
       - name: Browser tests (mocked database, real security headers)
         run: |
           npm install --no-save --no-package-lock playwright@1.47.2

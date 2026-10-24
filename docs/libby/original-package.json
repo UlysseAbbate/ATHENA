@@ -1,0 +1,17 @@
+{
+  "name": "libby",
+  "private": true,
+  "description": "LIBBY (Liberal Intelligence for Business, Briefings and Year-round policy): the Lib Dem Lords Whips' Office hub. Cloudflare Pages + Supabase + Claude",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev",
+    "deploy": "wrangler pages deploy",
+    "check": "node scripts/check.mjs",
+    "check:site": "node scripts/check-site.mjs",
+    "check:list": "node scripts/check-list.mjs",
+    "check:access": "node scripts/check-access.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

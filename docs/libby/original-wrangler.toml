@@ -1,0 +1,15 @@
+# Cloudflare Pages configuration.
+# Static site in /public, API routes in /functions (Pages Functions, detected automatically).
+name = "libdem-lords-business"
+pages_build_output_dir = "public"
+compatibility_date = "2026-09-01"
+
+[vars]
+# Model used for supplementary-question suggestions. Change here or in the Cloudflare dashboard.
+CLAUDE_MODEL = "claude-sonnet-5"
+
+# Secrets are NOT stored here. Set them in Cloudflare → Workers & Pages → your project →
+# Settings → Variables and secrets (type "Secret"):
+#   ANTHROPIC_API_KEY
+#   SUPABASE_URL
+#   SUPABASE_SERVICE_ROLE_KEY

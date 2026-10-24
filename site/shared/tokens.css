@@ -1,0 +1,53 @@
+/* ATHENA design tokens: LIBBY's Focus-leaflet colours and fonts, in light and dark. The ONE place colours are chosen.
+ * Every program loads this file; shared/libby.css (Athena, Lovelace, Lucien, Access, Admin) and libby/styles.css (LIBBY) use only these tokens.
+ * Light is the default; dark follows the device (prefers-color-scheme) unless the person chose a theme: <html data-theme="light|dark">
+ * (set by theme.js) always wins over the device. In dark, the leaflet "black" things flip to cream/yellow so outlines, bars and
+ * buttons stay visible; yellow stays yellow. */
+
+@font-face{font-family:'Libre Franklin';font-weight:500;font-style:normal;font-display:swap;src:url(fonts/LibreFranklin-500.ttf) format('truetype')}
+@font-face{font-family:'Libre Franklin';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/LibreFranklin-700.ttf) format('truetype')}
+@font-face{font-family:'Libre Franklin';font-weight:800;font-style:normal;font-display:swap;src:url(fonts/LibreFranklin-800.ttf) format('truetype')}
+@font-face{font-family:'Libre Franklin';font-weight:900;font-style:normal;font-display:swap;src:url(fonts/LibreFranklin-900.ttf) format('truetype')}
+
+:root{
+  color-scheme:light;
+  /* brand */
+  --yellow:#FDBB30;--yellow-deep:#F5A100;--yellow-pale:#FFF3CF;--black:#111111;--red:#D4202A;--green:#2E7D32;--focus:#0B63CE;
+  /* surfaces and text */
+  --paper:#FFFFFF;--card:#FFFFFF;--ink:#111111;--muted:#4B4B4B;--rule:#D9D9D9;--rule-strong:#8A8A8A;--chip:#F4F2EA;--hi:#FBF8EC;
+  /* leaflet devices: outline of panels, the hard shadow, bars, buttons */
+  --outline:#111111;--pop-colour:#FDBB30;--bar-bg:#111111;--bar-fg:#FDBB30;
+  --btn-bg:#111111;--btn-fg:#FDBB30;--btn-hover-bg:#2A2A2A;--btn-hover-fg:#FDBB30;
+  --shadow:0 1px 2px rgba(17,17,17,.06),0 6px 18px rgba(17,17,17,.07);--shadow-hover:0 2px 4px rgba(17,17,17,.08),0 10px 26px rgba(17,17,17,.10);
+  --masthead-line:rgba(17,17,17,.18);--hover-tint:rgba(17,17,17,.09);
+  --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#111111;
+  --err-bg:#FDECEC;--err:#B3141C;--ok-bg:#E4F2E5;--warn-bg:#FFF3CF;
+  --c-committee:#1F4E79;--c-thinktank:#2E7D32;--c-media:#B8480F;--c-polling:#7B3FA0;
+  --on-fill:#FFFFFF;--orange:#B8480F;--orange-rule:#F28C1B;--orange-tint:#FDEBDD;--green-tint:#E4F2E5;--red-tint:#FBE3E3;--mark:#FDBB30;--sky:#E9EEF7;--sky-line:#C5D0E6;
+  --head:'Libre Franklin','Franklin Gothic Heavy','Arial Black',Arial,sans-serif;--body:Arial,'Helvetica Neue',Helvetica,sans-serif;
+  --radius:12px;--measure:72ch;
+}
+/* the dark palette, written once and applied two ways (device preference, or an explicit choice) */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --paper:#141414;--card:#1D1D1B;--ink:#F2EFE6;--muted:#B5B1A4;--rule:#35332D;--rule-strong:#5A574D;--chip:#262520;--hi:#26230F;--yellow-pale:#2D2812;
+  --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;
+  --btn-bg:#FDBB30;--btn-fg:#111111;--btn-hover-bg:#FFD36B;--btn-hover-fg:#111111;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.30);--shadow-hover:0 2px 4px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.4);
+  --masthead-line:rgba(0,0,0,.35);--hover-tint:rgba(17,17,17,.09);
+  --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#000000;
+  --err-bg:#3A1618;--err:#FF8A8F;--ok-bg:#16301A;--warn-bg:#2D2812;--focus:#6EA8E0;--red:#FF6B72;--green:#5FBF68;
+  --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#F0A733;--c-polling:#B98AD6;
+  --on-fill:#111111;--orange:#F0A733;--orange-rule:#F28C1B;--orange-tint:#3A2A14;--green-tint:#16301A;--red-tint:#3A1618;--mark:#FDBB30;--sky:#1B2230;--sky-line:#34425C;}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#141414;--card:#1D1D1B;--ink:#F2EFE6;--muted:#B5B1A4;--rule:#35332D;--rule-strong:#5A574D;--chip:#262520;--hi:#26230F;--yellow-pale:#2D2812;
+  --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;
+  --btn-bg:#FDBB30;--btn-fg:#111111;--btn-hover-bg:#FFD36B;--btn-hover-fg:#111111;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.30);--shadow-hover:0 2px 4px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.4);
+  --masthead-line:rgba(0,0,0,.35);--hover-tint:rgba(17,17,17,.09);
+  --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#000000;
+  --err-bg:#3A1618;--err:#FF8A8F;--ok-bg:#16301A;--warn-bg:#2D2812;--focus:#6EA8E0;--red:#FF6B72;--green:#5FBF68;
+  --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#F0A733;--c-polling:#B98AD6;
+  --on-fill:#111111;--orange:#F0A733;--orange-rule:#F28C1B;--orange-tint:#3A2A14;--green-tint:#16301A;--red-tint:#3A1618;--mark:#FDBB30;--sky:#1B2230;--sky-line:#34425C;}
+

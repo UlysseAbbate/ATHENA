@@ -1,5 +1,5 @@
 __pycache__/
 *.pyc
 # collector working copy: the real data lives in the private database
-data/
+/data/
 node_modules/

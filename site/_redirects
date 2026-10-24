@@ -1,0 +1,5 @@
+# Old addresses keep working (the Mall became Lovelace, Ulysse became Lucien). The part after # is kept by the browser.
+/mall      /lovelace/         301
+/mall/*    /lovelace/:splat   301
+/ulysse    /lucien/           301
+/ulysse/*  /lucien/:splat     301

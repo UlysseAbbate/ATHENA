@@ -1,0 +1,38 @@
+# Builds and refreshes the Lib Dem policy library (conference motions and policy papers).
+# Weekly, plus by hand. Unchanged documents are skipped, so later runs are quick.
+name: Ingest Lib Dem policy
+
+on:
+  # Scheduled runs stay OFF until LIBBY's data has moved to the Athena database and its secrets are set here (docs/MASTER-PLAN.md, phase 6).
+  #  schedule:
+  #    - cron: '0 5 * * 1'   # Mondays 05:00 UTC
+  workflow_dispatch:
+    inputs:
+      refresh:
+        description: 'Re-process every document (re-tags portfolios)'
+        type: boolean
+        default: false
+      retag:
+        description: 'Only give a portfolio to stored documents that have none (quick, no crawling)'
+        type: boolean
+        default: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/libby/requirements.txt
+      - run: pip install -r scripts/libby/requirements.txt
+      - name: Ingest policy
+        working-directory: scripts/libby
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python ingest_policy.py ${{ inputs.retag && '--retag' || '' }} ${{ inputs.refresh && '--refresh' || '' }}

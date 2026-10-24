@@ -6,33 +6,24 @@
 <meta name="robots" content="noindex">
 <title>Athena</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="athena.css">
-<style>
-main{max-width:760px;margin:0 auto;padding:44px 16px 60px}
-main h1{font:800 clamp(1.8rem,4.5vw,2.5rem)/1.2 var(--head);letter-spacing:-.025em;margin:0 0 6px;display:inline;background:linear-gradient(transparent 62%,var(--yellow) 62% 92%,transparent 92%);padding:0 .12em;margin-left:-.12em}
-.lede{color:var(--muted);margin:14px 0 28px}
-.index{display:grid;gap:14px}
-.index a{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 4.2rem 20px 24px;text-decoration:none;transition:box-shadow .15s,transform .15s,border-color .15s}
-.index a:hover,.index a:focus-visible{box-shadow:var(--shadow-hover);transform:translateY(-1px);border-color:var(--yellow-deep)}
-.index a::after{content:'\203A';position:absolute;right:1.2rem;top:50%;transform:translateY(-50%);width:2.2rem;height:2.2rem;border-radius:50%;background:var(--yellow-pale);color:var(--ink);font:800 1.5rem/2rem var(--head);text-align:center}
-.index a:hover::after{background:var(--yellow)}
-.index b{display:block;font:800 clamp(1.4rem,3.4vw,1.9rem)/1.1 var(--head);letter-spacing:-.02em;background-image:linear-gradient(var(--yellow),var(--yellow));background-repeat:no-repeat;background-size:0% 38%;background-position:0 88%;transition:background-size .25s ease-out;width:fit-content}
-.index a:hover b,.index a:focus-visible b{background-size:100% 38%}
-.index span{display:block;margin-top:6px;color:var(--muted)}
-</style>
+<link rel="stylesheet" href="shared/tokens.css">
+<link rel="stylesheet" href="shared/libby.css">
+<script src="shared/theme.js"></script>
 </head>
 <body>
-<header class="masthead"><div class="wrap masthead-bar"><h1 class="brand">Athena</h1><div class="right"><span class="muted" id="who"></span></div></div></header>
-<main>
-  <h1>Choose a workspace</h1>
-  <p class="lede">Sign in where asked. What you can see depends on your role.</p>
+<a class="skip" href="#main">Skip to content</a>
+<header id="hd"></header>
+<main id="main" tabindex="-1">
+  <div class="page-head"><h1>Choose a program</h1>
+  <p class="lede">What you can open depends on the access you have been given.</p></div>
   <nav class="index" id="n" aria-label="Workspaces">
-    <a href="mall/"><b>The Mall</b><span>Mayoral Analysis for London's Liberals: campaign plan, volunteers, stakeholders.</span></a>
   </nav>
 </main>
-<script src="mall/vendor/supabase.js"></script>
-<script src="mall/config.js"></script>
-<script src="common.js"></script>
+<script src="shared/vendor/supabase.js"></script>
+<script src="shared/config.js"></script>
+<script src="shared/common.js"></script>
+<script src="shared/shell.js"></script>
+<script src="shared/authui.js"></script>
 <script src="home.js"></script>
 </body>
 </html>
