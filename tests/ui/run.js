@@ -152,6 +152,11 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.click('#tabs button[data-tab="media"]'); await page.waitForTimeout(200);
         await page.reload(); await page.waitForTimeout(1000);
         check("admin: ulysse remembers tab", await page.$eval('#tabs button.on', b => b.dataset.tab) === "media");
+        await page.evaluate(() => { sessionStorage.clear(); localStorage.setItem("ulysse.lastVisit", new Date(Date.now() - 3 * 864e5).toISOString()); });
+        await page.reload(); await page.waitForTimeout(1000);
+        await page.click('#tabs button[data-tab="all"]'); await page.waitForTimeout(200);
+        const stats = await page.$eval("#stats", e => e.innerText);
+        check("admin: ulysse shows what is new since the last visit", /since your last visit/.test(stats) && await page.$eval("#sinceLastWrap", e => !e.hidden), stats.replace(/\n/g, " "));
       }
 
       await page.goto(BASE + "/admin/");

@@ -77,7 +77,7 @@ Refreshed every 3 hours by GitHub Actions (`.github/workflows/update.yml`, or *R
 **Using it:**
 - **Filters:** policy area, geography, type, source, House, date range and read/unread. Each dropdown counts only what the other filters leave.
 - **Read state** is per person and syncs across devices.
-- The page remembers your last tab and filters.
+- The page remembers your last tab and filters, and counts what arrived **since your last visit** (with a filter to show only those).
 - `/` jumps to search.
 - The *Updated …* label turns black if the data is more than 7 hours old.
 

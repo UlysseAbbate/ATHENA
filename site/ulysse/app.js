@@ -11,7 +11,7 @@ const NEW_HOURS = 48, PAGE = 150;
 const TZ = "Europe/London";
 const SAVED = "ulysse.view.v1";
 const state = { tab: "all", items: [], polls: [], health: [], read: new Set(), shown: PAGE, pollRange: "all", hidden: new Set(),
-  f: { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", onlyNew: false } };
+  f: { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", onlyNew: false, sinceLast: false } };
 
 function saveView() { try { localStorage.setItem(SAVED, JSON.stringify({ tab: state.tab, f: state.f, pollRange: state.pollRange })); } catch (e) { /* private mode */ } }
 function restoreView() {
@@ -83,6 +83,7 @@ function rowsFor(skip = []) {
     if (!skip.includes("house") && f.house && !(i.tags || []).includes(f.house)) return false;
     if (!skip.includes("status") && f.status && (f.status === "read") !== state.read.has(i.id)) return false;
     if (!skip.includes("new") && f.onlyNew && !isNew(i)) return false;
+    if (!skip.includes("new") && f.sinceLast && !(state.baseline && new Date(i.first_seen) > state.baseline)) return false;
     if (q && !(i.title + " " + i.source + " " + (i.summary || "") + " " + (i.areas || []).join(" ") + " " + (i.geo || []).join(" ")).toLowerCase().includes(q)) return false;
     return true;
   });
@@ -114,7 +115,8 @@ function renderControls() {
   fillSelect("source", "All sources", tally(rowsFor(["source"]), r => r.source), f.source, { order: (a, b) => a.localeCompare(b) });
   const hs = $("house"); hs.hidden = state.tab !== "committee";
   if (!hs.hidden) fillSelect("house", "Commons & Lords", tally(rowsFor(["house"]).filter(r => r.category === "committee"), r => (r.tags || []).filter(t => ["Commons", "Lords", "Joint"].includes(t))), f.house);
-  $("range").value = f.range; $("status").value = f.status; $("onlyNew").checked = f.onlyNew;
+  $("range").value = f.range; $("status").value = f.status; $("onlyNew").checked = f.onlyNew; $("sinceLast").checked = f.sinceLast;
+  $("sinceLastWrap").hidden = !state.baseline;
 }
 
 /* ---------------------------------------------------------------- overview */
@@ -124,7 +126,9 @@ function renderOverview(rows) {
   const unread = rows.filter(r => !state.read.has(r.id)).length;
   const fresh = rows.filter(isNew).length;
   const wk = base.filter(r => (Date.now() - when(r)) / 864e5 <= 7).length;
-  $("stats").innerHTML = stat(rows.length, "items shown") + stat(unread, "unread") + stat(fresh, "new in 48 hours") + stat(wk, "published this week");
+  const since = state.baseline ? rowsFor(["range", "status", "new"]).filter(r => new Date(r.first_seen) > state.baseline).length : null;
+  $("stats").innerHTML = stat(rows.length, "items shown") + stat(unread, "unread") +
+    (since != null ? stat(since, `new since your last visit (${Athena.ago(state.baseline.toISOString())})`) : stat(fresh, "new in 48 hours")) + stat(wk, "published this week");
   renderActivity();
   renderAreaBars();
 }
@@ -296,7 +300,8 @@ function bind() {
   [["area", "area"], ["geo", "geo"], ["kind", "kind"], ["source", "source"], ["house", "house"], ["range", "range"], ["status", "status"]].forEach(([id, k]) =>
     $(id).addEventListener("change", e => { state.f[k] = e.target.value; state.shown = PAGE; render(); }));
   $("onlyNew").addEventListener("change", e => { state.f.onlyNew = e.target.checked; state.shown = PAGE; render(); });
-  $("reset").onclick = () => { Object.assign(state.f, { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", onlyNew: false }); $("q").value = ""; state.shown = PAGE; render(); };
+  $("sinceLast").addEventListener("change", e => { state.f.sinceLast = e.target.checked; state.shown = PAGE; render(); });
+  $("reset").onclick = () => { Object.assign(state.f, { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", onlyNew: false, sinceLast: false }); $("q").value = ""; state.shown = PAGE; render(); };
   $("markall").onclick = () => { const ids = rowsFor().filter(r => !state.read.has(r.id)).map(r => r.id); if (ids.length && confirm(`Mark ${ids.length} item${ids.length === 1 ? "" : "s"} as read?`)) setRead(ids, true); };
   document.body.addEventListener("click", e => {
     const rd = e.target.closest("[data-read]"); if (rd) return setRead([rd.dataset.read], !state.read.has(rd.dataset.read));
@@ -324,6 +329,13 @@ function signIn() { AuthUI.render(sb, document.body, { title: "Ulysse" }); }
   $("updated").textContent = feed ? `Updated ${Athena.ago(feed.updated)}` : "No data yet. Run the collector.";
   if (staleH > 7) $("updated").classList.add("stale");
   restoreView();
+  // "since your last visit": the previous visit's time, kept for this whole browser session (reloads do not reset it)
+  try {
+    let base = sessionStorage.getItem("ulysse.baseline");
+    if (base === null) { base = localStorage.getItem("ulysse.lastVisit") || ""; sessionStorage.setItem("ulysse.baseline", base); }
+    state.baseline = base ? new Date(base) : null;
+    localStorage.setItem("ulysse.lastVisit", new Date().toISOString());
+  } catch (e) { state.baseline = null; }
   document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x.dataset.tab === state.tab));
   bind(); render();
 })();
