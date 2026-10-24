@@ -7,6 +7,7 @@ Run:  python tracker/update.py
 """
 from __future__ import annotations
 
+import collections
 import hashlib
 import json
 import re
@@ -40,23 +41,25 @@ health: list[dict] = []
 
 # ----------------------------------------------------------------- helpers
 def get(url: str, **kw) -> requests.Response:
-    """GET with one retry for network errors / 5xx / 429. Other 4xx (403 blocked, 404 wrong URL) are permanent: no retry."""
+    """GET with one retry for 5xx / 429 / read timeouts. No retry for permanent 4xx (403 blocked, 404 wrong URL) or for
+    hosts that cannot be reached at all (connect timeout, DNS, TLS): retrying those only burns minutes."""
     last = None
     for attempt in range(2):
         try:
-            r = S.get(url, timeout=25, **kw)
-            if 400 <= r.status_code < 500 and r.status_code != 429:
-                r.raise_for_status()      # permanent
+            r = S.get(url, timeout=(6, 20), **kw)
             r.raise_for_status()
             return r
         except requests.HTTPError as e:
             last = e
-            if e.response is not None and 400 <= e.response.status_code < 500 and e.response.status_code != 429:
+            code = e.response.status_code if e.response is not None else 0
+            if 400 <= code < 500 and code != 429:
                 break
-            time.sleep(1.5)
+        except (requests.ConnectionError, requests.ConnectTimeout, requests.exceptions.SSLError) as e:
+            last = e
+            break
         except Exception as e:  # noqa: BLE001
             last = e
-            time.sleep(1.5)
+        time.sleep(1.5)
     raise last  # type: ignore[misc]
 
 
@@ -167,19 +170,19 @@ FEED_SUFFIXES = ["feed", "feed/", "rss", "rss.xml", "feed.xml", "atom.xml"]
 
 
 def _feed_entries(feed_url: str):
-    """Fetch a feed with a timeout and parse it; returns [] for HTML pages (some sites answer feed URLs with their
-    home page), errors and empty feeds."""
+    """Fetch a feed with a timeout and parse it. Returns (entries, reason). HTML answers (some sites reply to feed
+    URLs with their home page), errors and empty feeds give no entries."""
     try:
-        r = S.get(feed_url, timeout=15)
+        r = S.get(feed_url, timeout=(6, 15))
         if r.status_code != 200:
-            return []
+            return [], f"HTTP {r.status_code}"
         head = r.content[:600].lstrip().lower()
         if not (head.startswith((b"<?xml", b"<rss", b"<feed", b"<rdf")) or b"<rss" in head or b"<feed" in head):
-            return []
+            return [], "not a feed"
         d = feedparser.parse(r.content)
-        return d.entries if d.entries else []
-    except Exception:  # noqa: BLE001
-        return []
+        return (d.entries, "ok") if d.entries else ([], "empty feed")
+    except Exception as e:  # noqa: BLE001
+        return [], type(e).__name__
 
 
 def discover_feeds(page_url: str, html: str) -> list[str]:
@@ -288,25 +291,29 @@ def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
     notes: list[str] = []
     seen_pages: set[str] = set()
     tried_feeds: set[str] = set()
+    probes: collections.Counter = collections.Counter()
+    t0 = time.time()
+    over = lambda: time.time() - t0 > 75     # per-organisation budget; then go straight to the Google News fallback
 
     def try_feeds(feeds: list[str]):
         for f in feeds:
-            if f in tried_feeds:
+            if f in tried_feeds or over():
                 continue
             tried_feeds.add(f)
             time.sleep(0.3)
-            entries = _feed_entries(f)
+            entries, why = _feed_entries(f)
             if len(entries) >= 3:    # a 1-2 item feed is usually a site's "promoted" feed, not its publications
                 return f, entries
+            probes[f"{len(entries)} items" if entries else why] += 1
         return None, []
 
     try:
         # explicit feeds first: they need no page at all (works even when the site 403s the HTML pages)
         f, entries = try_feeds(explicit_feeds)
         if entries:
-            return _done(name, _entries_to_items(name, entries), "feed", f, notes)
+            return _done(t0, name, _entries_to_items(name, entries), "feed", f, notes)
         for page in pages:
-            if page in seen_pages:
+            if page in seen_pages or over():
                 continue
             seen_pages.add(page)
             try:
@@ -318,16 +325,17 @@ def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
                     base = f"{urlparse(page).scheme}://{urlparse(page).netloc}/"
                     f, entries = try_feeds([urljoin(base, x) for x in FEED_SUFFIXES])
                     if entries:
-                        return _done(name, _entries_to_items(name, entries), "feed", f, notes)
+                        return _done(t0, name, _entries_to_items(name, entries), "feed", f, notes)
                 continue
             if not no_feed:
                 f, entries = try_feeds(discover_feeds(page, html))
                 if entries:
-                    return _done(name, _entries_to_items(name, entries), "feed", f, notes)
+                    return _done(t0, name, _entries_to_items(name, entries), "feed", f, notes)
             rows = scrape_links(page, html)
             if rows:
-                return _done(name, [make_item("thinktank", name, t, h, d) for t, h, d in rows], "html", page, notes)
-            notes.append(f"{urlparse(page).netloc}: page loads but lists no publication links (JavaScript?)")
+                return _done(t0, name, [make_item("thinktank", name, t, h, d) for t, h, d in rows], "html", page, notes)
+            title = (BeautifulSoup(html, "lxml").title.string or "").strip()[:40] if BeautifulSoup(html, "lxml").title else ""
+            notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links")
         # last resort: what Google News has indexed for the organisation's own site
         if tt.get("news") is not False:
             q = tt.get("news_query") or f"site:{_news_site(tt['url'])}"
@@ -345,17 +353,22 @@ def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
                 if len(items) >= 25:
                     break
             if items:
-                return _done(name, items, "google-news", q, notes)
+                return _done(t0, name, items, "google-news", q, notes)
             notes.append("Google News had nothing for it either")
+        if probes:
+            notes.append("feed probes: " + ", ".join(f"{n}x {w}" for w, n in probes.most_common(4)))
     except Exception as e:  # noqa: BLE001
         notes.append(f"unexpected: {e}")
-    return [], {"group": "thinktanks", "name": name, "ok": False, "items": 0, "error": "; ".join(dict.fromkeys(notes))[:300]}
+    if probes and not any(n.startswith("feed probes") for n in notes):
+        notes.append("feed probes: " + ", ".join(f"{n}x {w}" for w, n in probes.most_common(4)))
+    return [], {"group": "thinktanks", "name": name, "ok": False, "items": 0, "seconds": round(time.time() - t0),
+                "error": "; ".join(dict.fromkeys(notes))[:400]}
 
 
-def _done(name, items, method, via, notes):
+def _done(t0, name, items, method, via, notes):
     items = [i for i in items if i["url"]]
-    rec = {"group": "thinktanks", "name": name, "ok": bool(items), "items": len(items), "method": method, "via": via,
-           "error": ("; ".join(dict.fromkeys(notes))[:300] if notes else "")}
+    rec = {"group": "thinktanks", "name": name, "ok": bool(items), "items": len(items), "method": method, "via": via, "seconds": round(time.time() - t0),
+           "error": ("; ".join(dict.fromkeys(notes))[:400] if notes else "")}
     return items, rec
 
 
