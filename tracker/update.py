@@ -271,17 +271,17 @@ def _news_site(url: str) -> str:
     return host
 
 
-def _entries_to_items(name: str, entries) -> list[dict]:
+def _entries_to_items(name: str, entries, category: str = "thinktank") -> list[dict]:
     items = []
     for e in entries[:40]:
         link = e.get("link")
         if link:
-            items.append(make_item("thinktank", name, e.get("title", ""), link,
+            items.append(make_item(category, name, e.get("title", ""), link,
                                    parse_date(e.get("published") or e.get("updated")), e.get("summary", "")))
     return items
 
 
-def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
+def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktanks") -> tuple[list[dict], dict]:
     """Self-healing: primary page (+ www/bare twin, + alternates) -> feeds -> HTML scrape -> Google News site: search.
     Returns (items, health record). Never raises."""
     name = tt["name"]
@@ -311,7 +311,7 @@ def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
         # explicit feeds first: they need no page at all (works even when the site 403s the HTML pages)
         f, entries = try_feeds(explicit_feeds)
         if entries:
-            return _done(t0, name, _entries_to_items(name, entries), "feed", f, notes)
+            return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
         for page in pages:
             if page in seen_pages or over():
                 continue
@@ -325,15 +325,15 @@ def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
                     base = f"{urlparse(page).scheme}://{urlparse(page).netloc}/"
                     f, entries = try_feeds([urljoin(base, x) for x in FEED_SUFFIXES])
                     if entries:
-                        return _done(t0, name, _entries_to_items(name, entries), "feed", f, notes)
+                        return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
                 continue
             if not no_feed:
                 f, entries = try_feeds(discover_feeds(page, html))
                 if entries:
-                    return _done(t0, name, _entries_to_items(name, entries), "feed", f, notes)
+                    return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
             rows = scrape_links(page, html)
             if rows:
-                return _done(t0, name, [make_item("thinktank", name, t, h, d) for t, h, d in rows], "html", page, notes)
+                return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], "html", page, notes)
             title = (BeautifulSoup(html, "lxml").title.string or "").strip()[:40] if BeautifulSoup(html, "lxml").title else ""
             notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links")
         # last resort: what Google News has indexed for the organisation's own site
@@ -349,11 +349,11 @@ def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
                     continue           # Google's site: filter is loose: keep only the organisation's own pages
                 if len(title.split()) < 3 or title.lower() in (name.lower(), "home"):
                     continue           # site chrome, tags, staff pages
-                items.append(make_item("thinktank", name, title, e.get("link", ""), parse_date(e.get("published"))))
+                items.append(make_item(category, name, title, e.get("link", ""), parse_date(e.get("published"))))
                 if len(items) >= 25:
                     break
             if items:
-                return _done(t0, name, items, "google-news", q, notes)
+                return _done(t0, group, name, items, "google-news", q, notes)
             notes.append("Google News had nothing for it either")
         if probes:
             notes.append("feed probes: " + ", ".join(f"{n}x {w}" for w, n in probes.most_common(4)))
@@ -361,15 +361,21 @@ def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
         notes.append(f"unexpected: {e}")
     if probes and not any(n.startswith("feed probes") for n in notes):
         notes.append("feed probes: " + ", ".join(f"{n}x {w}" for w, n in probes.most_common(4)))
-    return [], {"group": "thinktanks", "name": name, "ok": False, "items": 0, "seconds": round(time.time() - t0),
+    return [], {"group": group, "name": name, "ok": False, "items": 0, "seconds": round(time.time() - t0),
                 "error": "; ".join(dict.fromkeys(notes))[:400]}
 
 
-def _done(t0, name, items, method, via, notes):
+def _done(t0, group, name, items, method, via, notes):
     items = [i for i in items if i["url"]]
-    rec = {"group": "thinktanks", "name": name, "ok": bool(items), "items": len(items), "method": method, "via": via, "seconds": round(time.time() - t0),
+    rec = {"group": group, "name": name, "ok": bool(items), "items": len(items), "method": method, "via": via, "seconds": round(time.time() - t0),
            "error": ("; ".join(dict.fromkeys(notes))[:400] if notes else "")}
     return items, rec
+
+
+
+
+def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
+    return collect_source(tt, "thinktank", "thinktanks")
 
 
 # ------------------------------------------------------------------- media
@@ -491,7 +497,7 @@ def collect_poll_articles() -> list[dict]:
             return False
         seen.add(key)
         date = date or date_from_title(title)
-        items.append(make_item("polling", source, title, url, date, "", poll_tags(title) or ["poll"]))
+        items.append(make_item("polling", source, title, url, date, "", poll_kind_tags(title)))
         return True
 
     # Direct pages first so that, when the same piece also appears in the Google News
@@ -513,11 +519,332 @@ def collect_poll_articles() -> list[dict]:
             entries = google_news(f"{ft} site:{f['domain']}", cfg["lookback"])
             n = sum(add(f["name"], _gn_title(e), e.get("link", ""), parse_date(e.get("published")))
                     for e in entries[:40])
-            record("polling", f["name"], n > 0, n, "" if n else "no results")
+            record("polling", f"{f['name']} (news search)", n > 0, n, "" if n else "nothing indexed recently")
         except Exception as e:  # noqa: BLE001
-            record("polling", f["name"], False, 0, e)
+            record("polling", f"{f['name']} (news search)", False, 0, e)
         time.sleep(1)
     return items
+
+
+
+# ------------------------------------------------------- political polling: relevance + Wikipedia poll tables
+def _rx(key: str) -> "re.Pattern":
+    return re.compile(CONFIG["polling"]["political"][key], re.I)
+
+
+def political_poll(title: str, summary: str = "") -> bool:
+    """Only political polling: drops consumer/commercial polls and other countries' politics."""
+    pc = CONFIG["polling"]["political"]
+    if not hasattr(political_poll, "rx"):
+        political_poll.rx = {k: re.compile(v, re.I) for k, v in pc.items()}
+    rx = political_poll.rx
+    uk = re.search(r"\b(uk|britain|british|westminster|england|scotland|wales)\b", title, re.I)
+    if rx["abroad"].search(title) and not uk:
+        return False
+    if rx["core"].search(title):
+        return True
+    signal = re.compile(r"\b(polls?|polling|surveys?|voters?|britons|brits|public|support\w*|oppose|attitudes?|views?|opinion|think|believe|back|backed|"
+                        r"favour\w*|trust|approve|concern\w*|priorit\w*|do you|would you|who|how (do|would|many)|per cent|%)\b", re.I)
+    return bool(rx["policy"].search(title) and signal.search(title) and not rx["consumer"].search(title))
+
+
+def poll_kind_tags(title: str) -> list[str]:
+    """Specific tag first (it picks the type label), then the general ones."""
+    t = title.lower()
+    tags = []
+    if re.search(r"\bmrp\b|seat projection|nowcast", t):
+        tags.append("mrp")
+    party_nums = re.findall(r"\b(?:lab(?:our)?|con(?:servatives?)?|ref(?:orm)?|ld|lib(?:eral)? dems?|gr(?:ee)?n|greens?|snp)\b\s*(?:at|on|up|down|\+|:)?\s*\d{1,2}\b", t)
+    if re.search(r"voting[ -]intention|vote[ -]intention|westminster voting|poll of polls", t) or len(party_nums) >= 2:
+        tags.append("voting-intention")
+    if re.search(r"leader (rating|approval)|favourab|approval|net rating|popularity of|how do britons see|how (is|are) .* seen|most popular", t):
+        tags.append("leader-ratings")
+    if re.search(r"preferred prime minister|best prime minister|who would make the best", t):
+        tags.append("preferred-pm")
+    tags += [x for x in poll_tags(title) if x not in tags]
+    if not any(x in tags for x in ("voting-intention", "party-support", "news-cycle", "mrp", "leader-ratings", "preferred-pm")):
+        tags.append("policy-opinion")
+    return tags
+
+
+_WIKI: dict = {}
+
+
+def _wiki_soup(url: str):
+    if url not in _WIKI:
+        _WIKI[url] = BeautifulSoup(get(url).text, "lxml")
+    return _WIKI[url]
+
+
+def _cite_urls(soup) -> dict:
+    """Wikipedia footnote id -> the first non-archive external link in it (the pollster's own release)."""
+    out = {}
+    for li in soup.select('ol.references li[id^="cite_note"]'):
+        links = [a["href"] for a in li.find_all("a", href=re.compile(r"^https?://"))]
+        good = [h for h in links if not re.search(r"archive\.(org|is|ph)|wikipedia\.org|webcitation|wikimedia", h)]
+        if good or links:
+            out[li["id"]] = (good or links)[0]
+    return out
+
+
+def _clean(cell) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"\[[^\]]*\]", "", cell.get_text(" ", strip=True)).replace("\xa0", " ")).strip()
+
+
+def _end_date(dates: str, year: int) -> datetime | None:
+    tail = re.split(r"\s*[–—-]\s*", dates.strip())[-1].strip()
+    try:
+        d = dtparse.parse(tail, default=datetime(year, 1, 1))
+    except (ValueError, OverflowError):
+        return None
+    d = d.replace(tzinfo=timezone.utc)
+    if not re.search(r"\b20\d\d\b", tail) and d > NOW + timedelta(days=2):
+        d = d.replace(year=d.year - 1)          # the table gives no year: never in the future
+    return d
+
+
+PARTY_SHORT = {"Lab": "Lab", "Con": "Con", "Ref": "Reform", "LD": "LD", "Grn": "Green", "SNP": "SNP", "PC": "Plaid", "RB": "Restore"}
+
+
+def _pollster_name(raw: str) -> tuple[str, bool]:
+    """-> (clean pollster name, is_mrp). 'Find Out Now/Electoral Calculus (MRP)' -> ('Find Out Now', True)."""
+    mrp = bool(re.search(r"\bMRP\b", raw, re.I))
+    name = re.sub(r"\s*\(?MRP\)?", "", raw, flags=re.I).strip()
+    name = re.sub(r"\s*/\s*", " / ", name).strip(" /")
+    name = re.sub(r"\s+", " ", name)
+    if " / " in name:                      # e.g. "Find Out Now / Electoral Calculus": credit the first
+        name = name.split(" / ")[0].strip()
+    return name, mrp
+
+
+def collect_wiki_polls() -> tuple[list[dict], list[dict]]:
+    """Every poll row in Wikipedia's UK tables becomes an item linking to the pollster's own release.
+    Covers every pollster that publishes: national voting intention, MRPs, Scotland/Wales/England, leader ratings,
+    preferred PM. Returns (items, pollster summary)."""
+    cfg = CONFIG["polling"]
+    lookback = timedelta(days=cfg.get("table_lookback_days", 60))
+    items: list[dict] = []
+    seen_urls: set[str] = set()
+    pollster_stats: dict = {}
+
+    def emit(page, url_fallback, cmap, cell, pollster_raw, dates, year, kind_tag, title_fn, summary, extra_tags=()):
+        end = _end_date(dates, year)
+        if not end or NOW - end > lookback:
+            return False
+        name, mrp = _pollster_name(pollster_raw)
+        if not name:
+            return False
+        a = cell.find("a", href=re.compile(r"#cite_note"))
+        url = cmap.get(a["href"].lstrip("#")) if a else None
+        url = url or f"{page}#cite"
+        tag = "mrp" if mrp and kind_tag == "voting-intention" else kind_tag
+        if url in seen_urls:
+            url += f"#{tag}-{end.date().isoformat()}-{re.sub(r'[^a-z]', '', name.lower())}"
+        seen_urls.add(url)
+        dates = re.sub(r"\s*[–—-]\s*", "–", dates)
+        title = title_fn(name, dates, mrp)
+        if url in seen_urls:       # several tables can cite one file: keep the ids distinct
+            url += f"#{tag}-{end.date().isoformat()}-{hashlib.sha1(title.encode()).hexdigest()[:6]}"
+        seen_urls.add(url)
+        items.append(make_item("polling", name, title, url, end, summary, [tag, *extra_tags, "poll-table"]))
+        if kind_tag == "voting-intention":
+            st = pollster_stats.setdefault(name, {"name": name, "polls": 0, "last": None})
+            st["polls"] += 1
+            st["last"] = max(filter(None, [st["last"], end.date().isoformat()]))
+        return True
+
+    # ---- national + sub-national voting intention (main page)
+    page = cfg["wikipedia_page"]
+    try:
+        soup = _wiki_soup(page); cmap = _cite_urls(soup); n = 0
+        for table in soup.find_all("table", class_=re.compile("wikitable")):
+            rows = table.find_all("tr")
+            if not rows or "Pollster" not in rows[0].get_text():
+                continue
+            hd = table.find_previous(["h2", "h3"]); head = hd.get_text(" ", strip=True).replace("[edit]", "").strip() if hd else ""
+            region = head if head in ("Scotland", "Wales", "England") else ""
+            if not region and not re.fullmatch(r"20\d\d", head):
+                continue
+            year = int(head) if not region else NOW.year
+            if not region and year < NOW.year - 1:
+                continue
+            cols = [_clean(th) for th in rows[0].find_all("th")]
+            ix = {c: i for i, c in enumerate(cols)}
+            if "Pollster" not in ix:
+                continue
+            for r in rows[1:]:
+                cells = r.find_all(["td", "th"])
+                if len(cells) != len(cols):
+                    continue
+                area = _clean(cells[ix["Area"]]) if "Area" in ix else ""
+                if area and area not in ("GB", "UK"):
+                    continue
+                vals = []
+                for c, i in ix.items():
+                    if c in PARTY_SHORT:
+                        m = re.search(r"\d+(?:\.\d+)?", _clean(cells[i]))
+                        if m:
+                            vals.append((PARTY_SHORT[c], float(m.group(0))))
+                if len(vals) < 4:
+                    continue
+                vals.sort(key=lambda kv: -kv[1])
+                top = ", ".join(f"{p} {v:g}%" for p, v in vals[:6])
+                client = _clean(cells[ix["Client"]]) if "Client" in ix else ""
+                sample = _clean(cells[ix["Sample size"]]) if "Sample size" in ix else ""
+                summary = " · ".join(x for x in [f"For {client}" if client and client not in ("N/A", "—") else "", region or area,
+                                                 f"n={sample}" if sample else ""] if x)
+                dates = _clean(cells[0])
+                pre = f"{region} Westminster voting intention" if region else "Voting intention"
+
+                def title_fn(name, d, mrp, top=top, pre=pre):
+                    return f"{'MRP' if mrp else pre}: {top} ({name}, {d})"
+                if emit(page, page, cmap, cells[ix["Pollster"]], _clean(cells[ix["Pollster"]]), dates, year, "voting-intention", title_fn, summary):
+                    n += 1
+        record("polling", "Wikipedia: voting intention tables", n > 0, n, "" if n else "no rows in the lookback window")
+    except Exception as e:  # noqa: BLE001
+        record("polling", "Wikipedia: voting intention tables", False, 0, e)
+
+    # ---- leader ratings (net favourability)
+    try:
+        page = cfg["wikipedia_leadership_page"]; soup = _wiki_soup(page); cmap = _cite_urls(soup); n = 0
+        for table in soup.find_all("table", class_=re.compile("wikitable")):
+            rows = table.find_all("tr")
+            if len(rows) < 4 or "Pollster" not in rows[0].get_text():
+                continue
+            hd = table.find_previous(["h2", "h3", "h4"]); head = hd.get_text(" ", strip=True).replace("[edit]", "").strip() if hd else ""
+            tyear = int(head) if re.fullmatch(r"20\d\d", head) else NOW.year      # the page's year headings; dates carry no year
+            if tyear < NOW.year - 1:
+                continue
+            ths = rows[0].find_all("th"); leaders = []; col = 0
+            for th in ths:
+                span = int(th.get("colspan", 1) or 1)
+                txt = _clean(th)
+                if col >= 3 and span >= 3:
+                    leaders.append((txt, col + 2))        # the "Net" column of Pos/Neg/Net
+                col += span
+            if not leaders:
+                continue
+            for r in rows[1:]:
+                cells = r.find_all(["td", "th"])
+                if len(cells) < 6 or not re.search(r"\d", _clean(cells[0])) or _clean(cells[1]) in ("Pollster", "Pos."):
+                    continue
+                pairs = []
+                for name, i in leaders:
+                    if i < len(cells):
+                        m = re.fullmatch(r"([+\-–−]?)\s*(\d+)", _clean(cells[i]).replace("−", "–"))
+                        if m:
+                            sign = "-" if m.group(1) in ("–", "-") else "+"
+                            pairs.append((name.split()[-1], int(sign + m.group(2))))
+                if len(pairs) < 2:
+                    continue
+                pairs.sort(key=lambda kv: -kv[1])
+                top = ", ".join(f"{n_} {v:+d}" for n_, v in pairs[:6]).replace("-", "−")
+                dates = _clean(cells[0]); sample = _clean(cells[2])
+
+                def title_fn(name, d, mrp, top=top):
+                    return f"Leader ratings (net): {top} ({name}, {d})"
+                if emit(page, page, cmap, cells[1], _clean(cells[1]), dates, tyear, "leader-ratings", title_fn,
+                        f"Net favourable minus unfavourable · n={sample}", ("party-support",)):
+                    n += 1
+        record("polling", "Wikipedia: leader ratings", n > 0, n, "" if n else "no rows in the lookback window")
+    except Exception as e:  # noqa: BLE001
+        record("polling", "Wikipedia: leader ratings", False, 0, e)
+
+    # ---- preferred prime minister (head-to-heads): one item per poll, combining its pairings
+    try:
+        page = cfg["wikipedia_pm_page"]; soup = _wiki_soup(page); cmap = _cite_urls(soup); n = 0
+        polls: dict = {}
+        for table in soup.find_all("table", class_=re.compile("wikitable")):
+            rows = table.find_all("tr")
+            if len(rows) < 3 or "Pollster" not in rows[0].get_text():
+                continue
+            cols = [_clean(th) for th in rows[0].find_all("th")]
+            stop = next((i for i, c in enumerate(cols) if c in ("None", "Don't know", "Others", "Lead", "Neither")), len(cols))
+            cands = list(range(3, stop))
+            for r in rows[1:]:
+                cells = r.find_all(["td", "th"])
+                if len(cells) != len(cols) or not re.search(r"\d", _clean(cells[0])):
+                    continue
+                pairs = []
+                for i in cands:
+                    m = re.search(r"\d+", _clean(cells[i]))
+                    if m:
+                        pairs.append((cols[i].split()[-1], int(m.group(0))))
+                if len(pairs) < 2:
+                    continue
+                pairs.sort(key=lambda kv: -kv[1])
+                key = (_clean(cells[1]), _clean(cells[0]))
+                rec_ = polls.setdefault(key, {"cell": cells[1], "sample": _clean(cells[2]), "parts": []})
+                part = " v ".join(f"{n_} {v}%" for n_, v in pairs)
+                if part not in rec_["parts"]:
+                    rec_["parts"].append(part)
+        for (pol, dates), rec_ in polls.items():
+            top = "; ".join(rec_["parts"][:4])
+
+            def title_fn(name, d, mrp, top=top):
+                return f"Preferred PM: {top} ({name}, {d})"
+            if emit(page, page, cmap, rec_["cell"], pol, dates, NOW.year, "preferred-pm", title_fn,
+                    f"{len(rec_['parts'])} head-to-head{'s' if len(rec_['parts']) != 1 else ''} · n={rec_['sample']}", ("party-support",)):
+                n += 1
+        record("polling", "Wikipedia: preferred prime minister", n > 0, n, "" if n else "no rows in the lookback window")
+    except Exception as e:  # noqa: BLE001
+        record("polling", "Wikipedia: preferred prime minister", False, 0, e)
+
+    stats = sorted(pollster_stats.values(), key=lambda x: (x["last"] or "", x["polls"]), reverse=True)
+    return items, stats
+
+
+def collect_pollster_sources() -> list[dict]:
+    """Pollsters' own sites and polling analysts, through the same self-healing collector as the think tanks
+    (feed -> page -> Google News on their domain), then filtered to political polling only."""
+    cfg = CONFIG["polling"]
+    sources = [(dict(x, _analyst=False)) for x in cfg.get("pollsters", [])] + [(dict(x, _analyst=True)) for x in cfg.get("analysts", [])]
+    items: list[dict] = []
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        results = list(ex.map(lambda t: collect_source(t, "polling", "polling"), sources))
+    for (got, rec), src in zip(results, sources):
+        req = re.compile(src["require"], re.I) if src.get("require") else None
+        keep = []
+        for it in got:
+            t = it["title"]
+            if not political_poll(t, it.get("summary", "")) or (req and not req.search(t + " " + it.get("summary", ""))):
+                continue
+            it["tags"] = poll_kind_tags(t)
+            if not it.get("published"):
+                it["published"] = (date_from_url(it["url"]) or date_from_title(t) or None) and (date_from_url(it["url"]) or date_from_title(t)).isoformat()
+            keep.append(it)
+        dropped = len(got) - len(keep)
+        rec["items"] = len(keep)
+        rec["ok"] = bool(keep) or (rec["ok"] and dropped > 0)
+        if dropped:
+            rec["error"] = (rec.get("error", "") + f" | {dropped} non-political items dropped").strip(" |")
+        health.append(rec)
+        items += keep
+    return items
+
+
+def collect_polling() -> tuple[list[dict], list[dict]]:
+    wiki_items, pollsters = collect_wiki_polls()
+    write_ups = collect_poll_articles() + collect_pollster_sources()
+    # a Wikipedia row for a poll we already have a write-up for (e.g. YouGov's own article) adds nothing
+    have = {}
+    for it in write_ups:
+        if "voting-intention" in it["tags"] and it.get("published"):
+            have.setdefault(it["source"].lower(), []).append(parse_date(it["published"]))
+    out = list(write_ups)
+    skipped = 0
+    for it in wiki_items:
+        d = parse_date(it["published"])
+        if "voting-intention" in it["tags"] and any(abs((d - x).days) <= 2 for x in have.get(it["source"].lower(), []) if x):
+            skipped += 1
+            continue
+        out.append(it)
+    # political-only, once more over everything that came from search or scraping
+    out = [i for i in out if "poll-table" in i["tags"] or political_poll(i["title"], i.get("summary", ""))]
+    print(f"polling: {len(wiki_items)} table rows ({skipped} already covered by a write-up), {len(write_ups)} write-ups, "
+          f"{len(out)} kept")
+    return out, pollsters
 
 
 PARTY_ALIASES = {
@@ -745,6 +1072,12 @@ def merge(new_items: list[dict]) -> list[dict]:
     for it in list(old.values()):
         if is_noise(it):
             del old[it["id"]]
+        elif it["category"] == "polling" and "poll-table" not in it.get("tags", []):
+            # political polling only, applied retroactively (taxonomy/filter edits clean up what is already stored)
+            if not political_poll(it["title"], it.get("summary", "")):
+                del old[it["id"]]
+            else:
+                it["tags"] = poll_kind_tags(it["title"])
     # The same article can arrive twice if a source's method flips between runs (direct feed vs Google News redirect):
     # keep one per (source, title), preferring the direct link.
     by_title: dict = {}
@@ -815,9 +1148,10 @@ def main() -> int:
     if run("media"):
         items += collect_media()
     if run("polling"):
-        items += collect_poll_articles()
+        poll_items, pollsters = collect_polling()
+        items += poll_items
         (DATA / "polls.json").write_text(json.dumps(
-            {"updated": NOW.isoformat(), "rows": collect_vi_table()}, indent=1))
+            {"updated": NOW.isoformat(), "rows": collect_vi_table(), "pollsters": pollsters}, indent=1))
     feed = merge(items)
     (DATA / "feed.json").write_text(json.dumps({"updated": NOW.isoformat(), "items": feed}, indent=1))
     (DATA / "health.json").write_text(json.dumps({"updated": NOW.isoformat(), "sources": health}, indent=1))

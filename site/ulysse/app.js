@@ -183,11 +183,23 @@ function renderList(rows) {
 }
 
 /* ---------------------------------------------------------------- polling */
+function renderPollsters(rows) {
+  const lim = Date.now() - 90 * 864e5, by = new Map();
+  (state.polls || []).filter(r => r.end && new Date(r.end) >= lim).forEach(r => {
+    const name = r.pollster.replace(/\s*\(?MRP\)?/i, "").split("/")[0].trim(); if (!name) return;
+    const e = by.get(name) || { n: 0, last: "" }; e.n++; if (r.end > e.last) e.last = r.end; by.set(name, e);
+  });
+  const list = [...by.entries()].sort((a, b) => b[1].last.localeCompare(a[1].last) || b[1].n - a[1].n);
+  $("pollsters").innerHTML = `<div class="panel-head"><h2>Pollsters publishing voting intention</h2><span class="muted">${list.length} in the last 90 days · from Wikipedia's tables</span></div>` +
+    `<div class="chips pollsters">${list.map(([k, v]) => `<button data-q="${esc(k)}" title="Show ${esc(k)} items">${esc(k)} <b>${v.n}</b> <small>${esc(fmtShort(v.last))}</small></button>`).join("")}</div>`;
+}
+
 function renderPolls() {
   const all = (state.polls || []).filter(r => r.end && !r.mrp).sort((a, b) => a.end.localeCompare(b.end));
   const chart = $("chart"); $("pollstats").innerHTML = ""; $("legend").innerHTML = ""; $("polltable").innerHTML = ""; $("pollctl").innerHTML = "";
   if (!all.length) { chart.innerHTML = ""; $("pollstats").innerHTML = '<div class="stat"><span>No polling table data yet</span></div>'; return; }
   const parties = ["Con", "Lab", "Reform", "LD", "Green"], names = { Con: "Conservative", Lab: "Labour", Reform: "Reform UK", LD: "Lib Dem", Green: "Green" };
+  renderPollsters(all);
   // 7-poll rolling average per party, over every row, so clipping the range doesn't change the lines
   const avg = parties.map(p => { const seen = []; return all.map(r => { if (r[p] != null) { seen.push(r[p]); if (seen.length > 7) seen.shift(); } return seen.length ? seen.reduce((a, b) => a + b, 0) / seen.length : null; }); });
   const mean = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
@@ -274,6 +286,7 @@ function bind() {
     const a = e.target.closest("[data-area]"); if (a) { state.f.area = state.f.area === a.dataset.area ? "" : a.dataset.area; state.shown = PAGE; return render(); }
     const g = e.target.closest("[data-geo]"); if (g) { state.f.geo = g.dataset.geo; state.shown = PAGE; return render(); }
     if (e.target.closest("#more")) { state.shown += PAGE; return render(true); }
+    const pq = e.target.closest("[data-q]"); if (pq) { $("q").value = pq.dataset.q; state.f.q = pq.dataset.q; state.f.range = "30"; state.shown = PAGE; return render(); }
     const pr = e.target.closest("[data-pr]"); if (pr) { state.pollRange = pr.dataset.pr; return renderPolls(); }
     const pp = e.target.closest("[data-pp]"); if (pp) { const p = pp.dataset.pp; state.hidden.has(p) ? state.hidden.delete(p) : state.hidden.add(p); return renderPolls(); }
   });

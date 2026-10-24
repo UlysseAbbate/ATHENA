@@ -75,3 +75,4 @@ tr:last-child td{border-bottom:0}
 .ok{background:#2E7D32}.bad{background:#C62828}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1B1B1B;color:#fff;padding:9px 16px;border-radius:99px;font-size:13px;box-shadow:var(--shadow-hover);z-index:50}
 @media(max-width:560px){.card{grid-template-columns:auto 1fr}.card .new{grid-column:2;justify-self:start}.day{top:96px}.hrow{flex-wrap:wrap}.hrow .n{margin-left:19px}}
+.chips.pollsters button{font:600 .78rem var(--body);color:var(--ink)}.chips.pollsters b{font:800 .7rem var(--head);background:var(--yellow);color:var(--black);border-radius:99px;padding:0 6px;margin-left:3px}.chips.pollsters small{color:var(--muted);font-size:.7rem;margin-left:3px}.chips.pollsters button:hover{background:var(--yellow-pale);border-color:var(--black)}

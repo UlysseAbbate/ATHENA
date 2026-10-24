@@ -151,7 +151,7 @@ geography:
 types:
   committee: {"Special Report": "Special report", "Government Response": "Government response", "Report": "Committee report"}
   media: "News coverage"
-  polling: {"voting-intention": "Voting intention", "party-support": "Party support", "news-cycle": "News tracker", default: "Poll / survey"}
+  polling: {"voting-intention": "Voting intention", "mrp": "MRP / seat projection", "leader-ratings": "Leader ratings", "preferred-pm": "Preferred PM", "party-support": "Party support", "news-cycle": "News tracker", "policy-opinion": "Polling & analysis", default: "Poll / survey"}
   thinktank:
     - ["Response / reaction", '\b(response|responds?|reaction|reacts?|statement|says|call(s)? for|urges?|welcomes?)\b']
     - ["Briefing / data", '\b(tracker|index|briefing|data|figures|statistics|stats|monitor|dashboard|explainer|explains|factsheet|review of the month|\d{4} review|(january|february|march|april|may|june|july|august|september|october|november|december) \d{4} review)\b']
