@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-24T00:02:28.085673+00:00",
+ "updated": "2026-10-24T00:59:23.035920+00:00",
  "sources": [
   {
    "group": "committees",
@@ -15,7 +15,7 @@
    "items": 20,
    "method": "feed",
    "via": "https://www.adamsmith.org/research?format=rss",
-   "seconds": 4,
+   "seconds": 3,
    "error": ""
   },
   {
@@ -35,7 +35,7 @@
    "items": 40,
    "method": "feed",
    "via": "https://bfpg.co.uk/analysis/rss.xml",
-   "seconds": 1,
+   "seconds": 0,
    "error": ""
   },
   {
@@ -45,7 +45,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.britishfuture.org/feed",
-   "seconds": 5,
+   "seconds": 6,
    "error": ""
   },
   {
@@ -55,7 +55,7 @@
    "items": 16,
    "method": "feed",
    "via": "https://carnegieuk.org/feed",
-   "seconds": 10,
+   "seconds": 9,
    "error": ""
   },
   {
@@ -65,7 +65,7 @@
    "items": 10,
    "method": "html",
    "via": "https://www.centreforcities.org/research/",
-   "seconds": 15,
+   "seconds": 12,
    "error": ""
   },
   {
@@ -85,7 +85,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://cles.org.uk/feed/",
-   "seconds": 0,
+   "seconds": 1,
    "error": ""
   },
   {
@@ -105,7 +105,7 @@
    "items": 10,
    "method": "html",
    "via": "https://cps.org.uk/research/",
-   "seconds": 22,
+   "seconds": 17,
    "error": ""
   },
   {
@@ -135,7 +135,7 @@
    "items": 22,
    "method": "google-news",
    "via": "\"CEPEO\" site:ucl.ac.uk",
-   "seconds": 18,
+   "seconds": 17,
    "error": "www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo: HTTP 404; ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo: HTTP 404"
   },
   {
@@ -145,7 +145,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:chathamhouse.org",
-   "seconds": 7,
+   "seconds": 6,
    "error": "www.chathamhouse.org/publications: HTTP 403; chathamhouse.org/publications: HTTP 403"
   },
   {
@@ -165,7 +165,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.civitas.org.uk/feed/",
-   "seconds": 3,
+   "seconds": 2,
    "error": ""
   },
   {
@@ -175,7 +175,7 @@
    "items": 15,
    "method": "html",
    "via": "https://demos.co.uk/research/",
-   "seconds": 7,
+   "seconds": 11,
    "error": ""
   },
   {
@@ -183,7 +183,7 @@
    "name": "EDSK",
    "ok": false,
    "items": 0,
-   "seconds": 38,
+   "seconds": 44,
    "error": "www.edsk.org: page loads (139KB, title 'The EDSK think tank') but lists no publication links; edsk.org: page loads (139KB, title 'The EDSK think tank') but lists no publication links; Google News had nothing for it either; feed probes: 13x empty feed, 12x HTTP 404"
   },
   {
@@ -193,7 +193,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://epi.org.uk/publications-and-research/feed",
-   "seconds": 5,
+   "seconds": 9,
    "error": ""
   },
   {
@@ -203,7 +203,7 @@
    "items": 10,
    "method": "html",
    "via": "https://ecfr.eu/publications/",
-   "seconds": 17,
+   "seconds": 12,
    "error": ""
   },
   {
@@ -223,7 +223,7 @@
    "items": 1,
    "method": "html",
    "via": "https://www.futuregovernanceforum.co.uk/blogs/",
-   "seconds": 13,
+   "seconds": 10,
    "error": ""
   },
   {
@@ -243,7 +243,7 @@
    "items": 12,
    "method": "html",
    "via": "https://growthandreform.org/ign-insights",
-   "seconds": 15,
+   "seconds": 17,
    "error": ""
   },
   {
@@ -263,7 +263,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:iied.org",
-   "seconds": 25,
+   "seconds": 50,
    "error": "www.iied.org: page loads (122KB, title 'IIED Publications Library | Internationa') but lists no publication links; iied.org: page loads (117KB, title 'IIED Publications Library | Internationa') but lists no publication links"
   },
   {
@@ -273,7 +273,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:iiss.org",
-   "seconds": 10,
+   "seconds": 9,
    "error": "www.iiss.org: page loads (54KB, title 'IISS Books and Publications') but lists no publication links; iiss.org: page loads (54KB, title 'IISS Books and Publications') but lists no publication links"
   },
   {
@@ -293,7 +293,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.instituteforgovernment.org.uk/rss",
-   "seconds": 5,
+   "seconds": 8,
    "error": ""
   },
   {
@@ -313,7 +313,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.ids.ac.uk/publications/feed",
-   "seconds": 2,
+   "seconds": 3,
    "error": ""
   },
   {
@@ -393,7 +393,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:nesta.org.uk",
-   "seconds": 17,
+   "seconds": 19,
    "error": "www.nesta.org.uk: page loads (81KB, title 'Reports | Nesta') but lists no publication links; nesta.org.uk: page loads (81KB, title 'Reports | Nesta') but lists no publication links"
   },
   {
@@ -423,7 +423,7 @@
    "items": 8,
    "method": "html",
    "via": "https://www.ukonward.com/reports/",
-   "seconds": 37,
+   "seconds": 36,
    "error": ""
   },
   {
@@ -431,8 +431,8 @@
    "name": "PBE",
    "ok": false,
    "items": 0,
-   "seconds": 70,
-   "error": "www.pbe.org.uk/research: SSLError; pbe.org.uk/research: SSLError; www.pbe.org.uk/: SSLError; pbe.org.uk/: SSLError; www.probonoeconomics.com: page loads (105KB, title 'PBE | Research and Policy Analyst (withd') but lists no publication links; probonoeconomics.com: page loads (105KB, title 'PBE | Research and Policy Analyst (withd') but lists no publication links; Google News had nothing for it eit"
+   "seconds": 79,
+   "error": "www.pbe.org.uk/research: SSLError; pbe.org.uk/research: SSLError; www.pbe.org.uk/: SSLError; pbe.org.uk/: SSLError; www.probonoeconomics.com/research: ConnectTimeout; probonoeconomics.com/research: ConnectTimeout; Google News had nothing for it either; feed probes: 12x SSLError, 9x ConnectTimeout"
   },
   {
    "group": "thinktanks",
@@ -441,7 +441,7 @@
    "items": 5,
    "method": "html",
    "via": "https://policywise.com/",
-   "seconds": 7,
+   "seconds": 5,
    "error": ""
   },
   {
@@ -451,7 +451,7 @@
    "items": 16,
    "method": "html",
    "via": "https://www.powertochange.org.uk/research/",
-   "seconds": 20,
+   "seconds": 19,
    "error": ""
   },
   {
@@ -489,7 +489,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:smf.co.uk",
-   "seconds": 5,
+   "seconds": 4,
    "error": "www.smf.co.uk/publications/: HTTP 403; smf.co.uk/publications/: HTTP 403"
   },
   {
@@ -509,7 +509,7 @@
    "items": 5,
    "method": "html",
    "via": "https://www.ucl.ac.uk/constitution-unit/publications",
-   "seconds": 11,
+   "seconds": 12,
    "error": ""
   },
   {
@@ -517,7 +517,7 @@
    "name": "The David Hume Institute",
    "ok": false,
    "items": 0,
-   "seconds": 9,
+   "seconds": 8,
    "error": "www.davidhumeinstitute.com/publication: HTTP 404; davidhumeinstitute.com/publication: HTTP 404; Google News had nothing for it either; feed probes: 13x HTTP 404"
   },
   {
@@ -545,7 +545,7 @@
    "name": "The Jobs Foundation",
    "ok": false,
    "items": 0,
-   "seconds": 18,
+   "seconds": 16,
    "error": "www.jobsfoundation.org/research: HTTP 401; jobsfoundation.org/research: HTTP 404; jobsfoundation.org.uk/research: ConnectionError; www.jobsfoundation.org.uk/research: ConnectionError; www.jobsfoundation.org.uk/: ConnectionError; jobsfoundation.org.uk/: ConnectionError; feed probes: 12x ConnectionError, 6x HTTP 401, 6x HTTP 404"
   },
   {
@@ -555,7 +555,7 @@
    "items": 25,
    "method": "google-news",
    "via": "site:kingsfund.org.uk",
-   "seconds": 5,
+   "seconds": 6,
    "error": "www.kingsfund.org.uk/insight-and-analysis/reports: HTTP 403; kingsfund.org.uk/insight-and-analysis/reports: HTTP 403"
   },
   {
@@ -565,7 +565,7 @@
    "items": 9,
    "method": "html",
    "via": "https://www.nuffieldtrust.org.uk/research",
-   "seconds": 9,
+   "seconds": 15,
    "error": ""
   },
   {
@@ -575,7 +575,7 @@
    "items": 3,
    "method": "html",
    "via": "https://www.kcl.ac.uk/policy-institute/research-analysis",
-   "seconds": 17,
+   "seconds": 16,
    "error": ""
   },
   {
@@ -585,7 +585,7 @@
    "items": 10,
    "method": "feed",
    "via": "https://www.suttontrust.com/feed",
-   "seconds": 22,
+   "seconds": 21,
    "error": ""
   },
   {
@@ -595,7 +595,7 @@
    "items": 22,
    "method": "google-news",
    "via": "site:lancaster.ac.uk/work-foundation",
-   "seconds": 26,
+   "seconds": 22,
    "error": "www.lancaster.ac.uk: page loads (172KB, title 'Work Foundation Publications - Lancaster') but lists no publication links; lancaster.ac.uk: page loads (172KB, title 'Work Foundation Publications - Lancaster') but lists no publication links"
   },
   {
@@ -633,7 +633,7 @@
    "name": "The Telegraph",
    "ok": true,
    "items": 0,
-   "error": "quiet: 40 off-topic results dropped"
+   "error": "quiet: 100 off-topic results dropped"
   },
   {
    "group": "media",
@@ -674,14 +674,14 @@
    "group": "media",
    "name": "BBC News",
    "ok": true,
-   "items": 0,
-   "error": "quiet: 40 off-topic results dropped"
+   "items": 5,
+   "error": ""
   },
   {
    "group": "media",
    "name": "The Independent",
    "ok": true,
-   "items": 1,
+   "items": 6,
    "error": ""
   },
   {
@@ -744,7 +744,28 @@
    "group": "media",
    "name": "Lib Dem Voice",
    "ok": true,
-   "items": 24,
+   "items": 25,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Wikipedia: voting intention tables",
+   "ok": true,
+   "items": 56,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Wikipedia: leader ratings",
+   "ok": true,
+   "items": 43,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Wikipedia: preferred prime minister",
+   "ok": true,
+   "items": 21,
    "error": ""
   },
   {
@@ -756,143 +777,455 @@
   },
   {
    "group": "polling",
-   "name": "YouGov",
+   "name": "YouGov (news search)",
    "ok": true,
    "items": 21,
    "error": ""
   },
   {
    "group": "polling",
-   "name": "YouGov",
-   "ok": true,
-   "items": 17,
-   "error": ""
-  },
-  {
-   "group": "polling",
-   "name": "Opinium",
-   "ok": true,
-   "items": 4,
-   "error": ""
-  },
-  {
-   "group": "polling",
-   "name": "More in Common",
-   "ok": true,
-   "items": 13,
-   "error": ""
-  },
-  {
-   "group": "polling",
-   "name": "Ipsos",
-   "ok": true,
-   "items": 18,
-   "error": ""
-  },
-  {
-   "group": "polling",
-   "name": "Survation",
+   "name": "YouGov (news search)",
    "ok": true,
    "items": 9,
    "error": ""
   },
   {
    "group": "polling",
-   "name": "Find Out Now",
+   "name": "Opinium (news search)",
+   "ok": true,
+   "items": 4,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "More in Common (news search)",
+   "ok": true,
+   "items": 13,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Ipsos (news search)",
+   "ok": true,
+   "items": 18,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Survation (news search)",
+   "ok": true,
+   "items": 9,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Find Out Now (news search)",
    "ok": true,
    "items": 6,
    "error": ""
   },
   {
    "group": "polling",
-   "name": "Techne",
+   "name": "Techne (news search)",
    "ok": false,
    "items": 0,
-   "error": "no results"
+   "error": "nothing indexed recently"
   },
   {
    "group": "polling",
-   "name": "Focaldata",
+   "name": "Focaldata (news search)",
    "ok": true,
    "items": 2,
    "error": ""
   },
   {
    "group": "polling",
-   "name": "BMG Research",
+   "name": "BMG Research (news search)",
    "ok": false,
    "items": 0,
-   "error": "no results"
+   "error": "nothing indexed recently"
   },
   {
    "group": "polling",
-   "name": "JL Partners",
+   "name": "JL Partners (news search)",
    "ok": false,
    "items": 0,
-   "error": "no results"
+   "error": "nothing indexed recently"
   },
   {
    "group": "polling",
-   "name": "Deltapoll",
+   "name": "Deltapoll (news search)",
    "ok": false,
    "items": 0,
-   "error": "no results"
+   "error": "nothing indexed recently"
   },
   {
    "group": "polling",
-   "name": "Savanta",
+   "name": "Savanta (news search)",
    "ok": true,
    "items": 8,
    "error": ""
   },
   {
    "group": "polling",
-   "name": "Freshwater Strategy",
+   "name": "Freshwater Strategy (news search)",
    "ok": true,
    "items": 1,
    "error": ""
   },
   {
    "group": "polling",
-   "name": "Verian",
+   "name": "Verian (news search)",
    "ok": false,
    "items": 0,
-   "error": "no results"
+   "error": "nothing indexed recently"
   },
   {
    "group": "polling",
-   "name": "Whitestone Insight",
+   "name": "Whitestone Insight (news search)",
    "ok": false,
    "items": 0,
-   "error": "no results"
+   "error": "nothing indexed recently"
   },
   {
    "group": "polling",
-   "name": "Public First",
+   "name": "Public First (news search)",
    "ok": true,
    "items": 1,
    "error": ""
   },
   {
    "group": "polling",
-   "name": "Merlin Strategy",
+   "name": "Merlin Strategy (news search)",
    "ok": false,
    "items": 0,
-   "error": "no results"
+   "error": "nothing indexed recently"
   },
   {
    "group": "polling",
-   "name": "Lord Ashcroft Polls",
+   "name": "Lord Ashcroft Polls (news search)",
    "ok": true,
    "items": 3,
    "error": ""
   },
   {
    "group": "polling",
-   "name": "Stonehaven",
+   "name": "Stonehaven (news search)",
    "ok": false,
    "items": 0,
-   "error": "no results"
+   "error": "nothing indexed recently"
+  },
+  {
+   "group": "polling",
+   "name": "More in Common",
+   "ok": true,
+   "items": 7,
+   "method": "feed",
+   "via": "https://www.moreincommon.org.uk/feed/",
+   "seconds": 1,
+   "error": "3 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Opinium",
+   "ok": true,
+   "items": 0,
+   "method": "feed",
+   "via": "https://www.opinium.com/feed/",
+   "seconds": 2,
+   "error": "10 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Survation",
+   "ok": true,
+   "items": 7,
+   "method": "feed",
+   "via": "https://www.survation.com/feed/",
+   "seconds": 1,
+   "error": "3 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Find Out Now",
+   "ok": true,
+   "items": 24,
+   "method": "html",
+   "via": "https://www.findoutnow.co.uk/blog/",
+   "seconds": 10,
+   "error": "6 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Techne",
+   "ok": true,
+   "items": 1,
+   "method": "html",
+   "via": "https://www.techneuk.com/",
+   "seconds": 26,
+   "error": ""
+  },
+  {
+   "group": "polling",
+   "name": "Deltapoll",
+   "ok": false,
+   "items": 0,
+   "seconds": 12,
+   "error": "deltapoll.co.uk: page loads (0KB, title '') but lists no publication links; www.deltapoll.co.uk: page loads (0KB, title '') but lists no publication links; Google News had nothing for it either; feed probes: 24x HTTP 202"
+  },
+  {
+   "group": "polling",
+   "name": "Freshwater Strategy",
+   "ok": true,
+   "items": 0,
+   "method": "feed",
+   "via": "https://freshwaterstrategy.com/feed/",
+   "seconds": 1,
+   "error": "10 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "JL Partners",
+   "ok": true,
+   "items": 0,
+   "method": "html",
+   "via": "https://www.jlpartners.co.uk/",
+   "seconds": 4,
+   "error": "1 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "BMG Research",
+   "ok": false,
+   "items": 0,
+   "seconds": 14,
+   "error": "www.bmgresearch.co.uk: page loads (0KB, title '') but lists no publication links; bmgresearch.co.uk: page loads (0KB, title '') but lists no publication links; Google News had nothing for it either; feed probes: 23x HTTP 202, 1x HTTP 403"
+  },
+  {
+   "group": "polling",
+   "name": "Focaldata",
+   "ok": true,
+   "items": 1,
+   "method": "html",
+   "via": "https://www.focaldata.com/blog",
+   "seconds": 8,
+   "error": "6 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Lord Ashcroft Polls",
+   "ok": true,
+   "items": 3,
+   "method": "feed",
+   "via": "https://lordashcroftpolls.com/feed/",
+   "seconds": 1,
+   "error": "7 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Savanta",
+   "ok": true,
+   "items": 3,
+   "method": "feed",
+   "via": "https://savanta.com/rss.xml",
+   "seconds": 8,
+   "error": "37 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Public First",
+   "ok": true,
+   "items": 6,
+   "method": "feed",
+   "via": "https://publicfirst.co.uk/feed",
+   "seconds": 7,
+   "error": "www.publicfirst.co.uk/research: HTTP 403; publicfirst.co.uk/research: HTTP 404 | 34 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Verian",
+   "ok": true,
+   "items": 1,
+   "method": "html",
+   "via": "https://www.veriangroup.com/",
+   "seconds": 8,
+   "error": "8 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Whitestone Insight",
+   "ok": false,
+   "items": 0,
+   "seconds": 4,
+   "error": "whitestone-insight.com/: ConnectionError; www.whitestone-insight.com/: ConnectionError; Google News had nothing for it either; feed probes: 12x ConnectionError"
+  },
+  {
+   "group": "polling",
+   "name": "Merlin Strategy",
+   "ok": false,
+   "items": 0,
+   "seconds": 7,
+   "error": "merlinstrategy.co.uk: page loads (418KB, title 'Merlin Strategy | UK Polling & Data Driv') but lists no publication links; www.merlinstrategy.co.uk: page loads (418KB, title 'Merlin Strategy | UK Polling & Data Driv') but lists no publication links; Google News had nothing for it either; feed probes: 12x HTTP 404"
+  },
+  {
+   "group": "polling",
+   "name": "Stonehaven",
+   "ok": true,
+   "items": 0,
+   "method": "google-news",
+   "via": "site:stonehavenglobal.com",
+   "seconds": 6,
+   "error": "stonehavenglobal.com/: HTTP 403; www.stonehavenglobal.com/: HTTP 403 | 3 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Redfield & Wilton Strategies",
+   "ok": false,
+   "items": 0,
+   "seconds": 7,
+   "error": "redfieldandwilton.com: page loads (0KB, title '') but lists no publication links; www.redfieldandwilton.com: page loads (0KB, title '') but lists no publication links; Google News had nothing for it either; feed probes: 11x HTTP 404, 1x ConnectionError"
+  },
+  {
+   "group": "polling",
+   "name": "Number Cruncher Politics",
+   "ok": true,
+   "items": 3,
+   "method": "feed",
+   "via": "https://www.ncpolitics.uk/feed/",
+   "seconds": 4,
+   "error": "7 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Stack Data Strategy",
+   "ok": true,
+   "items": 0,
+   "method": "google-news",
+   "via": "site:stackdatastrategy.com",
+   "seconds": 7,
+   "error": "stackdatastrategy.com: page loads (170KB, title 'Stack Data Strategy') but lists no publication links; www.stackdatastrategy.com: page loads (170KB, title 'Stack Data Strategy') but lists no publication links | 1 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Electoral Calculus",
+   "ok": true,
+   "items": 2,
+   "method": "google-news",
+   "via": "site:electoralcalculus.co.uk",
+   "seconds": 9,
+   "error": "www.electoralcalculus.co.uk/blog/: HTTP 404; electoralcalculus.co.uk/blog/: HTTP 404; www.electoralcalculus.co.uk: page loads (0KB, title 'Electoral Calculus') but lists no publication links; electoralcalculus.co.uk: page loads (0KB, title 'Electoral Calculus') but lists no publication links | 5 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Good Growth Foundation",
+   "ok": false,
+   "items": 0,
+   "seconds": 5,
+   "error": "www.goodgrowthfoundation.org: page loads (0KB, title '') but lists no publication links; goodgrowthfoundation.org: page loads (0KB, title '') but lists no publication links; Google News had nothing for it either; feed probes: 12x not a feed"
+  },
+  {
+   "group": "polling",
+   "name": "Trajectory Partnership",
+   "ok": true,
+   "items": 0,
+   "method": "google-news",
+   "via": "\"Trajectory Partnership\" poll",
+   "seconds": 7,
+   "error": "www.trajectorypartnership.com: page loads (0KB, title '') but lists no publication links; trajectorypartnership.com: page loads (0KB, title '') but lists no publication links | 3 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Convergent Opinion",
+   "ok": true,
+   "items": 2,
+   "method": "google-news",
+   "via": "\"Convergent Opinion\" poll",
+   "seconds": 4,
+   "error": "www.convergentopinion.com/: ConnectionError; convergentopinion.com/: ConnectionError | 1 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Peoples Polling",
+   "ok": false,
+   "items": 0,
+   "seconds": 4,
+   "error": "www.peoplespolling.com/: ConnectionError; peoplespolling.com/: ConnectionError; Google News had nothing for it either; feed probes: 12x ConnectionError"
+  },
+  {
+   "group": "polling",
+   "name": "Yonder",
+   "ok": true,
+   "items": 3,
+   "method": "feed",
+   "via": "https://yonderconsulting.com/feed/",
+   "seconds": 1,
+   "error": "7 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Panelbase",
+   "ok": false,
+   "items": 0,
+   "seconds": 47,
+   "error": "www.panelbase.net/: ConnectTimeout; panelbase.net: page loads (73KB, title 'Our history - Norstat') but lists no publication links; Google News had nothing for it either; feed probes: 6x ConnectTimeout, 6x not a feed"
+  },
+  {
+   "group": "polling",
+   "name": "Norstat",
+   "ok": false,
+   "items": 0,
+   "seconds": 8,
+   "error": "norstat.co.uk: page loads (100KB, title 'Norstat - Data to trust for decisions th') but lists no publication links; www.norstat.co.uk/: HTTPError; Google News had nothing for it either; feed probes: 6x not a feed, 6x HTTP 429"
+  },
+  {
+   "group": "polling",
+   "name": "WeThink (Omnisis)",
+   "ok": true,
+   "items": 8,
+   "method": "html",
+   "via": "https://wethink.report/",
+   "seconds": 3,
+   "error": "16 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Mark Pack (polling analysis)",
+   "ok": true,
+   "items": 2,
+   "method": "feed",
+   "via": "https://www.markpack.org.uk/feed/",
+   "seconds": 3,
+   "error": "23 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Britain Elects (New Statesman)",
+   "ok": true,
+   "items": 0,
+   "method": "feed",
+   "via": "https://www.newstatesman.com/feed",
+   "seconds": 1,
+   "error": "www.newstatesman.com/britainelects: HTTP 404 | 20 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "Politics.co.uk (polling)",
+   "ok": true,
+   "items": 1,
+   "method": "feed",
+   "via": "https://www.politics.co.uk/feed/",
+   "seconds": 1,
+   "error": "9 non-political items dropped"
+  },
+  {
+   "group": "polling",
+   "name": "UK Parliament Commons Library (polling)",
+   "ok": true,
+   "items": 0,
+   "method": "feed",
+   "via": "https://commonslibrary.parliament.uk/feed",
+   "seconds": 1,
+   "error": "commonslibrary.parliament.uk/: HTTP 403 | 10 non-political items dropped"
   },
   {
    "group": "polling",

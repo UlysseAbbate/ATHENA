@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-24T00:02:28.085673+00:00",
+ "updated": "2026-10-24T00:59:23.035920+00:00",
  "rows": [
   {
    "pollster": "Find Out Now",
@@ -3341,6 +3341,63 @@
    "LD": 12.0,
    "Green": 10.0,
    "SNP": 2.0
+  }
+ ],
+ "pollsters": [
+  {
+   "name": "Find Out Now",
+   "polls": 12,
+   "last": "2026-10-22"
+  },
+  {
+   "name": "YouGov",
+   "polls": 10,
+   "last": "2026-10-19"
+  },
+  {
+   "name": "More in Common",
+   "polls": 10,
+   "last": "2026-10-19"
+  },
+  {
+   "name": "Deltapoll",
+   "polls": 2,
+   "last": "2026-10-19"
+  },
+  {
+   "name": "Trajectory Partnership",
+   "polls": 2,
+   "last": "2026-10-14"
+  },
+  {
+   "name": "Freshwater Strategy",
+   "polls": 2,
+   "last": "2026-10-11"
+  },
+  {
+   "name": "Opinium",
+   "polls": 7,
+   "last": "2026-10-09"
+  },
+  {
+   "name": "Survation",
+   "polls": 6,
+   "last": "2026-10-05"
+  },
+  {
+   "name": "Lord Ashcroft Polls",
+   "polls": 2,
+   "last": "2026-09-28"
+  },
+  {
+   "name": "BMG Research",
+   "polls": 2,
+   "last": "2026-09-24"
+  },
+  {
+   "name": "Ipsos",
+   "polls": 1,
+   "last": "2026-09-15"
   }
  ]
 }
