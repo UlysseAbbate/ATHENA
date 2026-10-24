@@ -21,6 +21,7 @@
   --btn-bg:#111111;--btn-fg:#FDBB30;--btn-hover-bg:#FDBB30;--btn-hover-fg:#111111;
   --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#111111;
   --err-bg:#FDECEC;--err:#B3141C;--ok-bg:#E4F2E5;--warn-bg:#FFF3CF;
+  --c-committee:#1F4E79;--c-thinktank:#2E7D32;--c-media:#B8480F;--c-polling:#7B3FA0;
   --head:'Libre Franklin','Franklin Gothic Heavy','Arial Black',Arial,sans-serif;--body:Arial,'Helvetica Neue',Helvetica,sans-serif;
   --radius:12px;--measure:72ch;
 }
@@ -31,14 +32,16 @@
   --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;
   --btn-bg:#FDBB30;--btn-fg:#111111;--btn-hover-bg:#F2EFE6;--btn-hover-fg:#111111;
   --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#000000;
-  --err-bg:#3A1618;--err:#FF8A8F;--ok-bg:#16301A;--warn-bg:#2D2812;--focus:#6EA8E0;--red:#FF6B72;--green:#5FBF68;}}
+  --err-bg:#3A1618;--err:#FF8A8F;--ok-bg:#16301A;--warn-bg:#2D2812;--focus:#6EA8E0;--red:#FF6B72;--green:#5FBF68;
+  --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#F0A733;--c-polling:#B98AD6;}}
 :root[data-theme="dark"]{
   color-scheme:dark;
   --paper:#141414;--card:#1D1D1B;--ink:#F2EFE6;--muted:#B5B1A4;--rule:#35332D;--rule-strong:#5A574D;--chip:#262520;--hi:#26230F;--yellow-pale:#2D2812;
   --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;
   --btn-bg:#FDBB30;--btn-fg:#111111;--btn-hover-bg:#F2EFE6;--btn-hover-fg:#111111;
   --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#000000;
-  --err-bg:#3A1618;--err:#FF8A8F;--ok-bg:#16301A;--warn-bg:#2D2812;--focus:#6EA8E0;--red:#FF6B72;--green:#5FBF68;}
+  --err-bg:#3A1618;--err:#FF8A8F;--ok-bg:#16301A;--warn-bg:#2D2812;--focus:#6EA8E0;--red:#FF6B72;--green:#5FBF68;
+  --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#F0A733;--c-polling:#B98AD6;}
 
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -146,3 +149,14 @@ code,.code{font:700 1rem ui-monospace,Menlo,Consolas,monospace;background:var(--
 .row-form > div{display:flex;flex-direction:column}
 td select,td input{padding:.3rem .5rem;font-size:.9rem}
 .badge{display:inline-block;font:800 .68rem var(--head);letter-spacing:.04em;text-transform:uppercase;background:var(--bar-bg);color:var(--bar-fg);border-radius:999px;padding:.08rem .55rem;margin-left:.4rem}
+
+/* a program's own section tabs live in the masthead, as pills like the program switcher */
+.masthead .tabs{max-width:1120px;margin:0 auto;padding:0 1.25rem .9rem;gap:.45rem;overflow-x:auto}
+.masthead .tabs button{background:#111;color:var(--yellow);border:3px solid #111;border-radius:999px;padding:.35rem .95rem;font:800 .9rem var(--head);cursor:pointer;white-space:nowrap}
+.masthead .tabs button:hover{background:#fff;color:#111}
+.masthead .tabs button.on,.masthead .tabs button[aria-selected="true"]{background:#fff;color:#111}
+.tabs button.on{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
+/* soft tokens used by the programs' own components */
+:root{--shadow:3px 3px 0 var(--pop-colour);--shadow-hover:5px 5px 0 var(--pop-colour)}
+h1,h2,h3,h4{font-family:var(--head)}
+.masthead .muted,.masthead .pill{color:#111;border-color:#111}

@@ -1,4 +1,4 @@
-/* Shared email + password sign-in used by the Mall, Admin and Ulysse pages.
+/* Shared email + password sign-in used by Athena, Lovelace, Lucien, Access and Admin.
  * Usage: AuthUI.render(sb, hostElement)   -> shows Sign in / Create account / Forgot password
  *        AuthUI.watchRecovery(sb, hostElement) -> shows "set a new password" after a reset link
  *        AuthUI.changePassword(sb, hostElement) -> form for a signed-in user to change their password */

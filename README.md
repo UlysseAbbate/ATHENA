@@ -4,31 +4,34 @@ One static site (`site/`, hosted on Cloudflare) in front of one Supabase project
 
 | Page | Who sees it | What it is |
 |---|---|---|
-| `/` | everyone | Home: lists the workspaces the signed-in person may open |
-| `/mall/` | anyone with a role | **The Mall** (*Mayoral Analysis for London's Liberals*): campaign workspace |
-| `/ulysse/` | the admin, plus any role the admin opens it to | **Ulysse**: policy tracker |
+| `/` | everyone | Home: one sign-in, then the programs you may open |
+| `/lovelace/` | anyone with a role | **Lovelace** (*London Organisation for Voters, Engagement, Liberalism, Action, Campaigns & Elections*): campaign workspace. Formerly *The Mall* (`/mall/` still redirects). |
+| `/lucien/` | the admin, plus anyone given Lucien access | **Lucien** (*Letting You Catch Important Events & News*): policy tracker. Formerly *Ulysse* (`/ulysse/` still redirects). |
+| `/access/` | the admin and program managers | Who can open what, at which level, until when; shared access codes |
 | `/admin/` | the admin only | System status: collector health, failing sources, access ending soon, recent activity |
+
+The plan for bringing LIBBY in and retiring shared passwords is in `docs/MASTER-PLAN.md`. All pages share one look (`site/shared/libby.css`, LIBBY's style) in light and dark; the header has an Auto/Light/Dark button.
 
 **Every permission is enforced in the database** (row-level security). The pages only hide what the database would refuse anyway.
 
 ## Access model
 
-- **Sign-in** is email + password (`site/mall/authui.js`). A new account sees nothing until someone with *Team & access* rights gives it a role.
-- **Roles:** Core team, Executive, Local party chair, Candidate, Support team, Member. What each role may read or write is the `role_permissions` table, edited in *The Mall → Team & access*.
+- **Sign-in** is email + password (`site/shared/authui.js`). A new account sees nothing until someone with *Team & access* rights gives it a role.
+- **Roles:** Core team, Executive, Local party chair, Candidate, Support team, Member. What each role may read or write is the `role_permissions` table, edited in *Lovelace → Team & access*.
 - **Time-limited access:** each person can have an *Access until* date. After it, `my_role()` returns nothing and they see nothing until it is extended.
 - **Guard rails (in the database, not the page):**
   - Nobody can change their own role or access date.
   - Only the core team can grant or remove core-team access.
   - Nobody but the admin can change the admin's account.
   - The core team's own *Team & access* rights cannot be switched off, so nobody can lock everyone out.
-  - Only the admin can open Ulysse to a role.
+  - Only the admin can open Lucien to a role.
   - Profiles: only role, name and access date can be changed through the API.
 - **Admin** = the account bound in the `admins` table (`ulysse.abbate@gmail.com`). `is_admin()` is checked in Postgres. The admin can do everything.
 - **Least privilege:**
   - Anonymous visitors have no table rights at all.
   - Signed-in users cannot `TRUNCATE`, and cannot see the admin tables.
   - Permission checks run once per query (fast RLS).
-- **Activity log:** every insert, update and delete in the Mall is recorded in `audit_log`: who, when, which table, which fields. Values are not recorded. Readable by roles with *Activity log* (core team by default) and shown on *Team & access* and `/admin/`.
+- **Activity log:** every insert, update and delete in Lovelace is recorded in `audit_log`: who, when, which table, which fields. Values are not recorded. Readable by roles with *Activity log* (core team by default) and shown on *Team & access* and `/admin/`.
 - **Edit conflicts:** rows carry `updated_at`/`updated_by` (set by the database). An edit only saves if nobody changed the row since it was opened; otherwise the page says so and reloads it.
 - **Security headers** (`site/_headers`):
   - A strict Content-Security-Policy: scripts only from this site, data only from the Athena Supabase project.
@@ -37,7 +40,7 @@ One static site (`site/`, hosted on Cloudflare) in front of one Supabase project
 
 The full schema is in `supabase/migrations/` and the ingest function in `supabase/functions/ulysse-ingest/`. Both are already applied to the live project; the files are the record.
 
-## The Mall
+## Lovelace (formerly The Mall)
 
 **Pages:**
 - **Overview:** today's and this week's plan, governance due or overdue, upcoming local party visits, scheduled content, latest coverage and volunteer numbers. Each card appears only if your role can see that area.
@@ -61,7 +64,7 @@ Pages refresh themselves when you come back to the browser tab, so you see other
 
 **Coverage of Sarah Olney** fills itself: every 3 hours the collector reads the media outlets' RSS feeds and adds any story naming her. These are marked *auto*; duplicates by URL or outlet+headline are skipped. Anything else can still be added by hand.
 
-## Ulysse (policy tracker)
+## Lucien (policy tracker, formerly Ulysse)
 
 Refreshed every 3 hours by GitHub Actions (`.github/workflows/update.yml`, or *Run workflow* by hand). It tracks:
 

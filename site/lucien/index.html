@@ -4,28 +4,25 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ulysse</title>
+<title>Lucien</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="../athena.css">
+<link rel="stylesheet" href="../shared/libby.css">
 <link rel="stylesheet" href="style.css">
+<script src="../shared/theme.js"></script>
 </head>
 <body>
-<header class="masthead">
-  <div class="wrap masthead-bar">
-    <h1 class="brand">Ulysse<small>Policy tracker</small></h1>
-    <div class="right"><span id="updated" class="muted"></span><a class="muted" href="../">Home</a></div>
-  </div>
-  <nav class="wrap tabs" id="tabs" aria-label="Sections">
-    <button data-tab="all" class="on">Everything</button>
-    <button data-tab="committee">Select committees</button>
-    <button data-tab="thinktank">Think tanks</button>
-    <button data-tab="media">Lib Dems in the media</button>
-    <button data-tab="polling">Polling</button>
-    <button data-tab="health">Source health</button>
-  </nav>
-</header>
+<a class="skip" href="#main">Skip to content</a>
+<header id="hd"></header>
+<nav class="tabs" id="tabs" aria-label="Sections">
+  <button data-tab="all" class="on">Everything</button>
+  <button data-tab="committee">Select committees</button>
+  <button data-tab="thinktank">Think tanks</button>
+  <button data-tab="media">Lib Dems in the media</button>
+  <button data-tab="polling">Polling</button>
+  <button data-tab="health">Source health</button>
+</nav>
 
-<main class="wrap">
+<main id="main" tabindex="-1">
   <section id="pollpanel" hidden>
     <div id="pollstats" class="stats"></div>
     <div class="panel">
@@ -74,10 +71,12 @@
   <section id="healthpanel" hidden></section>
 </main>
 <div id="toast" class="toast" hidden></div>
-<script src="../mall/vendor/supabase.js"></script>
-<script src="../mall/config.js"></script>
-<script src="../common.js"></script>
-<script src="../mall/authui.js"></script>
+<script src="../shared/vendor/supabase.js"></script>
+<script src="../shared/config.js"></script>
+<script src="../shared/common.js"></script>
+<script src="../shared/shell.js"></script>
+<script src="../shared/authui.js"></script>
+<script src="header.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

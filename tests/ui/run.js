@@ -113,6 +113,19 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
   await new Promise(r => setTimeout(r, 800));
   const browser = await chromium.launch();
   try {
+    {   // signed out: one sign-in for everything, and the old addresses still work
+      const ctx = await browser.newContext(); const page = await ctx.newPage(); const errs = [];
+      page.on("console", msg => { if (msg.type() === "error") errs.push(msg.text()); });
+      await page.route(SB + "/**", r => r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: "{}" }));
+      await page.goto(BASE + "/"); await page.waitForSelector("#aue", { timeout: 5000 }).catch(() => {});
+      check("signed out: home shows the sign-in form", (await page.$("#aue")) !== null && !(await page.$("#n a")));
+      await page.goto(BASE + "/mall/#team"); await page.waitForTimeout(500);
+      check("old /mall/ address redirects to /lovelace/ and keeps the #team part", page.url() === BASE + "/lovelace/#team", page.url());
+      await page.goto(BASE + "/ulysse/"); await page.waitForTimeout(500);
+      check("old /ulysse/ address redirects to /lucien/", page.url() === BASE + "/lucien/", page.url());
+      check("signed out: no console errors", errs.filter(e => !/404/.test(e)).length === 0, errs.join("|"));
+      await ctx.close();
+    }
     for (const who of ["admin", "core", "member", "lmgr"]) {
       const ctx = await browser.newContext({ acceptDownloads: true });
       const page = await ctx.newPage();
@@ -124,7 +137,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.goto(BASE + "/");
       await page.waitForTimeout(600);
       const links = await page.$$eval("#n a b", bs => bs.map(b => b.textContent));
-      check(`${who}: home shows Ulysse only to admin`, links.includes("Ulysse") === (who === "admin"), links.join(","));
+      check(`${who}: home shows Lucien to the admin and Lucien people only`, links.includes("Lucien") === (who === "admin" || who === "lmgr"), links.join(","));
       check(`${who}: home shows Access only to the admin and non-Lovelace managers`, links.includes("Access") === (who === "admin" || who === "lmgr"), links.join(","));
 
       // the Access page: admin sees every program, a program manager only theirs, others nothing
@@ -177,10 +190,10 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       check(`${who}: Auto follows a dark device`, (await page.getAttribute("html", "data-theme")) === null && (await bg()) === "rgb(20, 20, 20)", await bg());
       await page.emulateMedia({ colorScheme: "light" });
 
-      await page.goto(BASE + "/mall/");
+      await page.goto(BASE + "/lovelace/");
       await page.waitForSelector("#tabs button", { timeout: 5000 });
       const tabs = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent));
-      check(`${who}: mall tabs`, who === "member" ? !tabs.includes("Budget & governance") && tabs.includes("Overview") : tabs.includes("Budget & governance") && tabs.includes("Team & access"), tabs.join(" | "));
+      check(`${who}: lovelace tabs`, who === "member" ? !tabs.includes("Budget & governance") && tabs.includes("Overview") : tabs.includes("Budget & governance") && tabs.includes("Team & access"), tabs.join(" | "));
       await page.waitForSelector(".ovgrid", { timeout: 5000 });
       const ov = await page.$$eval(".card.ov h3", hs => hs.map(h => h.textContent.replace(" open ›", "")));
       check(`${who}: overview cards`, ov.length >= 2 && (who === "member" ? !ov.includes("Governance due") : ov.includes("Governance due")), ov.join(" | "));
@@ -211,28 +224,28 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.keyboard.press("Escape");
         await page.click('#tabs button:text-is("Team & access")'); await page.waitForTimeout(400);
         const team = await page.$eval("#main", m => m.innerText);
-        check(`${who}: team page has access dates, last seen, activity`, /Access until/.test(team) && /Last signed in/.test(team) && /Recent activity/.test(team));
+        check(`${who}: team page has access dates, last seen, activity`, /Access until/i.test(team) && /Last signed in/i.test(team) && /Recent activity/i.test(team));
         const ulysseLocked = await page.$eval('[data-p="member|ulysse|read"]', e => e.disabled);
-        check(`${who}: Ulysse permission editable only by admin`, ulysseLocked === (who !== "admin"));
+        check(`${who}: Lucien permission editable only by admin`, ulysseLocked === (who !== "admin"));
         const selfLocked = await page.$$eval(`[data-u="${USERS[who].id}"]`, e => e.length === 0);
         check(`${who}: cannot edit own role`, selfLocked);
       }
 
-      await page.goto(BASE + "/ulysse/");
+      await page.goto(BASE + "/lucien/");
       await page.waitForTimeout(1200);
       const ul = await page.$eval("body", b => b.innerText);
-      check(`${who}: ulysse access`, who === "admin" ? /Everything/.test(ul) && /items? shown|item/.test(ul) : /Not found/.test(ul), ul.slice(0, 40).replace(/\n/g, " "));
+      check(`${who}: lucien access`, who === "admin" ? /Everything/.test(ul) && /items? shown|item/.test(ul) : /Not found/.test(ul), ul.slice(0, 40).replace(/\n/g, " "));
       if (who === "admin") {
         await page.click('#tabs button[data-tab="health"]'); await page.waitForTimeout(200);
-        check("admin: ulysse health tab", /sources returning data/.test(await page.$eval("#healthpanel", e => e.innerText)));
+        check("admin: lucien health tab", /sources returning data/.test(await page.$eval("#healthpanel", e => e.innerText)));
         await page.click('#tabs button[data-tab="media"]'); await page.waitForTimeout(200);
         await page.reload(); await page.waitForTimeout(1000);
-        check("admin: ulysse remembers tab", await page.$eval('#tabs button.on', b => b.dataset.tab) === "media");
+        check("admin: lucien remembers tab", await page.$eval('#tabs button.on', b => b.dataset.tab) === "media");
         await page.evaluate(() => { sessionStorage.clear(); localStorage.setItem("ulysse.lastVisit", new Date(Date.now() - 3 * 864e5).toISOString()); });
         await page.reload(); await page.waitForTimeout(1000);
         await page.click('#tabs button[data-tab="all"]'); await page.waitForTimeout(200);
         const stats = await page.$eval("#stats", e => e.innerText);
-        check("admin: ulysse shows what is new since the last visit", /since your last visit/.test(stats) && await page.$eval("#sinceLastWrap", e => !e.hidden), stats.replace(/\n/g, " "));
+        check("admin: lucien shows what is new since the last visit", /since your last visit/.test(stats) && await page.$eval("#sinceLastWrap", e => !e.hidden), stats.replace(/\n/g, " "));
       }
 
       await page.goto(BASE + "/admin/");

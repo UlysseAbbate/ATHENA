@@ -1,4 +1,4 @@
-/* The Mall: Mayoral Analysis for London's Liberals.
+/* Lovelace: London Organisation for Voters, Engagement, Liberalism, Action, Campaigns & Elections (formerly The Mall).
  * Static front end; all data and permissions live in Supabase (row-level security).
  * Nothing in this file is a security boundary: the server decides what each role can read or write. */
 const { sb, esc, safeUrl } = Athena;
@@ -13,7 +13,7 @@ const RESOURCES = {
   volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies", social: "Social media tracker",
   coverage: "Coverage", stakeholders_all: "Full stakeholder list", stakeholders_add: "Add stakeholders (own entries visible to the adder)",
   users: "Team & access: see users / change roles", permissions: "Edit this permissions table",
-  audit: "Activity log (who changed what)", ulysse: "Ulysse policy tracker (only the admin can change this row)" };
+  audit: "Activity log (who changed what)", ulysse: "Lucien policy tracker (only the admin can change this row)" };
 
 const pad = n => String(n).padStart(2, "0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -34,7 +34,7 @@ function showError(err) { main.prepend(notice(err.message || String(err))); wind
 /* ------------------------------------------------------------------ auth */
 function renderLogin() {
   $("#tabs").hidden = true; $("#who").textContent = "";
-  AuthUI.render(sb, main, { title: "The Mall" });
+  AuthUI.render(sb, main, { title: "Lovelace" });
 }
 
 async function boot() {
@@ -373,7 +373,7 @@ async function renderTeam() {
         `<select data-u="${p.id}"><option value="">(no access)</option>${Object.entries(ROLES).map(([k, l]) => `<option value="${k}" ${p.role === k ? "selected" : ""}>${l}</option>`).join("")}</select>` : esc(ROLES[p.role] || "none")}</td>
         <td>${!lock ? `<input type="date" data-until="${p.id}" value="${esc(p.access_until || "")}" style="width:auto">` : esc(p.access_until ? fmtShort(p.access_until) : "no end date")}${ended(p) ? ' <span class="pill">ended</span>' : ""}</td>
         <td class="muted">${esc(last[p.id] ? Athena.ago(last[p.id]) : "never")}</td></tr>`; }).join("")}</tbody></table></div>
-    <h2>What each role can do</h2><p class="muted">R = read, W = write. The core team's own "Team &amp; access" rights are locked so nobody can be locked out, and only the admin can open Ulysse to a role.</p>
+    <h2>What each role can do</h2><p class="muted">R = read, W = write. The core team's own "Team &amp; access" rights are locked so nobody can be locked out, and only the admin can open Lucien to a role.</p>
     <div class="tablewrap"><table><thead><tr><th>Area</th>${Object.values(ROLES).map(l => `<th>${l}</th>`).join("")}</tr></thead><tbody>${Object.entries(RESOURCES).map(([res, label]) =>
       `<tr><td>${esc(label)}</td>${Object.keys(ROLES).map(role => { const p = perms.find(x => x.role === role && x.resource === res) || {};
         const locked = !canPerm || (role === "core_team" && (res === "users" || res === "permissions")) || (res === "ulysse" && !S.admin);

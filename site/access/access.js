@@ -44,7 +44,7 @@ async function draw() {
   const live = c => !c.revoked_at && (!c.expires_at || new Date(c.expires_at) > new Date()) && (c.max_uses == null || c.uses < c.max_uses);
 
   body.innerHTML = `<div id="msg" role="alert"></div>${notice || ""}
-    ${readonly ? `<div class="state-warn">Lovelace access is still managed in <a href="../mall/#team">The Mall → Team &amp; access</a>. It moves here when Lovelace replaces the Mall. This list is read-only.</div>` : ""}
+    ${readonly ? `<div class="state-warn">Lovelace access is still managed in <a href="../lovelace/#team">Lovelace → Team &amp; access</a>. It moves to this page later. This list is read-only.</div>` : ""}
     <h2 class="h2-rule">People <span class="count">${people.length}</span></h2>
     ${people.length ? `<div class="table-wrap"><table class="grid" id="people"><thead><tr><th>Person</th><th>Level</th><th>Access until</th><th>Last signed in</th><th></th></tr></thead><tbody>
       ${people.map(r => `<tr data-u="${r.user_id}"><td>${esc(r.email)}${r.full_name ? `<small class="why">${esc(r.full_name)}</small>` : ""}${r.is_manager ? `<span class="badge">Manager</span>` : ""}${r.user_id === me() ? ` <span class="muted">(you)</span>` : ""}</td>

@@ -10,7 +10,7 @@
   X-Robots-Tag: noindex, nofollow
   Cross-Origin-Opener-Policy: same-origin
 
-/mall/vendor/*
+/shared/vendor/*
   Cache-Control: public, max-age=86400
 
 /shared/fonts/*
