@@ -94,3 +94,8 @@ th{color:var(--muted);font-weight:550}
 .ok{background:#16a34a}.bad{background:#dc2626}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:13px;box-shadow:var(--shadow);z-index:50}
 @media(max-width:560px){.card{grid-template-columns:auto 1fr}.card .new{grid-column:2;justify-self:start}.day{top:92px}}
+.hrow>span:first-of-type{flex:1;min-width:0}.hrow .why{display:block;margin-top:2px;line-height:1.4;overflow-wrap:anywhere}.hrow .n{white-space:nowrap}
+@media(max-width:560px){.hrow{flex-wrap:wrap}.hrow .n{margin-left:19px}}
+
+/* class display rules would otherwise override the hidden attribute (e.g. filters showing on the health tab) */
+[hidden]{display:none!important}
