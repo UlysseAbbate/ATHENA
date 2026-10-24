@@ -20,29 +20,37 @@ Cloudflare or GitHub secrets yet. **The old LIBBY site (odysseus.org.uk) and its
 Because the sign-in now happens in the browser, LIBBY's *page code* (not its data) can be downloaded by anyone who opens
 `/libby/`. All data is behind `/api/libby/*`, which refuses anyone without a LIBBY level.
 
+## Done already (24 Oct 2026)
+
+- Both migrations are applied to the live ATHENA project (`program_access`, `libby_tables`). Your own account was carried over as a Lovelace core-team manager; nothing else changed for existing users.
+- LIBBY's hand-entered data was copied from the old LIBBY project into ATHENA and checked against it: the 34 people and roles, the Wallace Room series and 65 bookings, 10 Bill advisers, the duty whip, the bulletin and the 3 amendment groupings. The old project was only read.
+- Not copied, because the scheduled jobs rebuild them: the policy library (286 documents, about 11,000 extracts), What's On events, Lords divisions, the saved Parliament copies. One Today's List PDF can simply be uploaded again. `scripts/libby/copy-data.mjs` copies everything if you prefer.
+
 ## Steps for you, in order
 
-1. **Cloudflare project type.** `functions/` only runs on a Cloudflare *Pages* project built from the repo root with output
-   directory `site`. Check Athena's project is that (if it is a Workers static-assets project, tell me and I will adapt it).
-2. **Apply the migrations to the Athena Supabase project**, in order: `20261024100000_program_access.sql`, then
-   `20261024110000_libby_tables.sql`. (Ask me and I will apply them with the Supabase connector once you say go.)
-3. **Cloudflare variables and secrets** (Pages → Settings → Variables and secrets), the same as LIBBY had, but pointing at the
-   Athena project: `SUPABASE_URL` = `https://fbsoibmtvapmxdlfdgxc.supabase.co`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`,
-   plus `SUPABASE_ANON_KEY` (the publishable key already in `site/shared/config.js`) and `SESSION_SECRET` (any random 32+
-   characters; used only to hash addresses for the guessing throttle). `CLAUDE_MODEL` = `claude-sonnet-5`.
-4. **Supabase → Authentication → URL Configuration:** add `https://athena.odysseus.org.uk` as the Site URL and redirect URL.
-5. **Copy LIBBY's data across** (reads the old project, writes the new one; safe to repeat):
-   `OLD_SUPABASE_URL=… OLD_SERVICE_KEY=… NEW_SUPABASE_URL=… NEW_SERVICE_KEY=… node scripts/libby/copy-data.mjs --dry-run`, then
-   without `--dry-run`.
-6. **Give people access.** Your own account already has every program. On `/access/` give each person a LIBBY level, or make a
-   shared code for Peers (Access → LIBBY → Access codes).
-7. **Try it** at `https://<branch>.<project>.pages.dev/libby/` (Cloudflare builds every branch) as an admin, a Whip and a Peer
-   before anyone else is told.
-8. **Turn the scheduled jobs on** (uncomment the `schedule:` blocks in `.github/workflows/libby-*.yml`) and add the GitHub
-   Actions secrets `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY` for this repo. Switch the old repo's jobs
-   off at the same time so two copies do not run.
-9. **DNS:** add `athena` (a CNAME to the Pages project) in the odysseus.org.uk DNS, and the custom domain in Pages. Nothing on
-   `odysseus.org.uk` itself changes.
+1. **Cloudflare variables and secrets.** Cloudflare dashboard -> Workers & Pages -> the Athena project -> Settings -> Variables and Secrets -> Add (set them for both Production and Preview):
+
+   | Name | Type | Value |
+   |---|---|---|
+   | `SUPABASE_URL` | text | `https://fbsoibmtvapmxdlfdgxc.supabase.co` |
+   | `SUPABASE_ANON_KEY` | text | `sb_publishable_nB-qsQvg3a-XAaKih5D1zg_itd_Gyor` (public by design) |
+   | `SUPABASE_SERVICE_ROLE_KEY` | **secret** | Supabase dashboard -> ATHENA project -> Project Settings -> API Keys -> the `service_role` / secret key. Never put this in the repo or paste it into chat. |
+   | `SESSION_SECRET` | **secret** | Any long random string (32+ characters). Make one with a password manager, or `openssl rand -hex 32`. Used only to scramble addresses for the guessing throttle. |
+   | `ANTHROPIC_API_KEY` | **secret** | The same key the old LIBBY project uses (Cloudflare -> the old LIBBY Pages project -> its variables), or a new one from console.anthropic.com. |
+   | `CLAUDE_MODEL` | text | `claude-sonnet-5` (what LIBBY used) |
+
+2. **Supabase sign-in addresses.** Supabase dashboard -> ATHENA project -> Authentication -> URL Configuration
+   (https://supabase.com/dashboard/project/fbsoibmtvapmxdlfdgxc/auth/url-configuration). Add `https://athena.odysseus.org.uk/**` under **Redirect URLs** now.
+   Change **Site URL** to `https://athena.odysseus.org.uk` only when that address is live (password-reset emails use it).
+3. **The address.** Cloudflare -> Workers & Pages -> the Athena project -> Custom domains -> Set up a custom domain -> `athena.odysseus.org.uk`.
+   If odysseus.org.uk's DNS is on Cloudflare, it adds the record for you in one click. If the DNS is elsewhere (your registrar), Cloudflare shows you one
+   CNAME to add there: name `athena`, target the project's `.pages.dev` address. Nothing on odysseus.org.uk itself changes.
+4. **Try it** on the branch preview address (Cloudflare -> Deployments -> the `master-plan` branch) before merging: sign in as yourself, open each program,
+   then make a test Peer code on the Access page and sign in with it in a private window.
+5. **Merge `master-plan` into main** (pull request on GitHub), so the live site updates.
+6. **GitHub Actions secrets** (repo -> Settings -> Secrets and variables -> Actions): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`. Then
+   run **Ingest Lib Dem policy** and **Refresh data** once by hand (Actions tab -> Run workflow) to fill the policy library and saved copies, and remove the `#` in front
+   of the `schedule:` lines in `.github/workflows/libby-*.yml`. Switch the old LIBBY repo's schedules off at the same time.
 
 ## What stays the same until you say otherwise
 
