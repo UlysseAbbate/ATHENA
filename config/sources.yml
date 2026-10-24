@@ -9,8 +9,14 @@
 #
 # Verified live: Demos, CPS, ECFR, Fabian Society, Green Alliance, EPI, IEA, BFPG, FPC, CLES,
 #   NEF, HJS, UK in a Changing Europe, Growth and Reform Network.
-# Refuse automated access (HTTP 403 for every request incl. robots.txt, a WAF block that we
-#   deliberately do not work around): Bright Blue, Institute for Fiscal Studies.
+# Sources that REFUSE automated access, checked from GitHub's runners on 2026-10-24. They are respected and never worked around
+# (no browser disguises, no challenge-solving); they show as failing in Source health:
+#   robots.txt forbids bots: Lib Dem Voice, Reuters, The Times, BMG Research, Deltapoll, Trajectory Partnership, Good Growth Foundation,
+#     UK Parliament Commons Library, Bright Blue, Centre for European Reform, NCUB, The Jobs Foundation, Re:State
+#   Cloudflare bot challenge: Institute for Fiscal Studies, The King's Fund, Chatham House, Social Market Foundation,
+#     Stonehaven, Redfield & Wilton, Institute for Policy Research (Bath)
+#   unreachable from the runners (connection refused or timing out): Convergent Opinion, People's Polling, PolicyWISE (sometimes)
+#   script-only pages with nothing to read: IISS, Merlin Strategy; Norstat's site is throttled
 # Every request checks the site's robots.txt first (403/unreachable robots.txt = no bots) and requests to one site
 # are spaced at least 1 second apart (longer if its Crawl-delay says so).
 # ---------------------------------------------------------------------------
