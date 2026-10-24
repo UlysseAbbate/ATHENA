@@ -15,6 +15,9 @@ class Resp:
         self.text, self.status_code = text, status
         self.content = content if content is not None else text.encode()
 
+    def json(self):
+        return json.loads(self.text)
+
     def raise_for_status(self):
         if self.status_code >= 400:
             import requests
@@ -196,3 +199,51 @@ def test_config_is_valid():
     assert "firms" not in U.CONFIG["polling"]
     names = [t["name"] for t in U.CONFIG["thinktanks"]]
     assert len(names) == len(set(names))
+
+
+def test_embedded_json_items_reads_next_data():
+    html = '''<html><body><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"items":[
+      {"title":"Housing and the cost of living: a new report on rents","slug":"x","url":"/research/housing-costs-report","publishedAt":"2026-10-20"},
+      {"title":"Short","url":"/research/short"},
+      {"headline":"Why polling on the NHS matters for the next election","url":"https://example.org/insight/nhs-polling","datePublished":"2026-10-18T09:00:00Z"},
+      {"@type":"Organization","name":"Example Institute of Policy Research Studies","url":"https://example.org/"}]}}}</script></body></html>'''
+    rows = U.embedded_json_items("https://example.org/research", html)
+    assert [r[1] for r in rows] == ["https://example.org/research/housing-costs-report", "https://example.org/insight/nhs-polling"]
+    assert rows[0][2].date().isoformat() == "2026-10-20"
+
+
+def test_embedded_json_items_reads_json_ld_item_list():
+    html = '''<script type="application/ld+json">{"@type":"ItemList","itemListElement":[
+      {"@type":"ListItem","position":1,"item":{"@type":"Article","name":"Voting intention and the new swing seats analysis","url":"https://example.org/blog/swing-seats"}}]}</script>'''
+    rows = U.embedded_json_items("https://example.org/blog", html)
+    assert [r[1] for r in rows] == ["https://example.org/blog/swing-seats"]
+
+
+def test_wp_items_prefers_custom_publication_type(monkeypatch):
+    html = '<link rel="https://api.w.org/" href="https://example.org/wp-json/">'
+    calls = []
+
+    def fake_get(url, **kw):
+        calls.append(url)
+        if url.endswith("/wp/v2/types"):
+            return Resp(json.dumps({"post": {"slug": "post", "rest_base": "posts"}, "publication": {"slug": "publication", "rest_base": "publications"}}))
+        if "/wp/v2/publications" in url:
+            return Resp(json.dumps([{"title": {"rendered": f"Report number {i} on the economy"}, "link": f"https://example.org/p/{i}", "date": "2026-10-2%dT10:00:00" % i} for i in range(4)]))
+        return Resp("[]", status=404)
+    monkeypatch.setattr(U, "get", fake_get)
+    rows, via = U.wp_items("https://example.org/publications", html)
+    assert len(rows) == 4 and via.endswith("/wp/v2/publications") and rows[0][1] == "https://example.org/p/0"
+    assert not any(u.endswith("/wp/v2/posts") or "/wp/v2/posts?" in u for u in calls)   # stopped at the publication type
+
+
+def test_sitemap_without_dates_takes_the_end_of_it(monkeypatch):
+    xml = "<urlset>" + "".join(f"<url><loc>https://example.org/research/paper-{i}</loc></url>" for i in range(40)) + "</urlset>"
+
+    def fake_get(url, **kw):
+        if url.endswith("/sitemap.xml"):
+            return Resp(xml)
+        raise RuntimeError("no")
+    monkeypatch.setattr(U, "get", fake_get)
+    monkeypatch.setattr(U, "_robots_for", lambda u: type("R", (), {"site_maps": lambda self: []})())
+    items, via = U.sitemap_items({"name": "Ex", "url": "https://example.org/research"}, "thinktank")
+    assert items and items[0]["url"].endswith("paper-39")

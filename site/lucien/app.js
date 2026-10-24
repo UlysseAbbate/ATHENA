@@ -201,69 +201,15 @@ function renderList(rows) {
 }
 
 /* ---------------------------------------------------------------- polling */
-function renderPollsters(rows) {
+/* Which pollsters have published something specific lately (their own write-ups, MRPs, reports); click one to see its items. */
+function renderPolls() {
   const lim = Date.now() - 90 * 864e5, by = new Map();
-  (state.polls || []).filter(r => r.end && new Date(r.end) >= lim).forEach(r => {
-    const name = r.pollster.replace(/\s*\(?MRP\)?/i, "").split("/")[0].trim(); if (!name) return;
-    const e = by.get(name) || { n: 0, last: "" }; e.n++; if (r.end > e.last) e.last = r.end; by.set(name, e);
+  state.items.filter(i => i.category === "polling" && i.published && new Date(i.published) >= lim).forEach(i => {
+    const e = by.get(i.source) || { n: 0, last: "" }; e.n++; if (i.published > e.last) e.last = i.published; by.set(i.source, e);
   });
   const list = [...by.entries()].sort((a, b) => b[1].last.localeCompare(a[1].last) || b[1].n - a[1].n);
-  $("pollsters").innerHTML = `<div class="panel-head"><h2>Pollsters publishing voting intention</h2><span class="muted">${list.length} in the last 90 days · from Wikipedia's tables</span></div>` +
-    `<div class="chips pollsters">${list.map(([k, v]) => `<button data-q="${esc(k)}" title="Show ${esc(k)} items">${esc(k)} <b>${v.n}</b> <small>${esc(fmtShort(v.last))}</small></button>`).join("")}</div>`;
-}
-
-function renderPolls() {
-  const all = (state.polls || []).filter(r => r.end && !r.mrp).sort((a, b) => a.end.localeCompare(b.end));
-  const chart = $("chart"); $("pollstats").innerHTML = ""; $("legend").innerHTML = ""; $("polltable").innerHTML = ""; $("pollctl").innerHTML = "";
-  if (!all.length) { chart.innerHTML = ""; $("pollstats").innerHTML = '<div class="stat"><span>No polling table data yet</span></div>'; return; }
-  const parties = ["Con", "Lab", "Reform", "LD", "Green"], names = { Con: "Conservative", Lab: "Labour", Reform: "Reform UK", LD: "Lib Dem", Green: "Green" };
-  renderPollsters(all);
-  // 7-poll rolling average per party, over every row, so clipping the range doesn't change the lines
-  const avg = parties.map(p => { const seen = []; return all.map(r => { if (r[p] != null) { seen.push(r[p]); if (seen.length > 7) seen.shift(); } return seen.length ? seen.reduce((a, b) => a + b, 0) / seen.length : null; }); });
-  const mean = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
-  $("pollstats").innerHTML = parties.map((p, k) => {
-    const cur = mean(all.slice(-7).map(r => r[p]).filter(v => v != null)), prev = mean(all.slice(-14, -7).map(r => r[p]).filter(v => v != null));
-    const d = cur != null && prev != null ? cur - prev : null;
-    return `<div class="stat" style="border-top:3px solid ${COLORS[p]}"><b>${cur != null ? cur.toFixed(1) : "–"}<small style="font-size:14px;font-weight:600">%</small></b><span>${names[p]}</span>${d != null ? `<em class="${d >= 0 ? "up" : "down"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d).toFixed(1)}</em>` : ""}</div>`;
-  }).join("");
-  const ranges = [["3m", "3 months", 92], ["6m", "6 months", 183], ["all", "All", 99999]];
-  $("pollctl").innerHTML = ranges.map(([k, l]) => `<button data-pr="${k}" class="${state.pollRange === k ? "on" : ""}">${l}</button>`).join("") +
-    parties.map(p => `<button data-pp="${p}" class="${state.hidden.has(p) ? "" : "on"}" style="${state.hidden.has(p) ? "" : `background:${COLORS[p]};border-color:${COLORS[p]};color:#fff`}">${p === "Reform" ? "Reform" : p === "Green" ? "Green" : p}</button>`).join("");
-  const lim = Date.now() - ranges.find(r => r[0] === state.pollRange)[2] * 864e5;
-  const ix = all.map((r, i) => i).filter(i => new Date(all[i].end).getTime() >= lim);
-  const W = 800, H = 300, L = 38, R = 14, T = 12, B = 28;
-  const vis = parties.filter(p => !state.hidden.has(p));
-  const vals = ix.flatMap(i => vis.flatMap((p, _) => [all[i][p]].filter(v => v != null)));
-  const max = Math.ceil(Math.max(10, ...vals) / 5) * 5;
-  const t0 = new Date(all[ix[0]].end).getTime(), t1 = Math.max(new Date(all[ix.at(-1)].end).getTime(), t0 + 864e5);
-  const x = t => L + (t - t0) / (t1 - t0) * (W - L - R), y = v => H - B - v / max * (H - T - B);
-  let out = "";
-  for (let g = 0; g <= max; g += 5) out += `<line x1="${L}" x2="${W - R}" y1="${y(g)}" y2="${y(g)}" stroke="currentColor" opacity=".08"/><text x="${L - 8}" y="${y(g) + 4}" text-anchor="end">${g}%</text>`;
-  for (let k = 0; k <= 4; k++) { const t = t0 + (t1 - t0) * k / 4; out += `<text x="${x(t)}" y="${H - 8}" text-anchor="${k === 0 ? "start" : k === 4 ? "end" : "middle"}">${esc(new Date(t).toLocaleDateString("en-GB", { month: "short", year: "2-digit" }))}</text>`; }
-  const smooth = pts => pts.length < 2 ? "" : pts.map((p, i) => { if (!i) return `M${p[0].toFixed(1)},${p[1].toFixed(1)}`;
-    const a = pts[i - 1], mx = (a[0] + p[0]) / 2; return `C${mx.toFixed(1)},${a[1].toFixed(1)} ${mx.toFixed(1)},${p[1].toFixed(1)} ${p[0].toFixed(1)},${p[1].toFixed(1)}`; }).join(" ");
-  parties.forEach((p, k) => {
-    if (state.hidden.has(p)) return;
-    ix.forEach(i => { if (all[i][p] != null) out += `<circle cx="${x(new Date(all[i].end))}" cy="${y(all[i][p])}" r="2" fill="${COLORS[p]}" opacity=".22"/>`; });
-    const pts = ix.filter(i => avg[k][i] != null).map(i => [x(new Date(all[i].end)), y(avg[k][i])]);
-    out += `<path d="${smooth(pts)}" fill="none" stroke="${COLORS[p]}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
-    if (pts.length) out += `<circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="4.5" fill="${COLORS[p]}" stroke="var(--card)" stroke-width="2"/>`;
-  });
-  out += '<line id="xh" y1="12" y2="272" stroke="currentColor" opacity=".25" hidden/>';
-  chart.innerHTML = out;
-  const tip = $("tip"), xh = chart.querySelector("#xh");
-  chart.onpointermove = e => {
-    const box = chart.getBoundingClientRect(), wrap = chart.parentElement.getBoundingClientRect();
-    const t = t0 + ((e.clientX - box.left) / box.width * W - L) / (W - L - R) * (t1 - t0);
-    let best = ix[0]; ix.forEach(i => { if (Math.abs(new Date(all[i].end) - t) < Math.abs(new Date(all[best].end) - t)) best = i; });
-    const px = x(new Date(all[best].end)); xh.setAttribute("x1", px); xh.setAttribute("x2", px); xh.removeAttribute("hidden");
-    tip.innerHTML = `<b>${esc(fmtDate(all[best].end))}</b> · ${esc(all[best].pollster)}<br>` + vis.map(p => `<span style="color:${COLORS[p]}">●</span> ${p} ${all[best][p] ?? "–"}%  <span style="opacity:.6">(avg ${avg[parties.indexOf(p)][best]?.toFixed(1) ?? "–"})</span>`).join("<br>");
-    tip.style.left = Math.min(Math.max(box.left - wrap.left + px / W * box.width, 90), wrap.width - 90) + "px"; tip.style.top = "78px"; tip.hidden = false;
-  };
-  chart.onpointerleave = () => { tip.hidden = true; xh.setAttribute("hidden", ""); };
-  $("legend").innerHTML = '<span>Lines are a rolling average of the last 7 polls; dots are individual polls. Hover for detail.</span>';
-  $("polltable").innerHTML = "<tr><th>Pollster</th><th>Fieldwork</th><th>N</th>" + parties.map(p => `<th>${p}</th>`).join("") + "</tr>" +
-    all.slice(-30).reverse().map(r => `<tr><td>${esc(r.pollster)}</td><td>${esc(r.dates)}</td><td>${r.sample ?? ""}</td>${parties.map(p => `<td>${r[p] ?? ""}</td>`).join("")}</tr>`).join("");
+  $("pollsters").innerHTML = `<div class="panel-head"><h2>Who has published lately</h2><span class="muted">${list.length} sources in the last 90 days · polls and reports from their own sites</span></div>` +
+    (list.length ? `<div class="chips pollsters">${list.map(([k, v]) => `<button data-q="${esc(k)}" title="Show ${esc(k)} items">${esc(k)} <b>${v.n}</b> <small>${esc(fmtShort(v.last))}</small></button>`).join("")}</div>` : '<p class="muted">Nothing in the last 90 days.</p>');
 }
 
 /* ---------------------------------------------------------------- health */
