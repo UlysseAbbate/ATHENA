@@ -163,5 +163,5 @@ thinktanks:
   - {name: The Sutton Trust, url: "https://www.suttontrust.com/our-research/"}
   - {name: The Work Foundation, url: "https://www.lancaster.ac.uk/work-foundation/publications/", news_query: 'site:lancaster.ac.uk/work-foundation'}  # page loads but is JavaScript-rendered
   - {name: Theos, url: "https://www.theosthinktank.co.uk/research"}
-  - {name: Think Labour, url: "https://www.thinklabour.org/", urls: ["https://www.thinklabour.co.uk/", "https://thinklabour.org/reports", "https://thinklabour.org/research"], feeds: ["https://www.thinklabour.org/feed/", "https://www.thinklabour.org/rss.xml"]}  # rebranded from Labour Together in 2026; site renders with JavaScript
+  - {name: Think Labour, url: "https://thinklabour.co.uk/thinking", urls: ["https://www.thinklabour.org/", "https://thinklabour.co.uk/"]}  # rebranded from Labour Together in 2026; real domain is thinklabour.co.uk (Nuxt site: publications under /thinking, no feed)
   - {name: UK in a Changing Europe, url: "https://ukandeu.ac.uk/reports/", feed: false}  # /research-papers/ 404s; listing has no dates (first-seen used)
