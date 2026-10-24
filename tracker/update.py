@@ -385,7 +385,7 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
     except Exception:  # noqa: BLE001
         maps = []
     queue = maps + [base + "/sitemap.xml", base + "/sitemap_index.xml", base + "/wp-sitemap.xml"]
-    seen, urls, undated, docs = set(), [], [], 0
+    seen, urls, undated, docs, total = set(), [], [], 0, 0
     cutoff = NOW - timedelta(days=120)
     while queue and docs < 8:
         sm = queue.pop(0)
@@ -410,6 +410,7 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
             queue = [k[2] for k in sorted(kids, reverse=True)[:5]] + queue
             continue
         for node in soup.find_all("url"):
+            total += 1
             loc = (node.find("loc").text if node.find("loc") else "").strip()
             mod = parse_date(node.find("lastmod").text) if node.find("lastmod") else None
             u = urlparse(loc)
@@ -439,7 +440,7 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
         it = make_item(category, tt["name"], _slug_title(loc), loc, date_from_url(loc), tags=["sitemap"])
         it["slug_title"] = True
         items.append(it)
-    return items, f"{docs} sitemap file(s)"
+    return items, f"{docs} sitemap file(s), {total} pages seen, {len(urls) + len(undated)} usable"
 
 
 TITLE_KEYS = ("headline", "title", "name", "heading")
@@ -539,6 +540,19 @@ def wp_items(page_url: str, html: str, limit: int = 30):
     return [], ""
 
 
+def page_fingerprint(page_url: str, html: str) -> str:
+    """A few facts about a page the scraper could not read, so Source health says why (script-built? which framework?)."""
+    soup = BeautifulSoup(html, "lxml")
+    host = urlparse(page_url).netloc.removeprefix("www.")
+    hrefs = [urlparse(urljoin(page_url, a["href"])) for a in soup.find_all("a", href=True)]
+    same = [u for u in hrefs if u.netloc.removeprefix("www.") == host and u.path.count("/") >= 2]
+    marks = [m for m, rx in (("next", "__NEXT_DATA__"), ("nuxt", "__NUXT"), ("wp", "wp-content|wp-json"), ("wix", "wix\\.com|wixstatic"),
+                             ("squarespace", "squarespace"), ("webflow", "webflow"), ("react", "data-reactroot|id=\"root\"|id=\"app\"")) if re.search(rx, html, re.I)]
+    jsons = len(soup.find_all("script", type=re.compile("json", re.I)))
+    sample = ",".join(sorted({u.path[:34] for u in same})[:4])
+    return f"{len(hrefs)} links, {len(same)} deep; {'/'.join(marks) or 'no framework seen'}; {jsons} json blocks; e.g. {sample}"
+
+
 def _entries_to_items(name: str, entries, category: str = "thinktank") -> list[dict]:
     items = []
     for e in entries[:40]:
@@ -591,7 +605,9 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
                 continue
             except Exception as e:  # noqa: BLE001
                 m = re.search(r"\b(40\d|50\d)\b", str(e))
-                notes.append(f"{urlparse(page).netloc}{urlparse(page).path}: {'HTTP ' + m.group(1) if m else type(e).__name__}")
+                hdr = getattr(getattr(e, "response", None), "headers", None) or {}
+                who = "/".join(x for x in (("Cloudflare challenge" if hdr.get("cf-mitigated") else ""), (hdr.get("server") or "")[:20]) if x)
+                notes.append(f"{urlparse(page).netloc}{urlparse(page).path}: {'HTTP ' + m.group(1) if m else type(e).__name__}{' (' + who + ')' if who and m and m.group(1) in ('401', '403') else ''}")
                 if not no_feed:   # even if the page is blocked, common feed paths often are not
                     base = f"{urlparse(page).scheme}://{urlparse(page).netloc}/"
                     f, entries = try_feeds([urljoin(base, x) for x in FEED_SUFFIXES])
@@ -621,7 +637,7 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
             if len(html) < 800:
                 notes.append(f"{urlparse(page).netloc}: answers with an empty page (a bot check: respected, not worked around)")
             else:
-                notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links")
+                notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links [{page_fingerprint(page, html)}]")
         # last resort: the site's XML sitemap (made for crawlers, and usually allowed even when pages are not)
         if tt.get("sitemap") is not False and not over():
             items, via = sitemap_items(tt, category)
@@ -635,13 +651,13 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
     if probes and not any(n.startswith("feed probes") for n in notes):
         notes.append("feed probes: " + ", ".join(f"{n}x {w}" for w, n in probes.most_common(4)))
     return [], {"group": group, "name": name, "ok": False, "items": 0, "seconds": round(time.time() - t0),
-                "error": "; ".join(dict.fromkeys(notes))[:400]}
+                "error": "; ".join(dict.fromkeys(notes))[:900]}
 
 
 def _done(t0, group, name, items, method, via, notes):
     items = [i for i in items if i["url"]]
     rec = {"group": group, "name": name, "ok": bool(items), "items": len(items), "method": method, "via": via, "seconds": round(time.time() - t0),
-           "error": ("; ".join(dict.fromkeys(notes))[:400] if notes else "")}
+           "error": ("; ".join(dict.fromkeys(notes))[:900] if notes else "")}
     return items, rec
 
 
