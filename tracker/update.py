@@ -51,6 +51,7 @@ _robots: dict = {}
 _host_next: dict = {}
 _host_lock = threading.Lock()
 _robots_lock = threading.Lock()
+_robots_locks: dict = {}
 
 
 class RobotsDisallowed(Exception):
@@ -63,7 +64,11 @@ def _robots_for(url: str) -> urllib.robotparser.RobotFileParser:
     The parser's `why` says which, for Source health."""
     p = urlparse(url)
     key = f"{p.scheme}://{p.netloc}"
-    with _robots_lock:
+    if key in _robots:
+        return _robots[key]
+    with _robots_lock:                      # one lock per site, so a slow site does not hold up the others
+        lock = _robots_locks.setdefault(key, threading.Lock())
+    with lock:
         if key in _robots:
             return _robots[key]
         rp = urllib.robotparser.RobotFileParser(key + "/robots.txt")
