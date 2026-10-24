@@ -345,6 +345,8 @@ def _variants(url: str) -> list[str]:
 
 
 SITEMAP_HINT = re.compile(r"post|publication|research|report|paper|insight|analysis|briefing|blog|news|article|comment", re.I)
+SITEMAP_LISTING = re.compile(r"^/(collections?|series|projects?|programmes?|regions?|countries|topics?|themes?|issues?|"
+                             r"sectors?|search|page|people|experts?|about|events?|podcasts?|videos?|media|press|jobs)(/|$)", re.I)
 SITEMAP_SKIP = re.compile(r"author|tag|categor|page-sitemap|product|event|people|staff|team|job|vacanc|attachment|image|video", re.I)
 
 
@@ -376,6 +378,8 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
     p = urlparse(tt["url"])
     base = f"{p.scheme}://{p.netloc}"
     scope = _scope(tt["url"])
+    if scope == "/" and p.netloc.removeprefix("www.").endswith((".ac.uk", ".edu")):
+        return [], "skipped: the sitemap would be the whole university's"
     try:
         maps = list(_robots_for(tt["url"]).site_maps() or [])
     except Exception:  # noqa: BLE001
@@ -413,13 +417,21 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
                 continue
             if not u.path.startswith(scope) or u.path.rstrip("/") in ("", scope.rstrip("/")) or u.path.count("/") < 2:
                 continue
-            if NOT_PUBLICATION.search(u.path):
+            if NOT_PUBLICATION.search(u.path) or SITEMAP_LISTING.match(u.path):
                 continue
             urls.append((mod, loc))
+    # prefer pages under the organisation's own listing path (e.g. /report/ for https://www.nesta.org.uk/report/)
+    hint = next((x for x in p.path.split("/") if x), "")
+    if hint:
+        under = [x for x in urls if urlparse(x[1]).path.startswith(f"/{hint}/")]
+        if len(under) >= 3:
+            urls = under
     urls = sorted(set(urls), reverse=True)[:limit]
     items = []
     for mod, loc in urls:
-        it = make_item(category, tt["name"], _slug_title(loc), loc, date_from_url(loc))
+        # tagged so the site does not flag it NEW until its real publication date is known (a sitemap's lastmod is
+        # when the page last changed, which for an old report can be yesterday)
+        it = make_item(category, tt["name"], _slug_title(loc), loc, date_from_url(loc), tags=["sitemap"])
         it["slug_title"] = True
         items.append(it)
     return items, f"{docs} sitemap file(s)"
@@ -492,7 +504,10 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
             if rows:
                 return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], "html", page, notes)
             title = (BeautifulSoup(html, "lxml").title.string or "").strip()[:40] if BeautifulSoup(html, "lxml").title else ""
-            notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links")
+            if len(html) < 800:
+                notes.append(f"{urlparse(page).netloc}: answers with an empty page (a bot check: respected, not worked around)")
+            else:
+                notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links")
         # last resort: the site's XML sitemap (made for crawlers, and usually allowed even when pages are not)
         if tt.get("sitemap") is not False and not over():
             items, via = sitemap_items(tt, category)
@@ -535,12 +550,23 @@ def collect_media() -> tuple[list[dict], list[dict]]:
     items, coverage, seen, seen_cov = [], [], set(), set()
     for o in cfg["outlets"]:
         feeds = o.get("feeds", [])
-        if not feeds:
+        if not feeds and not o.get("url"):
             record("media", o["name"], False, 0, "no open RSS feed configured (Google News is not used: its robots.txt forbids bots)")
             continue
         n, got, why = 0, 0, []
-        for f in feeds:
-            entries, reason = _feed_entries(f)
+        results = [(f, *_feed_entries(f)) for f in feeds]
+        if o.get("url") and not any(e for _, e, _ in results):
+            # the configured feeds moved: look for the feeds the outlet's own page advertises
+            try:
+                for f in [x for x in discover_feeds(o["url"], get(o["url"]).text) if x not in feeds][:6]:
+                    entries, reason = _feed_entries(f)
+                    results.append((f, entries, reason))
+                    if len(entries) >= 3:
+                        why.append(f"configured feed failed; found {f}")
+                        break
+            except Exception as e:  # noqa: BLE001
+                why.append(f"{urlparse(o['url']).path or '/'}: {getattr(e, 'args', [e])[0]}")
+        for f, entries, reason in results:
             if not entries:
                 why.append(f"{urlparse(f).path or '/'}: {reason}")
                 continue
@@ -565,7 +591,8 @@ def collect_media() -> tuple[list[dict], list[dict]]:
                 items.append(make_item("media", o["name"], title, link, date, summary))
                 n += 1
         ok = got > 0     # a quiet fortnight is not a failure: only flag outlets whose feeds returned nothing at all
-        record("media", o["name"], ok, n, "; ".join(why) if not ok else ("" if n else f"quiet: {got} recent stories, none about the Lib Dems"))
+        found = [w for w in why if w.startswith("configured feed failed")]
+        record("media", o["name"], ok, n, "; ".join(why) if not ok else "; ".join(found + ([] if n else [f"quiet: {got} recent stories, none about the Lib Dems"])))
     print(f"media: {len(items)} items; Sarah Olney coverage: {len(coverage)} stories")
     return items, coverage
 
@@ -1165,10 +1192,11 @@ def page_meta(url: str) -> tuple[datetime | None, str]:
     return date, clean(re.split(r"\s+[|–-]\s+[^|–-]{2,40}$", title.strip())[0], 300)
 
 
-def enrich_dates(items: list[dict], limit: int = 40) -> None:
+def enrich_dates(items: list[dict], limit: int = 60) -> None:
     """Fills in missing publication dates (and URL-derived titles from sitemaps) for think tank items: URL first (free),
     then the page itself (capped per run; requests are rate-limited per site)."""
     fetched = 0
+    items = sorted(items, key=lambda i: not i.get("slug_title"))   # titles read from URLs are the most visible gap
     for it in items:
         need_title = it.get("slug_title")
         if (it.get("published") and not need_title) or it["category"] not in ("thinktank", "polling") or \

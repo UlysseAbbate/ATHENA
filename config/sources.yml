@@ -31,34 +31,35 @@ media:
   # no open feed (The Times, Reuters) or whose robots.txt refuses it shows as failing in Source health.
   # A story is kept if its headline or standfirst matches title_pattern (outlets with `all: true` are party sites and
   # keep everything). Feed URLs are best guesses where not marked verified: Source health shows which work.
+  # `url:` is the outlet's page: if its feeds fail, the feeds that page advertises are tried instead.
   title_pattern: '\bLib(eral)?[ -]?Dems?\b|Liberal Democrats?|\bDavey\b|Daisy Cooper|Munira Wilson|Layla Moran|Sarah Olney|Tim Farron|Wera Hobhouse|Christine Jardine|Alistair Carmichael'
   lookback_days: 14
   outlets:
     - {name: The Guardian, feeds: ["https://www.theguardian.com/politics/liberaldemocrats/rss", "https://www.theguardian.com/politics/rss"]}
     - {name: BBC News, feeds: ["https://feeds.bbci.co.uk/news/politics/rss.xml", "https://feeds.bbci.co.uk/news/england/london/rss.xml"]}
     - {name: The Telegraph, feeds: ["https://www.telegraph.co.uk/politics/rss.xml"]}
-    - {name: The Times, feeds: []}
+    - {name: The Times, feeds: [], url: "https://www.thetimes.com/uk/politics"}
     - {name: The Independent, feeds: ["https://www.independent.co.uk/topic/liberal-democrats/rss", "https://www.independent.co.uk/news/uk/politics/rss"]}
     - {name: Sky News, feeds: ["https://feeds.skynews.com/feeds/rss/politics.xml"]}
     - {name: Politico Europe, feeds: ["https://www.politico.eu/section/politics/feed/", "https://www.politico.eu/feed/"]}
     - {name: Financial Times, feeds: ["https://www.ft.com/uk-politics?format=rss"]}
     - {name: The Economist, feeds: ["https://www.economist.com/britain/rss.xml"]}
     - {name: New Statesman, feeds: ["https://www.newstatesman.com/politics/feed", "https://www.newstatesman.com/feed"]}
-    - {name: The Spectator, feeds: ["https://www.spectator.co.uk/feed/"]}
+    - {name: The Spectator, feeds: ["https://www.spectator.co.uk/feed"], url: "https://www.spectator.co.uk/"}
     - {name: PoliticsHome, feeds: ["https://www.politicshome.com/news/rss", "https://www.politicshome.com/rss"]}
-    - {name: HuffPost UK, feeds: ["https://www.huffingtonpost.co.uk/news/politics/feed"]}
+    - {name: HuffPost UK, feeds: ["https://www.huffingtonpost.co.uk/feeds/index.xml"], url: "https://www.huffingtonpost.co.uk/politics/"}
     - {name: The i Paper, feeds: ["https://inews.co.uk/category/news/politics/feed"]}
     - {name: Daily Mirror, feeds: ["https://www.mirror.co.uk/news/politics/?service=rss"]}
     - {name: Daily Mail, feeds: ["https://www.dailymail.co.uk/news/liberal-democrats/index.rss", "https://www.dailymail.co.uk/news/index.rss"]}
-    - {name: Daily Express, feeds: ["https://www.express.co.uk/posts/rss/139/politics"]}
+    - {name: Daily Express, feeds: ["https://www.express.co.uk/posts/rss/139/politics"]}   # robots.txt answers 403: no bots
     - {name: City AM, feeds: ["https://www.cityam.com/category/politics/feed/"]}
-    - {name: Reuters, feeds: []}
+    - {name: Reuters, feeds: [], url: "https://www.reuters.com/world/uk/"}
     # London and Richmond Park: mostly for Sarah Olney's coverage
     - {name: London Evening Standard, feeds: ["https://www.standard.co.uk/news/politics/rss", "https://www.standard.co.uk/news/london/rss"]}
     - {name: MyLondon, feeds: ["https://www.mylondon.news/news/?service=rss"]}
     - {name: Richmond and Twickenham Times, feeds: ["https://www.richmondandtwickenhamtimes.co.uk/news/rss/"]}
     - {name: Surrey Comet, feeds: ["https://www.surreycomet.co.uk/news/rss/"]}
-    - {name: Lib Dem Voice, feeds: ["https://www.libdemvoice.org/feed"], all: true}
+    - {name: Lib Dem Voice, feeds: ["https://www.libdemvoice.org/feed"], all: true}   # robots.txt answers 403 to GitHub's runners
 
 # Sarah Olney's coverage for the Mall's Coverage page: any story in the media feeds above whose headline or standfirst
 # matches. New stories are added with source "auto"; stories already logged (same URL, or same outlet + headline) are skipped.

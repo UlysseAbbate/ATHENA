@@ -63,6 +63,8 @@ function ago(iso) {
 }
 const when = i => new Date(i.published || i.first_seen);
 function isNew(i) {
+  // found through a sitemap and not yet dated: could be an old report, so not "new" until its date is known
+  if (!i.published && (i.tags || []).includes("sitemap")) return false;
   const seen = (Date.now() - new Date(i.first_seen)) / 36e5 < NEW_HOURS;
   return seen && (!i.published || (Date.now() - new Date(i.published)) / 864e5 < 14);
 }

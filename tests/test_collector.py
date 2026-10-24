@@ -102,7 +102,33 @@ def test_sitemap_items(monkeypatch):
     assert items[0]["slug_title"] is True
 
 
+def test_sitemap_skips_listing_pages_and_whole_universities(monkeypatch):
+    recent = (U.NOW - timedelta(days=2)).date().isoformat()
+    urlset = "".join(f"<url><loc>https://o.test{p}</loc><lastmod>{recent}</lastmod></url>" for p in
+                     ["/collection/housing-justice", "/series/farmers", "/report/a-real-report/", "/report/another-one/",
+                      "/report/third-report/", "/blog/a-post/"])
+    stub_session(monkeypatch, {"https://o.test/sitemap.xml": f"<urlset>{urlset}</urlset>"})
+    items, _ = U.sitemap_items({"name": "O", "url": "https://o.test/report/"}, "thinktank")
+    assert sorted(i["url"] for i in items) == ["https://o.test/report/a-real-report/", "https://o.test/report/another-one/",
+                                               "https://o.test/report/third-report/"]
+    assert all("sitemap" in i["tags"] for i in items)
+    items, why = U.sitemap_items({"name": "Uni", "url": "https://www.uni.ac.uk/publications/"}, "thinktank")
+    assert items == [] and "whole university" in why
+
+
 # ------------------------------------------------------------------ media + Olney coverage
+def test_media_discovers_moved_feed(monkeypatch):
+    page = '<html><head><link rel="alternate" type="application/rss+xml" href="/new-feed.xml"></head></html>'
+    now = U.NOW.isoformat()
+    stub_session(monkeypatch, {"https://n.test/politics": page})
+    good = [{"title": f"Lib Dems story {k}", "summary": "", "link": f"https://n.test/{k}", "published": now} for k in range(3)]
+    monkeypatch.setattr(U, "_feed_entries", lambda f: (good, "ok") if f.endswith("/new-feed.xml") else ([], "HTTP 404"))
+    monkeypatch.setitem(U.CONFIG, "media", {"title_pattern": U.CONFIG["media"]["title_pattern"], "lookback_days": 14,
+                                            "outlets": [{"name": "Moved", "feeds": ["https://n.test/old"], "url": "https://n.test/politics"}]})
+    items, _ = U.collect_media()
+    assert len(items) == 3 and U.health[0]["ok"] and "found" in U.health[0]["error"]
+
+
 def test_media_filters_party_and_collects_olney(monkeypatch):
     now = U.NOW.isoformat()
     entries = [
