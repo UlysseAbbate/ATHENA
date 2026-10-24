@@ -272,3 +272,12 @@ def test_collect_source_does_not_hammer_a_site_that_answered(monkeypatch):
     # the main page and the one alternate were each asked once; the www twins were not tried because the site had answered
     assert asked == ["https://x.example.org/research", "https://x.example.org/blog"]
     assert "lists no publication links" in rec["error"]
+
+
+def test_sitemap_relaxed_pass_takes_top_level_slugs(monkeypatch):
+    recent = (U.NOW - timedelta(days=3)).date().isoformat()
+    urlset = "".join(f"<url><loc>https://o.test{p}</loc><lastmod>{recent}</lastmod></url>" for p in
+                     ["/an-important-new-report-on-housing", "/about", "/another-detailed-paper-on-tax-reform"])
+    stub_session(monkeypatch, {"https://o.test/sitemap.xml": f"<urlset>{urlset}</urlset>"})
+    items, _ = U.sitemap_items({"name": "O", "url": "https://o.test/research"}, "thinktank")
+    assert sorted(i["url"] for i in items) == ["https://o.test/an-important-new-report-on-housing", "https://o.test/another-detailed-paper-on-tax-reform"]

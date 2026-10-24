@@ -102,7 +102,7 @@ polling:
     - {name: Savanta, url: "https://savanta.com/knowledge-centre/", feeds: ["https://savanta.com/feed/"]}
     - {name: Public First, url: "https://www.publicfirst.co.uk/research", feeds: ["https://www.publicfirst.co.uk/feed/"]}
     - {name: Verian, url: "https://www.veriangroup.com/", feeds: ["https://www.veriangroup.com/feed/"]}
-    - {name: Whitestone Insight, url: "https://www.whitestone-insight.com/", urls: ["https://whitestone-insight.com/", "https://www.whitestone-insight.com/news", "https://www.whitestone-insight.com/insights", "https://www.whitestone-insight.com/polling", "https://www.whitestone-insight.com/blog"], feeds: ["https://www.whitestone-insight.com/feed/"]}
+    - {name: Whitestone Insight, url: "https://www.whitestoneinsight.com/", urls: ["https://whitestoneinsight.com/", "https://www.whitestoneinsight.com/insights", "https://www.whitestoneinsight.com/news"], feeds: ["https://www.whitestoneinsight.com/feed/"]}   # no hyphen (whitestone-insight.com did not resolve)
     - {name: Merlin Strategy, url: "https://merlinstrategy.co.uk/", urls: ["https://merlinstrategy.co.uk/blog"], feeds: ["https://merlinstrategy.co.uk/feed/"]}
     - {name: Stonehaven, url: "https://stonehavenglobal.com/", urls: ["https://stonehavenglobal.com/insights/", "https://stonehavenglobal.com/news/", "https://stonehavenglobal.com/polling/"], feeds: ["https://stonehavenglobal.com/feed/", "https://stonehavenglobal.com/insights/feed/"]}
     - {name: Redfield & Wilton Strategies, url: "https://redfieldandwilton.com/", urls: ["https://redfieldandwilton.com/polls/", "https://redfieldandwilton.com/news/", "https://redfieldandwilton.com/insights/"], feeds: ["https://redfieldandwilton.com/feed/", "https://redfieldandwilton.com/polls/feed/"]}
@@ -111,8 +111,8 @@ polling:
     - {name: Electoral Calculus, url: "https://www.electoralcalculus.co.uk/", urls: ["https://www.electoralcalculus.co.uk/blog/", "https://www.electoralcalculus.co.uk/polls.html", "https://www.electoralcalculus.co.uk/prediction_main.html"], feeds: ["https://www.electoralcalculus.co.uk/blog/feed.xml", "https://www.electoralcalculus.co.uk/blog/rss.xml"]}
     - {name: Good Growth Foundation, url: "https://www.goodgrowthfoundation.org/", feeds: ["https://www.goodgrowthfoundation.org/feed/"]}
     - {name: Trajectory Partnership, url: "https://www.trajectorypartnership.com/"}
-    - {name: Convergent Opinion, url: "https://www.convergentopinion.com/", urls: ["https://convergentopinion.com/", "https://www.convergentopinion.com/blog", "https://www.convergentopinion.com/news", "https://www.convergentopinion.com/polls"], feeds: ["https://www.convergentopinion.com/feed/", "https://www.convergentopinion.com/rss"]}
-    - {name: Peoples Polling, url: "https://www.peoplespolling.com/", urls: ["https://peoplespolling.com/", "https://www.peoplespolling.com/news", "https://www.peoplespolling.com/polls", "https://www.peoplespolling.com/blog"], feeds: ["https://www.peoplespolling.com/feed/", "https://www.peoplespolling.com/rss"]}
+    - {name: Convergent Opinion, url: "https://www.convergentopinion.com/", urls: ["https://convergentopinion.com/", "https://www.convergentopinion.co.uk/", "https://www.convergentopinion.com/blog"], feeds: ["https://www.convergentopinion.com/feed/"]}
+    - {name: Peoples Polling, url: "https://www.peoplepolling.com/", urls: ["https://peoplepolling.com/", "https://www.peoplepolling.com/news"], feeds: ["https://www.peoplepolling.com/feed/"]}   # PeoplePolling, one word
     - {name: Yonder, url: "https://yonderconsulting.com/", feeds: ["https://yonderconsulting.com/feed/"]}
     # Panelbase is part of Norstat now (panelbase.net serves Norstat's site), so it is collected under Norstat.
     - {name: Norstat, url: "https://norstat.co.uk/", urls: ["https://norstat.co.uk/insights"], feeds: ["https://norstat.co.uk/feed/"]}
@@ -174,7 +174,7 @@ thinktanks:
   - {name: PBE, url: "https://www.pbe.org.uk/research", urls: ["https://www.pbe.org.uk/", "https://www.probonoeconomics.com/research"], feeds: ["https://www.pbe.org.uk/feed/"]}  # formerly Pro Bono Economics; the bare pbe.org.uk host had a certificate error
   - {name: PolicyWISE, url: "https://policywise.com/", urls: ["https://policywise.com/wise-in-5/", "https://policywise.com/news/"], feeds: ["https://policywise.com/feed/"]}  # run by the Open University; /publications/ 404ed
   - {name: Power to Change, url: "https://www.powertochange.org.uk/research/"}
-  - {name: Re:State, url: "https://restate.org.uk/research/", urls: ["https://restate.org.uk/", "https://www.restate.org.uk/", "https://www.restateuk.com/", "https://restateuk.com/research/"], feeds: ["https://restate.org.uk/feed/", "https://www.restateuk.com/feed/"]}  # was restateuk.com (certificate error)
+  - {name: Re:State, url: "https://re-state.co.uk/research/", urls: ["https://re-state.co.uk/", "https://www.re-state.co.uk/"], feeds: ["https://re-state.co.uk/feed/"]}   # Reform rebranded as Re:State in May 2025 and moved to re-state.co.uk
   - {name: Resolution Foundation, url: "https://www.resolutionfoundation.org/publications/"}
   - {name: RUSI, url: "https://www.rusi.org/explore-our-research/publications"}
   - {name: Social Market Foundation, url: "https://www.smf.co.uk/publications/", feeds: ["https://www.smf.co.uk/feed/"]}  # 403 to GitHub's runners

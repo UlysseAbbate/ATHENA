@@ -385,7 +385,7 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
     except Exception:  # noqa: BLE001
         maps = []
     queue = maps + [base + "/sitemap.xml", base + "/sitemap_index.xml", base + "/wp-sitemap.xml"]
-    seen, urls, undated, docs, total = set(), [], [], 0, 0
+    seen, urls, undated, relaxed, docs, total = set(), [], [], [], 0, 0
     cutoff = NOW - timedelta(days=int(tt.get("sitemap_days", 120)))
     pattern = re.compile(tt["sitemap_pattern"]) if tt.get("sitemap_pattern") else None
     newest = None
@@ -424,6 +424,9 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
                 if not pattern.search(u.path):
                     continue
             elif not u.path.startswith(scope) or u.path.rstrip("/") in ("", scope.rstrip("/")) or u.path.count("/") < 2:
+                slug = u.path.strip("/")
+                if mod and "/" not in slug and slug.count("-") >= 3 and u.path.startswith(scope) and not (NOT_PUBLICATION.search(u.path) or SITEMAP_LISTING.match(u.path)):
+                    relaxed.append((mod, loc))
                 continue
             if NOT_PUBLICATION.search(u.path) or SITEMAP_LISTING.match(u.path):
                 continue
@@ -437,6 +440,8 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
         under = [x for x in urls if urlparse(x[1]).path.startswith(f"/{hint}/")]
         if len(under) >= 3:
             urls = under
+    if not urls and not undated and relaxed:      # nothing under a listing path: take recent top-level pages with a real slug
+        urls = relaxed
     if not urls and undated:      # a sitemap with no dates: assume it lists oldest first, so take the end of it
         urls = [(cutoff, u) for u in reversed(undated[-limit:])]
     urls = sorted(set(urls), reverse=True)[:limit]
