@@ -38,13 +38,13 @@ jobs:
   whatson:
     needs: window
     if: needs.window.outputs.go == 'true'
-    uses: ./.github/workflows/ingest-whatson.yml
+    uses: ./.github/workflows/libby-ingest-whatson.yml
     secrets: inherit
 
   votes:
     needs: window
     if: needs.window.outputs.go == 'true'
-    uses: ./.github/workflows/ingest-votes.yml
+    uses: ./.github/workflows/libby-ingest-votes.yml
     secrets: inherit
 
   snapshots:
