@@ -101,6 +101,21 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       const links = await page.$$eval("#n a b", bs => bs.map(b => b.textContent));
       check(`${who}: home shows Ulysse only to admin`, links.includes("Ulysse") === (who === "admin"), links.join(","));
 
+      // shared look: the theme button cycles Auto -> Light -> Dark and the page really changes colour
+      const bg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      await page.emulateMedia({ colorScheme: "light" });
+      const btn = page.locator("[data-theme-btn]");
+      check(`${who}: theme button starts on Auto`, /Auto/.test(await btn.textContent()));
+      const lightBg = await bg();
+      await btn.click(); await btn.click();   // Auto -> Light -> Dark
+      check(`${who}: theme button reaches Dark and repaints`, /Dark/.test(await btn.textContent()) && (await page.getAttribute("html", "data-theme")) === "dark" && (await bg()) !== lightBg, await bg());
+      await page.reload(); await page.waitForTimeout(300);
+      check(`${who}: dark theme is remembered`, (await page.getAttribute("html", "data-theme")) === "dark");
+      await page.evaluate(() => localStorage.removeItem("athena_theme"));
+      await page.emulateMedia({ colorScheme: "dark" }); await page.reload(); await page.waitForTimeout(300);
+      check(`${who}: Auto follows a dark device`, (await page.getAttribute("html", "data-theme")) === null && (await bg()) === "rgb(20, 20, 20)", await bg());
+      await page.emulateMedia({ colorScheme: "light" });
+
       await page.goto(BASE + "/mall/");
       await page.waitForSelector("#tabs button", { timeout: 5000 });
       const tabs = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent));
@@ -162,7 +177,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.goto(BASE + "/admin/");
       await page.waitForTimeout(1000);
       const ad = await page.$eval("body", b => b.innerText);
-      check(`${who}: admin page`, who === "admin" ? /Collector healthy/.test(ad) && /Recent activity/.test(ad) : /Not found/.test(ad), ad.slice(0, 50).replace(/\n/g, " "));
+      check(`${who}: admin page`, who === "admin" ? /Collector healthy/i.test(ad) && /Recent activity/i.test(ad) : /Not found/.test(ad), ad.slice(0, 50).replace(/\n/g, " "));
 
       const bad = errors.filter(e => !/Failed to load resource: the server responded with a status of 404/.test(e));
       check(`${who}: no console errors / CSP violations`, bad.length === 0, bad.slice(0, 3).join(" || "));

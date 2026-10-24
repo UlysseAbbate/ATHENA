@@ -85,12 +85,14 @@ async function mock(page, who, log) {
   await new Promise(r => setTimeout(r, 800));
   const browser = await chromium.launch();
   const out = process.env.SHOTS;
-  for (const [who, url, name, w] of [["core", "/mall/", "mall-overview", 1200], ["core", "/mall/#team", "mall-team", 1200], ["admin", "/admin/", "admin", 900], ["member", "/mall/", "mall-member-phone", 390]]) {
-    const ctx = await browser.newContext({ viewport: { width: w, height: 900 } });
-    const page = await ctx.newPage(); await mock(page, who, []);
-    await page.goto(BASE + url); await page.waitForTimeout(1200);
-    await page.screenshot({ path: path.join(out, name + ".png"), fullPage: true });
-    await ctx.close();
+  for (const [who, url, name, w] of [["admin", "/", "home", 1100], ["admin", "/admin/", "admin", 1000], ["member", "/", "home-phone", 390], ["core", "/mall/", "mall-overview", 1200], ["core", "/mall/#team", "mall-team", 1200]]) {
+    for (const scheme of ["light", "dark"]) {
+      const ctx = await browser.newContext({ viewport: { width: w, height: 900 }, colorScheme: scheme });
+      const page = await ctx.newPage(); await mock(page, who, []);
+      await page.goto(BASE + url); await page.waitForTimeout(1200);
+      await page.screenshot({ path: path.join(out, `${name}-${scheme}.png`), fullPage: true });
+      await ctx.close();
+    }
   }
   await browser.close(); srv.kill();
 })();

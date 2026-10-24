@@ -142,8 +142,8 @@ Each phase ends with something working and mergeable; nothing is switched off be
 | # | Phase | Delivers | Done when |
 |---|---|---|---|
 | 0 | **Decide** | Answers to §7 | Open questions closed |
-| 1 | **Shared design** | `libby.css` tokens, light + dark, theme toggle, shared header; restyle Athena home and `/admin/` | Home and admin pass UI tests in both themes |
-| 2 | **Access core** | `programs`, `access_grants`, program-manager tier, `access_codes`, new `my_access()`, migration of existing roles, audit hooks, admin *People* and *Access codes* tabs | Admin can grant/revoke per program; a manager can manage only their program; a code signs in at its level and no higher; old Mall roles intact; RLS tests pass |
+| 1 | **Shared design** (built, on branch `master-plan`) | `libby.css` tokens, light + dark, theme toggle, shared header; restyle Athena home and `/admin/` | Home and admin pass UI tests in both themes |
+| 2 | **Access core** (database built and tested; not yet applied to the live project; admin People and Access codes screens still to build) | `programs`, `access_grants`, program-manager tier, `access_codes`, new `my_access()`, migration of existing roles, audit hooks, admin *People* and *Access codes* tabs | Admin can grant/revoke per program; a manager can manage only their program; a code signs in at its level and no higher; old Mall roles intact; RLS tests pass |
 | 3 | **Rename** | Mall → Lovelace, Ulysse → Lucien (paths, titles, copy, redirects, CSP, README, workflows) and apply the shared look | Old URLs redirect; all UI tests green in both themes |
 | 4 | **Bring LIBBY in** | Code moved into `athena/`; sign-in via Athena; Functions verify JWT; levels read from `access_grants`; data copied to the Athena project | LIBBY at `athena.odysseus.org.uk/libby/` works for a Whip, Staff and Admin account, and for a Peer via own account and via a Peers code; odysseus.org.uk unaffected |
 | 5 | **LIBBY restyle** | LIBBY pages on the shared stylesheet with dark mode | Every LIBBY page reviewed in both themes |

@@ -4,17 +4,19 @@
  *        AuthUI.changePassword(sb, hostElement) -> form for a signed-in user to change their password */
 window.AuthUI = (() => {
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const css = `.au{max-width:360px;margin:12vh auto;padding:0 16px;font:14px/1.5 var(--body,Arial,sans-serif);color:inherit}
-    .au h2{font:800 1.5rem/1.1 var(--head,Arial,sans-serif);letter-spacing:-.02em;margin:0 0 18px;display:inline;background:linear-gradient(transparent 62%,var(--yellow,#FDBB30) 62% 92%,transparent 92%);padding:0 .12em;margin-left:-.12em}
-    .au .seg{display:flex;gap:4px;margin:18px 0 6px;border:0}
-    .au .seg button{border:0;background:none;color:inherit;opacity:.6;padding:6px 12px 6px 0;font:700 .9rem var(--head,Arial,sans-serif);cursor:pointer;border-bottom:3px solid transparent;border-radius:0}
-    .au .seg button.on{opacity:1;border-color:var(--yellow-deep,#F5A100)}
-    .au label{display:block;font-size:12px;font-weight:600;opacity:.7;margin:12px 0 3px}
-    .au input{width:100%;padding:9px 11px;border:1px solid var(--line-strong,#BDBAB0);background:var(--card,transparent);color:inherit;font:inherit;border-radius:8px}
-    .au input:focus{outline:none;border-color:var(--black,#111);box-shadow:0 0 0 3px rgba(253,187,48,.55)}
-    .au button.go{margin-top:18px;padding:.55rem 1.2rem;border:1px solid var(--black,#111);background:var(--black,#111);color:var(--yellow,#FDBB30);font:700 .92rem var(--head,Arial,sans-serif);cursor:pointer;border-radius:10px}
-    .au button.go:hover{background:#2a2a2a}
-    .au .msg{margin-top:14px;font-size:13px}.au .msg.err{color:#C62828}.au a{color:inherit;text-decoration-color:var(--yellow-deep,#F5A100)}`;
+  const css = `.au{max-width:28rem;margin:6vh auto;padding:0 1.25rem;font:16px/1.5 var(--body,Arial,sans-serif);color:inherit}
+    .au h2{font:900 clamp(1.8rem,6vw,2.4rem)/1.2 var(--head,Arial,sans-serif);letter-spacing:-.02em;margin:0 0 .4rem;display:inline;background:linear-gradient(transparent 56%,var(--yellow,#FDBB30) 56% 94%,transparent 94%);padding:0 .1em;margin-left:-.1em}
+    .au .seg{display:flex;gap:.4rem;margin:1.2rem 0 .6rem}
+    .au .seg button{border:2px solid var(--outline,#111);background:var(--card,#fff);color:var(--ink,#111);padding:.35rem 1rem;font:800 .9rem var(--head,Arial,sans-serif);cursor:pointer;border-radius:999px}
+    .au .seg button:hover{background:var(--yellow,#FDBB30);color:#111}
+    .au .seg button.on{background:var(--btn-bg,#111);color:var(--btn-fg,#FDBB30)}
+    .au form{background:var(--yellow-pale,#FFF3CF);border:3px solid var(--outline,#111);border-radius:14px;box-shadow:6px 6px 0 var(--pop-colour,#FDBB30);padding:0 1.4rem 1.4rem}
+    .au label{display:block;font-weight:800;margin:1.1rem 0 .3rem}
+    .au input{width:100%;padding:.65rem .75rem;border:2px solid var(--outline,#111);background:var(--card,#fff);color:inherit;font:inherit;border-radius:6px}
+    .au input:focus{outline:none;box-shadow:0 0 0 3px var(--yellow,#FDBB30)}
+    .au button.go{margin-top:1.2rem;padding:.65rem 1.6rem;border:3px solid var(--btn-bg,#111);background:var(--btn-bg,#111);color:var(--btn-fg,#FDBB30);font:800 1rem var(--head,Arial,sans-serif);cursor:pointer;border-radius:999px}
+    .au button.go:hover{background:var(--btn-hover-bg,#FDBB30);color:var(--btn-hover-fg,#111)}
+    .au .msg{margin-top:.9rem;font-size:.9rem}.au .msg.err{color:var(--err,#B3141C);font-weight:800}.au a{color:inherit;text-decoration-color:var(--yellow-deep,#F5A100);text-decoration-thickness:2px}`;
   function style() { if (!document.getElementById("au-css")) { const s = document.createElement("style"); s.id = "au-css"; s.textContent = css; document.head.append(s); } }
 
   function render(sb, host, opts = {}) {
