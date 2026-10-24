@@ -140,17 +140,30 @@ cd site && python -m http.server
   - Only political polling is kept: `polling.political` in `config/sources.yml`, applied retroactively too.
   - Types: voting intention, MRP / seat projection, leader ratings, preferred PM, policy opinion.
 
+## LIBBY (under `/libby/`)
+
+Formerly its own site. Code: `site/libby` (pages), `functions/api/libby` (server routes), `lib/libby` (helpers), `scripts/libby` (jobs and checks);
+how the Whips' Office tools work is in `docs/libby/README.md`, and how to add a page in `docs/libby/adding-a-page.md`. It signs in through Athena
+(email + password, or a shared access code), and a person's LIBBY level (Peer, Whip, Spokesperson, Leader's office, Staff, Admin) is a row on the
+Access page. Server routes need these Cloudflare Pages secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, `SESSION_SECRET`,
+`ANTHROPIC_API_KEY`. The steps to bring it live are in `docs/PHASE-4-GO-LIVE.md`.
+
 ## Checks
 
-`.github/workflows/checks.yml` runs on every pull request and push to main:
-- pyflakes
-- offline collector tests (`tests/test_collector.py`): robots.txt rules, sitemap fallback, media/coverage filtering, merge, political filter, state safety
+`.github/workflows/checks.yml` runs on every pull request and push to main (LIBBY's own checks run in `libby-check.yml`):
+- pyflakes and offline collector tests (`tests/test_collector.py`)
 - JavaScript syntax
-- browser tests (`tests/ui/run.js`): every page as admin, core team and member against a mocked database, under the real security headers, failing on any console error or CSP violation
+- **database rules** (`tests/db/run.sh`): every migration applied to a throwaway Postgres, then who may grant what to whom, access codes, expiry, audit
+- **design tokens** (`tests/contrast.js`, `tests/libby-css.js`): WCAG contrast of every colour pair in light and dark, and no fixed colours in LIBBY's stylesheet
+- browser tests (`tests/ui/run.js`): every page as admin, core team, member and a Lucien manager against a mocked database, under the real security headers,
+  in both themes, failing on any console error or CSP violation
 
 ```bash
 pip install -r requirements.txt -r requirements-dev.txt && python -m pytest -q tests
+node tests/contrast.js && node tests/libby-css.js
+bash tests/db/run.sh        # needs Postgres installed locally
 node tests/ui/run.js        # needs Playwright
+node scripts/libby/check-site.mjs && node scripts/libby/check-access.mjs && node scripts/libby/check-list.mjs
 ```
 
 ## Settings to switch on in the Supabase dashboard
