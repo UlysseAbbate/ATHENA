@@ -1,14 +1,13 @@
-name: Update tracker and deploy
+name: Update tracker
 
 on:
   schedule:
     - cron: "17 */3 * * *"
   workflow_dispatch:
 
+# Read-only: the collector keeps its state in the private database (through the ingest function), not in the repo.
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: tracker
@@ -17,6 +16,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,40 +24,8 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Collect
+      - name: Collect and upload
         run: python tracker/update.py
         env:
           INGEST_URL: https://fbsoibmtvapmxdlfdgxc.supabase.co/functions/v1/ulysse-ingest
           INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
-      - name: Commit data (keeps first-seen timestamps between runs)
-        if: ${{ !cancelled() }}
-        run: |
-          git config user.name "policy-tracker-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add data/ulysse
-          git diff --cached --quiet && exit 0
-          git commit -m "Update data"
-          # main can move while the collector runs (it takes minutes): rebase onto it and retry instead of failing
-          for i in 1 2 3 4 5; do
-            git pull --rebase origin "${GITHUB_REF_NAME}" && git push && exit 0
-            echo "push attempt $i failed, retrying"; sleep $((i * 3))
-          done
-          exit 1
-
-  # Optional: publish to GitHub Pages. Fails harmlessly (and does not fail the run) if Pages is not enabled,
-  # e.g. when the site is hosted on Cloudflare instead.
-  deploy:
-    needs: update
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-      - id: deployment
-        uses: actions/deploy-pages@v4

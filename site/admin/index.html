@@ -14,47 +14,19 @@ nav.go{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 4px}
 nav.go a{padding:14px 24px;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);text-decoration:none;font:800 1.05rem var(--head);min-width:170px;background:var(--card);transition:box-shadow .15s,border-color .15s,transform .15s}
 nav.go a:hover{box-shadow:var(--shadow-hover);border-color:var(--yellow-deep);transform:translateY(-1px)}
 table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
-td{padding:9px 14px;border-bottom:1px solid var(--line)}td:last-child{text-align:right;font-weight:700}tr:last-child td{border-bottom:0}
+td{padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}td.n{text-align:right;font-weight:700;white-space:nowrap}tr:last-child td{border-bottom:0}
+.alert{padding:11px 14px;border:1px solid var(--line);border-left:5px solid var(--red);border-radius:8px;background:var(--card);margin:14px 0;font-size:14px}
+.alert.ok{border-left-color:var(--green)}
+small.why{display:block;color:var(--muted);font-size:12px;margin-top:2px;overflow-wrap:anywhere}
+.act td{font-size:12.5px}
 </style>
 </head>
 <body><header class="masthead"><div class="wrap masthead-bar"><h1 class="brand">Admin</h1><div class="right"><a class="muted" href="../">Home</a></div></div></header>
 <main id="m"></main>
 <script src="../mall/vendor/supabase.js"></script>
 <script src="../mall/config.js"></script>
+<script src="../common.js"></script>
 <script src="../mall/authui.js"></script>
-<script>
-const sb = window.supabase.createClient(MALL_CONFIG.url, MALL_CONFIG.key, { auth: { persistSession: true } });
-const m = document.getElementById("m");
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const ago = iso => { if(!iso) return "never"; const h=(Date.now()-new Date(iso))/36e5; return h<1?"just now":h<24?`${Math.floor(h)}h ago`:`${Math.floor(h/24)}d ago`; };
-function notFound(){ document.body.innerHTML = '<main style="text-align:center;padding-top:20vh;font:14px system-ui">Not found</main>'; }
-function login(){ AuthUI.render(sb, m, { title: "Admin" }); }
-AuthUI.watchRecovery(sb, m);
-(async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) return login();
-  const { data: admin } = await sb.rpc("is_admin");
-  if (!admin) return notFound();
-  const q = (t, f) => f(sb.from(t).select("*", { count: "exact", head: true }));
-  const [pend, people, vols, stk, cov, feed, health] = await Promise.all([
-    q("profiles", b => b.is("role", null)), q("profiles", b => b), q("volunteers", b => b), q("stakeholders", b => b), q("media_coverage", b => b),
-    sb.from("ulysse_data").select("body,updated_at").eq("name", "feed").maybeSingle(), sb.from("ulysse_data").select("body").eq("name", "health").maybeSingle()]);
-  const src = health.data?.body?.sources || [], okN = src.filter(s => s.ok).length;
-  m.innerHTML = `<nav class="go"><a href="../ulysse/">Ulysse</a><a href="../mall/">The Mall</a></nav>
-    <h2>The Mall</h2><table>
-      <tr><td>People signed up</td><td>${people.count ?? "–"}</td></tr>
-      <tr><td>Awaiting a role</td><td>${pend.count ?? "–"}</td></tr>
-      <tr><td>Volunteers</td><td>${vols.count ?? "–"}</td></tr>
-      <tr><td>Stakeholders</td><td>${stk.count ?? "–"}</td></tr>
-      <tr><td>Coverage entries</td><td>${cov.count ?? "–"}</td></tr></table>
-    <p class="muted">Assign roles and edit permissions in <a href="../mall/#team">The Mall → Team &amp; access</a>.</p>
-    <h2>Ulysse</h2><table>
-      <tr><td>Items stored</td><td>${feed.data?.body?.items?.length ?? "no data yet"}</td></tr>
-      <tr><td>Last upload</td><td>${esc(ago(feed.data?.updated_at))}</td></tr>
-      <tr><td>Sources returning data</td><td>${src.length ? `${okN} / ${src.length}` : "–"}</td></tr></table>
-    <p class="muted" style="margin-top:22px">Signed in as ${esc(session.user.email)} · <a href="#" id="so">Sign out</a></p>`;
-  document.getElementById("so").onclick = async e => { e.preventDefault(); await sb.auth.signOut(); location.reload(); };
-})();
-</script>
+<script src="admin.js"></script>
 </body>
 </html>

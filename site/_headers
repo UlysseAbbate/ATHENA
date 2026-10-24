@@ -1,0 +1,14 @@
+# Security headers (Cloudflare static assets / Pages read this file; other hosts ignore it).
+# Scripts only from this site, data only from the Athena Supabase project, never framed by another site.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://fbsoibmtvapmxdlfdgxc.supabase.co wss://fbsoibmtvapmxdlfdgxc.supabase.co; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000
+  X-Robots-Tag: noindex, nofollow
+  Cross-Origin-Opener-Policy: same-origin
+
+/mall/vendor/*
+  Cache-Control: public, max-age=86400
