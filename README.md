@@ -76,3 +76,15 @@ A sign-in-protected campaign workspace modelled on the campaign Google Sheet. It
 ## How think-tank collection copes with awkward sites
 
 For each organisation the collector tries, in order: explicit `feed:`/`feeds:` -> the page (and its `www`/bare-host twin, plus any `urls:` alternates) -> feed autodiscovery and common feed paths -> a scrape of the listing page -> finally a Google News search restricted to the organisation's own domain (`site:`), which is how sites that block automated requests (HTTP 403) or render with JavaScript still get tracked. Google News items are headlines and redirect links only. A feed is only trusted if it has at least 3 entries. `feed: false` skips feeds, `news: false` disables the Google News fallback, and `news_query:` overrides its search. The **Source health** tab shows which method each source used and why earlier attempts failed.
+
+## Political polling sources
+
+Only **political** polling is kept (voting intention, MRPs, leader ratings, preferred PM, party/government/policy opinion). Consumer and commercial polls and other countries' politics are filtered out (`polling.political` in `config/sources.yml`; it also cleans up already-stored items each run).
+
+Four layers feed the Polling tab:
+1. **Wikipedia's UK poll tables** (national voting intention, MRPs, Scotland/Wales/England, leader ratings, preferred PM). Every row in the last 60 days becomes an item linking to the **pollster's own release** (an Excel sheet or PDF), so every pollster that publishes appears, including ones whose sites cannot be scraped. The Polling tab lists them with their poll counts and last-poll dates.
+2. **Pollsters' own sites** (`polling.pollsters`, ~29 firms) through the same self-healing collector as the think tanks (feed, page, then Google News on their domain).
+3. **Polling analysts** (`polling.analysts`: Mark Pack, Britain Elects, Electoral Calculus, Number Cruncher Politics...).
+4. **Search by firm** (`polling.firms`) and YouGov's own pages, including every edition of the YouGov News Tracker.
+
+A Wikipedia row is skipped if a pollster's own write-up of the same poll (within 2 days) is already in the feed. The pollster URLs are best guesses and are verified at run time: **Source health** shows which worked. Add or fix a pollster by editing `config/sources.yml`.

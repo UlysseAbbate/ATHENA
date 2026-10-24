@@ -98,6 +98,60 @@ polling:
     # (the listing page only shows the latest few; the topic page needs JavaScript).
     - {name: YouGov, url: "https://yougov.com/en-gb/articles", harvest: "yougov-news-tracker"}
 
+  wikipedia_leadership_page: https://en.wikipedia.org/wiki/Leadership_approval_opinion_polling_for_the_next_United_Kingdom_general_election
+  wikipedia_pm_page: https://en.wikipedia.org/wiki/Preferred_prime_minister_opinion_polling_for_the_next_United_Kingdom_general_election
+  # Every poll row in these Wikipedia tables becomes an item linking to the pollster's own release, so ALL pollsters that
+  # publish (Freshwater, Deltapoll, Techne, BMG, JL Partners, Trajectory, ...) appear without scraping their sites.
+  table_lookback_days: 60
+
+  # POLITICAL POLLING ONLY. A search/scrape result is kept if its headline matches `core`, or matches `policy` and does not
+  # look consumer/commercial; other countries' politics (`abroad`) is dropped unless the headline mentions the UK.
+  political:
+    core: '\b(voting intention|vote intention|westminster|general election|by-election|MRP|seat projection|nowcast|poll of polls|favourab\w*|approval|net rating|leader ratings?|best prime minister|preferred prime minister|prime minister|chancellor|leader of the opposition|conservatives?|tor(y|ies)|reform uk|reform party|lib dems?|liberal democrats?|green party|snp|plaid|restore britain|your party|labour(?! market| force| shortage| costs?)|starmer|burnham|badenoch|farage|davey|polanski|reeves|healey|swinney|sarwar|mps?|parliament\w*|government|cabinet|budget|manifesto|coalition|hung parliament|local elections?|council elections?|senedd|holyrood|elections?)\b'
+    policy: '\b(immigra\w*|asylum|migrants?|small boats|brexit|EU|single market|customs union|rejoin\w*|referendum|nhs|health service|tax(es|ation)?|inheritance|pensions?|triple lock|welfare|benefits?|net zero|climate|energy bills|cost of living|inflation|housing|crime|policing|defence|nato|ukraine|israel|gaza|palestin\w*|monarchy|house of lords|electoral reform|proportional representation|voting age|votes at 16|assisted dying|rents?|landlords?|tenants?|council tax|business rates|minimum wage|nationali[sz]\w*|two[- ]child|child benefit|free school meals|death penalty|capital punishment|national service|conscription|digital id|id cards?|water (companies|bills)|thames water|free speech|devolution|independence|economy|economic|trust in|politicians?|democracy|public (opinion|attitudes)|issues facing|most important issues)\b'
+    consumer: '\b(consumer\w*|brand\w*|retail\w*|shopp\w*|supermarket\w*|bingo|gambl\w*|gaming|machine games|insurance|banks?|banking|mortgage|travel\w*|holiday\w*|diet\w*|pets?|fame|celebrit\w*|football|sport\w*|streaming|tv|film|music|christmas|halloween|black friday|cyber security|asos|fashion|beauty|restaurant\w*|alcohol|coffee|cars?|broadband|omnibus|advertis\w*|smartphone|loyalty|customer\w*|product\w*|packaging|hygiene|sleep|fitness|obesity)\b'
+    abroad: '\b(midterms?|republicans?|democrats?|congress|senate|generic ballot|us election|american?s?|canad\w*|alberta|quebec|BC|australia\w*|new zealand|germany|german|france|french|italy|spain|japan|india|brazil\w*|mexic\w*|argentin\w*)\b'
+
+  # Pollsters' own sites, through the same self-healing collector as the think tanks: feed -> page -> Google News on their domain.
+  # URLs are best guesses (the sandbox these were written in could not reach most of them); Source health shows which worked.
+  pollsters:
+    - {name: More in Common, url: "https://www.moreincommon.org.uk/latest-insights/", urls: ["https://www.moreincommon.org.uk/our-work/"], feeds: ["https://www.moreincommon.org.uk/feed/"], news: false}
+    - {name: Opinium, url: "https://www.opinium.com/resource-center/", urls: ["https://www.opinium.com/political-polling/"], feeds: ["https://www.opinium.com/feed/"], news: false}
+    - {name: Survation, url: "https://www.survation.com/archive/", feeds: ["https://www.survation.com/feed/"], news: false}
+    - {name: Find Out Now, url: "https://www.findoutnow.co.uk/blog/", urls: ["https://www.findoutnow.co.uk/"], feeds: ["https://www.findoutnow.co.uk/feed/"], news: false}
+    - {name: Techne, url: "https://www.techneuk.com/", feeds: ["https://www.techneuk.com/feed/"]}
+    - {name: Deltapoll, url: "https://deltapoll.co.uk/polls-library", urls: ["https://deltapoll.co.uk/"], feeds: ["https://deltapoll.co.uk/feed/"]}
+    - {name: Freshwater Strategy, url: "https://freshwaterstrategy.com/", feeds: ["https://freshwaterstrategy.com/feed/"]}
+    - {name: JL Partners, url: "https://www.jlpartners.co.uk/", feeds: ["https://www.jlpartners.co.uk/feed/"]}
+    - {name: BMG Research, url: "https://www.bmgresearch.co.uk/category/polls/", urls: ["https://www.bmgresearch.co.uk/"], feeds: ["https://www.bmgresearch.co.uk/feed/"]}
+    - {name: Focaldata, url: "https://www.focaldata.com/blog", feeds: ["https://www.focaldata.com/blog/rss.xml", "https://www.focaldata.com/feed/"]}
+    - {name: Lord Ashcroft Polls, url: "https://lordashcroftpolls.com/", feeds: ["https://lordashcroftpolls.com/feed/"]}
+    - {name: Savanta, url: "https://savanta.com/knowledge-centre/", feeds: ["https://savanta.com/feed/"], news: false}
+    - {name: Public First, url: "https://www.publicfirst.co.uk/research", feeds: ["https://www.publicfirst.co.uk/feed/"]}
+    - {name: Verian, url: "https://www.veriangroup.com/", feeds: ["https://www.veriangroup.com/feed/"]}
+    - {name: Whitestone Insight, url: "https://whitestone-insight.com/", feeds: ["https://whitestone-insight.com/feed/"]}
+    - {name: Merlin Strategy, url: "https://merlinstrategy.co.uk/", feeds: ["https://merlinstrategy.co.uk/feed/"]}
+    - {name: Stonehaven, url: "https://stonehavenglobal.com/", feeds: ["https://stonehavenglobal.com/feed/"]}
+    - {name: Redfield & Wilton Strategies, url: "https://redfieldandwilton.com/", feeds: ["https://redfieldandwilton.com/feed/"]}
+    - {name: Number Cruncher Politics, url: "https://www.ncpolitics.uk/", feeds: ["https://www.ncpolitics.uk/feed/"]}
+    - {name: Stack Data Strategy, url: "https://stackdatastrategy.com/", feeds: ["https://stackdatastrategy.com/feed/"]}
+    - {name: Electoral Calculus, url: "https://www.electoralcalculus.co.uk/blog/", urls: ["https://www.electoralcalculus.co.uk/"], feeds: ["https://www.electoralcalculus.co.uk/blog/feed.xml", "https://www.electoralcalculus.co.uk/blog/rss.xml"]}
+    - {name: Good Growth Foundation, url: "https://www.goodgrowthfoundation.org/", feeds: ["https://www.goodgrowthfoundation.org/feed/"]}
+    - {name: Trajectory Partnership, url: "https://www.trajectorypartnership.com/", news_query: '"Trajectory Partnership" poll'}
+    - {name: Convergent Opinion, url: "https://www.convergentopinion.com/", news_query: '"Convergent Opinion" poll'}
+    - {name: Peoples Polling, url: "https://www.peoplespolling.com/", feeds: ["https://www.peoplespolling.com/feed/"], news_query: '"Peoples Polling" poll'}
+    - {name: Yonder, url: "https://yonderconsulting.com/", feeds: ["https://yonderconsulting.com/feed/"]}
+    - {name: Panelbase, url: "https://www.panelbase.net/", feeds: ["https://www.panelbase.net/feed/"]}
+    - {name: Norstat, url: "https://norstat.co.uk/", feeds: ["https://norstat.co.uk/feed/"]}
+    - {name: WeThink (Omnisis), url: "https://wethink.report/", feeds: ["https://wethink.report/feed/"]}
+
+  # Polling analysts and aggregators: commentary and write-ups of new polls. `require` keeps only poll-related posts.
+  analysts:
+    - {name: Mark Pack (polling analysis), url: "https://www.markpack.org.uk/category/opinion-polls/", urls: ["https://www.markpack.org.uk/"], feeds: ["https://www.markpack.org.uk/category/opinion-polls/feed/", "https://www.markpack.org.uk/feed/"], require: 'poll|voting intention|survey|MRP|favourab|approval|rating'}
+    - {name: Britain Elects (New Statesman), url: "https://www.newstatesman.com/britainelects", news_query: 'site:newstatesman.com "Britain Elects"', require: 'poll|voting intention|MRP|rating|approval|favourab|lead|seats'}
+    - {name: Politics.co.uk (polling), url: "https://www.politics.co.uk/", news_query: 'site:politics.co.uk poll voting intention', require: 'poll|voting intention|MRP|rating|approval'}
+    - {name: UK Parliament Commons Library (polling), url: "https://commonslibrary.parliament.uk/", news_query: 'site:commonslibrary.parliament.uk polling opinion', require: 'poll|opinion|survey|voting intention'}
+
 thinktanks:
   # name, url (publications page), optional feed (explicit RSS/Atom URL)
   - {name: Adam Smith Institute, url: "https://www.adamsmith.org/research"}
