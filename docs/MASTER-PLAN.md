@@ -102,7 +102,7 @@ For when a group should get in with one basic password and no individual account
 
 ### 3.4 One look: LIBBY's, in light and dark
 
-- A single stylesheet, `athena/site/shared/libby.css`, becomes the only design source. It is LIBBY's leaflet look (Lib Dem yellow and black, heavy Libre Franklin headlines with highlighter, hard offset shadow panels, pill buttons) expressed as tokens.
+- The design source is `site/shared/tokens.css` (every colour and the dark palette, in one place) with shared components in `site/shared/libby.css`; LIBBY's own `site/libby/styles.css` uses only those tokens. The look is LIBBY's *current* calm Focus style (yellow masthead with a hairline, black type, yellow highlighter on titles, hairline borders, soft shadows), not the older hard-shadow leaflet layer.
 - **Dark mode is new design work for LIBBY**, which has none today. Athena's existing dark tokens are the starting point; the leaflet devices need dark equivalents (the yellow offset shadow, the black header bar and red rule, tinted flag colours).
 - Theme: follows the OS by default; a toggle in the header (Auto / Light / Dark) stores the choice in the browser. Applied by a tiny external `theme.js` loaded in `<head>` so there is no flash and no inline script (CSP stays strict).
 - Shared pieces, written once: masthead and program switcher, sign-in form, buttons, tables, forms, cards, badges, flag colours, toasts.
@@ -146,7 +146,7 @@ Each phase ends with something working and mergeable; nothing is switched off be
 | 2 | **Access core** (database and the `/access/` screen built and tested; migration not yet applied to the live project; code sign-in comes with phase 4) | `programs`, `access_grants`, program-manager tier, `access_codes`, new `my_access()`, migration of existing roles, audit hooks, admin *People* and *Access codes* tabs | Admin can grant/revoke per program; a manager can manage only their program; a code signs in at its level and no higher; old Mall roles intact; RLS tests pass |
 | 3 | **Rename** (built) | Mall → Lovelace, Ulysse → Lucien (paths, titles, copy, redirects, CSP, README, workflows) and apply the shared look | Old URLs redirect; all UI tests green in both themes |
 | 4 | **Bring LIBBY in** (code moved and signing in through Athena, tested; live data copy and secrets are steps for you, see `docs/PHASE-4-GO-LIVE.md`) | Code moved into `athena/`; sign-in via Athena; Functions verify JWT; levels read from `access_grants`; data copied to the Athena project | LIBBY at `athena.odysseus.org.uk/libby/` works for a Whip, Staff and Admin account, and for a Peer via own account and via a Peers code; odysseus.org.uk unaffected |
-| 5 | **LIBBY restyle** | LIBBY pages on the shared stylesheet with dark mode | Every LIBBY page reviewed in both themes |
+| 5 | **LIBBY restyle** (built: one token file, light and dark, checked by tests) | LIBBY pages on the shared stylesheet with dark mode | Every LIBBY page reviewed in both themes |
 | 6 | **Cut over** | `athena.odysseus.org.uk` live, old shared passwords deleted from the new site, MALL archived. Optional, only if the admin asks: retire the old copy at odysseus.org.uk | One URL; one login; old routes redirect; odysseus.org.uk exactly as the admin left it |
 | 7 | **Tidy** | Single README, one `docs/adding-a-page.md` covering all programs | New page can be added in one file |
 

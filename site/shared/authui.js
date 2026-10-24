@@ -8,15 +8,15 @@ window.AuthUI = (() => {
   const css = `.au{max-width:28rem;margin:6vh auto;padding:0 1.25rem;font:16px/1.5 var(--body,Arial,sans-serif);color:inherit}
     .au h2{font:900 clamp(1.8rem,6vw,2.4rem)/1.2 var(--head,Arial,sans-serif);letter-spacing:-.02em;margin:0 0 .4rem;display:inline;background:linear-gradient(transparent 56%,var(--yellow,#FDBB30) 56% 94%,transparent 94%);padding:0 .1em;margin-left:-.1em}
     .au .seg{display:flex;gap:.4rem;margin:1.2rem 0 .6rem}
-    .au .seg button{border:2px solid var(--outline,#111);background:var(--card,#fff);color:var(--ink,#111);padding:.35rem 1rem;font:800 .9rem var(--head,Arial,sans-serif);cursor:pointer;border-radius:999px}
-    .au .seg button:hover{background:var(--yellow,#FDBB30);color:#111}
+    .au .seg button{border:1px solid var(--rule-strong,#8A8A8A);background:var(--card,#fff);color:var(--ink,#111);padding:.35rem 1rem;font:800 .9rem var(--head,Arial,sans-serif);cursor:pointer;border-radius:999px}
+    .au .seg button:hover{background:var(--yellow-pale,#FFF3CF);color:var(--ink,#111)}
     .au .seg button.on{background:var(--btn-bg,#111);color:var(--btn-fg,#FDBB30)}
-    .au form{background:var(--yellow-pale,#FFF3CF);border:3px solid var(--outline,#111);border-radius:14px;box-shadow:6px 6px 0 var(--pop-colour,#FDBB30);padding:0 1.4rem 1.4rem}
+    .au form{background:var(--card,#fff);border:1px solid var(--rule,#D9D9D9);border-top:3px solid var(--yellow,#FDBB30);border-radius:12px;box-shadow:var(--shadow,0 6px 18px rgba(17,17,17,.07));padding:0 1.4rem 1.4rem}
     .au label{display:block;font-weight:800;margin:1.1rem 0 .3rem}
-    .au input{width:100%;padding:.65rem .75rem;border:2px solid var(--outline,#111);background:var(--card,#fff);color:inherit;font:inherit;border-radius:6px}
+    .au input{width:100%;padding:.6rem .75rem;border:1px solid var(--rule-strong,#8A8A8A);background:var(--card,#fff);color:inherit;font:inherit;border-radius:6px}
     .au input:focus{outline:none;box-shadow:0 0 0 3px var(--yellow,#FDBB30)}
-    .au button.go{margin-top:1.2rem;padding:.65rem 1.6rem;border:3px solid var(--btn-bg,#111);background:var(--btn-bg,#111);color:var(--btn-fg,#FDBB30);font:800 1rem var(--head,Arial,sans-serif);cursor:pointer;border-radius:999px}
-    .au button.go:hover{background:var(--btn-hover-bg,#FDBB30);color:var(--btn-hover-fg,#111)}
+    .au button.go{margin-top:1.2rem;padding:.6rem 1.4rem;border:1px solid var(--btn-bg,#111);background:var(--btn-bg,#111);color:var(--btn-fg,#FDBB30);font:700 1rem var(--head,Arial,sans-serif);cursor:pointer;border-radius:10px}
+    .au button.go:hover{background:var(--btn-hover-bg,#2A2A2A);color:var(--btn-hover-fg,#FDBB30)}
     .au .msg{margin-top:.9rem;font-size:.9rem}.au .msg.err{color:var(--err,#B3141C);font-weight:800}.au a{color:inherit;text-decoration-color:var(--yellow-deep,#F5A100);text-decoration-thickness:2px}`;
   function style() { if (!document.getElementById("au-css")) { const s = document.createElement("style"); s.id = "au-css"; s.textContent = css; document.head.append(s); } }
 

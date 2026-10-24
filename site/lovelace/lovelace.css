@@ -7,26 +7,26 @@ label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:10p
 input,select,textarea{width:100%}
 textarea{min-height:70px;resize:vertical}
 input[type=checkbox]{width:auto}
-button.btn{background:var(--card);color:var(--ink);border:2px solid var(--outline);border-radius:999px;padding:.32rem .95rem;font:800 .86rem var(--head)}
-button.btn:hover{background:var(--yellow);color:#111;border-color:var(--outline);box-shadow:none}
+button.btn{background:var(--card);color:var(--ink);border:1px solid var(--rule-strong);border-radius:10px;padding:.42rem .95rem;font:700 .86rem var(--head)}
+button.btn:hover{background:var(--yellow-pale);color:var(--ink);border-color:var(--outline);box-shadow:none}
 button.btn.primary{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
-button.btn.primary:hover{background:var(--btn-hover-bg);color:var(--btn-hover-fg)}
+button.btn.primary:hover{background:var(--btn-hover-bg);color:var(--btn-hover-fg);box-shadow:var(--shadow)}
 button.btn.danger{color:var(--red)}
 button.btn.sm{padding:.12rem .6rem;font-size:.76rem}
-.masthead button.btn.sm{background:transparent;border-color:#111;color:#111}
+.masthead button.btn.sm{background:transparent;border-color:rgba(17,17,17,.45);color:#111}
 .masthead button.btn.sm:hover{background:#111;color:var(--yellow)}
 .whobox{font:700 .85rem var(--head)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0}
 .row>*{flex:0 0 auto}.row>.grow{flex:1 1 220px}
-.card{background:var(--card);border:2px solid var(--outline);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:10px}
 .login{max-width:380px;margin:70px auto}
 .login h2{margin-top:0}
 .notice{padding:10px 14px;border:1px solid var(--rule);border-left:5px solid var(--yellow);border-radius:8px;background:var(--hi);font-size:13.5px;margin:12px 0}
 .notice.err{border-left-color:var(--red);color:var(--red)}
-.tablewrap{overflow-x:auto;border:2px solid var(--outline);border-radius:var(--radius);box-shadow:var(--shadow);background:var(--card)}
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:var(--radius);box-shadow:var(--shadow);background:var(--card)}
 table{border-collapse:collapse;width:100%;font-size:12.5px;line-height:1.4}
 th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
-th{color:var(--bar-fg);font-weight:900;white-space:nowrap;position:sticky;top:0;background:var(--bar-bg);text-transform:uppercase;letter-spacing:.03em;font-size:.72rem}
+th{color:var(--ink);font-weight:800;white-space:nowrap;position:sticky;top:0;background:var(--chip);border-bottom:2px solid var(--yellow)}
 tbody tr:hover td{background:var(--hi)}
 td.wrapcell{min-width:180px;white-space:pre-wrap}
 tr:last-child td{border-bottom:0}
@@ -36,10 +36,10 @@ tr:last-child td{border-bottom:0}
 .entry .acts{display:flex;gap:4px;flex:0 0 auto}
 .pill{font:700 .68rem var(--head);letter-spacing:.03em;color:var(--muted);border:1px solid var(--rule-strong);border-radius:99px;padding:1px 8px}
 .grid th:first-child,.grid td:first-child{position:sticky;left:0;background:var(--card);min-width:130px;font-weight:700;z-index:1}
-.grid th:first-child{background:var(--bar-bg)}
+.grid th:first-child{background:var(--chip)}
 .grid td{min-width:140px;white-space:pre-wrap}
 .grid td.today,.grid th.today{background:var(--yellow-pale)}
-dialog{border:3px solid var(--outline);border-radius:var(--radius);background:var(--card);color:var(--ink);width:min(520px,94vw);padding:18px;box-shadow:var(--shadow-hover)}
+dialog{border:1px solid var(--rule);border-top:4px solid var(--yellow);border-radius:var(--radius);background:var(--card);color:var(--ink);width:min(520px,94vw);padding:18px;box-shadow:var(--shadow-hover)}
 dialog::backdrop{background:rgba(17,17,17,.45)}
 .total{font:800 .95rem var(--head);margin:10px 2px}
 .seg{display:inline-flex;border:1px solid var(--rule-strong);border-radius:10px;overflow:hidden}

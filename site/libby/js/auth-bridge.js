@@ -1,6 +1,7 @@
 // LIBBY's sign-in: the person signs in once to Athena (email and password, or a shared access code). Their session token is
 // kept in a cookie for /api/libby only (so page links such as downloads carry it too) and renewed whenever it is refreshed.
 // A classic script, loaded before app.js.
+if (window.Theme) Theme.wire(document);   // the Auto / Light / Dark button in the masthead
 window.LibbyAuth = (() => {
   const sb = Athena.sb;
   const COOKIE = "athena_at";

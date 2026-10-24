@@ -79,7 +79,7 @@ async function route() {
     if (token !== renderToken) return;
     let mod;
     try {
-      mod = await import('./views' + page.view); // the page's file is loaded only when it is opened
+      mod = await import('./views/' + page.view); // the page's file is loaded only when it is opened
     } catch (err) {
       throw new Error('This page could not be loaded (' + err.message + '). Check that public/js/views/' + page.view + ' exists.');
     }

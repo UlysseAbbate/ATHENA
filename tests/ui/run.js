@@ -183,8 +183,18 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.goto(BASE + "/libby/"); await page.waitForTimeout(1200);
         const lb = await page.$eval("body", b => b.innerText);
         check(`${who}: LIBBY ${who === "admin" ? "opens with the person's level" : "says they have no access yet"}`, who === "admin" ? /Signed in as owner@test.invalid \(Admin\)/.test(lb) : /No access yet/.test(lb), lb.slice(0, 80).replace(/\n/g, " "));
+        if (who === "admin") {   // a page file is loaded when opened: a wrong path shows as "couldn't load"
+          await page.goto(BASE + "/libby/#/business"); await page.waitForTimeout(600);
+          const hub = await page.$eval("#app", b => b.innerText);
+          check("admin: LIBBY section pages load their files (Business hub)", !/couldn.t load/i.test(hub) && /Business/.test(hub), hub.slice(0, 100).replace(/\n/g, " "));
+        }
         const cspErr = errors.filter(e => /Content Security Policy|violates/i.test(e));
         check(`${who}: LIBBY page has no security-policy violations`, cspErr.length === 0, cspErr.join("|"));
+        if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) for (const [hash, name] of [["#/", "libby-home"], ["#/business", "libby-business"], ["#/legislation", "libby-legislation"], ["#/policy", "libby-policy"]]) {
+          await page.emulateMedia({ colorScheme: scheme }); await page.goto(BASE + "/libby/" + hash); await page.reload(); await page.waitForTimeout(900);
+          await page.screenshot({ path: path.join(process.env.SHOTS, `${name}-${scheme}.png`), fullPage: true });
+        }
+        await page.emulateMedia({ colorScheme: "light" });
         errors.length = 0;
       }
       if (who === "lmgr") { await ctx.close(); continue; }

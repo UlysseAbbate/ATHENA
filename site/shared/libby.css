@@ -1,47 +1,5 @@
-/* ATHENA shared design = LIBBY's "Focus leaflet" look, in light and dark.
- * Lib Dem yellow and black, heavy Libre Franklin headlines with a yellow highlighter, a yellow masthead with a heavy black rule,
- * black section bars with yellow capitals, pill buttons, panels with a hard offset shadow.
- * EVERY colour is a token here. Light is the default; dark follows the device (prefers-color-scheme) unless the person chose
- * a theme: <html data-theme="light|dark"> (set by theme.js) always wins over the device.
- * In dark the leaflet "black" things flip to cream/yellow so outlines, bars and buttons stay visible; yellow stays yellow. */
-
-@font-face{font-family:'Libre Franklin';font-weight:500;font-style:normal;font-display:swap;src:url(fonts/LibreFranklin-500.ttf) format('truetype')}
-@font-face{font-family:'Libre Franklin';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/LibreFranklin-700.ttf) format('truetype')}
-@font-face{font-family:'Libre Franklin';font-weight:800;font-style:normal;font-display:swap;src:url(fonts/LibreFranklin-800.ttf) format('truetype')}
-@font-face{font-family:'Libre Franklin';font-weight:900;font-style:normal;font-display:swap;src:url(fonts/LibreFranklin-900.ttf) format('truetype')}
-
-:root{
-  color-scheme:light;
-  /* brand */
-  --yellow:#FDBB30;--yellow-deep:#F5A100;--yellow-pale:#FFF3CF;--black:#111111;--red:#D4202A;--green:#2E7D32;--focus:#0B63CE;
-  /* surfaces and text */
-  --paper:#FFFFFF;--card:#FFFFFF;--ink:#111111;--muted:#4B4B4B;--rule:#D9D9D9;--rule-strong:#8A8A8A;--chip:#F4F2EA;--hi:#FBF8EC;
-  /* leaflet devices: outline of panels, the hard shadow, bars, buttons */
-  --outline:#111111;--pop-colour:#FDBB30;--bar-bg:#111111;--bar-fg:#FDBB30;
-  --btn-bg:#111111;--btn-fg:#FDBB30;--btn-hover-bg:#FDBB30;--btn-hover-fg:#111111;
-  --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#111111;
-  --err-bg:#FDECEC;--err:#B3141C;--ok-bg:#E4F2E5;--warn-bg:#FFF3CF;
-  --c-committee:#1F4E79;--c-thinktank:#2E7D32;--c-media:#B8480F;--c-polling:#7B3FA0;
-  --head:'Libre Franklin','Franklin Gothic Heavy','Arial Black',Arial,sans-serif;--body:Arial,'Helvetica Neue',Helvetica,sans-serif;
-  --radius:12px;--measure:72ch;
-}
-/* the dark palette, written once and applied two ways (device preference, or an explicit choice) */
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  color-scheme:dark;
-  --paper:#141414;--card:#1D1D1B;--ink:#F2EFE6;--muted:#B5B1A4;--rule:#35332D;--rule-strong:#5A574D;--chip:#262520;--hi:#26230F;--yellow-pale:#2D2812;
-  --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;
-  --btn-bg:#FDBB30;--btn-fg:#111111;--btn-hover-bg:#F2EFE6;--btn-hover-fg:#111111;
-  --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#000000;
-  --err-bg:#3A1618;--err:#FF8A8F;--ok-bg:#16301A;--warn-bg:#2D2812;--focus:#6EA8E0;--red:#FF6B72;--green:#5FBF68;
-  --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#F0A733;--c-polling:#B98AD6;}}
-:root[data-theme="dark"]{
-  color-scheme:dark;
-  --paper:#141414;--card:#1D1D1B;--ink:#F2EFE6;--muted:#B5B1A4;--rule:#35332D;--rule-strong:#5A574D;--chip:#262520;--hi:#26230F;--yellow-pale:#2D2812;
-  --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;
-  --btn-bg:#FDBB30;--btn-fg:#111111;--btn-hover-bg:#F2EFE6;--btn-hover-fg:#111111;
-  --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#000000;
-  --err-bg:#3A1618;--err:#FF8A8F;--ok-bg:#16301A;--warn-bg:#2D2812;--focus:#6EA8E0;--red:#FF6B72;--green:#5FBF68;
-  --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#F0A733;--c-polling:#B98AD6;}
+/* ATHENA shared components in LIBBY's current (calm Focus) style: a yellow masthead with a hairline, black type, a yellow highlighter
+ * on titles, hairline borders and soft shadows. Colours come only from tokens.css (load that first), which also holds the dark palette. */
 
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -51,84 +9,106 @@ a{color:var(--ink);text-decoration-color:var(--yellow-deep);text-decoration-thic
 a:hover{background:var(--yellow);color:#111}
 ::selection{background:var(--yellow);color:#111}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+h1,h2,h3,h4{font-family:var(--head)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .skip{position:absolute;left:-999px;top:0;background:var(--yellow);color:#111;padding:.5rem 1rem;z-index:10}.skip:focus{left:1rem}
 .muted{color:var(--muted)}
 .wrap{max-width:1120px;margin:0 auto;padding:0 1.25rem}
 
-/* masthead: a yellow band with a heavy rule under it */
-.masthead{background:var(--masthead-bg);color:var(--masthead-fg);border-bottom:7px solid var(--masthead-rule)}
-.masthead-inner{max-width:1120px;margin:0 auto;padding:1rem 1.25rem 1.05rem;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:.75rem 2rem}
+/* masthead: the yellow band, black type, a hairline under it */
+.masthead{background:var(--masthead-bg);color:var(--masthead-fg);border-bottom:1px solid var(--masthead-line)}
+.masthead-inner{max-width:1120px;margin:0 auto;padding:.9rem 1.25rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem 2rem}
 .brand,.brand:hover{color:var(--masthead-fg);background:none;text-decoration:none;display:grid;line-height:1.1}
-.brand-name{font:900 clamp(2.2rem,6vw,3.4rem)/.88 var(--head);letter-spacing:-.035em;text-transform:uppercase}
-.brand-sub{font:800 .72rem/1.25 var(--head);letter-spacing:.05em;text-transform:uppercase;max-width:34rem;margin-top:.35rem}
-.masthead .tools{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;font:700 .85rem var(--head)}
+.brand-name{font:800 clamp(1.7rem,4vw,2.2rem)/1 var(--head);letter-spacing:-.025em}
+.brand-sub{font:600 .72rem/1.3 var(--head);letter-spacing:.02em;max-width:34rem;margin-top:.2rem;opacity:.85}
+.masthead .tools{display:flex;gap:.4rem .6rem;align-items:center;flex-wrap:wrap;font:700 .85rem var(--head)}
 .masthead .tools .who{max-width:22ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .masthead a,.masthead a:hover{color:var(--masthead-fg)}
-.masthead a:hover{background:rgba(17,17,17,.12)}
+.masthead a:hover{background:var(--hover-tint)}
+.masthead .muted,.masthead .pill{color:var(--masthead-fg);border-color:var(--masthead-fg)}
 .masthead .ghost{color:#111;border-color:#111}
 .masthead .ghost:hover{background:#111;color:var(--yellow)}
-/* program switcher: pill links, the current one white */
-.topnav{display:flex;flex-wrap:wrap;gap:.45rem}
-.topnav a{color:var(--yellow);background:#111;font:800 .95rem var(--head);padding:.45rem 1.05rem;border-radius:999px;border:3px solid #111;text-decoration:none}
-.topnav a:hover{color:#111;background:#fff}
-.topnav a[aria-current]{color:#111;background:#fff}
-.masthead .topnav a{color:var(--yellow)}.masthead .topnav a:hover,.masthead .topnav a[aria-current]{color:#111}
+.topnav{display:flex;flex-wrap:wrap;gap:.1rem .35rem}
+.topnav a{background:transparent;color:var(--masthead-fg);border:0;border-radius:8px;padding:.4rem .75rem;font:700 .95rem var(--head);text-decoration:none}
+.topnav a:hover{background:var(--hover-tint)}
+.topnav a[aria-current]{background:#111;color:#fff}
+.masthead .topnav a[aria-current]{color:#fff}
+/* a program's own section tabs live in the masthead */
+.masthead .tabs{max-width:1120px;margin:0 auto;padding:0 1.25rem .7rem;gap:.1rem .35rem;display:flex;flex-wrap:wrap;overflow-x:auto}
+.masthead .tabs button{background:transparent;color:var(--masthead-fg);border:0;border-radius:8px;padding:.4rem .75rem;font:700 .93rem var(--head);cursor:pointer;white-space:nowrap}
+.masthead .tabs button:hover{background:var(--hover-tint)}
+.masthead .tabs button.on,.masthead .tabs button[aria-selected="true"]{background:#111;color:#fff}
 
 /* page */
 main{max-width:1120px;margin:0 auto;padding:2rem 1.25rem 3rem;outline:none}
 .page-head{margin-bottom:1.25rem}
-.page-head h1,h1.title{display:inline;font:900 clamp(2rem,4.6vw,3rem)/1.3 var(--head);color:var(--ink);letter-spacing:-.025em;
-  background:linear-gradient(transparent 56%,var(--yellow) 56% 94%,transparent 94%);padding:0 .12em;margin:0 0 0 -.12em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-:root[data-theme="dark"] .page-head h1,:root[data-theme="dark"] h1.title{background:linear-gradient(transparent 56%,rgba(253,187,48,.38) 56% 94%,transparent 94%)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .page-head h1,:root:not([data-theme="light"]) h1.title{background:linear-gradient(transparent 56%,rgba(253,187,48,.38) 56% 94%,transparent 94%)}}
-.lede{font-size:1.08rem;color:var(--ink);max-width:var(--measure);margin:1rem 0 0}
-.eyebrow{font:800 .78rem var(--head);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.h2-rule{background:var(--bar-bg);color:var(--bar-fg);border-radius:8px;padding:.5rem .9rem;margin:2.4rem 0 1rem;font:900 1.15rem/1.2 var(--head);text-transform:uppercase;letter-spacing:.03em}
-.h3-section{font:900 1.1rem var(--head);text-transform:uppercase;letter-spacing:.02em;margin:1.9rem 0 .6rem;padding-bottom:.25rem;border-bottom:4px solid var(--yellow)}
+.page-head h1,h1.title{display:inline;font:800 clamp(1.8rem,4vw,2.6rem)/1.25 var(--head);color:var(--ink);letter-spacing:-.02em;
+  background:linear-gradient(transparent 62%,var(--yellow) 62% 92%,transparent 92%);padding:0 .12em;margin:0 0 0 -.12em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+:root[data-theme="dark"] .page-head h1,:root[data-theme="dark"] h1.title{background:linear-gradient(transparent 62%,rgba(253,187,48,.38) 62% 92%,transparent 92%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .page-head h1,:root:not([data-theme="light"]) h1.title{background:linear-gradient(transparent 62%,rgba(253,187,48,.38) 62% 92%,transparent 92%)}}
+.lede{font-size:1.08rem;color:var(--muted);max-width:var(--measure);margin:1rem 0 0}
+.eyebrow{font:800 .75rem var(--head);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.h2-rule{background:none;color:var(--ink);border:0;border-bottom:1px solid var(--rule);padding:0 0 .45rem;margin:2.4rem 0 1rem;font:800 1.3rem/1.2 var(--head);letter-spacing:-.01em;position:relative;display:flex;align-items:baseline;gap:.6rem}
+.h2-rule::after{content:'';position:absolute;left:0;bottom:-1px;width:3.2rem;height:3px;background:var(--yellow)}
+.count{font:600 .85rem var(--body);color:var(--muted)}
+.h3-section{font:800 1.05rem var(--head);margin:1.9rem 0 .6rem;padding-bottom:.25rem;border-bottom:1px solid var(--rule)}
 
-/* buttons: pills; black with yellow lettering (yellow with black lettering in dark), inverted when pointed at */
-.button,button.btn,.btn{display:inline-block;background:var(--btn-bg);color:var(--btn-fg);border:3px solid var(--btn-bg);border-radius:999px;padding:.5rem 1.25rem;font:800 .95rem var(--head);text-decoration:none;cursor:pointer}
-.button:hover,.button:focus-visible,button.btn:hover,.btn:hover{background:var(--btn-hover-bg);color:var(--btn-hover-fg);border-color:var(--btn-bg)}
-.button-quiet,.btn.quiet,button.btn.quiet{background:var(--card);color:var(--ink);border-color:var(--outline)}
-.button-quiet:hover,.btn.quiet:hover{background:var(--yellow);color:#111;border-color:var(--outline)}
-.button-small{padding:.22rem .75rem;border-width:2px;font-size:.82rem}
+/* buttons: solid and rounded; black with yellow lettering (yellow with black lettering in dark) */
+.button,button.btn,.btn{display:inline-block;background:var(--btn-bg);color:var(--btn-fg);border:1px solid var(--btn-bg);border-radius:10px;padding:.5rem 1.1rem;font:700 .93rem var(--head);text-decoration:none;cursor:pointer;transition:background .12s,box-shadow .12s}
+.button:hover,.button:focus-visible,button.btn:hover,.btn:hover{background:var(--btn-hover-bg);color:var(--btn-hover-fg);border-color:var(--btn-hover-bg);box-shadow:var(--shadow)}
+.button-quiet,.btn.quiet,button.btn.quiet{background:var(--card);color:var(--ink);border:1px solid var(--rule-strong)}
+.button-quiet:hover,.btn.quiet:hover{background:var(--yellow-pale);color:var(--ink);border-color:var(--outline);box-shadow:none}
+.button-small{padding:.2rem .65rem;font-size:.82rem}
 .button:disabled,button.btn:disabled{opacity:.55;cursor:default}
-button.ghost{font:700 .8rem var(--head);color:inherit;background:none;border:2px solid currentColor;border-radius:999px;padding:.2rem .8rem;cursor:pointer}
-button.ghost:hover{background:var(--yellow);color:#111;border-color:#111}
+button.ghost{font:600 .8rem var(--head);color:inherit;background:none;border:1px solid currentColor;border-radius:999px;padding:.2rem .8rem;cursor:pointer;transition:.12s}
+button.ghost:hover{background:var(--yellow-pale);color:var(--ink);border-color:var(--outline)}
 
 /* forms */
-label{display:block;font-weight:800;margin:1.1rem 0 .3rem}
-input,select,textarea{font:inherit;font-size:1rem;color:var(--ink);padding:.6rem .75rem;border:2px solid var(--outline);border-radius:6px;background:var(--card);max-width:100%}
-input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px var(--yellow)}
+label{display:block;font-weight:700;margin:1.1rem 0 .3rem}
+input,select,textarea{font:inherit;font-size:1rem;color:var(--ink);padding:.55rem .75rem;border:1px solid var(--rule-strong);border-radius:8px;background:var(--card);max-width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--outline);box-shadow:0 0 0 3px rgba(253,187,48,.55)}
 input::placeholder{color:var(--muted)}
 
-/* panels: an outline and a hard yellow shadow */
-.panel{background:var(--card);border:3px solid var(--outline);border-radius:14px;box-shadow:5px 5px 0 var(--pop-colour);padding:1.1rem 1.4rem}
-.form-panel{background:var(--yellow-pale);border:3px solid var(--outline);border-radius:14px;box-shadow:6px 6px 0 var(--pop-colour);padding:0 1.4rem 1.4rem}
+/* panels: a hairline border and a soft shadow */
+.panel{background:var(--card);border:1px solid var(--rule);border-top:3px solid var(--yellow);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem 1.25rem}
 
-/* index cards (the home page and any hub): a big leaflet panel with a round arrow */
-.index{display:grid;gap:1.15rem;margin-top:1.5rem}
-.index-row{display:block;position:relative;border:3px solid var(--outline);border-radius:14px;padding:1.1rem 4.5rem 1.1rem 1.5rem;box-shadow:5px 5px 0 var(--pop-colour);background:var(--card);color:var(--ink);text-decoration:none;transition:transform .12s,box-shadow .12s,background .12s}
-.index-row:hover,.index-row:focus-visible{background:var(--yellow);color:#111;transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--outline)}
-.index-row::after{content:'\203A';position:absolute;right:1.2rem;top:50%;transform:translateY(-50%);width:2.4rem;height:2.4rem;border-radius:50%;background:var(--btn-bg);color:var(--btn-fg);font:900 1.7rem/2.1rem var(--head);text-align:center}
-.index-row:hover::after{background:#111;color:var(--yellow)}
-.index-title{display:block;font:900 clamp(1.4rem,3.4vw,1.9rem)/1.1 var(--head);text-transform:uppercase;letter-spacing:-.02em}
-.index-full{display:block;font:800 .72rem/1.3 var(--head);text-transform:uppercase;letter-spacing:.05em;margin-top:.3rem;opacity:.85}
-.index-text{display:block;margin-top:.45rem}
-.chip{display:inline-block;margin-top:.55rem;font:800 .72rem var(--head);letter-spacing:.04em;text-transform:uppercase;background:var(--bar-bg);color:var(--bar-fg);border-radius:999px;padding:.12rem .65rem}
+/* index cards (the home page): quiet panels that lift gently, with a small round chevron */
+.index{display:grid;gap:.8rem;margin-top:1.5rem}
+.index-row{display:block;position:relative;border:1px solid var(--rule);border-radius:var(--radius);padding:1rem 3.6rem 1rem 1.4rem;box-shadow:var(--shadow);background:var(--card);color:var(--ink);text-decoration:none;transition:box-shadow .15s,transform .15s,border-color .15s}
+.index-row:hover,.index-row:focus-visible{background:var(--card);color:var(--ink);transform:translateY(-1px);box-shadow:var(--shadow-hover);border-color:var(--yellow-deep)}
+.index-row::after{content:'\203A';position:absolute;right:1.2rem;top:50%;transform:translateY(-50%);width:2rem;height:2rem;border-radius:50%;background:var(--yellow-pale);color:var(--ink);font:800 1.35rem/1.8rem var(--head);text-align:center}
+.index-row:hover::after{background:var(--yellow);color:#111}
+.index-title{display:block;font:800 clamp(1.4rem,3.4vw,1.9rem)/1.1 var(--head);letter-spacing:-.02em;background-image:linear-gradient(var(--yellow),var(--yellow));background-repeat:no-repeat;background-size:0% 38%;background-position:0 88%;transition:background-size .25s ease-out;width:fit-content}
+.index-row:hover .index-title,.index-row:focus-visible .index-title{background-size:100% 38%}
+.index-full{display:block;font:700 .72rem/1.3 var(--head);letter-spacing:.04em;text-transform:uppercase;margin-top:.35rem;color:var(--muted)}
+.index-text{display:block;margin-top:.4rem;color:var(--muted)}
+.chip{display:inline-block;margin-top:.55rem;font:700 .72rem var(--head);letter-spacing:.03em;border:1px solid var(--rule-strong);border-radius:999px;padding:.1rem .65rem}
+
+/* tabs: flat pills, the chosen one filled */
+.tabs{display:flex;flex-wrap:wrap;gap:.45rem;margin:1.2rem 0}
+.tabs button{border:1px solid var(--rule-strong);border-radius:999px;background:var(--card);color:var(--ink);font:700 .88rem var(--head);padding:.35rem .95rem;cursor:pointer}
+.tabs button:hover{background:var(--yellow-pale);border-color:var(--outline)}
+.tabs button[aria-selected="true"],.tabs button.on{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
 
 /* tables */
-.table-wrap{border:3px solid var(--outline);border-radius:var(--radius);overflow:auto;background:var(--card)}
+.table-wrap{border:1px solid var(--rule);border-radius:var(--radius);box-shadow:var(--shadow);overflow:auto;background:var(--card)}
 .grid{border-collapse:collapse;width:100%;font-size:.92rem}
-.grid thead th{background:var(--bar-bg);color:var(--bar-fg);text-transform:uppercase;letter-spacing:.03em;font-weight:900;text-align:left;padding:.5rem .75rem}
+.grid thead th{background:var(--chip);color:var(--ink);font-weight:800;text-align:left;padding:.5rem .75rem;border-bottom:2px solid var(--yellow)}
 .grid th,.grid td{padding:.5rem .75rem;border-bottom:1px solid var(--rule);vertical-align:top}
 .grid td.n{text-align:right;font-weight:700;white-space:nowrap}
-.grid tbody tr:nth-child(even){background:var(--yellow-pale)}
+.grid tbody tr:hover{background:var(--yellow-pale)}
 small.why{display:block;color:var(--muted);font-size:.78rem;margin-top:2px;overflow-wrap:anywhere}
+td select,td input{padding:.3rem .5rem;font-size:.9rem}
+
+/* small pieces */
+.row-form{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:flex-end;margin:.8rem 0}
+.row-form label{margin:0 0 .25rem}
+.row-form > div{display:flex;flex-direction:column}
+.badge{display:inline-block;font:800 .66rem var(--head);letter-spacing:.04em;text-transform:uppercase;background:var(--btn-bg);color:var(--btn-fg);border-radius:999px;padding:.08rem .55rem;margin-left:.4rem}
+code,.code{font:700 1rem ui-monospace,Menlo,Consolas,monospace;background:var(--chip);padding:.15rem .5rem;border-radius:4px;overflow-wrap:anywhere}
 
 /* states */
-.state-error,.state-warn,.state-ok{padding:.7rem .9rem;margin:1rem 0;border-radius:6px;border:2px solid;border-left-width:8px}
+.state-error,.state-warn,.state-ok{padding:.7rem .9rem;margin:1rem 0;border-radius:8px;border:1px solid;border-left-width:5px}
 .state-error{background:var(--err-bg);border-color:var(--red)}
 .state-warn{background:var(--warn-bg);border-color:var(--yellow-deep)}
 .state-ok{background:var(--ok-bg);border-color:var(--green)}
@@ -137,26 +117,3 @@ small.why{display:block;color:var(--muted);font-size:.78rem;margin-top:2px;overf
 footer.foot{max-width:1120px;margin:0 auto;padding:1rem 1.25rem 2.5rem;color:var(--muted);font-size:.85rem}
 @media (max-width:600px){.brand-sub{display:none}.masthead-inner{align-items:flex-start}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-
-/* tabs: pill buttons, the chosen one filled */
-.tabs{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.2rem 0}
-.tabs button{border:2px solid var(--outline);border-radius:999px;background:var(--card);color:var(--ink);font:800 .9rem var(--head);padding:.4rem 1rem;cursor:pointer}
-.tabs button:hover{background:var(--yellow);color:#111}
-.tabs button[aria-selected="true"]{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
-code,.code{font:700 1rem ui-monospace,Menlo,Consolas,monospace;background:var(--chip);padding:.15rem .5rem;border-radius:4px;overflow-wrap:anywhere}
-.row-form{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:flex-end;margin:.8rem 0}
-.row-form label{margin:0 0 .25rem}
-.row-form > div{display:flex;flex-direction:column}
-td select,td input{padding:.3rem .5rem;font-size:.9rem}
-.badge{display:inline-block;font:800 .68rem var(--head);letter-spacing:.04em;text-transform:uppercase;background:var(--bar-bg);color:var(--bar-fg);border-radius:999px;padding:.08rem .55rem;margin-left:.4rem}
-
-/* a program's own section tabs live in the masthead, as pills like the program switcher */
-.masthead .tabs{max-width:1120px;margin:0 auto;padding:0 1.25rem .9rem;gap:.45rem;overflow-x:auto}
-.masthead .tabs button{background:#111;color:var(--yellow);border:3px solid #111;border-radius:999px;padding:.35rem .95rem;font:800 .9rem var(--head);cursor:pointer;white-space:nowrap}
-.masthead .tabs button:hover{background:#fff;color:#111}
-.masthead .tabs button.on,.masthead .tabs button[aria-selected="true"]{background:#fff;color:#111}
-.tabs button.on{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
-/* soft tokens used by the programs' own components */
-:root{--shadow:3px 3px 0 var(--pop-colour);--shadow-hover:5px 5px 0 var(--pop-colour)}
-h1,h2,h3,h4{font-family:var(--head)}
-.masthead .muted,.masthead .pill{color:#111;border-color:#111}
