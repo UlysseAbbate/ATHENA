@@ -1,7 +1,9 @@
 """Collector for the policy tracker.
 
 Gathers: select committee publications, think tank outputs, Lib Dem media
-coverage and polling. Writes JSON into site/ulysse/data/ for the static front end.
+coverage, polling and Sarah Olney's coverage. Respects robots.txt and spaces out requests to each site.
+State (first-seen times) lives in the private database and is read back through the ingest function each run;
+data/ulysse/ is a local working copy only.
 
 Run:  python tracker/update.py
 """
@@ -11,12 +13,15 @@ import collections
 import hashlib
 import json
 import re
+import os
 import sys
+import threading
 import time
+import urllib.robotparser
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
-from urllib.parse import quote_plus, urljoin, urlparse
+from urllib.parse import urljoin, urlparse
 
 import feedparser
 import requests
@@ -40,15 +45,88 @@ health: list[dict] = []
 
 
 # ----------------------------------------------------------------- helpers
+ROBOTS_AGENT = "PolicyTracker"     # the token matched against robots.txt User-agent lines
+MIN_INTERVAL = 1.0                 # seconds between requests to the same host (raised by a site's Crawl-delay)
+_robots: dict = {}
+_host_next: dict = {}
+_host_lock = threading.Lock()
+_robots_lock = threading.Lock()
+
+
+class RobotsDisallowed(Exception):
+    """The site's robots.txt does not allow this URL: never fetched."""
+
+
+def _robots_for(url: str) -> urllib.robotparser.RobotFileParser:
+    """robots.txt per scheme+host, fetched once per run. 401/403 (the site refuses bots outright) and unreachable or
+    5xx robots.txt mean "do not crawl"; a missing robots.txt (404) means everything is allowed (RFC 9309).
+    The parser's `why` says which, for Source health."""
+    p = urlparse(url)
+    key = f"{p.scheme}://{p.netloc}"
+    with _robots_lock:
+        if key in _robots:
+            return _robots[key]
+        rp = urllib.robotparser.RobotFileParser(key + "/robots.txt")
+        rp.why = "blocked by robots.txt"
+        try:
+            r = S.get(key + "/robots.txt", timeout=(6, 15))
+            if r.status_code in (401, 403):
+                rp.disallow_all, rp.why = True, f"site refuses bots (robots.txt HTTP {r.status_code})"
+            elif r.status_code >= 500:
+                rp.disallow_all, rp.why = True, f"robots.txt unavailable (HTTP {r.status_code}), not fetched"
+            elif r.status_code >= 400:
+                rp.allow_all = True
+            else:
+                rp.parse(r.text.splitlines())
+        except Exception as e:  # noqa: BLE001
+            rp.disallow_all, rp.why = True, f"site unreachable ({type(e).__name__})"
+        _robots[key] = rp
+        return rp
+
+
+def allowed(url: str) -> bool:
+    return _robots_for(url).can_fetch(ROBOTS_AGENT, url)
+
+
+def _wait_turn(url: str) -> None:
+    """At most one request per host every MIN_INTERVAL seconds (or the site's Crawl-delay, up to 30s), across threads."""
+    host = urlparse(url).netloc
+    delay = MIN_INTERVAL
+    try:
+        cd = _robots_for(url).crawl_delay(ROBOTS_AGENT)
+        if cd:
+            delay = min(max(float(cd), MIN_INTERVAL), 30.0)
+    except Exception:  # noqa: BLE001
+        pass
+    with _host_lock:
+        now = time.monotonic()
+        start = max(now, _host_next.get(host, 0.0))
+        _host_next[host] = start + delay
+    if start > now:
+        time.sleep(start - now)
+
+
+def fetch(url: str, timeout=(6, 20), **kw) -> requests.Response:
+    """Every request goes through here: robots.txt is checked first and requests to one host are spaced out."""
+    if kw.get("params"):
+        url = requests.Request("GET", url, params=kw.pop("params")).prepare().url
+    if not allowed(url):
+        raise RobotsDisallowed(_robots_for(url).why)
+    _wait_turn(url)
+    return S.get(url, timeout=timeout, **kw)
+
+
 def get(url: str, **kw) -> requests.Response:
-    """GET with one retry for 5xx / 429 / read timeouts. No retry for permanent 4xx (403 blocked, 404 wrong URL) or for
-    hosts that cannot be reached at all (connect timeout, DNS, TLS): retrying those only burns minutes."""
+    """GET with one retry for 5xx / 429 / read timeouts. No retry for permanent 4xx (403 blocked, 404 wrong URL),
+    robots.txt refusals, or hosts that cannot be reached at all (connect timeout, DNS, TLS): retrying those only burns minutes."""
     last = None
     for attempt in range(2):
         try:
-            r = S.get(url, timeout=(6, 20), **kw)
+            r = fetch(url, **kw)
             r.raise_for_status()
             return r
+        except RobotsDisallowed:
+            raise
         except requests.HTTPError as e:
             last = e
             code = e.response.status_code if e.response is not None else 0
@@ -173,7 +251,7 @@ def _feed_entries(feed_url: str):
     """Fetch a feed with a timeout and parse it. Returns (entries, reason). HTML answers (some sites reply to feed
     URLs with their home page), errors and empty feeds give no entries."""
     try:
-        r = S.get(feed_url, timeout=(6, 15))
+        r = fetch(feed_url, timeout=(6, 15))
         if r.status_code != 200:
             return [], f"HTTP {r.status_code}"
         head = r.content[:600].lstrip().lower()
@@ -181,6 +259,8 @@ def _feed_entries(feed_url: str):
             return [], "not a feed"
         d = feedparser.parse(r.content)
         return (d.entries, "ok") if d.entries else ([], "empty feed")
+    except RobotsDisallowed as e:
+        return [], str(e)
     except Exception as e:  # noqa: BLE001
         return [], type(e).__name__
 
@@ -259,16 +339,85 @@ def _variants(url: str) -> list[str]:
     return [url, p._replace(netloc=twin).geturl()]
 
 
-def _news_site(url: str) -> str:
-    """site: scope for the Google News fallback. University-hosted centres share a domain, so keep their path."""
+SITEMAP_HINT = re.compile(r"post|publication|research|report|paper|insight|analysis|briefing|blog|news|article|comment", re.I)
+SITEMAP_SKIP = re.compile(r"author|tag|categor|page-sitemap|product|event|people|staff|team|job|vacanc|attachment|image|video", re.I)
+
+
+def _scope(url: str) -> str:
+    """Path prefix an organisation's pages live under. University-hosted centres share a domain, so keep their path;
+    a stand-alone site is scoped to its whole host."""
     p = urlparse(url)
     host = p.netloc.removeprefix("www.")
     if host.endswith((".ac.uk", ".edu")):
         segs = [x for x in p.path.split("/") if x]
         if segs and segs[-1].lower() in ("publications", "research", "reports", "blog", "research-analysis", "library"):
             segs = segs[:-1]
-        return host + ("/" + "/".join(segs[:2]) if segs else "")
-    return host
+        return "/" + "/".join(segs[:3]) if segs else "/"
+    return "/"
+
+
+def _slug_title(url: str) -> str:
+    slug = [x for x in urlparse(url).path.split("/") if x][-1]
+    slug = re.sub(r"\.(html?|aspx|php)$", "", slug)
+    slug = re.sub(r"^\d{4,}[-_]|[-_]\d{5,}$", "", slug)
+    words = re.sub(r"[-_]+", " ", slug).strip()
+    return words[:1].upper() + words[1:]
+
+
+def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict], str]:
+    """Fallback for sites whose pages cannot be read (blocked, JavaScript-rendered): the XML sitemap, which robots.txt
+    points crawlers to. Takes the most recently modified pages under the organisation's scope. Titles come from the
+    URL until the page itself is read (enrich_dates replaces them with the real title and publication date)."""
+    p = urlparse(tt["url"])
+    base = f"{p.scheme}://{p.netloc}"
+    scope = _scope(tt["url"])
+    try:
+        maps = list(_robots_for(tt["url"]).site_maps() or [])
+    except Exception:  # noqa: BLE001
+        maps = []
+    queue = maps + [base + "/sitemap.xml", base + "/sitemap_index.xml", base + "/wp-sitemap.xml"]
+    seen, urls, docs = set(), [], 0
+    cutoff = NOW - timedelta(days=120)
+    while queue and docs < 8:
+        sm = queue.pop(0)
+        if sm in seen:
+            continue
+        seen.add(sm)
+        try:
+            r = get(sm)
+        except Exception:  # noqa: BLE001
+            continue
+        docs += 1
+        if len(r.content) > 15_000_000:
+            continue
+        soup = BeautifulSoup(r.content, "lxml-xml")
+        if soup.find("sitemapindex"):
+            kids = []
+            for node in soup.find_all("sitemap"):
+                loc = (node.find("loc").text if node.find("loc") else "").strip()
+                mod = parse_date(node.find("lastmod").text) if node.find("lastmod") else None
+                if loc and not SITEMAP_SKIP.search(loc) and (mod is None or mod >= cutoff):
+                    kids.append((bool(SITEMAP_HINT.search(loc)), mod or cutoff, loc))
+            queue = [k[2] for k in sorted(kids, reverse=True)[:5]] + queue
+            continue
+        for node in soup.find_all("url"):
+            loc = (node.find("loc").text if node.find("loc") else "").strip()
+            mod = parse_date(node.find("lastmod").text) if node.find("lastmod") else None
+            u = urlparse(loc)
+            if not loc or not mod or mod < cutoff or u.netloc.removeprefix("www.") != p.netloc.removeprefix("www."):
+                continue
+            if not u.path.startswith(scope) or u.path.rstrip("/") in ("", scope.rstrip("/")) or u.path.count("/") < 2:
+                continue
+            if NOT_PUBLICATION.search(u.path):
+                continue
+            urls.append((mod, loc))
+    urls = sorted(set(urls), reverse=True)[:limit]
+    items = []
+    for mod, loc in urls:
+        it = make_item(category, tt["name"], _slug_title(loc), loc, date_from_url(loc))
+        it["slug_title"] = True
+        items.append(it)
+    return items, f"{docs} sitemap file(s)"
 
 
 def _entries_to_items(name: str, entries, category: str = "thinktank") -> list[dict]:
@@ -282,7 +431,8 @@ def _entries_to_items(name: str, entries, category: str = "thinktank") -> list[d
 
 
 def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktanks") -> tuple[list[dict], dict]:
-    """Self-healing: primary page (+ www/bare twin, + alternates) -> feeds -> HTML scrape -> Google News site: search.
+    """Self-healing: explicit feeds -> primary page (+ www/bare twin, + alternates) -> discovered feeds -> HTML scrape ->
+    XML sitemap. Every request respects robots.txt.
     Returns (items, health record). Never raises."""
     name = tt["name"]
     pages = [u for u in [tt["url"], *tt.get("urls", [])] for u in _variants(u)]
@@ -293,14 +443,13 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
     tried_feeds: set[str] = set()
     probes: collections.Counter = collections.Counter()
     t0 = time.time()
-    over = lambda: time.time() - t0 > 75     # per-organisation budget; then go straight to the Google News fallback
+    over = lambda: time.time() - t0 > 90     # per-organisation budget; then go straight to the sitemap fallback
 
     def try_feeds(feeds: list[str]):
         for f in feeds:
             if f in tried_feeds or over():
                 continue
             tried_feeds.add(f)
-            time.sleep(0.3)
             entries, why = _feed_entries(f)
             if len(entries) >= 3:    # a 1-2 item feed is usually a site's "promoted" feed, not its publications
                 return f, entries
@@ -318,6 +467,9 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
             seen_pages.add(page)
             try:
                 html = get(page).text
+            except RobotsDisallowed as e:
+                notes.append(f"{urlparse(page).netloc}{urlparse(page).path}: {e}")
+                continue
             except Exception as e:  # noqa: BLE001
                 m = re.search(r"\b(40\d|50\d)\b", str(e))
                 notes.append(f"{urlparse(page).netloc}{urlparse(page).path}: {'HTTP ' + m.group(1) if m else type(e).__name__}")
@@ -336,25 +488,12 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
                 return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], "html", page, notes)
             title = (BeautifulSoup(html, "lxml").title.string or "").strip()[:40] if BeautifulSoup(html, "lxml").title else ""
             notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links")
-        # last resort: what Google News has indexed for the organisation's own site
-        if tt.get("news") is not False:
-            q = tt.get("news_query") or f"site:{_news_site(tt['url'])}"
-            entries = google_news(q, "90d")
-            items = []
-            want = (re.search(r"site:([\w.-]+)", q) or [None, ""])[1]   # the organisation's own domain
-            for e in entries[:40]:
-                title = _gn_title(e).lstrip("-– ").strip()
-                src = urlparse((e.get("source") or {}).get("href", "")).netloc.removeprefix("www.")
-                if want and not src.endswith(want):
-                    continue           # Google's site: filter is loose: keep only the organisation's own pages
-                if len(title.split()) < 3 or title.lower() in (name.lower(), "home"):
-                    continue           # site chrome, tags, staff pages
-                items.append(make_item(category, name, title, e.get("link", ""), parse_date(e.get("published"))))
-                if len(items) >= 25:
-                    break
+        # last resort: the site's XML sitemap (made for crawlers, and usually allowed even when pages are not)
+        if tt.get("sitemap") is not False and not over():
+            items, via = sitemap_items(tt, category)
             if items:
-                return _done(t0, group, name, items, "google-news", q, notes)
-            notes.append("Google News had nothing for it either")
+                return _done(t0, group, name, items, "sitemap", via, notes)
+            notes.append(f"no recent pages in its sitemap ({via})")
         if probes:
             notes.append("feed probes: " + ", ".join(f"{n}x {w}" for w, n in probes.most_common(4)))
     except Exception as e:  # noqa: BLE001
@@ -379,57 +518,51 @@ def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
 
 
 # ------------------------------------------------------------------- media
-def google_news(query: str, lookback: str):
-    q = f"{query} when:{lookback}"
-    url = ("https://news.google.com/rss/search?q=" + quote_plus(q) +
-           "&hl=en-GB&gl=GB&ceid=GB:en")
-    entries = feedparser.parse(url, request_headers=UA).entries
-    # Google returns up to 100 results in relevance order; newest first so that any cap keeps recent items
-    return sorted(entries, key=lambda e: parse_date(e.get("published")) or NOW - timedelta(days=3650), reverse=True)
-
-
-def _gn_title(e) -> str:
-    """Google News titles end in ' - Outlet'; strip using the feed's own source name."""
-    t = e.get("title", "")
-    src = (e.get("source") or {}).get("title", "")
-    if src and t.endswith(" - " + src):
-        t = t[: -len(src) - 3]
-    return t.strip()
-
-
-def collect_media() -> list[dict]:
+def collect_media() -> tuple[list[dict], list[dict]]:
+    """Each outlet's own RSS feeds (politics sections, Lib Dem tag pages), filtered to Lib Dem stories.
+    Also returns Sarah Olney's coverage (any story naming her, in any of the feeds) for the Mall's Coverage page.
+    Outlets without an open feed, or whose robots.txt refuses it, show in Source health; nothing is searched for
+    them elsewhere."""
     cfg = CONFIG["media"]
-    kw = "(" + " OR ".join(cfg["keywords"]) + ")"
     relevant = re.compile(cfg["title_pattern"], re.I)
-    items, seen = [], set()
+    olney = re.compile(CONFIG.get("coverage", {}).get("pattern", r"Sarah Olney|\bOlney\b"), re.I)
+    since = NOW - timedelta(days=int(cfg.get("lookback_days", 14)))
+    items, coverage, seen, seen_cov = [], [], set(), set()
     for o in cfg["outlets"]:
-        try:
-            entries = google_news(f"{kw} site:{o['domain']}", cfg["lookback"])
-            n = dropped = 0
-            for e in entries:         # filter ALL results first (Google returns up to 100 in relevance order), then cap what we keep
-                if n >= 25:
-                    break
-                title = _gn_title(e)
-                # Google matches the keywords anywhere in the article body, which
-                # pulls in stories that merely mention the party; require the
-                # headline itself to be relevant (own-party sites are exempt).
-                if not o.get("all") and not relevant.search(title):
-                    dropped += 1
+        feeds = o.get("feeds", [])
+        if not feeds:
+            record("media", o["name"], False, 0, "no open RSS feed configured (Google News is not used: its robots.txt forbids bots)")
+            continue
+        n, got, why = 0, 0, []
+        for f in feeds:
+            entries, reason = _feed_entries(f)
+            if not entries:
+                why.append(f"{urlparse(f).path or '/'}: {reason}")
+                continue
+            got += len(entries)
+            for e in entries:
+                title, summary = clean(e.get("title", ""), 300), clean(e.get("summary", ""))
+                link = e.get("link", "")
+                date = parse_date(e.get("published") or e.get("updated"))
+                if not link or len(title) < 8 or (date and date < since):
+                    continue
+                if olney.search(title + " " + summary) and link not in seen_cov:
+                    seen_cov.add(link)
+                    coverage.append({"covered_on": (date or NOW).astimezone(LONDON).date().isoformat(),
+                                     "outlet": o["name"], "headline": title, "url": link})
+                # headline or standfirst must be about the party (own-party sites are exempt)
+                if not o.get("all") and not relevant.search(title + " " + summary):
                     continue
                 key = (o["name"], title.lower())
-                if len(title) < 8 or key in seen or title.lower() == "liberal democrat voice":
+                if key in seen or title.lower() == "liberal democrat voice":
                     continue
                 seen.add(key)
-                items.append(make_item("media", o["name"], title, e.get("link", ""),
-                                       parse_date(e.get("published")), ""))
+                items.append(make_item("media", o["name"], title, link, date, summary))
                 n += 1
-            # a quiet window is not a failure: only flag outlets whose feed returned nothing at all
-            record("media", o["name"], bool(entries), n,
-                   "" if n else f"quiet: {dropped} off-topic results dropped" if dropped else "no results from Google News")
-        except Exception as e:  # noqa: BLE001
-            record("media", o["name"], False, 0, e)
-        time.sleep(1)
-    return items
+        ok = got > 0     # a quiet fortnight is not a failure: only flag outlets whose feeds returned nothing at all
+        record("media", o["name"], ok, n, "; ".join(why) if not ok else ("" if n else f"quiet: {got} recent stories, none about the Lib Dems"))
+    print(f"media: {len(items)} items; Sarah Olney coverage: {len(coverage)} stories")
+    return items, coverage
 
 
 # ----------------------------------------------------------------- polling
@@ -486,7 +619,6 @@ def harvest_siblings(d: dict, rows, html: str, add) -> int:
 
 def collect_poll_articles() -> list[dict]:
     cfg = CONFIG["polling"]
-    terms = "(" + " OR ".join(cfg["search_terms"]) + ")"
     skip = re.compile(cfg["exclude_pattern"], re.I)
     items, seen = [], set()
 
@@ -500,8 +632,7 @@ def collect_poll_articles() -> list[dict]:
         items.append(make_item("polling", source, title, url, date, "", poll_kind_tags(title)))
         return True
 
-    # Direct pages first so that, when the same piece also appears in the Google News
-    # search, the item keeps its real YouGov URL rather than a news.google.com redirect.
+    # Pages that list a pollster's write-ups directly (YouGov's article list and its News Tracker series).
     for d in cfg.get("direct", []):
         try:
             html = get(d["url"]).text
@@ -512,17 +643,6 @@ def collect_poll_articles() -> list[dict]:
             record("polling", f"{d['name']} (direct)", n > 0, n, "" if n else "no matching links")
         except Exception as e:  # noqa: BLE001
             record("polling", f"{d['name']} (direct)", False, 0, e)
-        time.sleep(1)
-    for f in cfg["firms"]:
-        try:
-            ft = "(" + " OR ".join(f["terms"]) + ")" if f.get("terms") else terms
-            entries = google_news(f"{ft} site:{f['domain']}", cfg["lookback"])
-            n = sum(add(f["name"], _gn_title(e), e.get("link", ""), parse_date(e.get("published")))
-                    for e in entries[:40])
-            record("polling", f"{f['name']} (news search)", n > 0, n, "" if n else "nothing indexed recently")
-        except Exception as e:  # noqa: BLE001
-            record("polling", f"{f['name']} (news search)", False, 0, e)
-        time.sleep(1)
     return items
 
 
@@ -1010,44 +1130,59 @@ def date_from_url(url: str) -> datetime | None:
         return None
 
 
-def page_published_date(url: str) -> datetime | None:
-    """Reads the publication date from the article page itself (meta tags, <time>, JSON-LD)."""
+def page_meta(url: str) -> tuple[datetime | None, str]:
+    """Publication date (meta tags, <time>, JSON-LD) and headline (og:title, <h1>, <title>) from the article page."""
     soup = BeautifulSoup(get(url).text, "lxml")
+    date = None
     for sel, attr in (('meta[property="article:published_time"]', "content"), ('meta[name="date"]', "content"),
                       ('meta[name="publication_date"]', "content"), ('meta[itemprop="datePublished"]', "content"),
                       ('meta[name="DC.date.issued"]', "content"), ('time[itemprop="datePublished"]', "datetime"),
                       ("time[datetime]", "datetime")):
         el = soup.select_one(sel)
         if el and el.get(attr):
-            d = parse_date(el[attr])
-            if d:
-                return d
-    for sc in soup.find_all("script", type="application/ld+json"):
-        m = re.search(r'"datePublished"\s*:\s*"([^"]+)"', sc.string or "")
-        if m:
-            d = parse_date(m.group(1))
-            if d:
-                return d
-    return None
+            date = parse_date(el[attr])
+            if date:
+                break
+    if not date:
+        for sc in soup.find_all("script", type="application/ld+json"):
+            m = re.search(r'"datePublished"\s*:\s*"([^"]+)"', sc.string or "")
+            if m and parse_date(m.group(1)):
+                date = parse_date(m.group(1))
+                break
+    title = ""
+    og = soup.select_one('meta[property="og:title"]')
+    if og and og.get("content"):
+        title = og["content"]
+    elif soup.h1:
+        title = soup.h1.get_text(" ", strip=True)
+    elif soup.title and soup.title.string:
+        title = soup.title.string
+    return date, clean(re.split(r"\s+[|–-]\s+[^|–-]{2,40}$", title.strip())[0], 300)
 
 
 def enrich_dates(items: list[dict], limit: int = 40) -> None:
-    """Fills in missing publication dates for think tank items: URL first (free), then the page (polite, capped per run)."""
+    """Fills in missing publication dates (and URL-derived titles from sitemaps) for think tank items: URL first (free),
+    then the page itself (capped per run; requests are rate-limited per site)."""
     fetched = 0
     for it in items:
-        if it.get("published") or it["category"] != "thinktank":
+        need_title = it.get("slug_title")
+        if (it.get("published") and not need_title) or it["category"] not in ("thinktank", "polling") or \
+                (it["category"] == "polling" and not need_title):
             continue
-        d = date_from_url(it["url"]) or date_from_title(it["title"])
-        if not d and fetched < limit and not it.get("date_checked") and it.get("date_tries", 0) < 3:
+        d = None if it.get("published") else (date_from_url(it["url"]) or date_from_title(it["title"]))
+        if (not d or need_title) and fetched < limit and not it.get("date_checked") and it.get("date_tries", 0) < 3:
             fetched += 1
             try:
-                d = page_published_date(it["url"])
+                pd_, title = page_meta(it["url"])
+                d = d or pd_
+                if title and len(title) > 8:
+                    it["title"] = title
+                it.pop("slug_title", None)
                 if not d:
                     it["date_checked"] = True   # page fetched fine but states no date: do not ask again
             except Exception:  # noqa: BLE001
                 it["date_tries"] = it.get("date_tries", 0) + 1   # network problem: retry on later runs, up to 3 times
-            time.sleep(1)
-        if d:
+        if d and not it.get("published"):
             it["published"] = d.isoformat()
 
 
@@ -1066,6 +1201,14 @@ def merge(new_items: list[dict]) -> list[dict]:
             continue
         prev = old.get(it["id"])
         it["first_seen"] = prev["first_seen"] if prev else now_iso
+        if prev:
+            # keep what earlier runs learned (a date or title read from the page) over this run's blanks
+            for k in ("published", "summary"):
+                if not it.get(k) and prev.get(k):
+                    it[k] = prev[k]
+            if it.get("slug_title") and not prev.get("slug_title"):
+                it["title"] = prev["title"]
+                it.pop("slug_title")
         old[it["id"]] = {**(prev or {}), **it}
     cutoff = NOW - timedelta(days=KEEP_DAYS)
     kept = []
@@ -1103,11 +1246,36 @@ def merge(new_items: list[dict]) -> list[dict]:
     return kept
 
 
-def upload() -> bool:
-    """Push feed/polls/health to the ulysse-ingest function. Skipped (with a notice) if not configured."""
-    import os
+def _ingest(payload: dict, timeout: int = 90) -> dict:
     url, token = os.environ.get("INGEST_URL"), os.environ.get("INGEST_TOKEN")
-    if not (url and token):
+    r = requests.post(url, headers={"x-ingest-token": token, "content-type": "application/json"},
+                      data=json.dumps(payload, separators=(",", ":")), timeout=timeout)
+    r.raise_for_status()
+    return r.json()
+
+
+def ingest_configured() -> bool:
+    return bool(os.environ.get("INGEST_URL") and os.environ.get("INGEST_TOKEN"))
+
+
+def sync_state() -> None:
+    """Fetch the previous run's feed/polls/health from the database into data/ulysse/, so first-seen times, dates and
+    titles learned earlier carry over. Raises if the database cannot be read: starting from nothing would mark every
+    stored item as new, so it is better to fail the run and leave the stored data as it is."""
+    if not ingest_configured():
+        print("INGEST_URL / INGEST_TOKEN not set: using the local data/ulysse/ files")
+        return
+    for name in ("feed", "polls", "health"):
+        js = _ingest({"action": "get", "name": name})
+        if js.get("body") is not None:
+            (DATA / f"{name}.json").write_text(json.dumps(js["body"]))
+        elif name == "feed":
+            print("no stored feed yet: starting fresh")
+
+
+def upload(coverage: list[dict] | None = None) -> bool:
+    """Push feed/polls/health (and any new Sarah Olney coverage) through the ingest function."""
+    if not ingest_configured():
         print("INGEST_URL / INGEST_TOKEN not set: data written locally only, not uploaded")
         return True
     ok = True
@@ -1116,27 +1284,38 @@ def upload() -> bool:
         if not f.exists():
             continue
         try:
-            r = requests.post(url, headers={"x-ingest-token": token, "content-type": "application/json"},
-                              data=json.dumps({"name": name, "body": json.loads(f.read_text())}), timeout=60)
-            r.raise_for_status()
+            _ingest({"name": name, "body": json.loads(f.read_text())})
         except Exception as e:  # noqa: BLE001
             ok = False
             print(f"upload of {name} failed: {e}", file=sys.stderr)
+    if coverage:
+        try:
+            print(f"coverage: {_ingest({'action': 'coverage', 'rows': coverage}).get('added', 0)} new stories added to the Mall")
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            print(f"coverage upload failed: {e}", file=sys.stderr)
     return ok
+
+
+def write(name: str, body: dict) -> None:
+    (DATA / f"{name}.json").write_text(json.dumps(body, separators=(",", ":")))
 
 
 def main() -> int:
     DATA.mkdir(parents=True, exist_ok=True)
     global ENRICH
     only = set(sys.argv[1:])  # e.g. `update.py media polling`
+    sync_state()
     if "reclassify" in only:      # re-apply taxonomy to stored items without collecting
         ENRICH = False
         feed = merge([])
-        (DATA / "feed.json").write_text(json.dumps({"updated": NOW.isoformat(), "items": feed}, indent=1))
+        write("feed", {"updated": NOW.isoformat(), "items": feed})
         print(f"{len(feed)} items re-classified")
-        return 0
+        return 0 if upload() else 1
+    groups = {"committees", "thinktanks", "media", "polling"}
     run = lambda k: not only or k in only  # noqa: E731
     items: list[dict] = []
+    coverage: list[dict] = []
     if run("committees"):
         items += collect_committees()
     if run("thinktanks"):
@@ -1146,18 +1325,25 @@ def main() -> int:
                 items += got
                 health.append(rec)
     if run("media"):
-        items += collect_media()
+        got, coverage = collect_media()
+        items += got
     if run("polling"):
         poll_items, pollsters = collect_polling()
         items += poll_items
-        (DATA / "polls.json").write_text(json.dumps(
-            {"updated": NOW.isoformat(), "rows": collect_vi_table(), "pollsters": pollsters}, indent=1))
+        write("polls", {"updated": NOW.isoformat(), "rows": collect_vi_table(), "pollsters": pollsters})
     feed = merge(items)
-    (DATA / "feed.json").write_text(json.dumps({"updated": NOW.isoformat(), "items": feed}, indent=1))
-    (DATA / "health.json").write_text(json.dumps({"updated": NOW.isoformat(), "sources": health}, indent=1))
+    write("feed", {"updated": NOW.isoformat(), "items": feed})
+    if only:   # a partial run keeps the other groups' last known health
+        try:
+            prev = json.loads((DATA / "health.json").read_text()).get("sources", [])
+            ran = {g for g in groups if run(g)}
+            health[:0] = [h for h in prev if h.get("group") not in ran]
+        except Exception:  # noqa: BLE001
+            pass
+    write("health", {"updated": NOW.isoformat(), "sources": health})
     ok = sum(h["ok"] for h in health)
     print(f"{len(feed)} items stored; {ok}/{len(health)} sources returned data")
-    return 0 if upload() else 1
+    return 0 if upload(coverage) else 1
 
 
 if __name__ == "__main__":

@@ -1,16 +1,28 @@
-/* Ulysse front end. Data comes from the admin-only Supabase tables; nothing here is a security boundary. */
-const sb = window.supabase.createClient(window.MALL_CONFIG.url, window.MALL_CONFIG.key, { auth: { persistSession: true } });
+/* Ulysse front end. Data comes from Supabase tables readable only by the admin (and any role the admin opens Ulysse to);
+ * nothing here is a security boundary. */
+const { sb, esc } = Athena;
 const $ = id => document.getElementById(id);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const safeUrl = u => { try { const p = new URL(u); return /^https?:$/.test(p.protocol) ? p.href : "#"; } catch { return "#"; } };
+const safeUrl = u => Athena.safeUrl(u) || "#";
 
 const COLORS = { Con: "#2563eb", Lab: "#e11d48", Reform: "#0ea5e9", LD: "#f59e0b", Green: "#16a34a", SNP: "#a1a1aa" };
 const SECTION = { committee: ["Select committee", "var(--c-committee)"], thinktank: ["Think tank", "var(--c-thinktank)"],
   media: ["Media", "var(--c-media)"], polling: ["Polling", "var(--c-polling)"] };
 const NEW_HOURS = 48, PAGE = 150;
 const TZ = "Europe/London";
+const SAVED = "ulysse.view.v1";
 const state = { tab: "all", items: [], polls: [], health: [], read: new Set(), shown: PAGE, pollRange: "all", hidden: new Set(),
   f: { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", onlyNew: false } };
+
+function saveView() { try { localStorage.setItem(SAVED, JSON.stringify({ tab: state.tab, f: state.f, pollRange: state.pollRange })); } catch (e) { /* private mode */ } }
+function restoreView() {
+  try {
+    const v = JSON.parse(localStorage.getItem(SAVED) || "null");
+    if (!v) return;
+    Object.assign(state.f, v.f || {}, { q: "" });
+    if (v.tab) state.tab = v.tab;
+    if (v.pollRange) state.pollRange = v.pollRange;
+  } catch (e) { /* ignore */ }
+}
 
 /* ---------------------------------------------------------------- data */
 async function load(name) {
@@ -33,7 +45,7 @@ async function setRead(ids, read) {
   ids.forEach(id => read ? state.read.add(id) : state.read.delete(id));
   render(true);
   const { error } = read
-    ? await sb.from("ulysse_read").upsert(ids.map(item_id => ({ item_id })))
+    ? await sb.from("ulysse_read").upsert(ids.map(item_id => ({ user_id: state.uid, item_id })), { onConflict: "user_id,item_id", ignoreDuplicates: true })
     : await sb.from("ulysse_read").delete().in("item_id", ids);
   if (error) { ids.forEach(id => read ? state.read.delete(id) : state.read.add(id)); render(true); toast("Couldn't save: " + error.message); }
 }
@@ -260,6 +272,7 @@ function renderHealth() {
 /* ---------------------------------------------------------------- render + events */
 function render(keepControls) {
   const tab = state.tab, health = tab === "health", poll = tab === "polling";
+  saveView();
   $("healthpanel").hidden = !health; $("list").hidden = health; $("controls").hidden = health; $("overview").hidden = health || poll;
   $("pollpanel").hidden = !poll; document.querySelector(".listhead").hidden = health;
   if (health) return renderHealth();
@@ -275,7 +288,9 @@ function bind() {
     document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
     state.tab = b.dataset.tab; Object.assign(state.f, { area: "", geo: "", kind: "", source: "", house: "" }); state.shown = PAGE; render();
   });
-  $("q").addEventListener("input", e => { state.f.q = e.target.value; state.shown = PAGE; render(true); renderControls(); });
+  let qt;
+  $("q").addEventListener("input", e => { clearTimeout(qt); qt = setTimeout(() => { state.f.q = e.target.value; state.shown = PAGE; render(true); renderControls(); }, 120); });
+  document.addEventListener("keydown", e => { if (e.key === "/" && !/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) { e.preventDefault(); $("q").focus(); } });
   [["area", "area"], ["geo", "geo"], ["kind", "kind"], ["source", "source"], ["house", "house"], ["range", "range"], ["status", "status"]].forEach(([id, k]) =>
     $(id).addEventListener("change", e => { state.f[k] = e.target.value; state.shown = PAGE; render(); }));
   $("onlyNew").addEventListener("change", e => { state.f.onlyNew = e.target.checked; state.shown = PAGE; render(); });
@@ -295,13 +310,18 @@ function bind() {
 function signIn() { AuthUI.render(sb, document.body, { title: "Ulysse" }); }
 (async function init() {
   AuthUI.watchRecovery(sb, document.body);
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) return signIn();
-  const { data: isAdmin } = await sb.rpc("is_admin");
-  if (!isAdmin) { document.body.innerHTML = '<main style="font:14px system-ui;padding:20vh 16px;text-align:center">Not found</main>'; return; }
+  let acc;
+  try { acc = await Athena.access(); } catch (e) { document.body.textContent = e.message; return; }
+  if (!acc) return signIn();
+  if (!Athena.may(acc, "ulysse")) return Athena.notFound();
+  state.uid = acc.session.user.id;
   const [feed, polls, health, read] = await Promise.all([load("feed"), load("polls"), load("health"), loadRead()]);
   state.items = (feed?.items || []).filter(i => i.title); state.polls = polls?.rows || []; state.health = health?.sources || []; state.read = read;
   state.items.forEach(i => (i.geo || []).forEach(g => { if (/^(Europe|United States|Russia|Middle East|China|Africa|Global)/.test(g)) GEO_META[g] = "International"; }));
-  $("updated").textContent = feed ? `Updated ${ago(feed.updated)}` : "No data yet. Run the collector.";
+  const staleH = feed ? (Date.now() - new Date(feed.updated)) / 36e5 : Infinity;
+  $("updated").textContent = feed ? `Updated ${Athena.ago(feed.updated)}` : "No data yet. Run the collector.";
+  if (staleH > 7) $("updated").classList.add("stale");
+  restoreView();
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x.dataset.tab === state.tab));
   bind(); render();
 })();

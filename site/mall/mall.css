@@ -46,3 +46,13 @@ dialog::backdrop{background:rgba(17,17,17,.45)}
 .seg button{border:0;background:var(--card);color:var(--ink);padding:6px 13px;cursor:pointer;font:700 .85rem var(--head)}
 .seg button.on{background:var(--black);color:#fff}
 .seg button+button{border-left:1px solid var(--line-strong)}
+th button.sort{all:unset;cursor:pointer;font-weight:800}th button.sort:hover{text-decoration:underline;text-decoration-color:var(--yellow-deep)}
+tr.ended td{opacity:.55}
+.ovgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:12px}
+.card.ov{margin:0}.card.ov h3{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.ovday{margin:0 0 10px}.ovday>b{display:block;font:800 .75rem var(--head);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.ovline{font-size:13.5px;line-height:1.45;padding:3px 0;border-bottom:1px solid var(--line)}.ovline:last-child{border-bottom:0}
+.ovline.late b{color:var(--red)}.ovline .pill{margin-right:4px}
+.ovstat{font-size:14px}.ovstat b{font:800 1.2rem var(--head)}
+button[disabled]{opacity:.6;cursor:progress}
+td.perm{white-space:nowrap}td.perm label{display:inline-flex;align-items:center;gap:3px;margin:0 10px 0 0;color:var(--ink);font-size:12px}

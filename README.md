@@ -1,90 +1,150 @@
 # Athena
 
-`site/` is published as one static site with a two-button home page:
+One static site (`site/`, hosted on Cloudflare) in front of one Supabase project (`ATHENA`, `fbsoibmtvapmxdlfdgxc`).
 
-- **ULYSSE** (`site/ulysse/`): the Policy Tracker described below.
-- **THE MALL** (`site/mall/`): *Mayoral Analysis for London's Liberals*, a members-only campaign workspace. See [The Mall](#the-mall).
+| Page | Who sees it | What it is |
+|---|---|---|
+| `/` | everyone | Home: lists the workspaces the signed-in person may open |
+| `/mall/` | anyone with a role | **The Mall** (*Mayoral Analysis for London's Liberals*): campaign workspace |
+| `/ulysse/` | the admin, plus any role the admin opens it to | **Ulysse**: policy tracker |
+| `/admin/` | the admin only | System status: collector health, failing sources, access ending soon, recent activity |
 
-# Policy Tracker (Ulysse)
+**Every permission is enforced in the database** (row-level security). The pages only hide what the database would refuse anyway.
 
-A static site, refreshed every three hours by GitHub Actions, that tracks:
+## Access model
 
-1. **Select committees**: new reports, government responses and special reports from all Commons and Lords committees (Parliament Committees API).
-2. **Think tanks**: new outputs from the ~64 organisations in `config/sources.yml`. For each one the collector tries, in order: an explicit `feed:` URL, RSS/Atom autodiscovery and common feed paths, then a generic scrape of the publications page.
-3. **Lib Dems in the media**: Telegraph, Times, Guardian, Politico, FT, Economist and others, via per-outlet Google News RSS searches (keywords are in the config).
-4. **Polling**: a voting-intention chart and table (from the Wikipedia table of BPC-member polls) plus new write-ups and trackers from BPC member firms, tagged *voting-intention*, *party-support* or *news-cycle*.
+- **Sign-in** is email + password (`site/mall/authui.js`). A new account sees nothing until someone with *Team & access* rights gives it a role.
+- **Roles:** Core team, Executive, Local party chair, Candidate, Support team, Member. What each role may read or write is the `role_permissions` table, edited in *The Mall → Team & access*.
+- **Time-limited access:** each person can have an *Access until* date. After it, `my_role()` returns nothing and they see nothing until it is extended.
+- **Guard rails (in the database, not the page):**
+  - Nobody can change their own role or access date.
+  - Only the core team can grant or remove core-team access.
+  - Nobody but the admin can change the admin's account.
+  - The core team's own *Team & access* rights cannot be switched off, so nobody can lock everyone out.
+  - Only the admin can open Ulysse to a role.
+  - Profiles: only role, name and access date can be changed through the API.
+- **Admin** = the account bound in the `admins` table (`ulysse.abbate@gmail.com`). `is_admin()` is checked in Postgres. The admin can do everything.
+- **Least privilege:**
+  - Anonymous visitors have no table rights at all.
+  - Signed-in users cannot `TRUNCATE`, and cannot see the admin tables.
+  - Permission checks run once per query (fast RLS).
+- **Activity log:** every insert, update and delete in the Mall is recorded in `audit_log`: who, when, which table, which fields. Values are not recorded. Readable by roles with *Activity log* (core team by default) and shown on *Team & access* and `/admin/`.
+- **Edit conflicts:** rows carry `updated_at`/`updated_by` (set by the database). An edit only saves if nobody changed the row since it was opened; otherwise the page says so and reloads it.
+- **Security headers** (`site/_headers`):
+  - A strict Content-Security-Policy: scripts only from this site, data only from the Athena Supabase project.
+  - No framing, and `noindex`.
+  - No inline scripts anywhere.
 
-"NEW" means first seen in the last 48 hours (and not an old backlog item). `data/ulysse/feed.json` is committed back to the repo each run, which is how first-seen times persist.
-
-## Setup
-
-1. Create a GitHub repo and push this folder to `main`.
-2. Settings → Pages → Source: **GitHub Actions**.
-3. Actions → *Update tracker and deploy* → Run workflow.
-4. Open the site and check the **Source health** tab. Committees, media and polling were verified against live responses on 2026-10-23. Only ~14 of the 63 think tank entries were verified live (the verification sandbox could not reach the rest), so expect some to need a corrected URL or a `feed:` override in `config/sources.yml` (`feed: false` forces the HTML scrape instead of feed autodiscovery).
-
-Run locally:
-
-```bash
-pip install -r requirements.txt
-python tracker/update.py            # everything
-python tracker/update.py media      # one group: committees | thinktanks | media | polling
-cd site && python -m http.server    # then open http://localhost:8000
-```
-
-## Known limitations
-
-- Committees: only Report, Special Report and Government Response publications are kept (`keep_types`). Correspondence was ~70% of the API's volume, add `"correspondence"` to include it. Committee links point at `committees.parliament.uk/publications/<id>/` (the site's standard pattern; not fetched during verification).
-- Media: Google News RSS matches keywords anywhere in an article, so results are filtered to headlines matching `media.title_pattern`. Only headlines and Google redirect links are available (no article text), and a quiet outlet shows as "quiet" in Source health, not as a failure. Daily Mail, Spectator and Reuters returned nothing from Google News.
-- Polling: the Wikipedia parser assumes the first table is the current year (the table gives no year in its date column), keeps GB/UK rows only and tags MRPs (excluded from the chart). Several smaller firms (Techne, BMG, JL Partners, Deltapoll, Verian, Whitestone, Merlin, Stonehaven) are only sparsely indexed by Google News. YouGov News Trackers are collected from the YouGov articles page plus the earlier editions linked from the newest one.
-- Bright Blue and the IFS return HTTP 403 to all automated requests (including robots.txt); they are left in the config and will show as failing.
-- HTML-scrape fallbacks are heuristic; add a `feed:` where one exists.
-- If any site's terms forbid automated access, remove it from the config.
-
-## Next steps
-
-The "London" site can reuse `tracker/update.py` and the front end: add a new `london` config block (London media outlets, GLA and borough sources) and a tab.
+The full schema is in `supabase/migrations/` and the ingest function in `supabase/functions/ulysse-ingest/`. Both are already applied to the live project; the files are the record.
 
 ## The Mall
 
-A sign-in-protected campaign workspace modelled on the campaign Google Sheet. It is a static front end (`site/mall/`) talking to a Supabase project (Postgres + Auth). **All permissions are enforced by row-level security in the database**, not by the page: a hidden tab is a convenience, the database decides what each role can read or write.
+**Pages:**
+- **Overview:** today's and this week's plan, governance due or overdue, upcoming local party visits, scheduled content, latest coverage and volunteer numbers. Each card appears only if your role can see that area.
+- **Campaign plan:** day and week views. Only the shared rows are visible to every role.
+- **Local party visits**
+- **Budget & governance**
+- **Volunteers:** anyone can add; only core team and executive see all.
+- **Policies**
+- **Social media:** accounts grid, outputs log and content pipeline.
+- **Coverage**
+- **Stakeholders:** anyone can add.
+- **Team & access:** people, roles, access dates, last sign-in, the permissions grid and recent activity.
 
-**Roles:** Core team, Executive, Local party chair, Candidate, Support team, Member. New sign-ups (email magic link) see nothing until a core team member assigns a role in *Team & access*. What each role may do is a table (`role_permissions`) editable on that same page; the shipped defaults are placeholders.
+**What every table has:**
+- search
+- click-to-sort columns
+- **CSV** download of what is shown
+- "Last edited …" in each edit form
 
-**Pages:** Campaign plan (day and week views; only the six shared rows are visible to every role), Local party visits, Budget & governance, Volunteers (anyone can add, only core/executive see all), Policies, Social media (accounts grid, outputs log, content pipeline), Coverage, Stakeholders (extends the media list; anyone can add), Team & access.
+Pages refresh themselves when you come back to the browser tab, so you see other people's changes.
 
-**Backend:** Supabase project `ATHENA` (`fbsoibmtvapmxdlfdgxc`). The publishable key in `site/mall/config.js` is public by design. The schema and policies were applied as a migration (`mall_schema_roles_rls`). The first core-team account is whichever email is listed in `bootstrap_admins`. `site/mall/vendor/` holds a pinned copy of `@supabase/supabase-js` so the sign-in page loads no third-party scripts.
+**Coverage of Sarah Olney** fills itself: every 3 hours the collector reads the media outlets' RSS feeds and adds any story naming her. These are marked *auto*; duplicates by URL or outlet+headline are skipped. Anything else can still be added by hand.
 
-**One-time setup in Supabase** (Authentication → URL Configuration): set *Site URL* and add *Redirect URLs* for the deployed address (e.g. `https://<user>.github.io/<repo>/mall/`), or magic links will not return to the site. For real use, configure a custom SMTP sender (Authentication → SMTP): the built-in mailer is limited to a few emails per hour.
+## Ulysse (policy tracker)
 
-**Data:** the sheet's contents were loaded into the database, not committed to this repo (they include names, phone numbers and emails).
+Refreshed every 3 hours by GitHub Actions (`.github/workflows/update.yml`, or *Run workflow* by hand). It tracks:
 
-## Admin and privacy
+1. **Select committees:** reports, special reports and government responses (Parliament Committees API).
+2. **Think tanks:** ~63 organisations in `config/sources.yml`.
+3. **Lib Dems in the media:** each outlet's own RSS feeds, filtered to stories whose headline or standfirst is about the party.
+4. **Political polling:**
+   - Wikipedia's UK poll tables: voting intention, MRPs, leader ratings and preferred PM. Each row links to the pollster's own release.
+   - YouGov's article pages and News Tracker.
+   - ~30 pollsters' sites and polling analysts.
+   - A political-only filter.
 
-- `/admin/` is an owner-only dashboard (links to Ulysse and the Mall, plus counts). Anyone who is not the admin sees "Not found".
-- **Admin = the confirmed email in the `admins` table** (`ulysse.abbate@gmail.com`). The check is `public.is_admin()`, enforced in Postgres. The admin has full access to the Mall (`can()` always returns true) and nobody else can change the admin's role.
-- **Ulysse is admin-only.** Its data no longer ships with the site: the collector writes `data/ulysse/*.json` (private repo, used for first-seen timestamps) and uploads it through the `ulysse-ingest` Edge Function into `public.ulysse_data`, which only the admin can read. The ULYSSE button on the home page appears only after the admin signs in.
-- **Needed once:** the same random value (24+ characters) stored as the Supabase Edge Function secret `INGEST_TOKEN` and the GitHub Actions secret `INGEST_TOKEN`. Until then uploads are rejected and Ulysse shows no data.
+**Using it:**
+- **Filters:** policy area, geography, type, source, House, date range and read/unread. Each dropdown counts only what the other filters leave.
+- **Read state** is per person and syncs across devices.
+- The page remembers your last tab and filters.
+- `/` jumps to search.
+- The *Updated …* label turns black if the data is more than 7 hours old.
 
-## Ulysse categories, dates and read state
+### Respecting sites (robots.txt, rate, terms)
 
-- **Categories** are assigned at collection time from `config/taxonomy.yml` (keyword rules plus per-source defaults, all editable): up to 2 **policy areas** (20 areas), up to 2 **geographies** (UK nations, London, English regions, and international regions), and a **type** (committee report / special report / government response, think-tank report, briefing, response, article, poll type, news coverage). Committees also carry their **House**. The rules are heuristics, so expect the occasional miss; tune `taxonomy.yml` and re-run (all stored items are re-classified each run, or run `python tracker/update.py reclassify` for a no-network re-classification).
-- **Staff bios, job adverts and housekeeping pages** picked up by the generic scraper are dropped (`drop_title_pattern`, `drop_summary_pattern` in the taxonomy).
-- **Publication dates** are shown on every item. If a listing gives none, the collector tries the date in the URL, then the article page's own metadata (up to 40 pages per run, polite 1s delay, up to 3 tries each). Items whose source never states a date are grouped as "Date not shown by the source" with the date first seen.
-- **Read / not read** is a per-item toggle stored in the admin-only `ulysse_read` table (row-level security), so it syncs across your devices. Filter by Unread / Read, or "Mark all shown as read".
+- **Every request checks the site's robots.txt first** (`fetch()` in `tracker/update.py`).
+  - A disallowed URL is never fetched.
+  - A robots.txt that answers 401/403, 5xx or not at all means "no bots"; a missing robots.txt (404) means allowed (RFC 9309).
+  - Source health says which applied ("blocked by robots.txt", "site refuses bots", "site unreachable").
+- **Requests to one site are at least 1 second apart.** A site's `Crawl-delay` is honoured, up to 30 seconds.
+- Nothing requires a login and nothing gets around a paywall.
+- **Google News is not used.** Its robots.txt forbids bots from its RSS feeds. Media comes from outlets' own feeds. Outlets with no open feed (The Times, Reuters) show as failing in Source health rather than being fetched another way.
 
-## How think-tank collection copes with awkward sites
+### How a think tank or pollster is collected (`collect_source`)
 
-For each organisation the collector tries, in order: explicit `feed:`/`feeds:` -> the page (and its `www`/bare-host twin, plus any `urls:` alternates) -> feed autodiscovery and common feed paths -> a scrape of the listing page -> finally a Google News search restricted to the organisation's own domain (`site:`), which is how sites that block automated requests (HTTP 403) or render with JavaScript still get tracked. Google News items are headlines and redirect links only. A feed is only trusted if it has at least 3 entries. `feed: false` skips feeds, `news: false` disables the Google News fallback, and `news_query:` overrides its search. The **Source health** tab shows which method each source used and why earlier attempts failed.
+1. Explicit `feed:`/`feeds:`.
+2. The page (and its `www`/bare-host twin, plus `urls:` alternates).
+3. Feed autodiscovery and common feed paths. A feed must have at least 3 entries.
+4. A scrape of the listing page.
+5. **The site's XML sitemap** (advertised in robots.txt for crawlers): its most recently modified pages under the organisation's own path. The title comes from the URL until the page is read; a later run replaces it with the page's real headline and publication date.
 
-## Political polling sources
+`feed: false` skips feeds, `sitemap: false` skips the sitemap. Source health shows the method used and why earlier steps failed.
 
-Only **political** polling is kept (voting intention, MRPs, leader ratings, preferred PM, party/government/policy opinion). Consumer and commercial polls and other countries' politics are filtered out (`polling.political` in `config/sources.yml`; it also cleans up already-stored items each run).
+### Data and state
 
-Four layers feed the Polling tab:
-1. **Wikipedia's UK poll tables** (national voting intention, MRPs, Scotland/Wales/England, leader ratings, preferred PM). Every row in the last 60 days becomes an item linking to the **pollster's own release** (an Excel sheet or PDF), so every pollster that publishes appears, including ones whose sites cannot be scraped. The Polling tab lists them with their poll counts and last-poll dates.
-2. **Pollsters' own sites** (`polling.pollsters`, ~29 firms) through the same self-healing collector as the think tanks (feed, page, then Google News on their domain).
-3. **Polling analysts** (`polling.analysts`: Mark Pack, Britain Elects, Electoral Calculus, Number Cruncher Politics...).
-4. **Search by firm** (`polling.firms`) and YouGov's own pages, including every edition of the YouGov News Tracker.
+- The collector reads the previous run's data **from the database** (through the `ulysse-ingest` function) and uploads the new data there. First-seen times and dates learned earlier are kept.
+- If the database cannot be read, the run fails instead of starting from nothing.
+- Nothing is committed back to the repo; `data/` is a local working copy only (git-ignored).
+- **Needed once:** the same random value (24+ characters) in the Supabase Edge Function secret `INGEST_TOKEN` and the GitHub Actions secret `INGEST_TOKEN`.
 
-A Wikipedia row is skipped if a pollster's own write-up of the same poll (within 2 days) is already in the feed. The pollster URLs are best guesses and are verified at run time: **Source health** shows which worked. Add or fix a pollster by editing `config/sources.yml`.
+**Run locally** (without the secrets, `data/ulysse/` is used and nothing is uploaded):
+
+```bash
+pip install -r requirements.txt
+python tracker/update.py                 # everything
+python tracker/update.py media polling   # some groups: committees | thinktanks | media | polling
+python tracker/update.py reclassify      # re-apply config/taxonomy.yml to stored items, no collecting
+cd site && python -m http.server
+```
+
+### Categories, dates, polling types
+
+- **Categories:**
+  - Assigned from `config/taxonomy.yml`: policy areas, geographies, types and drop patterns.
+  - Stored items are re-classified every run.
+- **Publication dates:**
+  - Taken from the feed or listing, the URL, or the article page itself (up to 40 pages per run).
+  - Items whose source never states a date are grouped as "Date not shown by the source".
+- **Polling:**
+  - Only political polling is kept: `polling.political` in `config/sources.yml`, applied retroactively too.
+  - Types: voting intention, MRP / seat projection, leader ratings, preferred PM, policy opinion.
+
+## Checks
+
+`.github/workflows/checks.yml` runs on every pull request and push to main:
+- pyflakes
+- offline collector tests (`tests/test_collector.py`): robots.txt rules, sitemap fallback, media/coverage filtering, merge, political filter, state safety
+- JavaScript syntax
+- browser tests (`tests/ui/run.js`): every page as admin, core team and member against a mocked database, under the real security headers, failing on any console error or CSP violation
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt && python -m pytest -q tests
+node tests/ui/run.js        # needs Playwright
+```
+
+## Settings to switch on in the Supabase dashboard
+
+- **Authentication → Providers → Email → Leaked password protection** (checks new passwords against known breaches; on paid plans).
+- **Authentication → URL Configuration:** *Site URL* and *Redirect URLs* = the deployed address, so password-reset links come back to the site.
+- **Authentication → SMTP:** a custom sender for real use (the built-in one sends only a few emails per hour).

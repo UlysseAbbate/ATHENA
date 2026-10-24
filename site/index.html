@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
 <title>Athena</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="athena.css">
@@ -21,7 +22,7 @@ main h1{font:800 clamp(1.8rem,4.5vw,2.5rem)/1.2 var(--head);letter-spacing:-.025
 </style>
 </head>
 <body>
-<header class="masthead"><div class="wrap masthead-bar"><h1 class="brand">Athena</h1></div></header>
+<header class="masthead"><div class="wrap masthead-bar"><h1 class="brand">Athena</h1><div class="right"><span class="muted" id="who"></span></div></div></header>
 <main>
   <h1>Choose a workspace</h1>
   <p class="lede">Sign in where asked. What you can see depends on your role.</p>
@@ -31,17 +32,7 @@ main h1{font:800 clamp(1.8rem,4.5vw,2.5rem)/1.2 var(--head);letter-spacing:-.025
 </main>
 <script src="mall/vendor/supabase.js"></script>
 <script src="mall/config.js"></script>
-<script>
-// The Ulysse panel is only added for the signed-in admin. The data behind it is protected server-side regardless.
-(async () => {
-  try {
-    const sb = window.supabase.createClient(MALL_CONFIG.url, MALL_CONFIG.key, { auth: { persistSession: true } });
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
-    const { data: admin } = await sb.rpc("is_admin");
-    if (admin) document.getElementById("n").insertAdjacentHTML("afterbegin", '<a href="ulysse/"><b>Ulysse</b><span>Policy tracker: select committees, think tanks, Lib Dems in the media, polling.</span></a>');
-  } catch (e) {}
-})();
-</script>
+<script src="common.js"></script>
+<script src="home.js"></script>
 </body>
 </html>
