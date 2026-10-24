@@ -89,7 +89,10 @@ Refreshed every 3 hours by GitHub Actions (`.github/workflows/update.yml`, or *R
   - Source health says which applied ("blocked by robots.txt", "site refuses bots", "site unreachable").
 - **Requests to one site are at least 1 second apart.** A site's `Crawl-delay` is honoured, up to 30 seconds.
 - Nothing requires a login and nothing gets around a paywall.
-- **Google News is not used.** Its robots.txt forbids bots from its RSS feeds. Media comes from outlets' own feeds. Outlets with no open feed (The Times, Reuters) show as failing in Source health rather than being fetched another way.
+- **Google News is not used.** Its robots.txt forbids bots from its RSS feeds. Media comes from outlets' own feeds.
+  - If an outlet's configured feeds fail and it has a `url:`, the feeds that page advertises are tried.
+  - Outlets with no open feed, or whose robots.txt refuses bots (Express and Lib Dem Voice, from GitHub's runners), show as failing in Source health rather than being fetched another way.
+- A site that answers with an empty page (a bot check) is reported as such, and not worked around.
 
 ### How a think tank or pollster is collected (`collect_source`)
 
@@ -97,7 +100,11 @@ Refreshed every 3 hours by GitHub Actions (`.github/workflows/update.yml`, or *R
 2. The page (and its `www`/bare-host twin, plus `urls:` alternates).
 3. Feed autodiscovery and common feed paths. A feed must have at least 3 entries.
 4. A scrape of the listing page.
-5. **The site's XML sitemap** (advertised in robots.txt for crawlers): its most recently modified pages under the organisation's own path. The title comes from the URL until the page is read; a later run replaces it with the page's real headline and publication date.
+5. **The site's XML sitemap** (advertised in robots.txt for crawlers): its most recently modified pages under the organisation's own path.
+   - Topic, series and collection pages are skipped.
+   - A university-wide sitemap is never used.
+   - The title comes from the URL until the page is read; a later run replaces it with the page's real headline and publication date.
+   - Until then, such an item is not marked NEW: a sitemap date is when a page last changed, which for an old report can be yesterday.
 
 `feed: false` skips feeds, `sitemap: false` skips the sitemap. Source health shows the method used and why earlier steps failed.
 
