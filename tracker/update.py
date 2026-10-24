@@ -386,7 +386,9 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
         maps = []
     queue = maps + [base + "/sitemap.xml", base + "/sitemap_index.xml", base + "/wp-sitemap.xml"]
     seen, urls, undated, docs, total = set(), [], [], 0, 0
-    cutoff = NOW - timedelta(days=120)
+    cutoff = NOW - timedelta(days=int(tt.get("sitemap_days", 120)))
+    pattern = re.compile(tt["sitemap_pattern"]) if tt.get("sitemap_pattern") else None
+    newest = None
     while queue and docs < 8:
         sm = queue.pop(0)
         if sm in seen:
@@ -413,10 +415,15 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
             total += 1
             loc = (node.find("loc").text if node.find("loc") else "").strip()
             mod = parse_date(node.find("lastmod").text) if node.find("lastmod") else None
+            if mod and (newest is None or mod > newest):
+                newest = mod
             u = urlparse(loc)
             if not loc or (mod and mod < cutoff) or u.netloc.removeprefix("www.") != p.netloc.removeprefix("www."):
                 continue
-            if not u.path.startswith(scope) or u.path.rstrip("/") in ("", scope.rstrip("/")) or u.path.count("/") < 2:
+            if pattern:      # this source says which addresses are its publications (e.g. IIED's /12345iied)
+                if not pattern.search(u.path):
+                    continue
+            elif not u.path.startswith(scope) or u.path.rstrip("/") in ("", scope.rstrip("/")) or u.path.count("/") < 2:
                 continue
             if NOT_PUBLICATION.search(u.path) or SITEMAP_LISTING.match(u.path):
                 continue
@@ -440,7 +447,7 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
         it = make_item(category, tt["name"], _slug_title(loc), loc, date_from_url(loc), tags=["sitemap"])
         it["slug_title"] = True
         items.append(it)
-    return items, f"{docs} sitemap file(s), {total} pages seen, {len(urls) + len(undated)} usable"
+    return items, f"{docs} sitemap file(s), {total} pages seen, {len(urls) + len(undated)} usable, newest dated {newest.date().isoformat() if newest else 'none'}"
 
 
 TITLE_KEYS = ("headline", "title", "name", "heading")
@@ -510,6 +517,8 @@ WP_BUILTIN = {"post", "page", "attachment", "nav_menu_item", "wp_block", "wp_tem
 def wp_items(page_url: str, html: str, limit: int = 30):
     """WordPress sites publish their content through a public REST API even when the RSS feed is switched off.
     Prefers a custom post type that looks like publications/research; falls back to ordinary posts."""
+    if not re.search(r"wp-json|wp-content|api\.w\.org", html):
+        return [], ""        # not a WordPress site: do not ask it for WordPress things
     soup = BeautifulSoup(html, "lxml")
     link = soup.find("link", attrs={"rel": re.compile(r"api\.w\.org")})
     p = urlparse(page_url)
@@ -553,6 +562,20 @@ def page_fingerprint(page_url: str, html: str) -> str:
     return f"{len(hrefs)} links, {len(same)} deep; {'/'.join(marks) or 'no framework seen'}; {jsons} json blocks; e.g. {sample}"
 
 
+def squarespace_items(page_url: str, html: str, limit: int = 30):
+    """Squarespace sites give any collection page as JSON by adding ?format=json."""
+    if "squarespace" not in html.lower():
+        return []
+    data = get(page_url + ("&" if "?" in page_url else "?") + "format=json", timeout=(6, 15)).json()
+    rows = []
+    for it in (data.get("items") or data.get("collection", {}).get("items") or []):
+        title, url = it.get("title"), it.get("fullUrl") or it.get("urlId")
+        if title and url:
+            ts = it.get("publishOn") or it.get("addedOn")
+            rows.append((re.sub(r"\s+", " ", title).strip(), urljoin(page_url, url), datetime.fromtimestamp(ts / 1000, timezone.utc) if ts else None))
+    return rows[:limit]
+
+
 def _entries_to_items(name: str, entries, category: str = "thinktank") -> list[dict]:
     items = []
     for e in entries[:40]:
@@ -564,11 +587,10 @@ def _entries_to_items(name: str, entries, category: str = "thinktank") -> list[d
 
 
 def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktanks") -> tuple[list[dict], dict]:
-    """Self-healing: explicit feeds -> primary page (+ www/bare twin, + alternates) -> discovered feeds -> HTML scrape ->
-    XML sitemap. Every request respects robots.txt.
+    """Self-healing: explicit feeds -> the main page (feeds it advertises, links, data built into it, WordPress API) -> the XML
+    sitemap -> alternate pages if any are listed. Every request respects robots.txt and nothing is done to get past a block.
     Returns (items, health record). Never raises."""
     name = tt["name"]
-    pages = [u for u in [tt["url"], *tt.get("urls", [])] for u in _variants(u)]
     explicit_feeds = ([tt["feed"]] if tt.get("feed") else []) + list(tt.get("feeds", []))
     no_feed = tt.get("feed") is False
     notes: list[str] = []
@@ -576,7 +598,7 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
     tried_feeds: set[str] = set()
     probes: collections.Counter = collections.Counter()
     t0 = time.time()
-    over = lambda: time.time() - t0 > 90     # per-organisation budget; then go straight to the sitemap fallback
+    over = lambda: time.time() - t0 > 120    # per-organisation budget for page work; the sitemap always gets its turn
 
     def try_feeds(feeds: list[str]):
         for f in feeds:
@@ -589,61 +611,82 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
             probes[f"{len(entries)} items" if entries else why] += 1
         return None, []
 
+    def feed_result(f, entries, notes):
+        return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
+
+    def try_page(page: str):
+        """One page through every method. Returns (result, reached): result is a finished (items, record) or None;
+        reached says the site answered (even with a 404), so its www/bare twin need not be tried."""
+        if page in seen_pages or over():
+            return None, False
+        seen_pages.add(page)
+        where = f"{urlparse(page).netloc}{urlparse(page).path}"
+        try:
+            html = get(page).text
+        except RobotsDisallowed as e:
+            notes.append(f"{where}: {e}")
+            return None, True
+        except Exception as e:  # noqa: BLE001
+            m = re.search(r"\b(40\d|50\d)\b", str(e))
+            hdr = getattr(getattr(e, "response", None), "headers", None) or {}
+            who = "/".join(x for x in (("Cloudflare challenge" if hdr.get("cf-mitigated") else ""), (hdr.get("server") or "")[:20]) if x)
+            notes.append(f"{where}: {'HTTP ' + m.group(1) if m else type(e).__name__}{' (' + who + ')' if who and m and m.group(1) in ('401', '403') else ''}")
+            if not no_feed and m and m.group(1) in ("401", "403", "404"):   # even if the page is blocked, common feed paths often are not
+                base = f"{urlparse(page).scheme}://{urlparse(page).netloc}/"
+                f, entries = try_feeds([urljoin(base, x) for x in FEED_SUFFIXES[:4]])
+                if entries:
+                    return feed_result(f, entries, notes), True
+            return None, bool(m)
+        if not no_feed:
+            f, entries = try_feeds(discover_feeds(page, html))
+            if entries:
+                return feed_result(f, entries, notes), True
+        rows = scrape_links(page, html)
+        if rows:
+            return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], "html", page, notes), True
+        for finder, method in ((embedded_json_items, "json"), (None, "wp-api"), (squarespace_items, "squarespace")):
+            if over():
+                break
+            try:
+                rows, via = (finder(page, html), page) if finder else wp_items(page, html)
+            except Exception:  # noqa: BLE001
+                rows, via = [], ""
+            if rows:
+                return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], method, via, notes), True
+        title = (BeautifulSoup(html, "lxml").title.string or "").strip()[:40] if BeautifulSoup(html, "lxml").title else ""
+        if len(html) < 800:
+            notes.append(f"{urlparse(page).netloc}: answers with an empty page (a bot check: respected, not worked around)")
+        else:
+            notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links [{page_fingerprint(page, html)}]")
+        return None, True
+
+    def try_pages(urls: list[str]):
+        for u in urls:
+            for page in _variants(u):
+                res, reached = try_page(page)
+                if res:
+                    return res
+                if reached:
+                    break      # the site answered: its www/bare twin would say the same
+        return None
+
     try:
         # explicit feeds first: they need no page at all (works even when the site 403s the HTML pages)
         f, entries = try_feeds(explicit_feeds)
         if entries:
-            return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
-        for page in pages:
-            if page in seen_pages or over():
-                continue
-            seen_pages.add(page)
-            try:
-                html = get(page).text
-            except RobotsDisallowed as e:
-                notes.append(f"{urlparse(page).netloc}{urlparse(page).path}: {e}")
-                continue
-            except Exception as e:  # noqa: BLE001
-                m = re.search(r"\b(40\d|50\d)\b", str(e))
-                hdr = getattr(getattr(e, "response", None), "headers", None) or {}
-                who = "/".join(x for x in (("Cloudflare challenge" if hdr.get("cf-mitigated") else ""), (hdr.get("server") or "")[:20]) if x)
-                notes.append(f"{urlparse(page).netloc}{urlparse(page).path}: {'HTTP ' + m.group(1) if m else type(e).__name__}{' (' + who + ')' if who and m and m.group(1) in ('401', '403') else ''}")
-                if not no_feed:   # even if the page is blocked, common feed paths often are not
-                    base = f"{urlparse(page).scheme}://{urlparse(page).netloc}/"
-                    f, entries = try_feeds([urljoin(base, x) for x in FEED_SUFFIXES])
-                    if entries:
-                        return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
-                continue
-            if not no_feed:
-                f, entries = try_feeds(discover_feeds(page, html))
-                if entries:
-                    return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
-            rows = scrape_links(page, html)
-            if rows:
-                return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], "html", page, notes)
-            for label, finder in (("embedded data", embedded_json_items), ("WordPress API", None)):
-                if over():
-                    break
-                try:
-                    if finder:
-                        rows, via = finder(page, html), page
-                    else:
-                        rows, via = wp_items(page, html)
-                except Exception:  # noqa: BLE001
-                    rows, via = [], ""
-                if rows:
-                    return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], "json" if finder else "wp-api", via, notes)
-            title = (BeautifulSoup(html, "lxml").title.string or "").strip()[:40] if BeautifulSoup(html, "lxml").title else ""
-            if len(html) < 800:
-                notes.append(f"{urlparse(page).netloc}: answers with an empty page (a bot check: respected, not worked around)")
-            else:
-                notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links [{page_fingerprint(page, html)}]")
-        # last resort: the site's XML sitemap (made for crawlers, and usually allowed even when pages are not)
-        if tt.get("sitemap") is not False and not over():
+            return feed_result(f, entries, notes)
+        res = try_pages([tt["url"]])
+        if res:
+            return res
+        # the site's XML sitemap (made for crawlers, and usually allowed even when pages are not)
+        if tt.get("sitemap") is not False:
             items, via = sitemap_items(tt, category)
             if items:
                 return _done(t0, group, name, items, "sitemap", via, notes)
             notes.append(f"no recent pages in its sitemap ({via})")
+        res = try_pages(list(tt.get("urls", [])))     # other addresses listed for this source, only if the main one gave nothing
+        if res:
+            return res
         if probes:
             notes.append("feed probes: " + ", ".join(f"{n}x {w}" for w, n in probes.most_common(4)))
     except Exception as e:  # noqa: BLE001

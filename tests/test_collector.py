@@ -247,3 +247,28 @@ def test_sitemap_without_dates_takes_the_end_of_it(monkeypatch):
     monkeypatch.setattr(U, "_robots_for", lambda u: type("R", (), {"site_maps": lambda self: []})())
     items, via = U.sitemap_items({"name": "Ex", "url": "https://example.org/research"}, "thinktank")
     assert items and items[0]["url"].endswith("paper-39")
+
+
+def test_squarespace_items(monkeypatch):
+    body = json.dumps({"items": [{"title": "Our latest polling on housing and the cost of living", "fullUrl": "/blog/housing-poll", "publishOn": 1760000000000},
+                                 {"title": "No link", "fullUrl": ""}]})
+    monkeypatch.setattr(U, "get", lambda url, **kw: Resp(body))
+    rows = U.squarespace_items("https://sq.example.org/blog", "<html>static1.squarespace.com</html>")
+    assert rows[0][1] == "https://sq.example.org/blog/housing-poll" and rows[0][2].year == 2025
+    assert U.squarespace_items("https://x.org/", "<html>plain</html>") == []
+
+
+def test_collect_source_does_not_hammer_a_site_that_answered(monkeypatch):
+    asked = []
+
+    def fake_get(url, **kw):
+        asked.append(url)
+        return Resp("<html><title>Home</title>" + "<p>no links here</p>" * 100 + "</html>")
+    monkeypatch.setattr(U, "get", fake_get)
+    monkeypatch.setattr(U, "_feed_entries", lambda u: ([], "not a feed"))
+    monkeypatch.setattr(U, "sitemap_items", lambda tt, cat, limit=25: ([], "0 sitemap file(s)"))
+    items, rec = U.collect_source({"name": "X", "url": "https://x.example.org/research", "urls": ["https://x.example.org/blog"]})
+    assert not items and not rec["ok"]
+    # the main page and the one alternate were each asked once; the www twins were not tried because the site had answered
+    assert asked == ["https://x.example.org/research", "https://x.example.org/blog"]
+    assert "lists no publication links" in rec["error"]
