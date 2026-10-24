@@ -400,7 +400,9 @@ def collect_media() -> list[dict]:
         try:
             entries = google_news(f"{kw} site:{o['domain']}", cfg["lookback"])
             n = dropped = 0
-            for e in entries[:40]:
+            for e in entries:         # filter ALL results first (Google returns up to 100 in relevance order), then cap what we keep
+                if n >= 25:
+                    break
                 title = _gn_title(e)
                 # Google matches the keywords anywhere in the article body, which
                 # pulls in stories that merely mention the party; require the

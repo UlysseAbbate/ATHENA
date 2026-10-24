@@ -242,7 +242,7 @@ function renderHealth() {
   const failing = state.health.filter(h => !h.ok).length, total = state.health.length;
   $("healthpanel").innerHTML = `<div class="stats">${stat(total - failing, "sources returning data")}${stat(failing, "not returning data")}${stat(total, "sources in total")}</div>` +
     Object.entries(groups).map(([g, rows]) => `<div class="panel hgroup"><div class="panel-head"><h2>${esc(g)}</h2><span class="muted">${rows.filter(r => r.ok).length} of ${rows.length} OK</span></div>` +
-      rows.map(h => `<div class="hrow"><i class="st ${h.ok ? "ok" : "bad"}"></i><span>${esc(h.name)}${h.error ? ` <small>${esc(h.error.slice(0, 90))}</small>` : ""}</span><span class="n">${h.items} item${h.items === 1 ? "" : "s"}${h.method ? " · " + esc(h.method) : ""}</span></div>`).join("") + "</div>").join("");
+      rows.map(h => `<div class="hrow"><i class="st ${h.ok ? "ok" : "bad"}"></i><span>${esc(h.name)}${h.error ? `<small class="why">${esc(h.error)}</small>` : ""}</span><span class="n">${h.items} item${h.items === 1 ? "" : "s"}${h.method ? " · " + esc(h.method) : ""}${h.seconds != null ? ` · ${h.seconds}s` : ""}</span></div>`).join("") + "</div>").join("");
 }
 
 /* ---------------------------------------------------------------- render + events */
