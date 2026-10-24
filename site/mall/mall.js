@@ -35,7 +35,7 @@ function showError(err) { main.prepend(notice(err.message || String(err))); wind
 /* ------------------------------------------------------------------ auth */
 function renderLogin() {
   $("#tabs").hidden = true; $("#who").textContent = "";
-  AuthUI.render(sb, main, { title: "THE MALL" });
+  AuthUI.render(sb, main, { title: "The Mall" });
 }
 
 async function boot() {

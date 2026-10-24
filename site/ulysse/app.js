@@ -279,7 +279,7 @@ function bind() {
   });
 }
 
-function signIn() { AuthUI.render(sb, document.body, { title: "ULYSSE" }); }
+function signIn() { AuthUI.render(sb, document.body, { title: "Ulysse" }); }
 (async function init() {
   AuthUI.watchRecovery(sb, document.body);
   const { data: { session } } = await sb.auth.getSession();

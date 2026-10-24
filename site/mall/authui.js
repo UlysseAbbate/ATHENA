@@ -4,15 +4,17 @@
  *        AuthUI.changePassword(sb, hostElement) -> form for a signed-in user to change their password */
 window.AuthUI = (() => {
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const css = `.au{max-width:340px;margin:12vh auto;padding:0 16px;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:inherit}
-    .au h2{font-size:13px;letter-spacing:.2em;font-weight:600;margin:0 0 18px}
-    .au .seg{display:flex;gap:16px;margin-bottom:16px}
-    .au .seg button{border:0;background:none;color:inherit;opacity:.55;padding:4px 0;font:inherit;cursor:pointer;border-bottom:1px solid transparent}
-    .au .seg button.on{opacity:1;border-color:currentColor}
-    .au label{display:block;font-size:12px;opacity:.65;margin:10px 0 3px}
-    .au input{width:100%;padding:9px;border:1px solid #8886;background:transparent;color:inherit;font:inherit;border-radius:0}
-    .au button.go{margin-top:16px;padding:9px 16px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;cursor:pointer}
-    .au .msg{margin-top:14px;font-size:13px}.au .msg.err{color:#c0392b}.au a{color:inherit}`;
+  const css = `.au{max-width:360px;margin:12vh auto;padding:0 16px;font:14px/1.5 var(--body,Arial,sans-serif);color:inherit}
+    .au h2{font:800 1.5rem/1.1 var(--head,Arial,sans-serif);letter-spacing:-.02em;margin:0 0 18px;display:inline;background:linear-gradient(transparent 62%,var(--yellow,#FDBB30) 62% 92%,transparent 92%);padding:0 .12em;margin-left:-.12em}
+    .au .seg{display:flex;gap:4px;margin:18px 0 6px;border:0}
+    .au .seg button{border:0;background:none;color:inherit;opacity:.6;padding:6px 12px 6px 0;font:700 .9rem var(--head,Arial,sans-serif);cursor:pointer;border-bottom:3px solid transparent;border-radius:0}
+    .au .seg button.on{opacity:1;border-color:var(--yellow-deep,#F5A100)}
+    .au label{display:block;font-size:12px;font-weight:600;opacity:.7;margin:12px 0 3px}
+    .au input{width:100%;padding:9px 11px;border:1px solid var(--line-strong,#BDBAB0);background:var(--card,transparent);color:inherit;font:inherit;border-radius:8px}
+    .au input:focus{outline:none;border-color:var(--black,#111);box-shadow:0 0 0 3px rgba(253,187,48,.55)}
+    .au button.go{margin-top:18px;padding:.55rem 1.2rem;border:1px solid var(--black,#111);background:var(--black,#111);color:var(--yellow,#FDBB30);font:700 .92rem var(--head,Arial,sans-serif);cursor:pointer;border-radius:10px}
+    .au button.go:hover{background:#2a2a2a}
+    .au .msg{margin-top:14px;font-size:13px}.au .msg.err{color:#C62828}.au a{color:inherit;text-decoration-color:var(--yellow-deep,#F5A100)}`;
   function style() { if (!document.getElementById("au-css")) { const s = document.createElement("style"); s.id = "au-css"; s.textContent = css; document.head.append(s); } }
 
   function render(sb, host, opts = {}) {
