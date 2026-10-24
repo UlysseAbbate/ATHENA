@@ -2,15 +2,34 @@
 import http.server, pathlib, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2] / "site"
-HEADERS = []
+HEADERS = []          # applied to every page: the `/*` block of _headers
+RULES = []            # [(path prefix, [(header, value)], [detached headers])]: other blocks, as Cloudflare applies them on top
 block = None
 for line in (ROOT / "_headers").read_text().splitlines():
     if line.startswith("/"):
         block = line.strip()
-    elif line.startswith("  ") and block == "/*" and ":" in line:
-        k, v = line.strip().split(":", 1)
-        if k != "Strict-Transport-Security":
+        if block != "/*":
+            RULES.append((block, [], []))
+    elif line.startswith("  ") and ":" in line or line.startswith("  !"):
+        t = line.strip()
+        if t.startswith("!"):
+            if block != "/*" and RULES: RULES[-1][2].append(t[1:].strip())
+            continue
+        k, v = t.split(":", 1)
+        if k == "Strict-Transport-Security":
+            continue
+        if block == "/*":
             HEADERS.append((k, v.strip()))
+        elif RULES:
+            RULES[-1][1].append((k, v.strip()))
+
+
+def matches(pattern, path):
+    if pattern.endswith("/*"):
+        return path.startswith(pattern[:-1])
+    if pattern.startswith("/*"):
+        return path.endswith(pattern[2:])
+    return path == pattern
 
 
 # the same simple rules as site/_redirects (exact path, or prefix/* with :splat)
@@ -42,7 +61,13 @@ class H(http.server.SimpleHTTPRequestHandler):
         super().__init__(*a, directory=str(ROOT), **k)
 
     def end_headers(self):
-        for k, v in HEADERS:
+        path = self.path.split("?")[0]
+        applied = [(k, v) for k, v in HEADERS]
+        for pattern, add, detach in RULES:
+            if matches(pattern, path):
+                applied = [(k, v) for k, v in applied if k not in detach]
+                applied += [(k, v) for k, v in add if k not in ("Cache-Control",)]
+        for k, v in applied:
             self.send_header(k, v)
         super().end_headers()
 

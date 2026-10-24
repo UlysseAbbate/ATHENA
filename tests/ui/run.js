@@ -172,6 +172,21 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("admin: Lovelace is read-only (managed in the Mall)", /still managed in/.test(await page.$eval("#body", b => b.innerText)) && (await page.$("#add")) === null);
         }
       }
+      // LIBBY, under the same sign-in: the page runs under its own security policy and asks the server who this is
+      if (who === "admin" || who === "core") {
+        await page.route(BASE + "/api/libby/**", route => {
+          const u = new URL(route.request().url()), j = (b, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(b) });
+          if (u.pathname.endsWith("/me")) return who === "admin" ? j({ level: "admin", name: "Admin", email: USERS.admin.email }) : j({ error: "You have not been given access to LIBBY.", noAccess: true, email: USERS.core.email }, 403);
+          if (u.pathname.endsWith("/status")) return j({ updated: null, lastRun: null, next: { hour: 8, tomorrow: false }, hours: [8] });
+          return j({}, 404);
+        });
+        await page.goto(BASE + "/libby/"); await page.waitForTimeout(1200);
+        const lb = await page.$eval("body", b => b.innerText);
+        check(`${who}: LIBBY ${who === "admin" ? "opens with the person's level" : "says they have no access yet"}`, who === "admin" ? /Signed in as owner@test.invalid \(Admin\)/.test(lb) : /No access yet/.test(lb), lb.slice(0, 80).replace(/\n/g, " "));
+        const cspErr = errors.filter(e => /Content Security Policy|violates/i.test(e));
+        check(`${who}: LIBBY page has no security-policy violations`, cspErr.length === 0, cspErr.join("|"));
+        errors.length = 0;
+      }
       if (who === "lmgr") { await ctx.close(); continue; }
       await page.goto(BASE + "/"); await page.waitForTimeout(500);
 

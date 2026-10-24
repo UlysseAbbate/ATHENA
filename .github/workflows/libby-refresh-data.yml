@@ -1,0 +1,65 @@
+# Renews the website's saved copy of the Parliament data at 8am, 10am, 12pm, 2pm, 4pm and 6pm London time, every day.
+# Visitors then get the saved copy straight away instead of waiting for the Parliament APIs; the "Refresh now" button at the
+# foot of the site is the way to ask for fresh data in between.
+#
+#   1. What's On calendar and Lords votes are loaded into Supabase (the two ingest workflows, called from here).
+#   2. scripts/build-snapshots.mjs then renews the saved copies: Bills, peers, committees, every Bill's stages, today and the
+#      coming week, the Future calendar, every portfolio, the Past business first pages, the Voting Data and the Lords Library list.
+#
+# The times are in lib/libby/schedule.js, the one place to change them. GitHub's timer only knows UTC and London moves between
+# UTC and UTC+1, so this wakes every hour and the first job asks scripts/refresh-window.mjs whether it is an update time.
+# (GitHub often starts a timed run a few minutes late; any time within the update hour counts.)
+name: Refresh data
+
+on:
+  # Scheduled runs stay OFF until LIBBY's data has moved to the Athena database and its secrets are set here (docs/MASTER-PLAN.md, phase 6).
+  #  schedule:
+  #    - cron: '7 7-18 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  window:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      go: ${{ steps.window.outputs.go }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - id: window
+        run: node scripts/libby/refresh-window.mjs ${{ github.event_name == 'workflow_dispatch' && '--force' || '' }} >> "$GITHUB_OUTPUT"
+
+  whatson:
+    needs: window
+    if: needs.window.outputs.go == 'true'
+    uses: ./.github/workflows/ingest-whatson.yml
+    secrets: inherit
+
+  votes:
+    needs: window
+    if: needs.window.outputs.go == 'true'
+    uses: ./.github/workflows/ingest-votes.yml
+    secrets: inherit
+
+  snapshots:
+    needs: [window, whatson, votes]
+    # Still renew the saved copies if one of the two loads failed (for example a source website was down): they use what is there.
+    if: ${{ always() && needs.window.outputs.go == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Renew the saved copies
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/libby/build-snapshots.mjs

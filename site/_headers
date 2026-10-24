@@ -15,3 +15,15 @@
 
 /shared/fonts/*
   Cache-Control: public, max-age=31536000, immutable
+
+# LIBBY needs a few things the other programs do not: Word/Excel/PDF libraries (served from this site), a PDF worker, and
+# the Lords Library's embedded Power BI dashboards. Everything else stays as strict as above.
+/libby/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://fbsoibmtvapmxdlfdgxc.supabase.co wss://fbsoibmtvapmxdlfdgxc.supabase.co; worker-src 'self' blob:; frame-src https://app.powerbi.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'
+/libby/vendor/*
+  Cache-Control: public, max-age=86400
+/libby/js/*
+  Cache-Control: no-cache
+/libby/*.css
+  Cache-Control: no-cache

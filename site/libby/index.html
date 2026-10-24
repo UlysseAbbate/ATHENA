@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#FDBB30">
+  <title>LIBBY</title>
+  <link rel="icon" type="image/png" href="Favicon.png">
+  <link rel="apple-touch-icon" href="Favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="modulepreload" href="js/app.js">
+</head>
+<body>
+  <a class="skip" href="#app">Skip to content</a>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <a class="brand" href="#/">
+        <span class="brand-name">LIBBY</span>
+        <span class="brand-sub">Liberal Intelligence for Business, Briefings and Year-round policy</span>
+      </a>
+      <nav class="topnav" aria-label="Main">
+        <a href="#/today" data-nav="today">Today</a>
+        <a href="#/legislation" data-nav="legislation">Legislation</a>
+        <a href="#/future" data-nav="future">Future</a>
+        <a href="#/past" data-nav="past">Past</a>
+        <a href="#/policy" data-nav="policy">Policy</a>
+        <a href="#/comms" data-nav="comms">Comms</a>
+      </nav>
+    </div>
+  </header>
+  <main id="app" tabindex="-1"></main>
+  <footer class="foot">
+    <p>Data: UK Parliament open data (Open Parliament Licence), Lords Whips' Office, Liberal Democrats. Names marked <mark class="ld">like this</mark> are Liberal Democrat peers.</p>
+  </footer>
+  <script src="../shared/vendor/supabase.js"></script>
+  <script src="../shared/config.js"></script>
+  <script src="../shared/common.js"></script>
+  <script src="../shared/authui.js"></script>
+  <script src="js/auth-bridge.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

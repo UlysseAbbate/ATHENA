@@ -11,6 +11,7 @@
   const pg = acc.programs || {};
   if (pg.lovelace || acc.admin) n.insertAdjacentHTML("beforeend", card("lovelace/", "Lovelace", "London Organisation for Voters, Engagement, Liberalism, Action, Campaigns &amp; Elections", "Campaign plan, volunteers, stakeholders."));
   if (pg.lucien || Athena.may(acc, "ulysse")) n.insertAdjacentHTML("beforeend", card("lucien/", "Lucien", "Letting You Catch Important Events &amp; News", "Select committees, think tanks, Lib Dems in the media, polling."));
+  if (pg.libby || acc.admin) n.insertAdjacentHTML("beforeend", card("libby/", "LIBBY", "Liberal Intelligence for Business, Briefings and Year-round policy", "Lords business, legislation, the Whips' Office tools and policy."));
   const manages = Object.entries(pg).some(([id, v]) => v.manager && id !== "lovelace");   // Lovelace is still managed in its own Team & access
   if (acc.admin || manages) n.insertAdjacentHTML("beforeend", card("access/", "Access", "Who can open what", "Give people access to each program, set levels and end dates, and make shared access codes."));
   if (acc.admin) n.insertAdjacentHTML("beforeend", card("admin/", "Admin", "System status", "Collector health, sources and recent activity."));

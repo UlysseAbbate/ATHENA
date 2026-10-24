@@ -169,6 +169,45 @@ select t.as_user(:LM);
 select t.fails('select public.revoke_access_code(''' || :'rid' || ''')', 'do not manage', 'a manager cannot switch off another program''s code');
 select t.as_super();
 
+-- a code's hidden account (what the code sign-in function creates and signs in as)
+select t.as_super();
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000c9', 'code-x@codes.invalid');
+select t.as_user(:BM);
+select public.create_access_code('Whips room', 'libby', 'whips', null, null, 'whips-room-pass');
+select t.as_super();
+select id as wid from public.access_codes where label = 'Whips room' \gset
+select t.as_service();
+select t.ok('select public.link_code_identity(''' || :'wid' || ''', ''00000000-0000-0000-0000-0000000000c9'')', 'the sign-in function links a code to its hidden account');
+select t.eq($$select public.level_of('00000000-0000-0000-0000-0000000000c9', 'libby')$$, 'whips', 'the hidden account has the code''s level');
+select t.eq($$select coalesce(public.level_of('00000000-0000-0000-0000-0000000000c9', 'lucien'), 'none')$$, 'none', 'and nothing in other programs');
+select t.eq($$select public.level_of('00000000-0000-0000-0000-00000000000a', 'libby')$$, 'admin', 'the admin has the top LIBBY level');
+select t.as_super();
+update public.access_codes set revoked_at = now() where id = :'wid';
+select t.as_service();
+select t.eq($$select coalesce(public.level_of('00000000-0000-0000-0000-0000000000c9', 'libby'), 'none')$$, 'none', 'switching the code off removes the hidden account''s access at once');
+select t.as_super();
+update public.access_codes set revoked_at = null where id = :'wid';
+select t.as_user('00000000-0000-0000-0000-0000000000c9');
+select t.eq($$select (public.has_program('libby'))::text$$, 'true', 'the hidden account passes the program check while the code is live');
+select t.eq($$select (public.can('ulysse', 'read'))::text$$, 'false', 'and gets nothing in Lucien');
+select t.as_super();
+select t.as_user(:BM);
+select t.eq($$select count(*)::text from public.program_people('libby') where email like '%codes.invalid'$$, '0', 'code accounts are not listed as people');
+select t.as_super();
+select t.as_user(:A);
+select t.fails($$select public.create_access_code('Mall', 'lovelace', 'member', null, null)$$, 'Lovelace codes', 'codes cannot be made for Lovelace yet');
+select t.eq($$select count(*)::text from public.profiles where email like '%codes.invalid'$$, '0', 'code accounts are hidden from the Mall''s team list');
+select t.eq($$select (jsonb_array_length(public.all_people()) = 8)::text$$, 'true', 'and from the admin People list');
+select t.as_super();
+
+select t.as_service();
+select t.ok($$select public.libby_reset_sequences()$$, 'LIBBY id counters can be moved past copied rows');
+select t.as_super();
+select t.as_user('00000000-0000-0000-0000-0000000000f1');
+select t.fails($$select * from public.api_snapshots$$, 'permission denied', 'signed-in users cannot read LIBBY tables through the API');
+select t.fails($$select public.libby_reset_sequences()$$, 'permission denied', 'nor run its maintenance functions');
+select t.as_super();
+
 -- audit
 select t.eq($$select (count(*) > 0)::text from public.audit_log where table_name = 'access_grants' and label = 'peer@t.invalid · libby · peers'$$, 'true', 'grants are audited with person, program and level');
 select t.eq($$select (count(*) > 0)::text from public.audit_log where table_name = 'access_codes'$$, 'true', 'codes are audited');

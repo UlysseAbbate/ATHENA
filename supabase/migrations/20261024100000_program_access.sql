@@ -56,18 +56,61 @@ create table public.access_grants (
 create index access_grants_program_idx on public.access_grants (program);
 alter table public.access_grants enable row level security;
 
+------------------------------------------------------------------ shared access codes (the single-password route)
+create table public.access_codes (
+  id uuid primary key default gen_random_uuid(),
+  label text not null,
+  program text not null,
+  level text not null,
+  code_hash text not null,                 -- bcrypt; the code itself is never stored
+  expires_at timestamptz,
+  max_uses int check (max_uses is null or max_uses > 0),
+  uses int not null default 0,
+  revoked_at timestamptz,
+  created_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  identity_user_id uuid references auth.users(id) on delete set null,   -- the hidden account everyone using this code signs in as
+  foreign key (program, level) references public.program_levels(program, level)
+);
+alter table public.access_codes enable row level security;
+revoke all on public.access_codes from anon, authenticated;
+grant select (id, label, program, level, expires_at, max_uses, uses, revoked_at, created_by, created_at) on public.access_codes to authenticated;
+
+
 ------------------------------------------------------------------ who is who
 create or replace function public.is_admin_user(uid uuid) returns boolean
 language sql stable security definer set search_path = '' as $$
   select exists (select 1 from public.admins a where a.user_id = uid)
 $$;
 
--- my grant for a program, if it exists and has not ended
-create or replace function public.my_grant(p text) returns public.access_grants
+-- a person's grant for a program, if it exists and has not ended. A shared code's hidden account also needs its code to be live,
+-- so switching a code off (or it ending) cuts off everyone who signed in with it at once.
+create or replace function public.grant_for(uid uuid, p text) returns public.access_grants
 language sql stable security definer set search_path = '' as $$
   select g.* from public.access_grants g
-  where g.user_id = (select auth.uid()) and g.program = p
+  where g.user_id = uid and g.program = p
     and (g.expires_at is null or g.expires_at >= (now() at time zone 'Europe/London')::date)
+    and (not exists (select 1 from public.access_codes c where c.identity_user_id = g.user_id)
+         or exists (select 1 from public.access_codes c where c.identity_user_id = g.user_id and c.revoked_at is null
+                    and (c.expires_at is null or c.expires_at > now())))
+$$;
+
+create or replace function public.my_grant(p text) returns public.access_grants
+language sql stable security definer set search_path = '' as $$
+  select * from public.grant_for((select auth.uid()), p)
+$$;
+
+create or replace function public.is_code_identity(uid uuid) returns boolean
+language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.access_codes c where c.identity_user_id = uid)
+$$;
+
+-- For the servers (service role only): a person's level in a program, as the LIBBY functions need it. The admin has the top level.
+create or replace function public.level_of(p_user uuid, p_program text) returns text
+language sql stable security definer set search_path = '' as $$
+  select case when public.is_admin_user(p_user)
+              then (select l.level from public.program_levels l where l.program = p_program order by l.rank desc, l.level limit 1)
+              else (public.grant_for(p_user, p_program)).level end
 $$;
 
 create or replace function public.has_program(p text) returns boolean
@@ -96,9 +139,11 @@ language sql stable security definer set search_path = '' as $$
               else 0 end
 $$;
 
-revoke all on function public.is_admin_user(uuid), public.my_grant(text), public.has_program(text), public.is_program_manager(text),
-  public.program_level(text), public.grant_limit(text) from public, anon;
-grant execute on function public.has_program(text), public.is_program_manager(text), public.program_level(text), public.grant_limit(text) to authenticated;
+revoke all on function public.is_admin_user(uuid), public.grant_for(uuid, text), public.is_code_identity(uuid), public.level_of(uuid, text), public.my_grant(text),
+  public.has_program(text), public.is_program_manager(text), public.program_level(text), public.grant_limit(text) from public, anon, authenticated;
+grant execute on function public.grant_for(uuid, text), public.is_code_identity(uuid), public.level_of(uuid, text) to service_role;
+grant execute on function public.is_code_identity(uuid) to authenticated;   -- used by the profiles read policy
+grant execute on function public.my_grant(text), public.has_program(text), public.is_program_manager(text), public.program_level(text), public.grant_limit(text) to authenticated;
 
 -- Lucien opens to anyone with an active Lucien grant, on top of the existing Ulysse permission
 create or replace function public.can(res text, act text) returns boolean
@@ -219,7 +264,7 @@ language sql stable security definer set search_path = '' as $$
   from public.access_grants g
   join auth.users u on u.id = g.user_id
   left join public.profiles pr on pr.id = g.user_id
-  where g.program = p and public.is_program_manager(p)
+  where g.program = p and public.is_program_manager(p) and not public.is_code_identity(g.user_id)
   order by u.email
 $$;
 
@@ -233,7 +278,7 @@ language sql stable security definer set search_path = '' as $$
                           'grant_ceiling', g.grant_ceiling, 'expires_at', g.expires_at) order by g.program)
                           from public.access_grants g where g.user_id = u.id), '[]'::jsonb)) as x
     from auth.users u left join public.profiles pr on pr.id = u.id
-    where public.is_admin()) s
+    where public.is_admin() and not public.is_code_identity(u.id)) s
 $$;
 
 -- give (or change) a person's level by email; the table rules above decide whether the caller may
@@ -261,24 +306,7 @@ end $$;
 revoke all on function public.program_people(text), public.all_people(), public.grant_access(text, text, text, date), public.set_manager(uuid, text, boolean, int) from public, anon;
 grant execute on function public.program_people(text), public.all_people(), public.grant_access(text, text, text, date), public.set_manager(uuid, text, boolean, int) to authenticated;
 
------------------------------------------------------------------- shared access codes (the single-password route)
-create table public.access_codes (
-  id uuid primary key default gen_random_uuid(),
-  label text not null,
-  program text not null,
-  level text not null,
-  code_hash text not null,                 -- bcrypt; the code itself is never stored
-  expires_at timestamptz,
-  max_uses int check (max_uses is null or max_uses > 0),
-  uses int not null default 0,
-  revoked_at timestamptz,
-  created_by uuid references auth.users(id) on delete set null,
-  created_at timestamptz not null default now(),
-  foreign key (program, level) references public.program_levels(program, level)
-);
-alter table public.access_codes enable row level security;
-revoke all on public.access_codes from anon, authenticated;
-grant select (id, label, program, level, expires_at, max_uses, uses, revoked_at, created_by, created_at) on public.access_codes to authenticated;
+------------------------------------------------------------------ shared access codes (functions below)
 create policy codes_read on public.access_codes for select to authenticated
   using ((select public.is_admin()) or (select public.is_program_manager(program)));
 
@@ -289,6 +317,7 @@ language plpgsql security definer set search_path = '' as $$
 declare code text; r int; adm boolean;
 begin
   if not public.is_program_manager(p_program) then raise exception 'You do not manage %', p_program; end if;
+  if p_program = 'lovelace' then raise exception 'Lovelace codes arrive when Lovelace moves onto these access levels'; end if;
   select l.rank, l.admin_only into r, adm from public.program_levels l where l.program = p_program and l.level = p_level;
   if r is null then raise exception 'Unknown level'; end if;
   if adm then raise exception 'A code cannot give that level'; end if;
@@ -332,6 +361,19 @@ end $$;
 revoke all on function public.create_access_code(text, text, text, timestamptz, int, text), public.revoke_access_code(uuid), public.redeem_access_code(text) from public, anon, authenticated;
 grant execute on function public.create_access_code(text, text, text, timestamptz, int, text), public.revoke_access_code(uuid) to authenticated;
 grant execute on function public.redeem_access_code(text) to service_role;
+
+-- Used only by the code sign-in function: remember the hidden account for a code and give it the code's level.
+create or replace function public.link_code_identity(p_code uuid, p_user uuid) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  update public.access_codes set identity_user_id = p_user where id = p_code and identity_user_id is null;
+  if not found then return; end if;
+  insert into public.access_grants (user_id, program, level)
+  select p_user, c.program, c.level from public.access_codes c where c.id = p_code
+  on conflict (user_id, program) do update set level = excluded.level;
+end $$;
+revoke all on function public.link_code_identity(uuid, uuid) from public, anon, authenticated;
+grant execute on function public.link_code_identity(uuid, uuid) to service_role;
 
 ------------------------------------------------------------------ audit: grants and codes (who, when, which fields; never the values)
 create or replace function public.audit() returns trigger
@@ -380,3 +422,8 @@ language sql stable security invoker set search_path = '' as $$
 $$;
 revoke all on function public.my_access() from public, anon;
 grant execute on function public.my_access() to authenticated;
+
+------------------------------------------------------------------ a code's hidden account is not a "person" in the Mall's lists
+drop policy if exists profiles_read on public.profiles;
+create policy profiles_read on public.profiles for select to authenticated
+  using (id = (select auth.uid()) or ((select public.can('users','read')) and not public.is_code_identity(id)));

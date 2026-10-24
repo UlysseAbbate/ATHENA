@@ -132,7 +132,7 @@ athena/
 
 ## 5. Database
 
-- **One Supabase project** (decided). LIBBY's tables (`api_snapshots`, `bill_stakeholders`, `amendment_flags`, `todays_lists`, `people_roles`, …) move into a `libby` schema with RLS **added** (today LIBBY relies on the service-role key alone), data copied across, GitHub Actions secrets repointed. LIBBY's original project is left untouched until the copy is verified, so the live odysseus.org.uk site keeps working throughout.
+- **One Supabase project** (decided). LIBBY's tables (`api_snapshots`, `bill_stakeholders`, `amendment_flags`, `todays_lists`, `people_roles`, …) stay in the `public` schema under their own names (no clashes) with RLS on and no rights for the public API roles (today LIBBY relies on the service-role key alone), data copied across, GitHub Actions secrets repointed. LIBBY's original project is left untouched until the copy is verified, so the live odysseus.org.uk site keeps working throughout.
 - `athena/supabase/migrations/` stays the single record; the check that fails CI when code uses a table the migrations do not create (LIBBY's `check-site.mjs`) is kept.
 
 ## 6. Phases
@@ -144,8 +144,8 @@ Each phase ends with something working and mergeable; nothing is switched off be
 | 0 | **Decide** | Answers to §7 | Open questions closed |
 | 1 | **Shared design** (built, on branch `master-plan`) | `libby.css` tokens, light + dark, theme toggle, shared header; restyle Athena home and `/admin/` | Home and admin pass UI tests in both themes |
 | 2 | **Access core** (database and the `/access/` screen built and tested; migration not yet applied to the live project; code sign-in comes with phase 4) | `programs`, `access_grants`, program-manager tier, `access_codes`, new `my_access()`, migration of existing roles, audit hooks, admin *People* and *Access codes* tabs | Admin can grant/revoke per program; a manager can manage only their program; a code signs in at its level and no higher; old Mall roles intact; RLS tests pass |
-| 3 | **Rename** | Mall → Lovelace, Ulysse → Lucien (paths, titles, copy, redirects, CSP, README, workflows) and apply the shared look | Old URLs redirect; all UI tests green in both themes |
-| 4 | **Bring LIBBY in** | Code moved into `athena/`; sign-in via Athena; Functions verify JWT; levels read from `access_grants`; data copied to the Athena project | LIBBY at `athena.odysseus.org.uk/libby/` works for a Whip, Staff and Admin account, and for a Peer via own account and via a Peers code; odysseus.org.uk unaffected |
+| 3 | **Rename** (built) | Mall → Lovelace, Ulysse → Lucien (paths, titles, copy, redirects, CSP, README, workflows) and apply the shared look | Old URLs redirect; all UI tests green in both themes |
+| 4 | **Bring LIBBY in** (code moved and signing in through Athena, tested; live data copy and secrets are steps for you, see `docs/PHASE-4-GO-LIVE.md`) | Code moved into `athena/`; sign-in via Athena; Functions verify JWT; levels read from `access_grants`; data copied to the Athena project | LIBBY at `athena.odysseus.org.uk/libby/` works for a Whip, Staff and Admin account, and for a Peer via own account and via a Peers code; odysseus.org.uk unaffected |
 | 5 | **LIBBY restyle** | LIBBY pages on the shared stylesheet with dark mode | Every LIBBY page reviewed in both themes |
 | 6 | **Cut over** | `athena.odysseus.org.uk` live, old shared passwords deleted from the new site, MALL archived. Optional, only if the admin asks: retire the old copy at odysseus.org.uk | One URL; one login; old routes redirect; odysseus.org.uk exactly as the admin left it |
 | 7 | **Tidy** | Single README, one `docs/adding-a-page.md` covering all programs | New page can be added in one file |

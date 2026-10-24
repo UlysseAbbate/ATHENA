@@ -1,5 +1,6 @@
 /* Shared email + password sign-in used by Athena, Lovelace, Lucien, Access and Admin.
- * Usage: AuthUI.render(sb, hostElement)   -> shows Sign in / Create account / Forgot password
+ * Usage: AuthUI.render(sb, hostElement)   -> shows Sign in / Create account / Access code / Forgot password
+ *        (an access code is a shared password for a group: the server checks it at /api/code-login)
  *        AuthUI.watchRecovery(sb, hostElement) -> shows "set a new password" after a reset link
  *        AuthUI.changePassword(sb, hostElement) -> form for a signed-in user to change their password */
 window.AuthUI = (() => {
@@ -23,19 +24,30 @@ window.AuthUI = (() => {
     style();
     let mode = opts.mode || "in";
     const draw = () => {
-      const up = mode === "up", reset = mode === "reset";
+      const up = mode === "up", reset = mode === "reset", code = mode === "code";
       host.innerHTML = `<div class="au"><h2>${esc(opts.title || "SIGN IN")}</h2>
-        <div class="seg"><button data-m="in" class="${mode === "in" ? "on" : ""}">Sign in</button><button data-m="up" class="${up ? "on" : ""}">Create account</button></div>
-        <form id="auf">${up ? '<label for="aun">Your name</label><input id="aun" autocomplete="name" required>' : ""}
-        <label for="aue">Email</label><input id="aue" type="email" required autocomplete="email">
-        ${reset ? "" : `<label for="aup">Password${up ? " (at least 8 characters)" : ""}</label><input id="aup" type="password" required minlength="${up ? 8 : 1}" autocomplete="${up ? "new-password" : "current-password"}">`}
-        <button class="go">${reset ? "Send reset link" : up ? "Create account" : "Sign in"}</button></form>
+        <div class="seg"><button data-m="in" class="${mode === "in" ? "on" : ""}">Sign in</button><button data-m="up" class="${up ? "on" : ""}">Create account</button>${opts.codes === false ? "" : `<button data-m="code" class="${code ? "on" : ""}">Access code</button>`}</div>
+        <form id="auf">${code ? '<label for="auc">Access code</label><input id="auc" type="password" required autocomplete="off">' : ""}${up ? '<label for="aun">Your name</label><input id="aun" autocomplete="name" required>' : ""}
+        ${code ? "" : '<label for="aue">Email</label><input id="aue" type="email" required autocomplete="email">'}
+        ${reset || code ? "" : `<label for="aup">Password${up ? " (at least 8 characters)" : ""}</label><input id="aup" type="password" required minlength="${up ? 8 : 1}" autocomplete="${up ? "new-password" : "current-password"}">`}
+        <button class="go">${reset ? "Send reset link" : up ? "Create account" : code ? "Continue" : "Sign in"}</button></form>
         ${mode === "in" ? '<p class="msg"><a href="#" data-m="reset">Forgot password?</a></p>' : ""}
         ${reset ? '<p class="msg"><a href="#" data-m="in">Back to sign in</a></p>' : ""}<div id="aum" class="msg"></div></div>`;
       host.querySelectorAll("[data-m]").forEach(b => b.onclick = e => { e.preventDefault(); mode = b.dataset.m; draw(); });
       const say = (t, err) => { const m = host.querySelector("#aum"); m.textContent = t; m.className = "msg" + (err ? " err" : ""); };
       host.querySelector("#auf").onsubmit = async e => {
         e.preventDefault();
+        if (code) {
+          say("Working…");
+          try {
+            const r = await fetch("/api/code-login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code: host.querySelector("#auc").value }) });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) return say(d.error || "That did not work. Try again.", true);
+            const { error } = await sb.auth.setSession({ access_token: d.access_token, refresh_token: d.refresh_token });
+            if (error) return say(error.message, true);
+            return location.reload();
+          } catch { return say("Could not reach the server. Try again.", true); }
+        }
         const email = host.querySelector("#aue").value.trim(), pw = host.querySelector("#aup")?.value;
         say("Working…");
         if (reset) {
