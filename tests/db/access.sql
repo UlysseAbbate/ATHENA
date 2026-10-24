@@ -76,6 +76,7 @@ select t.eq($$select count(*)::text from public.program_people('lucien')$$, '3',
 select t.eq($$select count(*)::text from public.program_people('libby')$$, '0', 'program_people is empty for a program they do not manage');
 select t.eq($$select (public.can('ulysse', 'read'))::text$$, 'true', 'a Lucien grant opens Lucien (Ulysse data)');
 select t.eq($$select public.my_access() -> 'programs' -> 'lucien' ->> 'manager'$$, 'true', 'my_access reports manager status');
+select t.eq($$select public.my_access() -> 'programs' -> 'lucien' ->> 'limit'$$, '2147483647', 'my_access reports how high a manager may grant');
 select t.ok($$delete from public.access_grants where user_id = '00000000-0000-0000-0000-0000000000f1' and program = 'lucien'$$, 'a manager can revoke a person');
 select t.as_super();
 

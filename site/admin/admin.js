@@ -27,7 +27,7 @@ AuthUI.watchRecovery(sb, m);
   const updated = feed.data?.updated_at, staleH = updated ? (Date.now() - new Date(updated)) / 36e5 : Infinity;
   const row = (l, v) => `<tr><td>${l}</td><td class="n">${v ?? "–"}</td></tr>`;
   Shell.mount(document.getElementById("hd"), { sub: "Admin", home: "../", email: acc.session.user.email, signOut: () => sb.auth.signOut(),
-    programs: [{ href: "../mall/", label: "The Mall" }, { href: "../ulysse/", label: "Ulysse" }] });
+    programs: [{ href: "../access/", label: "Access" }, { href: "../mall/", label: "The Mall" }, { href: "../ulysse/", label: "Ulysse" }] });
   m.innerHTML = `<div class="page-head"><h1>System status</h1></div>
     ${staleH > STALE_HOURS ? `<div class="alert"><b>Ulysse data is ${updated ? esc(ago(updated)) : "missing"}.</b> The collector should upload every 3 hours: check GitHub → Actions → <i>Update tracker</i>.</div>`
       : `<div class="alert ok">Collector healthy: last upload ${esc(ago(updated))}.</div>`}

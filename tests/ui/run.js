@@ -17,7 +17,21 @@ const USERS = {
   admin: { id: "00000000-0000-0000-0000-0000000000a1", email: "owner@test.invalid", role: "core_team", admin: true },
   core: { id: "00000000-0000-0000-0000-0000000000c1", email: "core@test.invalid", role: "core_team", admin: false },
   member: { id: "00000000-0000-0000-0000-0000000000e1", email: "member@test.invalid", role: "member", admin: false },
+  lmgr: { id: "00000000-0000-0000-0000-0000000000b1", email: "lucienmgr@test.invalid", role: null, admin: false },   // manages Lucien only
 };
+const LEVELS = [
+  ["lovelace", "member", "Member", 1], ["lovelace", "core_team", "Core team", 6],
+  ["lucien", "access", "Access", 1],
+  ["libby", "peers", "Peer", 1], ["libby", "staff", "Staff", 3], ["libby", "admin", "Admin", 4]].map(([program, level, label, rank]) => ({ program, level, label, rank, admin_only: level === "admin" }));
+const BIG = 2147483647;
+const programsFor = who => who === "admin" ? { lovelace: { level: "core_team", manager: true, limit: BIG }, lucien: { level: "access", manager: true, limit: BIG }, libby: { level: "admin", manager: true, limit: BIG } }
+  : who === "core" ? { lovelace: { level: "core_team", manager: true, limit: BIG } }
+  : who === "lmgr" ? { lucien: { level: "access", manager: true, limit: BIG } }
+  : { lovelace: { level: "member", manager: false, limit: 0 } };
+const PEOPLE = { lucien: [{ user_id: "p1", email: "reader@test.invalid", full_name: "Rae Reader", level: "access", is_manager: false, grant_ceiling: null, expires_at: null, last_sign_in_at: null }],
+  libby: [{ user_id: "p2", email: "peer@test.invalid", full_name: "", level: "peers", is_manager: false, grant_ceiling: null, expires_at: null, last_sign_in_at: null },
+          { user_id: "p3", email: "bm@test.invalid", full_name: "", level: "staff", is_manager: true, grant_ceiling: 3, expires_at: null, last_sign_in_at: null }],
+  lovelace: [{ user_id: "p4", email: "core@test.invalid", full_name: "", level: "core_team", is_manager: true, grant_ceiling: null, expires_at: null, last_sign_in_at: null }] };
 const PERMS = {
   core_team: ["plan_full", "plan_shared", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit"],
   member: ["plan_shared", "volunteers_add", "stakeholders_add", "coverage"],
@@ -43,6 +57,9 @@ const TABLES = {
   audit_log: [{ id: 1, at: ts, user_email: "core@test.invalid", table_name: "plan_entries", label: "Launch housing pledge", action: "update", changed: ["content"] }],
   ulysse_data: [{ name: "feed", body: FEED, updated_at: new Date().toISOString() }, { name: "polls", body: { rows: [] } }, { name: "health", body: { sources: [{ group: "media", name: "BBC News", ok: true, items: 3 }, { group: "thinktanks", name: "IFS", ok: false, items: 0, error: "site refuses bots" }] } }],
   ulysse_read: [],
+  program_levels: LEVELS,
+  access_grants: [],
+  access_codes: [{ id: "k1", label: "Peers", program: "libby", level: "peers", expires_at: null, max_uses: null, uses: 3, revoked_at: null, created_at: ts }],
 };
 
 function access(u) {
@@ -51,7 +68,7 @@ function access(u) {
     const r = TABLES.role_permissions.find(x => x.role === u.role && x.resource === res) || {};
     perms[res] = { r: u.admin || !!r.can_read, w: u.admin || !!r.can_write };
   }
-  return { profile: TABLES.profiles.find(p => p.id === u.id), role: u.role, admin: u.admin, perms };
+  return { profile: TABLES.profiles.find(p => p.id === u.id), role: u.role, admin: u.admin, perms, programs: programsFor(Object.keys(USERS).find(k => USERS[k] === u)) };
 }
 
 async function mock(page, who, log) {
@@ -62,12 +79,20 @@ async function mock(page, who, log) {
     if (m === "OPTIONS") return route.fulfill({ status: 200, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "*" } });
     if (url.pathname === "/rest/v1/rpc/my_access") return json(access(u));
     if (url.pathname === "/rest/v1/rpc/team_last_seen") return json(Object.values(USERS).map(x => ({ id: x.id, last_sign_in_at: ts })));
+    if (url.pathname.startsWith("/rest/v1/rpc/")) {
+      const fn = url.pathname.split("/").pop(), body = m === "POST" ? JSON.parse(req.postData() || "{}") : {};
+      if (fn === "program_people") return json(PEOPLE[body.p] || []);
+      log.push(`RPC ${fn} ${JSON.stringify(body)}`);
+      return json(fn === "create_access_code" ? "abcd-1234-abcd-1234-abcd" : null);
+    }
     const t = url.pathname.replace("/rest/v1/", "");
     if (!(t in TABLES)) { log.push(`unmocked ${m} ${url.pathname}`); return json({ message: "not mocked" }, 404); }
     if (m === "HEAD") return route.fulfill({ status: 200, headers: { "content-range": `0-0/${TABLES[t].length}`, "access-control-allow-origin": "*", "access-control-expose-headers": "content-range" } });
     if (m === "PATCH") { log.push(`PATCH ${t} ${url.search}`); return json(t === "plan_entries" ? [] : [{ id: "x" }]); }   // plan edits simulate a conflict
     if (m === "POST" || m === "DELETE") { log.push(`${m} ${t}`); return json([]); }
     let rows = TABLES[t];
+    const eqProgram = url.searchParams.get("program");
+    if (eqProgram) rows = rows.filter(r => "eq." + r.program === eqProgram);
     const eqName = url.searchParams.get("name");
     if (eqName) rows = rows.filter(r => "eq." + r.name === eqName);
     if ((req.headers()["accept"] || "").includes("vnd.pgrst.object")) return json(rows[0] || null);
@@ -88,7 +113,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
   await new Promise(r => setTimeout(r, 800));
   const browser = await chromium.launch();
   try {
-    for (const who of ["admin", "core", "member"]) {
+    for (const who of ["admin", "core", "member", "lmgr"]) {
       const ctx = await browser.newContext({ acceptDownloads: true });
       const page = await ctx.newPage();
       const errors = [], log = [];
@@ -100,6 +125,42 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.waitForTimeout(600);
       const links = await page.$$eval("#n a b", bs => bs.map(b => b.textContent));
       check(`${who}: home shows Ulysse only to admin`, links.includes("Ulysse") === (who === "admin"), links.join(","));
+      check(`${who}: home shows Access only to the admin and non-Lovelace managers`, links.includes("Access") === (who === "admin" || who === "lmgr"), links.join(","));
+
+      // the Access page: admin sees every program, a program manager only theirs, others nothing
+      await page.goto(BASE + "/access/");
+      await page.waitForTimeout(800);
+      const aTabs = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent)).catch(() => []);
+      const aText = await page.$eval("body", b => b.innerText);
+      check(`${who}: Access page shows the right programs`, JSON.stringify(aTabs) === JSON.stringify({ admin: ["Lovelace", "Lucien", "LIBBY"], core: ["Lovelace"], lmgr: ["Lucien"], member: [] }[who]) && (aTabs.length > 0 || /Not found/.test(aText)), aTabs.join(","));
+      if (who === "admin" || who === "lmgr") {
+        if (who === "admin") await page.click('#tabs button:text-is("LIBBY")');
+        await page.waitForSelector("#add");   // only editable programs have it, so the table on screen is the right one
+        const hasMgr = (await page.$$("[data-mgr]")).length > 0;
+        check(`${who}: only the admin sees the Manager switch`, hasMgr === (who === "admin"));
+        const levelOpts = await page.$$eval("#al option", os => os.map(o => o.textContent));
+        check(`${who}: level list matches what may be given`, who === "admin" ? levelOpts.includes("Admin") : levelOpts.join() === "Access", levelOpts.join());
+        await page.fill("#ae", "new@test.invalid"); await page.click('#add button[type=submit]'); await page.waitForTimeout(500);
+        check(`${who}: Give access calls grant_access`, log.some(l => l.startsWith("RPC grant_access") && l.includes("new@test.invalid")), log.filter(l => l.startsWith("RPC")).join(";"));
+        await page.fill("#cl", "Volunteers"); await page.fill("#cc", "simple-pass-1"); await page.click('#mk button[type=submit]'); await page.waitForTimeout(500);
+        check(`${who}: a new code is shown once`, (await page.$eval("#newcode", e => e.textContent).catch(() => "")) === "abcd-1234-abcd-1234-abcd" && log.some(l => l.startsWith("RPC create_access_code") && l.includes("simple-pass-1")));
+        if (who === "admin") {
+          page.once("dialog", d => d.accept());
+          await page.click("#codes [data-off]"); await page.waitForTimeout(400);
+          check("admin: Switch off calls revoke_access_code", log.some(l => l.startsWith("RPC revoke_access_code") && l.includes("k1")));
+          await page.selectOption('tr[data-u="p2"] select[data-f=level]', "staff"); await page.waitForTimeout(400);
+          check("admin: changing a level sends a PATCH", log.some(l => l.startsWith("PATCH access_grants") && l.includes("user_id=eq.p2")), log.filter(l => l.startsWith("PATCH")).join(";"));
+          await page.check('tr[data-u="p2"] [data-mgr]'); await page.waitForTimeout(400);
+          check("admin: Manager switch calls set_manager", log.some(l => l.startsWith("RPC set_manager") && l.includes('"p_on":true')));
+          check("admin: you cannot edit a row that is yourself, a manager above the limit is editable only by admin", (await page.$('tr[data-u="p3"] select[data-f=level]:not([disabled])')) !== null);
+          if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.screenshot({ path: path.join(process.env.SHOTS, `access-${scheme}.png`), fullPage: true }); }
+          await page.emulateMedia({ colorScheme: "light" });
+          await page.click('#tabs button:text-is("Lovelace")'); await page.waitForTimeout(400);
+          check("admin: Lovelace is read-only (managed in the Mall)", /still managed in/.test(await page.$eval("#body", b => b.innerText)) && (await page.$("#add")) === null);
+        }
+      }
+      if (who === "lmgr") { await ctx.close(); continue; }
+      await page.goto(BASE + "/"); await page.waitForTimeout(500);
 
       // shared look: the theme button cycles Auto -> Light -> Dark and the page really changes colour
       const bg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);

@@ -374,7 +374,8 @@ language sql stable security invoker set search_path = '' as $$
       from (select distinct resource from public.role_permissions) r
       left join public.role_permissions rp on rp.resource = r.resource and rp.role = public.my_role()), '{}'::jsonb),
     'programs', coalesce((
-      select jsonb_object_agg(pr.id, jsonb_build_object('level', public.program_level(pr.id), 'manager', public.is_program_manager(pr.id)))
+      select jsonb_object_agg(pr.id, jsonb_build_object('level', public.program_level(pr.id), 'manager', public.is_program_manager(pr.id),
+                                                              'limit', public.grant_limit(pr.id)))
       from public.programs pr where public.has_program(pr.id) or (pr.id = 'lucien' and public.can('ulysse', 'read'))), '{}'::jsonb))
 $$;
 revoke all on function public.my_access() from public, anon;

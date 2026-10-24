@@ -9,6 +9,8 @@
     const card = (href, title, full, text) => `<a class="index-row" href="${href}"><b class="index-title">${title}</b><span class="index-full">${full}</span><span class="index-text">${text}</span></a>`;
     if (Athena.may(acc, "ulysse")) n.insertAdjacentHTML("afterbegin", card("ulysse/", "Ulysse", "Policy tracker", "Select committees, think tanks, Lib Dems in the media, polling."));
     if (acc.admin) n.insertAdjacentHTML("beforeend", card("admin/", "Admin", "System status", "Collector health, sources and recent activity."));
+    const manages = Object.entries(acc.programs || {}).some(([id, v]) => v.manager && id !== "lovelace");   // Lovelace is still managed in the Mall
+    if (acc.admin || manages) n.insertAdjacentHTML("beforeend", card("access/", "Access", "Who can open what", "Give people access to each program, set levels and end dates, and make shared access codes."));
     Shell.mount(hd, { sub: "One login for every program", email: acc.session.user.email, signOut: () => Athena.sb.auth.signOut() });
   } catch (e) { /* signed-out view stays as it is */ }
 })();

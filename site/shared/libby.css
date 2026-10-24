@@ -134,3 +134,15 @@ small.why{display:block;color:var(--muted);font-size:.78rem;margin-top:2px;overf
 footer.foot{max-width:1120px;margin:0 auto;padding:1rem 1.25rem 2.5rem;color:var(--muted);font-size:.85rem}
 @media (max-width:600px){.brand-sub{display:none}.masthead-inner{align-items:flex-start}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* tabs: pill buttons, the chosen one filled */
+.tabs{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.2rem 0}
+.tabs button{border:2px solid var(--outline);border-radius:999px;background:var(--card);color:var(--ink);font:800 .9rem var(--head);padding:.4rem 1rem;cursor:pointer}
+.tabs button:hover{background:var(--yellow);color:#111}
+.tabs button[aria-selected="true"]{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
+code,.code{font:700 1rem ui-monospace,Menlo,Consolas,monospace;background:var(--chip);padding:.15rem .5rem;border-radius:4px;overflow-wrap:anywhere}
+.row-form{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:flex-end;margin:.8rem 0}
+.row-form label{margin:0 0 .25rem}
+.row-form > div{display:flex;flex-direction:column}
+td select,td input{padding:.3rem .5rem;font-size:.9rem}
+.badge{display:inline-block;font:800 .68rem var(--head);letter-spacing:.04em;text-transform:uppercase;background:var(--bar-bg);color:var(--bar-fg);border-radius:999px;padding:.08rem .55rem;margin-left:.4rem}
