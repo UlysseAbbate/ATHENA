@@ -71,11 +71,10 @@ Refreshed every 3 hours by GitHub Actions (`.github/workflows/update.yml`, or *R
 1. **Select committees:** reports, special reports and government responses (Parliament Committees API).
 2. **Think tanks:** ~63 organisations in `config/sources.yml`.
 3. **Lib Dems in the media:** each outlet's own RSS feeds, filtered to stories whose headline or standfirst is about the party.
-4. **Political polling:**
-   - Wikipedia's UK poll tables: voting intention, MRPs, leader ratings and preferred PM. Each row links to the pollster's own release.
-   - YouGov's article pages and News Tracker.
-   - ~30 pollsters' sites and polling analysts.
-   - A political-only filter.
+4. **Political polling**, only specific polls and reports (no generic voting-intention averages or Wikipedia tables):
+   - the pollsters' own sites (~30) and polling analysts, through the same self-healing collector as the think tanks;
+   - YouGov's article pages and News Tracker;
+   - a political-only filter.
 
 **Using it:**
 - **Filters:** policy area, geography, type, source, House, date range and read/unread. Each dropdown counts only what the other filters leave.
@@ -100,16 +99,15 @@ Refreshed every 3 hours by GitHub Actions (`.github/workflows/update.yml`, or *R
 ### How a think tank or pollster is collected (`collect_source`)
 
 1. Explicit `feed:`/`feeds:`.
-2. The page (and its `www`/bare-host twin, plus `urls:` alternates).
-3. Feed autodiscovery and common feed paths. A feed must have at least 3 entries.
-4. A scrape of the listing page.
-5. **The site's XML sitemap** (advertised in robots.txt for crawlers): its most recently modified pages under the organisation's own path.
+2. The main page (its `www`/bare-host twin only if the site did not answer): feeds it advertises and common feed paths (a feed must have at least 3 entries), then a scrape of the listing, then **data built into the page** (Next.js/JSON-LD), the **WordPress REST API** and **Squarespace `?format=json`**.
+3. **The site's XML sitemap** (advertised in robots.txt for crawlers): its most recently modified pages under the organisation's own path.
    - Topic, series and collection pages are skipped.
    - A university-wide sitemap is never used.
+   - A sitemap with no dates is read from its end; `sitemap_days` widens the window and `sitemap_pattern` says which addresses are publications (IIED's are `/12345iied`).
    - The title comes from the URL until the page is read; a later run replaces it with the page's real headline and publication date.
    - Until then, such an item is not marked NEW: a sitemap date is when a page last changed, which for an old report can be yesterday.
 
-`feed: false` skips feeds, `sitemap: false` skips the sitemap. Source health shows the method used and why earlier steps failed.
+`feed: false` skips feeds, `sitemap: false` skips the sitemap. `urls:` lists other addresses, tried only if the main one gave nothing. Source health shows the method used and why earlier steps failed.
 
 ### Data and state
 

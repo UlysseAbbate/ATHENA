@@ -385,8 +385,10 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
     except Exception:  # noqa: BLE001
         maps = []
     queue = maps + [base + "/sitemap.xml", base + "/sitemap_index.xml", base + "/wp-sitemap.xml"]
-    seen, urls, docs = set(), [], 0
-    cutoff = NOW - timedelta(days=120)
+    seen, urls, undated, relaxed, docs, total = set(), [], [], [], 0, 0
+    cutoff = NOW - timedelta(days=int(tt.get("sitemap_days", 120)))
+    pattern = re.compile(tt["sitemap_pattern"]) if tt.get("sitemap_pattern") else None
+    newest = None
     while queue and docs < 8:
         sm = queue.pop(0)
         if sm in seen:
@@ -410,22 +412,38 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
             queue = [k[2] for k in sorted(kids, reverse=True)[:5]] + queue
             continue
         for node in soup.find_all("url"):
+            total += 1
             loc = (node.find("loc").text if node.find("loc") else "").strip()
             mod = parse_date(node.find("lastmod").text) if node.find("lastmod") else None
+            if mod and (newest is None or mod > newest):
+                newest = mod
             u = urlparse(loc)
-            if not loc or not mod or mod < cutoff or u.netloc.removeprefix("www.") != p.netloc.removeprefix("www."):
+            if not loc or (mod and mod < cutoff) or u.netloc.removeprefix("www.") != p.netloc.removeprefix("www."):
                 continue
-            if not u.path.startswith(scope) or u.path.rstrip("/") in ("", scope.rstrip("/")) or u.path.count("/") < 2:
+            if pattern:      # this source says which addresses are its publications (e.g. IIED's /12345iied)
+                if not pattern.search(u.path):
+                    continue
+            elif not u.path.startswith(scope) or u.path.rstrip("/") in ("", scope.rstrip("/")) or u.path.count("/") < 2:
+                slug = u.path.strip("/")
+                if mod and "/" not in slug and slug.count("-") >= 3 and u.path.startswith(scope) and not (NOT_PUBLICATION.search(u.path) or SITEMAP_LISTING.match(u.path)):
+                    relaxed.append((mod, loc))
                 continue
             if NOT_PUBLICATION.search(u.path) or SITEMAP_LISTING.match(u.path):
                 continue
-            urls.append((mod, loc))
+            if mod:
+                urls.append((mod, loc))
+            else:
+                undated.append(loc)
     # prefer pages under the organisation's own listing path (e.g. /report/ for https://www.nesta.org.uk/report/)
     hint = next((x for x in p.path.split("/") if x), "")
     if hint:
         under = [x for x in urls if urlparse(x[1]).path.startswith(f"/{hint}/")]
         if len(under) >= 3:
             urls = under
+    if not urls and not undated and relaxed:      # nothing under a listing path: take recent top-level pages with a real slug
+        urls = relaxed
+    if not urls and undated:      # a sitemap with no dates: assume it lists oldest first, so take the end of it
+        urls = [(cutoff, u) for u in reversed(undated[-limit:])]
     urls = sorted(set(urls), reverse=True)[:limit]
     items = []
     for mod, loc in urls:
@@ -434,7 +452,133 @@ def sitemap_items(tt: dict, category: str, limit: int = 25) -> tuple[list[dict],
         it = make_item(category, tt["name"], _slug_title(loc), loc, date_from_url(loc), tags=["sitemap"])
         it["slug_title"] = True
         items.append(it)
-    return items, f"{docs} sitemap file(s)"
+    return items, f"{docs} sitemap file(s), {total} pages seen, {len(urls) + len(undated)} usable, newest dated {newest.date().isoformat() if newest else 'none'}"
+
+
+TITLE_KEYS = ("headline", "title", "name", "heading")
+URL_KEYS = ("url", "link", "href", "permalink", "uri", "path")
+DATE_KEYS = ("datePublished", "date_published", "publishedAt", "published_at", "publishDate", "publication_date", "publicationDate",
+             "published", "date", "dateCreated", "created", "createdAt", "pubDate")
+NOT_ARTICLE_TYPES = {"organization", "website", "webpage", "breadcrumblist", "listitem", "person", "searchaction", "imageobject", "sitenavigationelement"}
+
+
+def _walk_json(o, found: list, depth: int = 0) -> None:
+    if depth > 12:
+        return
+    if isinstance(o, dict):
+        title = next((o[k] for k in TITLE_KEYS if isinstance(o.get(k), str)), None)
+        url = next((o[k] for k in URL_KEYS if isinstance(o.get(k), str)), None)
+        if isinstance(o.get("item"), dict):          # schema.org ListItem { item: { name, url } }
+            _walk_json(o["item"], found, depth + 1)
+        typ = o.get("@type")
+        typ = (typ if isinstance(typ, str) else " ".join(typ) if isinstance(typ, list) else "").lower()
+        if title and url and typ not in NOT_ARTICLE_TYPES:
+            date = next((o[k] for k in DATE_KEYS if isinstance(o.get(k), str)), None)
+            found.append((title, url, date))
+        for v in o.values():
+            _walk_json(v, found, depth + 1)
+    elif isinstance(o, list):
+        for v in o:
+            _walk_json(v, found, depth + 1)
+
+
+def embedded_json_items(page_url: str, html: str, limit: int = 30):
+    """JavaScript-built listing pages usually ship their data inside the page (Next.js/Nuxt state, JSON-LD): read that instead
+    of the links that only appear after scripts run."""
+    soup = BeautifulSoup(html, "lxml")
+    found: list = []
+    for sc in soup.find_all("script"):
+        t = (sc.get("type") or "").lower()
+        if "json" not in t and sc.get("id") not in ("__NEXT_DATA__", "__NUXT_DATA__"):
+            continue
+        try:
+            _walk_json(json.loads(sc.string or sc.get_text() or ""), found)
+        except Exception:  # noqa: BLE001
+            continue
+    host = urlparse(page_url).netloc.removeprefix("www.")
+    here = urlparse(page_url).path.rstrip("/")
+    rows, seen = [], set()
+    for title, url, date in found:
+        title = re.sub(r"\s+", " ", BeautifulSoup(title, "lxml").get_text(" ", strip=True))
+        if len(title) < 25 or len(title.split()) < 4 or not url or url.startswith(("mailto:", "tel:", "#", "javascript:")):
+            continue
+        href = urljoin(page_url, url)
+        u = urlparse(href)
+        if u.netloc.removeprefix("www.") != host or u.path.rstrip("/") in ("", here) or u.path.count("/") < 2:
+            continue
+        if NOT_PUBLICATION.search(u.path) or href in seen:
+            continue
+        seen.add(href)
+        rows.append((title, href, parse_date(date) if date else None))
+        if len(rows) >= limit:
+            break
+    return rows
+
+
+WP_BUILTIN = {"post", "page", "attachment", "nav_menu_item", "wp_block", "wp_template", "wp_template_part", "wp_navigation",
+              "wp_global_styles", "wp_font_family", "wp_font_face", "revision"}
+
+
+def wp_items(page_url: str, html: str, limit: int = 30):
+    """WordPress sites publish their content through a public REST API even when the RSS feed is switched off.
+    Prefers a custom post type that looks like publications/research; falls back to ordinary posts."""
+    if not re.search(r"wp-json|wp-content|api\.w\.org", html):
+        return [], ""        # not a WordPress site: do not ask it for WordPress things
+    soup = BeautifulSoup(html, "lxml")
+    link = soup.find("link", attrs={"rel": re.compile(r"api\.w\.org")})
+    p = urlparse(page_url)
+    root = (urljoin(page_url, link["href"]) if link and link.get("href") else f"{p.scheme}://{p.netloc}/wp-json/").rstrip("/") + "/"
+    if "wp-json" not in root and "rest_route" not in root:
+        return [], ""
+    endpoints = []
+    try:
+        types = get(root + "wp/v2/types", timeout=(6, 15)).json()
+        for t in types.values():
+            base = t.get("rest_base")
+            if base and t.get("slug") not in WP_BUILTIN and SITEMAP_HINT.search(f"{t.get('slug', '')} {base}"):
+                endpoints.append(base)
+    except Exception:  # noqa: BLE001
+        pass
+    for ep in endpoints + ["posts"]:
+        try:
+            data = get(f"{root}wp/v2/{ep}?per_page=25&orderby=date&order=desc&_fields=title,link,date", timeout=(6, 15)).json()
+        except Exception:  # noqa: BLE001
+            continue
+        rows = []
+        for d in data if isinstance(data, list) else []:
+            t = BeautifulSoup((d.get("title") or {}).get("rendered", ""), "lxml").get_text(" ", strip=True)
+            if t and d.get("link"):
+                rows.append((t, d["link"], parse_date(d.get("date"))))
+        if len(rows) >= 3:
+            return rows[:limit], root + "wp/v2/" + ep
+    return [], ""
+
+
+def page_fingerprint(page_url: str, html: str) -> str:
+    """A few facts about a page the scraper could not read, so Source health says why (script-built? which framework?)."""
+    soup = BeautifulSoup(html, "lxml")
+    host = urlparse(page_url).netloc.removeprefix("www.")
+    hrefs = [urlparse(urljoin(page_url, a["href"])) for a in soup.find_all("a", href=True)]
+    same = [u for u in hrefs if u.netloc.removeprefix("www.") == host and u.path.count("/") >= 2]
+    marks = [m for m, rx in (("next", "__NEXT_DATA__"), ("nuxt", "__NUXT"), ("wp", "wp-content|wp-json"), ("wix", "wix\\.com|wixstatic"),
+                             ("squarespace", "squarespace"), ("webflow", "webflow"), ("react", "data-reactroot|id=\"root\"|id=\"app\"")) if re.search(rx, html, re.I)]
+    jsons = len(soup.find_all("script", type=re.compile("json", re.I)))
+    sample = ",".join(sorted({u.path[:34] for u in same})[:4])
+    return f"{len(hrefs)} links, {len(same)} deep; {'/'.join(marks) or 'no framework seen'}; {jsons} json blocks; e.g. {sample}"
+
+
+def squarespace_items(page_url: str, html: str, limit: int = 30):
+    """Squarespace sites give any collection page as JSON by adding ?format=json."""
+    if "squarespace" not in html.lower():
+        return []
+    data = get(page_url + ("&" if "?" in page_url else "?") + "format=json", timeout=(6, 15)).json()
+    rows = []
+    for it in (data.get("items") or data.get("collection", {}).get("items") or []):
+        title, url = it.get("title"), it.get("fullUrl") or it.get("urlId")
+        if title and url:
+            ts = it.get("publishOn") or it.get("addedOn")
+            rows.append((re.sub(r"\s+", " ", title).strip(), urljoin(page_url, url), datetime.fromtimestamp(ts / 1000, timezone.utc) if ts else None))
+    return rows[:limit]
 
 
 def _entries_to_items(name: str, entries, category: str = "thinktank") -> list[dict]:
@@ -448,11 +592,10 @@ def _entries_to_items(name: str, entries, category: str = "thinktank") -> list[d
 
 
 def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktanks") -> tuple[list[dict], dict]:
-    """Self-healing: explicit feeds -> primary page (+ www/bare twin, + alternates) -> discovered feeds -> HTML scrape ->
-    XML sitemap. Every request respects robots.txt.
+    """Self-healing: explicit feeds -> the main page (feeds it advertises, links, data built into it, WordPress API) -> the XML
+    sitemap -> alternate pages if any are listed. Every request respects robots.txt and nothing is done to get past a block.
     Returns (items, health record). Never raises."""
     name = tt["name"]
-    pages = [u for u in [tt["url"], *tt.get("urls", [])] for u in _variants(u)]
     explicit_feeds = ([tt["feed"]] if tt.get("feed") else []) + list(tt.get("feeds", []))
     no_feed = tt.get("feed") is False
     notes: list[str] = []
@@ -460,7 +603,7 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
     tried_feeds: set[str] = set()
     probes: collections.Counter = collections.Counter()
     t0 = time.time()
-    over = lambda: time.time() - t0 > 90     # per-organisation budget; then go straight to the sitemap fallback
+    over = lambda: time.time() - t0 > 120    # per-organisation budget for page work; the sitemap always gets its turn
 
     def try_feeds(feeds: list[str]):
         for f in feeds:
@@ -473,47 +616,82 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
             probes[f"{len(entries)} items" if entries else why] += 1
         return None, []
 
+    def feed_result(f, entries, notes):
+        return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
+
+    def try_page(page: str):
+        """One page through every method. Returns (result, reached): result is a finished (items, record) or None;
+        reached says the site answered (even with a 404), so its www/bare twin need not be tried."""
+        if page in seen_pages or over():
+            return None, False
+        seen_pages.add(page)
+        where = f"{urlparse(page).netloc}{urlparse(page).path}"
+        try:
+            html = get(page).text
+        except RobotsDisallowed as e:
+            notes.append(f"{where}: {e}")
+            return None, True
+        except Exception as e:  # noqa: BLE001
+            m = re.search(r"\b(40\d|50\d)\b", str(e))
+            hdr = getattr(getattr(e, "response", None), "headers", None) or {}
+            who = "/".join(x for x in (("Cloudflare challenge" if hdr.get("cf-mitigated") else ""), (hdr.get("server") or "")[:20]) if x)
+            notes.append(f"{where}: {'HTTP ' + m.group(1) if m else type(e).__name__}{' (' + who + ')' if who and m and m.group(1) in ('401', '403') else ''}")
+            if not no_feed and m and m.group(1) in ("401", "403", "404"):   # even if the page is blocked, common feed paths often are not
+                base = f"{urlparse(page).scheme}://{urlparse(page).netloc}/"
+                f, entries = try_feeds([urljoin(base, x) for x in FEED_SUFFIXES[:4]])
+                if entries:
+                    return feed_result(f, entries, notes), True
+            return None, bool(m)
+        if not no_feed:
+            f, entries = try_feeds(discover_feeds(page, html))
+            if entries:
+                return feed_result(f, entries, notes), True
+        rows = scrape_links(page, html)
+        if rows:
+            return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], "html", page, notes), True
+        for finder, method in ((embedded_json_items, "json"), (None, "wp-api"), (squarespace_items, "squarespace")):
+            if over():
+                break
+            try:
+                rows, via = (finder(page, html), page) if finder else wp_items(page, html)
+            except Exception:  # noqa: BLE001
+                rows, via = [], ""
+            if rows:
+                return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], method, via, notes), True
+        title = (BeautifulSoup(html, "lxml").title.string or "").strip()[:40] if BeautifulSoup(html, "lxml").title else ""
+        if len(html) < 800:
+            notes.append(f"{urlparse(page).netloc}: answers with an empty page (a bot check: respected, not worked around)")
+        else:
+            notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links [{page_fingerprint(page, html)}]")
+        return None, True
+
+    def try_pages(urls: list[str]):
+        for u in urls:
+            for page in _variants(u):
+                res, reached = try_page(page)
+                if res:
+                    return res
+                if reached:
+                    break      # the site answered: its www/bare twin would say the same
+        return None
+
     try:
         # explicit feeds first: they need no page at all (works even when the site 403s the HTML pages)
         f, entries = try_feeds(explicit_feeds)
         if entries:
-            return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
-        for page in pages:
-            if page in seen_pages or over():
-                continue
-            seen_pages.add(page)
-            try:
-                html = get(page).text
-            except RobotsDisallowed as e:
-                notes.append(f"{urlparse(page).netloc}{urlparse(page).path}: {e}")
-                continue
-            except Exception as e:  # noqa: BLE001
-                m = re.search(r"\b(40\d|50\d)\b", str(e))
-                notes.append(f"{urlparse(page).netloc}{urlparse(page).path}: {'HTTP ' + m.group(1) if m else type(e).__name__}")
-                if not no_feed:   # even if the page is blocked, common feed paths often are not
-                    base = f"{urlparse(page).scheme}://{urlparse(page).netloc}/"
-                    f, entries = try_feeds([urljoin(base, x) for x in FEED_SUFFIXES])
-                    if entries:
-                        return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
-                continue
-            if not no_feed:
-                f, entries = try_feeds(discover_feeds(page, html))
-                if entries:
-                    return _done(t0, group, name, _entries_to_items(name, entries, category), "feed", f, notes)
-            rows = scrape_links(page, html)
-            if rows:
-                return _done(t0, group, name, [make_item(category, name, t, h, d) for t, h, d in rows], "html", page, notes)
-            title = (BeautifulSoup(html, "lxml").title.string or "").strip()[:40] if BeautifulSoup(html, "lxml").title else ""
-            if len(html) < 800:
-                notes.append(f"{urlparse(page).netloc}: answers with an empty page (a bot check: respected, not worked around)")
-            else:
-                notes.append(f"{urlparse(page).netloc}: page loads ({len(html) // 1000}KB, title '{title}') but lists no publication links")
-        # last resort: the site's XML sitemap (made for crawlers, and usually allowed even when pages are not)
-        if tt.get("sitemap") is not False and not over():
+            return feed_result(f, entries, notes)
+        res = try_pages([tt["url"]])
+        if res:
+            return res
+        # the site's XML sitemap (made for crawlers, and usually allowed even when pages are not)
+        if tt.get("sitemap") is not False:
             items, via = sitemap_items(tt, category)
             if items:
                 return _done(t0, group, name, items, "sitemap", via, notes)
             notes.append(f"no recent pages in its sitemap ({via})")
+        res = try_pages(list(tt.get("urls", [])))     # other addresses listed for this source, only if the main one gave nothing
+        if res:
+            return res
         if probes:
             notes.append("feed probes: " + ", ".join(f"{n}x {w}" for w, n in probes.most_common(4)))
     except Exception as e:  # noqa: BLE001
@@ -521,13 +699,13 @@ def collect_source(tt: dict, category: str = "thinktank", group: str = "thinktan
     if probes and not any(n.startswith("feed probes") for n in notes):
         notes.append("feed probes: " + ", ".join(f"{n}x {w}" for w, n in probes.most_common(4)))
     return [], {"group": group, "name": name, "ok": False, "items": 0, "seconds": round(time.time() - t0),
-                "error": "; ".join(dict.fromkeys(notes))[:400]}
+                "error": "; ".join(dict.fromkeys(notes))[:900]}
 
 
 def _done(t0, group, name, items, method, via, notes):
     items = [i for i in items if i["url"]]
     rec = {"group": group, "name": name, "ok": bool(items), "items": len(items), "method": method, "via": via, "seconds": round(time.time() - t0),
-           "error": ("; ".join(dict.fromkeys(notes))[:400] if notes else "")}
+           "error": ("; ".join(dict.fromkeys(notes))[:900] if notes else "")}
     return items, rec
 
 
@@ -679,7 +857,7 @@ def collect_poll_articles() -> list[dict]:
 
 
 
-# ------------------------------------------------------- political polling: relevance + Wikipedia poll tables
+# ------------------------------------------------------- political polling: relevance
 def _rx(key: str) -> "re.Pattern":
     return re.compile(CONFIG["polling"]["political"][key], re.I)
 
@@ -719,233 +897,6 @@ def poll_kind_tags(title: str) -> list[str]:
     return tags
 
 
-_WIKI: dict = {}
-
-
-def _wiki_soup(url: str):
-    if url not in _WIKI:
-        _WIKI[url] = BeautifulSoup(get(url).text, "lxml")
-    return _WIKI[url]
-
-
-def _cite_urls(soup) -> dict:
-    """Wikipedia footnote id -> the first non-archive external link in it (the pollster's own release)."""
-    out = {}
-    for li in soup.select('ol.references li[id^="cite_note"]'):
-        links = [a["href"] for a in li.find_all("a", href=re.compile(r"^https?://"))]
-        good = [h for h in links if not re.search(r"archive\.(org|is|ph)|wikipedia\.org|webcitation|wikimedia", h)]
-        if good or links:
-            out[li["id"]] = (good or links)[0]
-    return out
-
-
-def _clean(cell) -> str:
-    return re.sub(r"\s+", " ", re.sub(r"\[[^\]]*\]", "", cell.get_text(" ", strip=True)).replace("\xa0", " ")).strip()
-
-
-def _end_date(dates: str, year: int) -> datetime | None:
-    tail = re.split(r"\s*[–—-]\s*", dates.strip())[-1].strip()
-    try:
-        d = dtparse.parse(tail, default=datetime(year, 1, 1))
-    except (ValueError, OverflowError):
-        return None
-    d = d.replace(tzinfo=timezone.utc)
-    if not re.search(r"\b20\d\d\b", tail) and d > NOW + timedelta(days=2):
-        d = d.replace(year=d.year - 1)          # the table gives no year: never in the future
-    return d
-
-
-PARTY_SHORT = {"Lab": "Lab", "Con": "Con", "Ref": "Reform", "LD": "LD", "Grn": "Green", "SNP": "SNP", "PC": "Plaid", "RB": "Restore"}
-
-
-def _pollster_name(raw: str) -> tuple[str, bool]:
-    """-> (clean pollster name, is_mrp). 'Find Out Now/Electoral Calculus (MRP)' -> ('Find Out Now', True)."""
-    mrp = bool(re.search(r"\bMRP\b", raw, re.I))
-    name = re.sub(r"\s*\(?MRP\)?", "", raw, flags=re.I).strip()
-    name = re.sub(r"\s*/\s*", " / ", name).strip(" /")
-    name = re.sub(r"\s+", " ", name)
-    if " / " in name:                      # e.g. "Find Out Now / Electoral Calculus": credit the first
-        name = name.split(" / ")[0].strip()
-    return name, mrp
-
-
-def collect_wiki_polls() -> tuple[list[dict], list[dict]]:
-    """Every poll row in Wikipedia's UK tables becomes an item linking to the pollster's own release.
-    Covers every pollster that publishes: national voting intention, MRPs, Scotland/Wales/England, leader ratings,
-    preferred PM. Returns (items, pollster summary)."""
-    cfg = CONFIG["polling"]
-    lookback = timedelta(days=cfg.get("table_lookback_days", 60))
-    items: list[dict] = []
-    seen_urls: set[str] = set()
-    pollster_stats: dict = {}
-
-    def emit(page, url_fallback, cmap, cell, pollster_raw, dates, year, kind_tag, title_fn, summary, extra_tags=()):
-        end = _end_date(dates, year)
-        if not end or NOW - end > lookback:
-            return False
-        name, mrp = _pollster_name(pollster_raw)
-        if not name:
-            return False
-        a = cell.find("a", href=re.compile(r"#cite_note"))
-        url = cmap.get(a["href"].lstrip("#")) if a else None
-        url = url or f"{page}#cite"
-        tag = "mrp" if mrp and kind_tag == "voting-intention" else kind_tag
-        if url in seen_urls:
-            url += f"#{tag}-{end.date().isoformat()}-{re.sub(r'[^a-z]', '', name.lower())}"
-        seen_urls.add(url)
-        dates = re.sub(r"\s*[–—-]\s*", "–", dates)
-        title = title_fn(name, dates, mrp)
-        if url in seen_urls:       # several tables can cite one file: keep the ids distinct
-            url += f"#{tag}-{end.date().isoformat()}-{hashlib.sha1(title.encode()).hexdigest()[:6]}"
-        seen_urls.add(url)
-        items.append(make_item("polling", name, title, url, end, summary, [tag, *extra_tags, "poll-table"]))
-        if kind_tag == "voting-intention":
-            st = pollster_stats.setdefault(name, {"name": name, "polls": 0, "last": None})
-            st["polls"] += 1
-            st["last"] = max(filter(None, [st["last"], end.date().isoformat()]))
-        return True
-
-    # ---- national + sub-national voting intention (main page)
-    page = cfg["wikipedia_page"]
-    try:
-        soup = _wiki_soup(page); cmap = _cite_urls(soup); n = 0
-        for table in soup.find_all("table", class_=re.compile("wikitable")):
-            rows = table.find_all("tr")
-            if not rows or "Pollster" not in rows[0].get_text():
-                continue
-            hd = table.find_previous(["h2", "h3"]); head = hd.get_text(" ", strip=True).replace("[edit]", "").strip() if hd else ""
-            region = head if head in ("Scotland", "Wales", "England") else ""
-            if not region and not re.fullmatch(r"20\d\d", head):
-                continue
-            year = int(head) if not region else NOW.year
-            if not region and year < NOW.year - 1:
-                continue
-            cols = [_clean(th) for th in rows[0].find_all("th")]
-            ix = {c: i for i, c in enumerate(cols)}
-            if "Pollster" not in ix:
-                continue
-            for r in rows[1:]:
-                cells = r.find_all(["td", "th"])
-                if len(cells) != len(cols):
-                    continue
-                area = _clean(cells[ix["Area"]]) if "Area" in ix else ""
-                if area and area not in ("GB", "UK"):
-                    continue
-                vals = []
-                for c, i in ix.items():
-                    if c in PARTY_SHORT:
-                        m = re.search(r"\d+(?:\.\d+)?", _clean(cells[i]))
-                        if m:
-                            vals.append((PARTY_SHORT[c], float(m.group(0))))
-                if len(vals) < 4:
-                    continue
-                vals.sort(key=lambda kv: -kv[1])
-                top = ", ".join(f"{p} {v:g}%" for p, v in vals[:6])
-                client = _clean(cells[ix["Client"]]) if "Client" in ix else ""
-                sample = _clean(cells[ix["Sample size"]]) if "Sample size" in ix else ""
-                summary = " · ".join(x for x in [f"For {client}" if client and client not in ("N/A", "—") else "", region or area,
-                                                 f"n={sample}" if sample else ""] if x)
-                dates = _clean(cells[0])
-                pre = f"{region} Westminster voting intention" if region else "Voting intention"
-
-                def title_fn(name, d, mrp, top=top, pre=pre):
-                    return f"{'MRP' if mrp else pre}: {top} ({name}, {d})"
-                if emit(page, page, cmap, cells[ix["Pollster"]], _clean(cells[ix["Pollster"]]), dates, year, "voting-intention", title_fn, summary):
-                    n += 1
-        record("polling", "Wikipedia: voting intention tables", n > 0, n, "" if n else "no rows in the lookback window")
-    except Exception as e:  # noqa: BLE001
-        record("polling", "Wikipedia: voting intention tables", False, 0, e)
-
-    # ---- leader ratings (net favourability)
-    try:
-        page = cfg["wikipedia_leadership_page"]; soup = _wiki_soup(page); cmap = _cite_urls(soup); n = 0
-        for table in soup.find_all("table", class_=re.compile("wikitable")):
-            rows = table.find_all("tr")
-            if len(rows) < 4 or "Pollster" not in rows[0].get_text():
-                continue
-            hd = table.find_previous(["h2", "h3", "h4"]); head = hd.get_text(" ", strip=True).replace("[edit]", "").strip() if hd else ""
-            tyear = int(head) if re.fullmatch(r"20\d\d", head) else NOW.year      # the page's year headings; dates carry no year
-            if tyear < NOW.year - 1:
-                continue
-            ths = rows[0].find_all("th"); leaders = []; col = 0
-            for th in ths:
-                span = int(th.get("colspan", 1) or 1)
-                txt = _clean(th)
-                if col >= 3 and span >= 3:
-                    leaders.append((txt, col + 2))        # the "Net" column of Pos/Neg/Net
-                col += span
-            if not leaders:
-                continue
-            for r in rows[1:]:
-                cells = r.find_all(["td", "th"])
-                if len(cells) < 6 or not re.search(r"\d", _clean(cells[0])) or _clean(cells[1]) in ("Pollster", "Pos."):
-                    continue
-                pairs = []
-                for name, i in leaders:
-                    if i < len(cells):
-                        m = re.fullmatch(r"([+\-–−]?)\s*(\d+)", _clean(cells[i]).replace("−", "–"))
-                        if m:
-                            sign = "-" if m.group(1) in ("–", "-") else "+"
-                            pairs.append((name.split()[-1], int(sign + m.group(2))))
-                if len(pairs) < 2:
-                    continue
-                pairs.sort(key=lambda kv: -kv[1])
-                top = ", ".join(f"{n_} {v:+d}" for n_, v in pairs[:6]).replace("-", "−")
-                dates = _clean(cells[0]); sample = _clean(cells[2])
-
-                def title_fn(name, d, mrp, top=top):
-                    return f"Leader ratings (net): {top} ({name}, {d})"
-                if emit(page, page, cmap, cells[1], _clean(cells[1]), dates, tyear, "leader-ratings", title_fn,
-                        f"Net favourable minus unfavourable · n={sample}", ("party-support",)):
-                    n += 1
-        record("polling", "Wikipedia: leader ratings", n > 0, n, "" if n else "no rows in the lookback window")
-    except Exception as e:  # noqa: BLE001
-        record("polling", "Wikipedia: leader ratings", False, 0, e)
-
-    # ---- preferred prime minister (head-to-heads): one item per poll, combining its pairings
-    try:
-        page = cfg["wikipedia_pm_page"]; soup = _wiki_soup(page); cmap = _cite_urls(soup); n = 0
-        polls: dict = {}
-        for table in soup.find_all("table", class_=re.compile("wikitable")):
-            rows = table.find_all("tr")
-            if len(rows) < 3 or "Pollster" not in rows[0].get_text():
-                continue
-            cols = [_clean(th) for th in rows[0].find_all("th")]
-            stop = next((i for i, c in enumerate(cols) if c in ("None", "Don't know", "Others", "Lead", "Neither")), len(cols))
-            cands = list(range(3, stop))
-            for r in rows[1:]:
-                cells = r.find_all(["td", "th"])
-                if len(cells) != len(cols) or not re.search(r"\d", _clean(cells[0])):
-                    continue
-                pairs = []
-                for i in cands:
-                    m = re.search(r"\d+", _clean(cells[i]))
-                    if m:
-                        pairs.append((cols[i].split()[-1], int(m.group(0))))
-                if len(pairs) < 2:
-                    continue
-                pairs.sort(key=lambda kv: -kv[1])
-                key = (_clean(cells[1]), _clean(cells[0]))
-                rec_ = polls.setdefault(key, {"cell": cells[1], "sample": _clean(cells[2]), "parts": []})
-                part = " v ".join(f"{n_} {v}%" for n_, v in pairs)
-                if part not in rec_["parts"]:
-                    rec_["parts"].append(part)
-        for (pol, dates), rec_ in polls.items():
-            top = "; ".join(rec_["parts"][:4])
-
-            def title_fn(name, d, mrp, top=top):
-                return f"Preferred PM: {top} ({name}, {d})"
-            if emit(page, page, cmap, rec_["cell"], pol, dates, NOW.year, "preferred-pm", title_fn,
-                    f"{len(rec_['parts'])} head-to-head{'s' if len(rec_['parts']) != 1 else ''} · n={rec_['sample']}", ("party-support",)):
-                n += 1
-        record("polling", "Wikipedia: preferred prime minister", n > 0, n, "" if n else "no rows in the lookback window")
-    except Exception as e:  # noqa: BLE001
-        record("polling", "Wikipedia: preferred prime minister", False, 0, e)
-
-    stats = sorted(pollster_stats.values(), key=lambda x: (x["last"] or "", x["polls"]), reverse=True)
-    return items, stats
-
-
 def collect_pollster_sources() -> list[dict]:
     """Pollsters' own sites and polling analysts, through the same self-healing collector as the think tanks
     (feed -> page -> Google News on their domain), then filtered to political polling only."""
@@ -977,103 +928,20 @@ def collect_pollster_sources() -> list[dict]:
 
 
 def collect_polling() -> tuple[list[dict], list[dict]]:
-    wiki_items, pollsters = collect_wiki_polls()
+    """Specific political polls and reports only, from the pollsters' own sites and polling analysts. Generic voting-intention
+    averages (Wikipedia's tables) are deliberately not collected."""
     write_ups = collect_poll_articles() + collect_pollster_sources()
-    # a Wikipedia row for a poll we already have a write-up for (e.g. YouGov's own article) adds nothing
-    have = {}
-    for it in write_ups:
-        if "voting-intention" in it["tags"] and it.get("published"):
-            have.setdefault(it["source"].lower(), []).append(parse_date(it["published"]))
-    out = list(write_ups)
-    skipped = 0
-    for it in wiki_items:
-        d = parse_date(it["published"])
-        if "voting-intention" in it["tags"] and any(abs((d - x).days) <= 2 for x in have.get(it["source"].lower(), []) if x):
-            skipped += 1
-            continue
-        out.append(it)
-    # political-only, once more over everything that came from search or scraping
-    out = [i for i in out if "poll-table" in i["tags"] or political_poll(i["title"], i.get("summary", ""))]
-    print(f"polling: {len(wiki_items)} table rows ({skipped} already covered by a write-up), {len(write_ups)} write-ups, "
-          f"{len(out)} kept")
+    out = [i for i in write_ups if political_poll(i["title"], i.get("summary", ""))]
+    stats: dict = {}
+    for it in out:
+        st = stats.setdefault(it["source"], {"name": it["source"], "polls": 0, "last": None})
+        st["polls"] += 1
+        d = it.get("published")
+        if d and (not st["last"] or d[:10] > st["last"]):
+            st["last"] = d[:10]
+    pollsters = sorted(stats.values(), key=lambda x: (x["last"] or "", x["polls"]), reverse=True)
+    print(f"polling: {len(out)} polls and reports kept from {len(pollsters)} sources")
     return out, pollsters
-
-
-PARTY_ALIASES = {
-    "con": "Con", "conservative": "Con", "conservatives": "Con",
-    "lab": "Lab", "labour": "Lab",
-    "ref": "Reform", "reform": "Reform", "reform uk": "Reform",
-    "ld": "LD", "lib dem": "LD", "lib dems": "LD", "liberal democrats": "LD",
-    "grn": "Green", "green": "Green", "greens": "Green",
-    "snp": "SNP",
-}
-
-
-def collect_vi_table() -> list[dict]:
-    """Voting intention from the Wikipedia polling table (structured, BPC-firm rows)."""
-    import pandas as pd
-    from io import StringIO
-
-    url = CONFIG["polling"]["wikipedia_page"]
-    try:
-        html = get(url).text
-        tables = pd.read_html(StringIO(html), match="Pollster")
-        df = tables[0]
-        df.columns = [" ".join(str(c) for c in (col if isinstance(col, tuple) else (col,))
-                               if not str(c).startswith("Unnamed")).strip().lower()
-                      if True else col for col in df.columns]
-        # collapse duplicated multi-index labels like "con con"
-        df.columns = [" ".join(dict.fromkeys(c.split())) for c in df.columns]
-        col_of = {}
-        for c in df.columns:
-            if "pollster" in c:
-                col_of["pollster"] = c
-            elif "date" in c:
-                col_of["dates"] = c
-            elif "sample" in c:
-                col_of["sample"] = c
-            elif c == "area":
-                col_of["area"] = c
-            else:
-                key = PARTY_ALIASES.get(c.split()[0]) or PARTY_ALIASES.get(c)
-                if key and key not in col_of:
-                    col_of[key] = c
-
-        def cell(r, k):
-            v = r.get(col_of.get(k))
-            return None if v is None or (isinstance(v, float) and v != v) else str(v)
-
-        rows = []
-        for _, r in df.iterrows():
-            # event rows ("by-election", "Prime Minister changes") span the table and carry text in every cell
-            if cell(r, "area") not in ("GB", "UK"):
-                continue
-            pollster = re.sub(r"\[.*?\]", "", cell(r, "pollster") or "").strip()
-            dates = re.sub(r"\[.*?\]", "", cell(r, "dates") or "").strip()
-            # The table gives no year ("16–19 Oct"); the page lists the current year first,
-            # so assume this year and roll back if that would put the poll in the future.
-            tail = re.split(r"[–-]", dates)[-1].strip()
-            end = parse_date(tail)
-            if end and end > NOW + timedelta(days=2):
-                end = end.replace(year=end.year - 1)
-            sample = re.sub(r"[^\d]", "", cell(r, "sample") or "")
-            row = {"pollster": pollster, "dates": dates,
-                   "end": end.date().isoformat() if end else None,
-                   "sample": int(sample) if sample else None,
-                   "mrp": "mrp" in pollster.lower()}
-            for p in ["Con", "Lab", "Reform", "LD", "Green", "SNP"]:
-                try:
-                    row[p] = float(re.sub(r"[^\d.]", "", cell(r, p) or ""))
-                except ValueError:
-                    row[p] = None
-            if pollster and row["end"] and all(row[p] is not None for p in ["Con", "Lab", "Reform", "LD"]):
-                rows.append(row)
-        rows = rows[:300]
-        record("polling", "Wikipedia VI table", bool(rows), len(rows), "" if rows else "table not parsed")
-        return rows
-    except Exception as e:  # noqa: BLE001
-        record("polling", "Wikipedia VI table", False, 0, e)
-        return []
 
 
 # --------------------------------------------------------------- categorisation
@@ -1248,7 +1116,9 @@ def merge(new_items: list[dict]) -> list[dict]:
     for it in list(old.values()):
         if is_noise(it):
             del old[it["id"]]
-        elif it["category"] == "polling" and "poll-table" not in it.get("tags", []):
+        elif it["category"] == "polling" and "poll-table" in it.get("tags", []):
+            del old[it["id"]]   # rows that came from Wikipedia's generic poll tables: no longer collected, and removed from what is stored
+        elif it["category"] == "polling":
             # political polling only, applied retroactively (taxonomy/filter edits clean up what is already stored)
             if not political_poll(it["title"], it.get("summary", "")):
                 del old[it["id"]]
@@ -1363,7 +1233,7 @@ def main() -> int:
     if run("polling"):
         poll_items, pollsters = collect_polling()
         items += poll_items
-        write("polls", {"updated": NOW.isoformat(), "rows": collect_vi_table(), "pollsters": pollsters})
+        write("polls", {"updated": NOW.isoformat(), "rows": [], "pollsters": pollsters})
     feed = merge(items)
     write("feed", {"updated": NOW.isoformat(), "items": feed})
     if only:   # a partial run keeps the other groups' last known health

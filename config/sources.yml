@@ -9,8 +9,14 @@
 #
 # Verified live: Demos, CPS, ECFR, Fabian Society, Green Alliance, EPI, IEA, BFPG, FPC, CLES,
 #   NEF, HJS, UK in a Changing Europe, Growth and Reform Network.
-# Refuse automated access (HTTP 403 for every request incl. robots.txt, a WAF block that we
-#   deliberately do not work around): Bright Blue, Institute for Fiscal Studies.
+# Sources that REFUSE automated access, checked from GitHub's runners on 2026-10-24. They are respected and never worked around
+# (no browser disguises, no challenge-solving); they show as failing in Source health:
+#   robots.txt forbids bots: Lib Dem Voice, Reuters, The Times, BMG Research, Deltapoll, Trajectory Partnership, Good Growth Foundation,
+#     UK Parliament Commons Library, Bright Blue, Centre for European Reform, NCUB, The Jobs Foundation, Re:State
+#   Cloudflare bot challenge: Institute for Fiscal Studies, The King's Fund, Chatham House, Social Market Foundation,
+#     Stonehaven, Redfield & Wilton, Institute for Policy Research (Bath)
+#   unreachable from the runners (connection refused or timing out): Convergent Opinion, People's Polling, PolicyWISE (sometimes)
+#   script-only pages with nothing to read: IISS, Merlin Strategy; Norstat's site is throttled
 # Every request checks the site's robots.txt first (403/unreachable robots.txt = no bots) and requests to one site
 # are spaced at least 1 second apart (longer if its Crawl-delay says so).
 # ---------------------------------------------------------------------------
@@ -67,7 +73,6 @@ coverage:
   pattern: 'Sarah Olney|\bOlney\b'
 
 polling:
-  wikipedia_page: https://en.wikipedia.org/wiki/Opinion_polling_for_the_next_United_Kingdom_general_election
   # Headlines matching this are dropped: hub pages, US politics, celebrity-fame trackers.
   exclude_pattern: 'fame & popularity|polls & surveys|^topline|^insights hub|Global Market Research|^Ipsos - Ipsos|midterm|Republican|Democrat\b|generic ballot'
   # Pages that list a pollster's write-ups directly.
@@ -75,12 +80,6 @@ polling:
     # `harvest` follows the newest matching article and adds the earlier editions it links to
     # (the listing page only shows the latest few; the topic page needs JavaScript).
     - {name: YouGov, url: "https://yougov.com/en-gb/articles", harvest: "yougov-news-tracker"}
-
-  wikipedia_leadership_page: https://en.wikipedia.org/wiki/Leadership_approval_opinion_polling_for_the_next_United_Kingdom_general_election
-  wikipedia_pm_page: https://en.wikipedia.org/wiki/Preferred_prime_minister_opinion_polling_for_the_next_United_Kingdom_general_election
-  # Every poll row in these Wikipedia tables becomes an item linking to the pollster's own release, so ALL pollsters that
-  # publish (Freshwater, Deltapoll, Techne, BMG, JL Partners, Trajectory, ...) appear without scraping their sites.
-  table_lookback_days: 60
 
   # POLITICAL POLLING ONLY. A search/scrape result is kept if its headline matches `core`, or matches `policy` and does not
   # look consumer/commercial; other countries' politics (`abroad`) is dropped unless the headline mentions the UK.
@@ -109,20 +108,20 @@ polling:
     - {name: Savanta, url: "https://savanta.com/knowledge-centre/", feeds: ["https://savanta.com/feed/"]}
     - {name: Public First, url: "https://www.publicfirst.co.uk/research", feeds: ["https://www.publicfirst.co.uk/feed/"]}
     - {name: Verian, url: "https://www.veriangroup.com/", feeds: ["https://www.veriangroup.com/feed/"]}
-    - {name: Whitestone Insight, url: "https://whitestone-insight.com/", feeds: ["https://whitestone-insight.com/feed/"]}
-    - {name: Merlin Strategy, url: "https://merlinstrategy.co.uk/", feeds: ["https://merlinstrategy.co.uk/feed/"]}
-    - {name: Stonehaven, url: "https://stonehavenglobal.com/", feeds: ["https://stonehavenglobal.com/feed/"]}
-    - {name: Redfield & Wilton Strategies, url: "https://redfieldandwilton.com/", feeds: ["https://redfieldandwilton.com/feed/"]}
+    - {name: Whitestone Insight, url: "https://www.whitestoneinsight.com/", urls: ["https://whitestoneinsight.com/", "https://www.whitestoneinsight.com/insights", "https://www.whitestoneinsight.com/news"], feeds: ["https://www.whitestoneinsight.com/feed/"]}   # no hyphen (whitestone-insight.com did not resolve)
+    - {name: Merlin Strategy, url: "https://merlinstrategy.co.uk/", urls: ["https://merlinstrategy.co.uk/blog"], feeds: ["https://merlinstrategy.co.uk/feed/"]}
+    - {name: Stonehaven, url: "https://stonehavenglobal.com/", urls: ["https://stonehavenglobal.com/insights/", "https://stonehavenglobal.com/news/", "https://stonehavenglobal.com/polling/"], feeds: ["https://stonehavenglobal.com/feed/", "https://stonehavenglobal.com/insights/feed/"]}
+    - {name: Redfield & Wilton Strategies, url: "https://redfieldandwilton.com/", urls: ["https://redfieldandwilton.com/polls/", "https://redfieldandwilton.com/news/", "https://redfieldandwilton.com/insights/"], feeds: ["https://redfieldandwilton.com/feed/", "https://redfieldandwilton.com/polls/feed/"]}
     - {name: Number Cruncher Politics, url: "https://www.ncpolitics.uk/", feeds: ["https://www.ncpolitics.uk/feed/"]}
-    - {name: Stack Data Strategy, url: "https://stackdatastrategy.com/", feeds: ["https://stackdatastrategy.com/feed/"]}
-    - {name: Electoral Calculus, url: "https://www.electoralcalculus.co.uk/blog/", urls: ["https://www.electoralcalculus.co.uk/"], feeds: ["https://www.electoralcalculus.co.uk/blog/feed.xml", "https://www.electoralcalculus.co.uk/blog/rss.xml"]}
+    - {name: Stack Data Strategy, url: "https://stackdatastrategy.com/", urls: ["https://stackdatastrategy.com/insights", "https://stackdatastrategy.com/polling", "https://stackdatastrategy.com/blog", "https://stackdatastrategy.com/news", "https://stackdatastrategy.com/research"], feeds: ["https://stackdatastrategy.com/feed/"]}
+    - {name: Electoral Calculus, url: "https://www.electoralcalculus.co.uk/", urls: ["https://www.electoralcalculus.co.uk/blog/", "https://www.electoralcalculus.co.uk/polls.html", "https://www.electoralcalculus.co.uk/prediction_main.html"], feeds: ["https://www.electoralcalculus.co.uk/blog/feed.xml", "https://www.electoralcalculus.co.uk/blog/rss.xml"]}
     - {name: Good Growth Foundation, url: "https://www.goodgrowthfoundation.org/", feeds: ["https://www.goodgrowthfoundation.org/feed/"]}
     - {name: Trajectory Partnership, url: "https://www.trajectorypartnership.com/"}
-    - {name: Convergent Opinion, url: "https://www.convergentopinion.com/"}
-    - {name: Peoples Polling, url: "https://www.peoplespolling.com/", feeds: ["https://www.peoplespolling.com/feed/"]}
+    - {name: Convergent Opinion, url: "https://www.convergentopinion.com/", urls: ["https://convergentopinion.com/", "https://www.convergentopinion.co.uk/", "https://www.convergentopinion.com/blog"], feeds: ["https://www.convergentopinion.com/feed/"]}
+    - {name: Peoples Polling, url: "https://www.peoplepolling.com/", urls: ["https://peoplepolling.com/", "https://www.peoplepolling.com/news"], feeds: ["https://www.peoplepolling.com/feed/"]}   # PeoplePolling, one word
     - {name: Yonder, url: "https://yonderconsulting.com/", feeds: ["https://yonderconsulting.com/feed/"]}
-    - {name: Panelbase, url: "https://www.panelbase.net/", feeds: ["https://www.panelbase.net/feed/"]}
-    - {name: Norstat, url: "https://norstat.co.uk/", feeds: ["https://norstat.co.uk/feed/"]}
+    # Panelbase is part of Norstat now (panelbase.net serves Norstat's site), so it is collected under Norstat.
+    - {name: Norstat, url: "https://norstat.co.uk/", urls: ["https://norstat.co.uk/insights"], feeds: ["https://norstat.co.uk/feed/"]}
     - {name: WeThink (Omnisis), url: "https://wethink.report/", feeds: ["https://wethink.report/feed/"]}
 
   # Polling analysts and aggregators: commentary and write-ups of new polls. `require` keeps only poll-related posts.
@@ -147,7 +146,7 @@ thinktanks:
   - {name: Centre for Policy Studies, url: "https://cps.org.uk/research/"}
   - {name: Centre for Public Data, url: "https://www.centreforpublicdata.org/blog"}
   - {name: Centre for Social Justice, url: "https://www.centreforsocialjustice.org.uk/library"}
-  - {name: CEPEO, url: "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo"}  # cepeo.ucl.ac.uk no longer resolves; now part of UCL IOE
+  - {name: CEPEO, url: "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo", urls: ["https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities", "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities/publications", "https://www.ucl.ac.uk/ioe/research/cepeo", "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo/publications", "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo/news", "https://cepeo.ucl.ac.uk/"]}  # cepeo.ucl.ac.uk no longer resolves; now part of UCL IOE
   - {name: Chatham House, url: "https://www.chathamhouse.org/publications", feeds: ["https://www.chathamhouse.org/rss.xml", "https://www.chathamhouse.org/publications/rss"]}  # 403 to GitHub's runners
   - {name: City-REDI, url: "https://www.birmingham.ac.uk/research/city-redi/publications"}
   - {name: Civitas, url: "https://www.civitas.org.uk/publications/"}
@@ -160,7 +159,7 @@ thinktanks:
   - {name: Green Alliance, url: "https://green-alliance.org.uk/publications/"}
   - {name: Growth and Reform Network, url: "https://growthandreform.org/ign-insights"}  # homepage only lists network members
   - {name: HEPI, url: "https://www.hepi.ac.uk/reports/"}
-  - {name: IIED, url: "https://www.iied.org/publications", feeds: ["https://www.iied.org/rss.xml", "https://www.iied.org/feeds/publications"]}  # page loads but is JavaScript-rendered
+  - {name: IIED, url: "https://www.iied.org/publications", feeds: ["https://www.iied.org/rss.xml", "https://www.iied.org/feeds/publications"], sitemap_pattern: '^/\d+[a-z]*iied/?$', sitemap_days: 400}  # its publications are top-level /12345iied addresses  # page loads but is JavaScript-rendered
   - {name: IISS, url: "https://www.iiss.org/publications/", feeds: ["https://www.iiss.org/rss/", "https://www.iiss.org/feed/"]}  # page loads but is JavaScript-rendered
   # 403 to all automated requests (WAF) on 2026-10-23, as above. Decision needed.
   - {name: Institute for Fiscal Studies, url: "https://ifs.org.uk/publications", feeds: ["https://ifs.org.uk/publications/rss.xml", "https://ifs.org.uk/rss.xml"]}  # web pages 403 to automated requests (WAF): respected as "no bots"; shows as failing
@@ -181,13 +180,13 @@ thinktanks:
   - {name: PBE, url: "https://www.pbe.org.uk/research", urls: ["https://www.pbe.org.uk/", "https://www.probonoeconomics.com/research"], feeds: ["https://www.pbe.org.uk/feed/"]}  # formerly Pro Bono Economics; the bare pbe.org.uk host had a certificate error
   - {name: PolicyWISE, url: "https://policywise.com/", urls: ["https://policywise.com/wise-in-5/", "https://policywise.com/news/"], feeds: ["https://policywise.com/feed/"]}  # run by the Open University; /publications/ 404ed
   - {name: Power to Change, url: "https://www.powertochange.org.uk/research/"}
-  - {name: Re:State, url: "https://restate.org.uk/research/", urls: ["https://restate.org.uk/", "https://www.restate.org.uk/"], feeds: ["https://restate.org.uk/feed/"]}  # was restateuk.com (certificate error)
+  - {name: Re:State, url: "https://re-state.co.uk/research/", urls: ["https://re-state.co.uk/", "https://www.re-state.co.uk/"], feeds: ["https://re-state.co.uk/feed/"]}   # Reform rebranded as Re:State in May 2025 and moved to re-state.co.uk
   - {name: Resolution Foundation, url: "https://www.resolutionfoundation.org/publications/"}
   - {name: RUSI, url: "https://www.rusi.org/explore-our-research/publications"}
   - {name: Social Market Foundation, url: "https://www.smf.co.uk/publications/", feeds: ["https://www.smf.co.uk/feed/"]}  # 403 to GitHub's runners
   - {name: The Coalition for Global Prosperity, url: "https://www.coalitionforglobalprosperity.com/news", feeds: ["https://www.coalitionforglobalprosperity.com/news?format=rss", "https://www.coalitionforglobalprosperity.com/feed/"]}  # is .com, not .org
   - {name: The Constitution Unit, url: "https://www.ucl.ac.uk/constitution-unit/publications"}
-  - {name: The David Hume Institute, url: "https://www.davidhumeinstitute.com/publication", feeds: ["https://www.davidhumeinstitute.com/publication?format=rss", "https://www.davidhumeinstitute.com/feed/"]}  # is .com, not .org
+  - {name: The David Hume Institute, url: "https://www.davidhumeinstitute.com/", urls: ["https://www.davidhumeinstitute.com/publications", "https://www.davidhumeinstitute.com/research", "https://www.davidhumeinstitute.com/reports", "https://www.davidhumeinstitute.com/blog", "https://www.davidhumeinstitute.com/news"], feeds: ["https://www.davidhumeinstitute.com/publications?format=rss", "https://www.davidhumeinstitute.com/blog?format=rss", "https://www.davidhumeinstitute.com/news?format=rss", "https://www.davidhumeinstitute.com/research?format=rss"]}  # a Squarespace site: any collection page has ?format=rss  # is .com, not .org
   - {name: The Foreign Policy Centre, url: "https://fpc.org.uk/publications/"}
   - {name: The Henry Jackson Society, url: "https://henryjacksonsociety.org/", feed: false}  # /publications/ 404s; homepage lists latest /publications/<slug>/ and PDF reports. Its /feed/ has only one item
   - {name: The Jobs Foundation, url: "https://www.jobsfoundation.org/research", urls: ["https://jobsfoundation.org.uk/research", "https://www.jobsfoundation.org.uk/"]}  # 401 (login) at the old URL; real domain unconfirmed; 
