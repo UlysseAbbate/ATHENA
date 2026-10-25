@@ -4,7 +4,7 @@ const m = document.getElementById("m");
 const STALE_HOURS = 15;   // the collector runs at 6am and 6pm London time: a missed run is worth a warning
 const TABLES = { plan_entries: "Plan", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
   policies: "Policies", social_accounts: "Social accounts", social_posts: "Social outputs", content_items: "Content", media_coverage: "Coverage",
-  volunteers: "Volunteers", stakeholders: "Stakeholders", profiles: "People", role_permissions: "Permissions" };
+  volunteers: "Volunteers", stakeholders: "Stakeholders", contacts: "Volunteers & stakeholders", profiles: "People", role_permissions: "Permissions" };
 
 Shell.mount(document.getElementById("hd"), { sub: "Admin", home: "../" });
 AuthUI.watchRecovery(sb, m);
@@ -18,7 +18,7 @@ AuthUI.watchRecovery(sb, m);
   const [people, pending, ending, vols, stk, cov, autoCov, feed, health, act] = await Promise.all([
     count("profiles"), count("profiles", b => b.is("role", null)),
     sb.from("profiles").select("email,access_until").gte("access_until", today).lte("access_until", soon).order("access_until"),
-    count("volunteers"), count("stakeholders"), count("media_coverage"),
+    count("contacts", b => b.eq("kind", "volunteer")), count("contacts", b => b.eq("kind", "stakeholder")), count("media_coverage"),
     count("media_coverage", b => b.eq("source", "auto").gte("created_at", new Date(Date.now() - 7 * 864e5).toISOString())),
     sb.from("ulysse_data").select("updated_at").eq("name", "feed").maybeSingle(),
     sb.from("ulysse_data").select("body").eq("name", "health").maybeSingle(),

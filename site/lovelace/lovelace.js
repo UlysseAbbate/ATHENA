@@ -9,9 +9,10 @@ const ROLES = { core_team: "Core team", executive: "Executive", local_party_chai
   candidate: "Candidate", support_team: "Support team", member: "Member" };
 const RESOURCES = {
   plan_full: "Full campaign plan (all rows)", plan_shared: "Shared plan rows (Solney story, milestones, policy, digital, campaigns, visits)",
-  visits: "Local party visits sheet (incl. contacts)", budget: "Budget & governance", volunteers_all: "Full volunteer list",
-  volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies", social: "Social media tracker",
-  coverage: "Coverage", stakeholders_all: "Full stakeholder list", stakeholders_add: "Add stakeholders (own entries visible to the adder)",
+  visits: "Local party visit details and contacts (shown on the Campaign plan)", budget: "Budget & governance",
+  volunteers_all: "Full volunteer list (People page)", volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies",
+  social: "Tracked social accounts and content pipeline (Media page)", coverage: "Media page: news coverage and social posts",
+  stakeholders_all: "Full stakeholder list (People page)", stakeholders_add: "Add stakeholders (own entries visible to the adder)",
   users: "Team & access: see users / change roles", permissions: "Edit this permissions table",
   audit: "Activity log (who changed what)", ulysse: "Lucien policy tracker (only the admin can change this row)" };
 
@@ -67,21 +68,20 @@ async function boot() {
 const TABS = [
   ["today", "Overview", () => true, renderToday],
   ["plan", "Campaign plan", () => can("plan_full", "read") || can("plan_shared", "read"), renderPlan],
-  ["visits", "Local party visits", () => can("visits", "read"), () => crud(VISITS)],
   ["budget", "Budget & governance", () => can("budget", "read"), renderBudget],
-  ["volunteers", "Volunteers", () => can("volunteers_all", "read") || can("volunteers_add", "write"), renderVolunteers],
+  ["people", "Volunteers & stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
   ["policies", "Policies", () => can("policies", "read"), () => crud(POLICIES)],
-  ["social", "Social media", () => can("social", "read"), renderSocial],
-  ["coverage", "Coverage", () => can("coverage", "read"), () => crud(COVERAGE)],
-  ["stakeholders", "Stakeholders", () => can("stakeholders_all", "read") || can("stakeholders_add", "write"), renderStakeholders],
+  ["media", "Media", () => can("coverage", "read") || can("social", "read"), renderMedia],
   ["team", "Team & access", () => can("users", "read"), renderTeam]
 ];
+// old addresses (bookmarks) of the pages that were merged
+const ALIAS = { visits: "plan", social: "media", coverage: "media", volunteers: "people", stakeholders: "people" };
 function buildTabs() {
   const vis = TABS.filter(t => t[3] && t[2]());
   const nav = $("#tabs"); nav.hidden = false;
   nav.innerHTML = vis.map(t => `<button data-t="${t[0]}">${esc(t[1])}</button>`).join("");
   nav.onclick = e => { const b = e.target.closest("button"); if (b) go(b.dataset.t); };
-  const hash = location.hash.slice(1);
+  const hash = ALIAS[location.hash.slice(1)] || location.hash.slice(1);
   go(vis.some(t => t[0] === hash) ? hash : S.tab && vis.some(t => t[0] === S.tab) ? S.tab : vis[0]?.[0]);
 }
 async function go(id, quiet) {
@@ -101,7 +101,7 @@ function openForm({ title, fields, values = {}, submitLabel = "Save", onSubmit, 
     const v = values[f.k] ?? "", id = "f_" + f.k, req = f.req ? "required" : "";
     let input;
     if (f.type === "textarea") input = `<textarea id="${id}" ${req}>${esc(v)}</textarea>`;
-    else if (f.type === "select") input = `<select id="${id}" ${req}><option value=""></option>${f.options.map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}" ${String(v) === String(ov) ? "selected" : ""}>${esc(ol)}</option>`; }).join("")}</select>`;
+    else if (f.type === "select") input = `<select id="${id}" ${req}><option value=""></option>${(typeof f.options === "function" ? f.options() : f.options).map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}" ${String(v) === String(ov) ? "selected" : ""}>${esc(ol)}</option>`; }).join("")}</select>`;
     else if (f.type === "bool") input = `<select id="${id}"><option value=""></option><option value="true" ${v === true ? "selected" : ""}>Yes</option><option value="false" ${v === false ? "selected" : ""}>No</option></select>`;
     else input = `<input id="${id}" type="${f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}" ${f.type === "number" ? 'step="0.01"' : ""} value="${esc(f.type === "date" ? String(v).slice(0, 10) : v)}" ${req} ${f.list ? `list="dl_${f.k}"` : ""}>` + (f.list ? `<datalist id="dl_${f.k}">${f.list.map(o => `<option value="${esc(o)}">`).join("")}</datalist>` : "");
     return `<label for="${id}">${esc(f.label)}${f.req ? " *" : ""}</label>${input}`;
@@ -139,7 +139,7 @@ function cellHtml(f, v) {
   return esc(v);
 }
 // cfg: {table, title, fields, order:[col,asc], canEdit(), canAdd(), owned, ownEdit, note, footer, beforeTable}
-const sortState = {};
+const sortState = {}, filterState = {};
 function csvDownload(name, cols, rows) {
   const cell = v => { const t = v === null || v === undefined ? "" : String(v); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
   const text = [cols.map(c => cell(c.label)), ...rows.map(r => cols.map(c => cell(c.csv ? c.csv(r) : r[c.k])))].map(l => l.join(",")).join("\r\n");
@@ -162,15 +162,18 @@ async function crud(cfg, host = main, after) {
   const reload = after || (() => crud(cfg, host, after));
   host.innerHTML = `${cfg.title ? `<h2>${esc(cfg.title)}</h2>` : ""}${cfg.note ? `<p class="muted">${esc(cfg.note)}</p>` : ""}
     <div class="row"><input class="grow" type="search" placeholder="Search…" data-q>${canAdd ? '<button class="btn primary" data-add>+ Add</button>' : ""}<button class="btn" data-csv title="Download what is shown as a spreadsheet">CSV</button></div>
+    ${cfg.filters ? `<div class="row"><div class="seg">${cfg.filters.map((f, i) => `<button data-fl="${i}">${esc(f.label)}</button>`).join("")}</div></div>` : ""}
     ${cfg.beforeTable ? cfg.beforeTable : ""}<div class="tablewrap"><table></table></div><div data-foot></div>`;
   const { data, error } = await sb.from(cfg.table).select(cfg.select || "*").order(cfg.order[0], { ascending: cfg.order[1] });
   if (error) return showError(error);
   const cols = cfg.fields.filter(f => !f.hidden);
   const srt = sortState[cfg.table] ||= { k: null, asc: true };
+  const fst = filterState[cfg.table] ||= { i: 0 };
   let shown = data;
   const draw = () => {
     const q = $("[data-q]", host).value.toLowerCase();
-    shown = data.filter(r => !q || JSON.stringify(Object.values(r)).toLowerCase().includes(q));
+    host.querySelectorAll("[data-fl]").forEach(b => b.classList.toggle("on", +b.dataset.fl === fst.i));
+    shown = data.filter(r => (!cfg.filters || cfg.filters[fst.i].test(r)) && (!q || JSON.stringify(Object.values(r)).toLowerCase().includes(q)));
     if (srt.k) {
       const f = cfg.fields.find(x => x.k === srt.k), num = f?.type === "number";
       shown = shown.slice().sort((a, b) => {
@@ -180,7 +183,7 @@ async function crud(cfg, host = main, after) {
         return srt.asc ? c : -c;
       });
     }
-    const editable = r => canEdit || (cfg.ownEdit && r.created_by === S.user.id);
+    const editable = r => cfg.canEditRow ? cfg.canEditRow(r) : canEdit || (cfg.ownEdit && r.created_by === S.user.id);
     $("table", host).innerHTML = `<thead><tr>${cols.map(f => `<th><button class="sort" data-sort="${f.k}" aria-sort="${srt.k === f.k ? (srt.asc ? "ascending" : "descending") : "none"}">${esc(f.label)}${srt.k === f.k ? (srt.asc ? " ▲" : " ▼") : ""}</button></th>`).join("")}${shown.some(editable) ? "<th></th>" : ""}</tr></thead><tbody>` +
       (shown.map(r => `<tr>${cols.map(f => `<td class="${f.type === "textarea" ? "wrapcell" : ""}">${f.render ? f.render(r) : cellHtml(f, r[f.k])}</td>`).join("")}${editable(r) ? `<td><button class="btn sm" data-edit="${r.id}">Edit</button></td>` : ""}</tr>`).join("") ||
         `<tr><td colspan="${cols.length + 1}" class="muted">${data.length ? "Nothing matches the search." : "Nothing here yet."}</td></tr>`) + "</tbody>";
@@ -192,6 +195,7 @@ async function crud(cfg, host = main, after) {
       title: row ? "Edit" : "Add", fields, values: row || {}, meta: edited(row),
       onSubmit: async vals => {
         if (cfg.owned && !row) vals.created_by = S.user.id;
+        if (cfg.transform) cfg.transform(vals);
         const e = row ? await guardedUpdate(cfg.table, row, vals) : (await sb.from(cfg.table).insert(vals)).error;
         if (!e || e.message === CONFLICT) reload();
         return e;
@@ -205,6 +209,7 @@ async function crud(cfg, host = main, after) {
   $("[data-csv]", host).onclick = () => csvDownload(cfg.table, cfg.fields, shown);
   host.onclick = e => {
     const b = e.target.closest("[data-edit]"); if (b) return form(data.find(r => r.id === b.dataset.edit));
+    const fl = e.target.closest("[data-fl]"); if (fl) { fst.i = +fl.dataset.fl; return draw(); }
     const so = e.target.closest("[data-sort]");
     if (so) { srt.asc = srt.k === so.dataset.sort ? !srt.asc : true; srt.k = so.dataset.sort; draw(); }
   };
@@ -215,11 +220,21 @@ const planState = { mode: "day", date: iso(new Date()) };
 async function renderPlan() {
   const { mode, date } = planState;
   const start = mode === "day" ? date : mondayOf(date), end = mode === "day" ? date : addDays(start, 6);
-  const [cats, ents] = await Promise.all([
+  const canVisits = can("visits", "read");
+  const [cats, ents, vis, allVis] = await Promise.all([
     sb.from("plan_categories").select("*").order("sort"),
-    sb.from("plan_entries").select("*").gte("plan_date", start).lte("plan_date", end).order("updated_at")
+    sb.from("plan_entries").select("*").gte("plan_date", start).lte("plan_date", end).order("updated_at"),
+    canVisits ? sb.from("local_party_visits").select("*").gte("visit_date", start).lte("visit_date", end).order("visit_date") : Promise.resolve({ data: [] }),
+    canVisits ? sb.from("local_party_visits").select("id,visit_date") : Promise.resolve({ data: [] })
   ]);
-  if (cats.error || ents.error) return showError(cats.error || ents.error);
+  if (cats.error || ents.error || vis.error || allVis.error) return showError(cats.error || ents.error || vis.error || allVis.error);
+  // visit details (who asked, contact, who is actioning) sit under the plan's "Local Party Visits" row on the visit's date
+  const vcat = cats.data.find(c => c.name === "Local Party Visits");
+  const partyKey = v => String(v.local_party || "").toLowerCase().replace(/ and /g, " ").split(/\s+/)[0];
+  const visitDetail = v => [v.request, v.contact_name && `contact ${v.contact_name}${v.contact_phone ? " " + v.contact_phone : ""}`, v.taken_by && `taken by ${v.taken_by}`,
+    v.actioning && `actioning ${v.actioning}`, v.notes].filter(Boolean).join(" · ");
+  const visitsOn = d => vis.data.filter(v => v.visit_date === d);
+  const matched = (v, entries) => entries.some(e => e.content.toLowerCase().includes(partyKey(v)));
   const canCat = c => can("plan_full", "write") || (can("plan_shared", "write") && c.shared);
   const today = iso(new Date());
   main.innerHTML = `<div class="row"><div class="seg"><button data-m="day" class="${mode === "day" ? "on" : ""}">Day</button><button data-m="week" class="${mode === "week" ? "on" : ""}">Week</button></div>
@@ -241,39 +256,59 @@ async function renderPlan() {
   });
   const pv = $("#pv");
   if (!cats.data.length) { pv.append(notice("No plan rows are available to your role.", "ok")); return; }
+  if (canVisits) {
+    const undated = allVis.data.filter(v => !v.visit_date).length;
+    main.insertAdjacentHTML("beforeend", `<details class="card" id="vreq" style="margin-top:18px"><summary><b>Local party visit requests</b> <span class="muted">· ${allVis.data.length} on the sheet${undated ? `, ${undated} without a date yet` : ""}</span></summary><div id="vreqb"></div></details>`);
+    $("#vreq").ontoggle = e => { if (e.target.open && !$("#vreqb").dataset.on) { $("#vreqb").dataset.on = 1; crud(VISITS, $("#vreqb"), renderPlan); } };
+  }
   if (mode === "day") {
     pv.innerHTML = cats.data.map(c => {
       const list = byKey[c.id + "|" + date] || [];
+      const isV = vcat && c.id === vcat.id, vday = isV ? visitsOn(date) : [];
+      const vline = (v, own) => `<div class="${own ? "entry" : "ovline muted"}"><span>${own ? "" : "↳ "}<b>${esc(v.local_party)}</b>${visitDetail(v) ? ": " + esc(visitDetail(v)) : ""}</span>${can("visits", "write") ? `<span class="acts"><button class="btn sm" data-v="${v.id}">Edit visit</button></span>` : ""}</div>`;
+      const body = isV ? list.map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>` +
+          vday.filter(v => e.content.toLowerCase().includes(partyKey(v))).map(v => vline(v, false)).join("")).join("") + vday.filter(v => !matched(v, list)).map(v => vline(v, true)).join("") : null;
       return `<div class="sec ${c.shared ? "shared" : ""}"><h3>${esc(c.name)} ${c.shared && can("plan_full", "read") ? '<span class="pill">visible to all roles</span>' : ""} ${canCat(c) ? `<button class="btn sm" data-add="${c.id}">+ Add</button>` : ""}</h3>
-        ${list.map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>`).join("") || '<span class="muted">Nothing planned.</span>'}</div>`;
+        ${(isV ? body : list.map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>`).join("")) || '<span class="muted">Nothing planned.</span>'}</div>`;
     }).join("");
     pv.onclick = e => {
-      const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]");
+      const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]"), vb = e.target.closest("[data-v]");
+      if (vb) return visitForm(vis.data.find(v => v.id === vb.dataset.v));
       if (a) edit(null, cats.data.find(c => c.id == a.dataset.add), date);
       if (x) { const en = ents.data.find(z => z.id === x.dataset.e); edit(en, cats.data.find(c => c.id === en.category_id), date); }
     };
   } else {
     const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
     pv.innerHTML = `<div class="tablewrap"><table class="grid"><tr><th>Row</th>${days.map(d => `<th class="${d === today ? "today" : ""}"><a href="#" data-day="${d}">${esc(fmtShort(d))}</a></th>`).join("")}</tr>` +
-      cats.data.map(c => `<tr><td>${esc(c.name)}</td>${days.map(d => `<td class="${d === today ? "today" : ""}">${(byKey[c.id + "|" + d] || []).map(e => esc(e.content)).join("\n\n")}</td>`).join("")}</tr>`).join("") + "</table></div>";
+      cats.data.map(c => `<tr><td>${esc(c.name)}</td>${days.map(d => { const list = byKey[c.id + "|" + d] || [], extra = vcat && c.id === vcat.id ? visitsOn(d).filter(v => !matched(v, list)).map(v => `${v.local_party}${v.request ? ": " + v.request : ""}`) : [];
+        return `<td class="${d === today ? "today" : ""}">${[...list.map(e => esc(e.content)), ...extra.map(esc)].join("\n\n")}</td>`; }).join("")}</tr>`).join("") + "</table></div>";
     pv.onclick = e => { const a = e.target.closest("[data-day]"); if (a) { e.preventDefault(); planState.mode = "day"; planState.date = a.dataset.day; renderPlan(); } };
   }
 }
 
 /* ------------------------------------------------------------------ entity configs */
 const T = (k, label, type = "text", extra = {}) => ({ k, label, type, ...extra });
-const VISITS = { table: "local_party_visits", title: "Local party visits", order: ["visit_date", true], canEdit: () => can("visits", "write"),
-  note: "Requests from local parties and who is handling them. Contains contact details.",
+function visitForm(row) {
+  openForm({ title: `Visit: ${row.local_party}`, fields: VISITS.fields.filter(f => !f.noForm), values: row, meta: edited(row),
+    onSubmit: async v => { const e = await guardedUpdate("local_party_visits", row, v); if (!e || e.message === CONFLICT) renderPlan(); return e; },
+    onDelete: async () => { const { error: e } = await sb.from("local_party_visits").delete().eq("id", row.id); if (!e) renderPlan(); return e; } });
+}
+const VISITS = { table: "local_party_visits", title: "", order: ["visit_date", true], canEdit: () => can("visits", "write"),
+  note: "Requests from local parties and who is handling them. A visit with a date shows its details on the plan for that day, under Local Party Visits (add a line there too, so everyone who sees the plan sees the visit). Contains contact details.",
   fields: [T("local_party", "Local party", "text", { req: true }), T("request", "Request"), T("taken_by", "Who took it"), T("actioning", "Who actioning"),
     T("happening", "When happening"), T("visit_date", "Date (if fixed)", "date"), T("contact_name", "Contact"), T("contact_phone", "Number"), T("notes", "Notes", "textarea")] };
 const POLICIES = { table: "policies", title: "Policies", order: ["theme", true], canEdit: () => can("policies", "write"),
   fields: [T("policy", "Policy", "text", { req: true }), T("theme", "Theme"), T("briefing", "Briefing"), T("actions", "Actions", "textarea"),
     T("interested_parties", "Interested parties", "textarea"), T("comms", "Comms", "textarea"), T("notes", "Notes", "textarea")] };
-const COVERAGE = { table: "media_coverage", title: "Coverage: Sarah Olney in the media", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
-  note: "Every time Sarah Olney has been mentioned in the media. Stories in the tracked outlets' news feeds are added automatically at 6am and 6pm (marked auto); add anything else by hand.",
-  fields: [T("covered_on", "Date", "date", { req: true }), T("outlet", "Outlet", "text", { req: true }), T("headline", "Headline", "text", { req: true, render: r => {
+const PLATFORMS = ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"];
+const isSocial = r => r.source === "social" || PLATFORMS.some(p => p.toLowerCase() === String(r.outlet).toLowerCase()) || /^(X|Twitter)\b/i.test(r.outlet);
+const MEDIA = { table: "media_coverage", title: "", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
+  note: "Sarah Olney in the news (any article that mentions her, found at 6am and 6pm) and what our tracked social accounts post. For a social post the outlet is the platform and the headline is the start of the caption.",
+  filters: [{ label: "All", test: () => true }, { label: "News", test: r => !isSocial(r) }, { label: "Social media", test: isSocial }],
+  fields: [T("covered_on", "Date", "date", { req: true }), T("outlet", "Outlet / platform", "text", { req: true, list: [...PLATFORMS, "BBC News", "The Guardian", "Evening Standard", "MyLondon"] }),
+    T("headline", "Headline / first line of the caption", "text", { req: true, render: r => {
       const u = safeUrl(r.url); return (u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(r.headline)}</a>` : esc(r.headline)) +
-        (r.source === "auto" ? ' <span class="pill" title="Found automatically in the outlet\'s news feed">auto</span>' : ""); } }),
+        (r.source === "auto" ? ' <span class="pill" title="Found automatically in the outlet\'s news feed or pages">auto</span>' : r.source === "social" ? ' <span class="pill" title="Found automatically on the account">auto</span>' : ""); } }),
     T("url", "URL", "url", { hidden: true }), T("notes", "Notes", "textarea")] };
 const BUDGET = { table: "budget_items", title: "Budget", order: ["created_at", true], canEdit: () => can("budget", "write"),
   fields: [T("item", "Item", "text", { req: true }), T("amount", "Amount (£)", "number"), T("category", "Category"), T("notes", "Notes", "textarea")],
@@ -292,51 +327,44 @@ async function renderBudget() {
   await crud(BUDGET, $("#b1"), renderBudget); await crud(GOVERNANCE, $("#b2"), renderBudget);
 }
 
-/* ------------------------------------------------------------------ volunteers & stakeholders (add by anyone) */
-const FREE_TEXT_ROLES = ["Literature", "Policy", "Press (pitching)", "Press (copywriting)", "Social", "Fundraising", "Agent", "Phoning", "Canvassing", "Events", "Photography / video", "Design", "Other"];
-async function renderVolunteers() {
-  const all = can("volunteers_all", "read");
-  await crud({ table: "volunteers", title: all ? "Volunteers" : "Volunteer for the campaign", owned: true, ownEdit: true, order: ["created_at", false],
-    canEdit: () => can("volunteers_all", "write"), canAdd: () => can("volunteers_add", "write"),
-    note: all ? "Everyone can add volunteers; only the core team and executive see the full list." : "Add yourself or someone else. You can only see entries you added.",
-    fields: [T("name", "Name", "text", { req: true }), T("role_wanted", "Role in the campaign", "text", { list: FREE_TEXT_ROLES }),
-      T("availability", "Regular times free to support", "textarea"), T("email", "Email"), T("phone", "Phone"),
-      ...(all ? [T("asked_by", "Asked by"), T("accepted", "Accepted?", "bool")] : []), T("notes", "Notes", "textarea")] });
-}
-async function renderStakeholders() {
-  const all = can("stakeholders_all", "read");
-  await crud({ table: "stakeholders", title: "Stakeholders", owned: true, ownEdit: true, order: ["name", true],
-    canEdit: () => can("stakeholders_all", "write"), canAdd: () => can("stakeholders_add", "write"),
-    note: all ? "Media, think tanks, campaigns, donors and others. Anyone can add a stakeholder." : "Add a stakeholder. You can only see entries you added.",
-    fields: [T("name", "Name", "text", { req: true }), T("organisation", "Organisation"),
-      T("sector", "Sector", "text", { list: ["Media", "Think tank", "Campaign", "Donor", "Elected official", "Local party", "Business", "Union / membership body", "Community group", "Other"] }),
-      T("email", "Email"), T("phone", "Phone"), T("point_person_name", "Point person"), T("point_person_contact", "Point person contact"),
-      T("owner", "Owner (who on our side)"), T("notes", "Other information", "textarea")] });
+/* ------------------------------------------------------------------ volunteers & stakeholders: one list */
+const SECTORS = ["Lib Dems", "Media", "Think tank", "Campaign", "Donor", "Elected official", "Local party", "Business", "Union / membership body", "Community group", "Other"];
+const KIND = { volunteer: "Volunteer", stakeholder: "Stakeholder" };
+const mayAdd = k => can(k === "volunteer" ? "volunteers_add" : "stakeholders_add", "write");
+const mayEditAll = k => can(k === "volunteer" ? "volunteers_all" : "stakeholders_all", "write");
+async function renderPeople() {
+  const seeAll = can("volunteers_all", "read") || can("stakeholders_all", "read");
+  await crud({ table: "contacts", title: "Volunteers & stakeholders", owned: true, order: ["name", true],
+    canEdit: () => can("volunteers_all", "write") || can("stakeholders_all", "write"), canAdd: () => mayAdd("volunteer") || mayAdd("stakeholder"),
+    canEditRow: r => r.created_by === S.user.id || mayEditAll(r.kind),
+    note: seeAll ? "One list for everyone we work with. Volunteers are filed under Lib Dems. The point of contact is the person on our side who owns the relationship. Anyone can add; you can always see and edit your own entries."
+      : "Add a volunteer or stakeholder. You can only see entries you added.",
+    filters: [{ label: "Everyone", test: () => true }, { label: "Volunteers", test: r => r.kind === "volunteer" }, { label: "Stakeholders", test: r => r.kind === "stakeholder" }],
+    transform: v => { if (v.kind === "volunteer") { v.organisation ||= "Lib Dems"; v.sector ||= "Lib Dems"; } },
+    fields: [T("name", "Full name", "text", { req: true }), T("organisation", "Organisation"), T("sector", "Sector", "text", { list: SECTORS }), T("email", "Email"), T("phone", "Phone"),
+      T("owner", "Point of contact"), T("notes", "Notes", "textarea"),
+      T("kind", "Type", "select", { req: true, hidden: true, options: () => Object.entries(KIND).filter(([k]) => mayAdd(k)) })] });
 }
 
-/* ------------------------------------------------------------------ social */
-const PLATFORMS = ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"];
-const socialState = { sub: "accounts" };
-async function renderSocial() {
-  main.innerHTML = `<div class="row"><div class="seg">${[["accounts", "Accounts"], ["posts", "Outputs"], ["content", "Sarah's content pipeline"]].map(([k, l]) =>
-    `<button data-s="${k}" class="${socialState.sub === k ? "on" : ""}">${l}</button>`).join("")}</div></div><div id="sv"></div>`;
-  main.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { socialState.sub = b.dataset.s; renderSocial(); });
-  const host = $("#sv"), w = can("social", "write");
-  if (socialState.sub === "content") return crud(CONTENT, host, renderSocial);
+/* ------------------------------------------------------------------ media: news coverage and social posts, plus the tracked accounts */
+async function renderMedia() {
+  main.innerHTML = `<div id="m1"></div>${can("social", "read") ? '<details class="card" id="m2" style="margin-top:18px"><summary><b>Tracked social accounts</b> <span class="muted">· London Lib Dems, London Young Liberals, Sarah Olney MP, Hina Bokhari AM, City Hall Lib Dems</span></summary><div id="m2b"></div></details>' +
+    '<details class="card" id="m3" style="margin-top:12px"><summary><b>Sarah\'s content pipeline</b></summary><div id="m3b"></div></details>' : ""}`;
+  await crud(MEDIA, $("#m1"), renderMedia);
+  if (!can("social", "read")) return;
+  const open = (id, fn) => { const d = $(id); d.ontoggle = () => { if (d.open && !d.dataset.on) { d.dataset.on = 1; fn(); } }; };
+  open("#m2", () => renderAccounts($("#m2b")));
+  open("#m3", () => crud(CONTENT, $("#m3b"), renderMedia));
+}
+async function renderAccounts(host) {
+  const w = can("social", "write");
   const { data: accts, error } = await sb.from("social_accounts").select("*").order("organisation");
   if (error) return showError(error);
-  if (socialState.sub === "posts") {
-    const opts = accts.map(a => [a.id, `${a.organisation} · ${a.platform}`]);
-    const map = Object.fromEntries(opts);
-    return crud({ table: "social_posts", title: "Outputs by tracked accounts", order: ["posted_at", false], canEdit: () => can("social", "write"),
-      note: "Log what each tracked account has published. Automatic collection is limited by the platforms' terms, so entries are added by hand.",
-      fields: [T("account_id", "Account", "select", { req: true, options: opts, render: r => esc(map[r.account_id] || ""), csv: r => map[r.account_id] || "" }), T("posted_at", "Posted", "date", { render: r => r.posted_at ? esc(fmtShort(r.posted_at.slice(0, 10))) : "—" }),
-        T("summary", "What it says", "textarea"), T("topic", "Topic"), T("url", "Link", "url")] }, host, renderSocial);
-  }
   const orgs = [...new Set(accts.map(a => a.organisation))];
-  host.innerHTML = `<p class="muted">Tracked accounts across Instagram, Facebook, Twitter, BlueSky, Substack, TikTok and LinkedIn. ${w ? "Click a cell to set its handle and link." : ""}</p>
+  host.innerHTML = `<p class="muted">What we follow. <b>BlueSky</b> and <b>Substack</b> accounts are read automatically at 6am and 6pm: put the handle in (for BlueSky, the full handle such as <code>name.bsky.social</code>).
+    The other platforms do not allow automated reading without their approved access, so add their posts to the table above by hand. ${w ? "Click a cell to set its handle and link." : ""}</p>
     ${w ? '<div class="row"><button class="btn primary" data-org>+ Add organisation</button></div>' : ""}
-    <div class="tablewrap"><table class="grid"><tr><th>Organisation</th>${PLATFORMS.map(p => `<th>${p}</th>`).join("")}</tr>` +
+    <div class="tablewrap"><table class="grid"><tr><th>Account</th>${PLATFORMS.map(p => `<th>${p}</th>`).join("")}</tr>` +
     orgs.map(o => `<tr><td>${esc(o)}</td>${PLATFORMS.map(p => { const a = accts.find(x => x.organisation === o && x.platform === p);
       const u = a && safeUrl(a.url); const label = a?.handle ? esc(a.handle) : '<span class="muted">—</span>';
       return `<td>${a ? (w ? `<a href="#" data-a="${a.id}">${label}</a>` : label) : ""}${u ? ` <a href="${esc(u)}" target="_blank" rel="noopener noreferrer">↗</a>` : ""}</td>`; }).join("")}</tr>`).join("") + "</table></div>";
@@ -344,16 +372,16 @@ async function renderSocial() {
     const c = e.target.closest("[data-a]"), o = e.target.closest("[data-org]");
     if (c) { e.preventDefault(); const a = accts.find(x => x.id === c.dataset.a);
       openForm({ title: `${a.organisation} · ${a.platform}`, fields: [T("handle", "Handle"), T("url", "Profile URL", "url"), T("notes", "Notes", "textarea")], values: a,
-        meta: edited(a), onSubmit: async v => { const er = await guardedUpdate("social_accounts", a, v); if (!er || er.message === CONFLICT) renderSocial(); return er; } }); }
+        meta: edited(a), onSubmit: async v => { const er = await guardedUpdate("social_accounts", a, v); if (!er || er.message === CONFLICT) renderAccounts(host); return er; } }); }
     if (o) openForm({ title: "Add organisation", fields: [T("organisation", "Organisation or account owner", "text", { req: true })],
-      onSubmit: async v => { const { error: er } = await sb.from("social_accounts").insert(PLATFORMS.map(p => ({ organisation: v.organisation, platform: p }))); if (!er) renderSocial(); return er; } });
+      onSubmit: async v => { const { error: er } = await sb.from("social_accounts").insert(PLATFORMS.map(p => ({ organisation: v.organisation, platform: p }))); if (!er) renderAccounts(host); return er; } });
   };
 }
 
 /* ------------------------------------------------------------------ team & access */
 const TABLE_LABEL = { plan_entries: "Plan", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
   policies: "Policies", social_accounts: "Social accounts", social_posts: "Social outputs", content_items: "Content", media_coverage: "Coverage",
-  volunteers: "Volunteers", stakeholders: "Stakeholders", profiles: "People", role_permissions: "Permissions" };
+  volunteers: "Volunteers", stakeholders: "Stakeholders", contacts: "Volunteers & stakeholders", profiles: "People", role_permissions: "Permissions" };
 const READ_ONLY = new Set(["audit", "ulysse"]);   // only "can see" means anything for these
 async function renderTeam() {
   const [{ data: profs, error }, { data: perms, error: pe }, seen, log] = await Promise.all([
@@ -406,7 +434,7 @@ async function renderToday() {
     q(can("budget", "read"), () => sb.from("governance_items").select("*").neq("status", "Done").lte("due_date", fortnight).order("due_date")),
     q(can("social", "read"), () => sb.from("content_items").select("*").neq("status", "Complete").gte("scheduled", today).lte("scheduled", fortnight).order("scheduled")),
     q(can("coverage", "read"), () => sb.from("media_coverage").select("*").order("covered_on", { ascending: false }).limit(6)),
-    q(can("volunteers_all", "read"), () => sb.from("volunteers").select("id,accepted,created_at"))]);
+    q(can("volunteers_all", "read") || can("stakeholders_all", "read"), () => sb.from("contacts").select("id,kind,created_at"))]);
   const firstError = [cats, ents, visits, gov, content, cov, vols].find(r => r?.error);
   if (firstError) return showError(firstError.error);
   const card = (title, body, tab) => `<section class="card ov"><h3>${esc(title)}${tab ? ` <a href="#${tab}" data-go="${tab}" class="muted">open ›</a>` : ""}</h3>${body}</section>`;
@@ -423,12 +451,12 @@ async function renderToday() {
     parts.push(card("Governance due", gov.data.map(g => `<div class="ovline ${g.due_date < today ? "late" : ""}"><b>${esc(fmtShort(g.due_date))}</b> ${esc(g.title)} <span class="muted">· ${esc(g.area)} · ${esc(g.status)}${g.owner ? " · " + esc(g.owner) : ""}</span></div>`).join("") ||
       none("Nothing due in the next fortnight."), "budget"));
   }
-  if (visits) parts.push(card("Local party visits", visits.data.map(v => `<div class="ovline"><b>${esc(fmtShort(v.visit_date))}</b> ${esc(v.local_party)}${v.request ? ` <span class="muted">· ${esc(v.request)}</span>` : ""}</div>`).join("") || none("No visits in the next fortnight."), "visits"));
-  if (content) parts.push(card("Content scheduled", content.data.map(c => `<div class="ovline"><b>${esc(fmtShort(c.scheduled))}</b> ${esc(c.name)} <span class="muted">· ${esc(c.status || "")}${c.platforms ? " · " + esc(c.platforms) : ""}</span></div>`).join("") || none("Nothing scheduled in the next fortnight."), "social"));
-  if (cov) parts.push(card("Latest coverage", cov.data.map(c => { const u = safeUrl(c.url);
-    return `<div class="ovline"><b>${esc(fmtShort(c.covered_on))}</b> ${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(c.headline)}</a>` : esc(c.headline)} <span class="muted">· ${esc(c.outlet)}</span></div>`; }).join("") || none("No coverage logged yet."), "coverage"));
-  if (vols) { const open = vols.data.filter(v => v.accepted == null).length, recent = vols.data.filter(v => v.created_at >= addDays(today, -7)).length;
-    parts.push(card("Volunteers", `<div class="ovstat"><b>${vols.data.length}</b> signed up · <b>${recent}</b> this week · <b>${open}</b> awaiting a decision</div>`, "volunteers")); }
+  if (visits) parts.push(card("Local party visits", visits.data.filter(v => v.visit_date).map(v => `<div class="ovline"><b>${esc(fmtShort(v.visit_date))}</b> ${esc(v.local_party)}${v.request ? ` <span class="muted">· ${esc(v.request)}</span>` : ""}</div>`).join("") || none("No visits in the next fortnight."), "plan"));
+  if (content) parts.push(card("Content scheduled", content.data.map(c => `<div class="ovline"><b>${esc(fmtShort(c.scheduled))}</b> ${esc(c.name)} <span class="muted">· ${esc(c.status || "")}${c.platforms ? " · " + esc(c.platforms) : ""}</span></div>`).join("") || none("Nothing scheduled in the next fortnight."), "media"));
+  if (cov) parts.push(card("Latest media", cov.data.map(c => { const u = safeUrl(c.url);
+    return `<div class="ovline"><b>${esc(fmtShort(c.covered_on))}</b> ${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(c.headline)}</a>` : esc(c.headline)} <span class="muted">· ${esc(c.outlet)}</span></div>`; }).join("") || none("Nothing logged yet."), "media"));
+  if (vols) { const vo = vols.data.filter(v => v.kind === "volunteer").length, st = vols.data.filter(v => v.kind === "stakeholder").length, recent = vols.data.filter(v => v.created_at >= addDays(today, -7)).length;
+    parts.push(card("Volunteers & stakeholders", `<div class="ovstat"><b>${vo}</b> volunteers · <b>${st}</b> stakeholders · <b>${recent}</b> added this week</div>`, "people")); }
   main.innerHTML = `<h2>${esc(fmtDay(today))}</h2><div class="ovgrid">${parts.join("") || card("Welcome", none("Pick a page above."))}</div>`;
   main.onclick = e => { const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); go(g.dataset.go); } };
 }
