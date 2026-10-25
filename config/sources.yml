@@ -74,7 +74,7 @@ media:
 coverage:
   pattern: 'Sarah Olney|\bOlney\b'
   article_days: 2
-  max_articles: 150
+  max_articles: 400
 
 polling: checked against live responses.
 # thinktanks: only the entries with a "verified" note below were checked live. The sandbox
