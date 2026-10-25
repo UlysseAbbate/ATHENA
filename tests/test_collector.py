@@ -328,3 +328,18 @@ def test_sitemap_relaxed_pass_takes_top_level_slugs(monkeypatch):
     stub_session(monkeypatch, {"https://o.test/sitemap.xml": f"<urlset>{urlset}</urlset>"})
     items, _ = U.sitemap_items({"name": "O", "url": "https://o.test/research"}, "thinktank")
     assert sorted(i["url"] for i in items) == ["https://o.test/an-important-new-report-on-housing", "https://o.test/another-detailed-paper-on-tax-reform"]
+
+
+def test_sources_yml_has_no_duplicate_keys():
+    import yaml
+
+    class Strict(yaml.SafeLoader):
+        pass
+
+    def construct(loader, node, deep=False):
+        keys = [loader.construct_object(k, deep=deep) for k, _ in node.value]
+        assert len(keys) == len(set(keys)), f"duplicate keys: {sorted(k for k in set(keys) if keys.count(k) > 1)}"
+        return yaml.SafeLoader.construct_mapping(loader, node, deep)
+    Strict.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, construct)
+    for name in ("sources.yml", "taxonomy.yml"):
+        yaml.load((Path(__file__).resolve().parent.parent / "config" / name).read_text(), Strict)
