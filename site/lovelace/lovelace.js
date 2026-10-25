@@ -270,7 +270,7 @@ const POLICIES = { table: "policies", title: "Policies", order: ["theme", true],
   fields: [T("policy", "Policy", "text", { req: true }), T("theme", "Theme"), T("briefing", "Briefing"), T("actions", "Actions", "textarea"),
     T("interested_parties", "Interested parties", "textarea"), T("comms", "Comms", "textarea"), T("notes", "Notes", "textarea")] };
 const COVERAGE = { table: "media_coverage", title: "Coverage: Sarah Olney in the media", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
-  note: "Every time Sarah Olney has been mentioned in the media. Stories in the tracked outlets' news feeds are added automatically every 3 hours (marked auto); add anything else by hand.",
+  note: "Every time Sarah Olney has been mentioned in the media. Stories in the tracked outlets' news feeds are added automatically at 6am and 6pm (marked auto); add anything else by hand.",
   fields: [T("covered_on", "Date", "date", { req: true }), T("outlet", "Outlet", "text", { req: true }), T("headline", "Headline", "text", { req: true, render: r => {
       const u = safeUrl(r.url); return (u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(r.headline)}</a>` : esc(r.headline)) +
         (r.source === "auto" ? ' <span class="pill" title="Found automatically in the outlet\'s news feed">auto</span>' : ""); } }),
