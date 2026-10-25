@@ -1,7 +1,7 @@
 /* Owner-only status board. Anyone who is not the admin sees "Not found"; the data is admin-only in the database too. */
 const { sb, esc, ago } = Athena;
 const m = document.getElementById("m");
-const STALE_HOURS = 7;   // the collector runs every 3 hours: two missed runs is worth a warning
+const STALE_HOURS = 15;   // the collector runs at 6am and 6pm London time: a missed run is worth a warning
 const TABLES = { plan_entries: "Plan", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
   policies: "Policies", social_accounts: "Social accounts", social_posts: "Social outputs", content_items: "Content", media_coverage: "Coverage",
   volunteers: "Volunteers", stakeholders: "Stakeholders", profiles: "People", role_permissions: "Permissions" };
@@ -29,7 +29,7 @@ AuthUI.watchRecovery(sb, m);
   Shell.mount(document.getElementById("hd"), { sub: "Admin", home: "../", email: acc.session.user.email, signOut: () => sb.auth.signOut(),
     programs: [{ href: "../access/", label: "Access" }, { href: "../lovelace/", label: "Lovelace" }, { href: "../lucien/", label: "Lucien" }, { href: "../libby/", label: "LIBBY" }] });
   m.innerHTML = `<div class="page-head"><h1>System status</h1></div>
-    ${staleH > STALE_HOURS ? `<div class="alert"><b>Lucien data is ${updated ? esc(ago(updated)) : "missing"}.</b> The collector should upload every 3 hours: check GitHub → Actions → <i>Update tracker</i>.</div>`
+    ${staleH > STALE_HOURS ? `<div class="alert"><b>Lucien data is ${updated ? esc(ago(updated)) : "missing"}.</b> The collector should upload at 6am and 6pm: check GitHub → Actions → <i>Update tracker</i>.</div>`
       : `<div class="alert ok">Collector healthy: last upload ${esc(ago(updated))}.</div>`}
     <h2 class="h2-rule">Lovelace</h2><table class="grid">
       ${row("People signed up", people)}${row("Awaiting a role", pending)}

@@ -273,7 +273,7 @@ function signIn() { AuthUI.render(sb, document.body, { title: "Lucien" }); }
   state.items.forEach(i => (i.geo || []).forEach(g => { if (/^(Europe|United States|Russia|Middle East|China|Africa|Global)/.test(g)) GEO_META[g] = "International"; }));
   const staleH = feed ? (Date.now() - new Date(feed.updated)) / 36e5 : Infinity;
   $("updated").textContent = feed ? `Updated ${Athena.ago(feed.updated)}` : "No data yet. Run the collector.";
-  if (staleH > 7) $("updated").classList.add("stale");
+  if (staleH > 15) $("updated").classList.add("stale");
   restoreView();
   // "since your last visit": the previous visit's time, kept for this whole browser session (reloads do not reset it)
   try {
