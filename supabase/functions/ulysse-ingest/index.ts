@@ -3,10 +3,11 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 // Called by the GitHub Actions collector. Authenticates with a shared secret (INGEST_TOKEN), not a user JWT.
 //   {name, body}                       store one of the three Ulysse blobs
 //   {action: "get", name}              read one back (the collector's memory of first-seen times between runs)
-//   {action: "coverage", rows: [...]}  add new Sarah Olney coverage to the Mall (existing URLs are left untouched)
+//   {action: "coverage", rows: [...]}  add new Sarah Olney coverage and social posts to Lovelace's Media page (existing URLs are left untouched)
+//   {action: "social_accounts"}        the tracked social accounts that have a handle set, for the collector to follow
 const ALLOWED = new Set(["feed", "polls", "health"]);
 const MAX_BYTES = 5_000_000;
-const MAX_COVERAGE = 300;
+const MAX_COVERAGE = 600;
 
 function safeEqual(a: string, b: string): boolean {
   const enc = new TextEncoder();
@@ -41,18 +42,26 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true, name: payload.name, body: data?.body ?? null, updated_at: data?.updated_at ?? null });
   }
 
+  if (payload.action === "social_accounts") {
+    const { data, error } = await sb.from("social_accounts").select("organisation,platform,handle,url").not("handle", "is", null);
+    if (error) return json({ error: error.message }, 500);
+    return json({ ok: true, accounts: data ?? [] });
+  }
+
   if (payload.action === "coverage") {
     if (!Array.isArray(payload.rows)) return json({ error: "bad request" }, 400);
     const rows = payload.rows.slice(0, MAX_COVERAGE).map((r: Record<string, unknown>) => ({
       covered_on: /^\d{4}-\d{2}-\d{2}$/.test(String(r?.covered_on)) ? String(r.covered_on) : null,
-      outlet: str(r?.outlet, 120), headline: str(r?.headline, 400), url: str(r?.url, 1000), source: "auto",
+      outlet: str(r?.outlet, 120), headline: str(r?.headline, 400), url: str(r?.url, 1000), notes: str(r?.notes, 600) || null,
+      source: r?.source === "social" ? "social" : "auto",
     })).filter(r => r.covered_on && r.outlet && r.headline && /^https?:\/\//.test(r.url));
     if (!rows.length) return json({ ok: true, added: 0 });
     // skip headlines already logged by hand (same outlet + headline, different URL)
     const since = rows.map(r => r.covered_on as string).sort()[0];
     const { data: existing } = await sb.from("media_coverage").select("outlet,headline").gte("covered_on", since);
     const seen = new Set((existing ?? []).map(e => `${e.outlet.toLowerCase()}|${e.headline.toLowerCase()}`));
-    const fresh = rows.filter(r => !seen.has(`${r.outlet.toLowerCase()}|${r.headline.toLowerCase()}`));
+    // (only for news: two social posts can share a first line, and the web address already tells them apart)
+    const fresh = rows.filter(r => r.source === "social" || !seen.has(`${r.outlet.toLowerCase()}|${r.headline.toLowerCase()}`));
     if (!fresh.length) return json({ ok: true, added: 0 });
     const { data, error } = await sb.from("media_coverage").upsert(fresh, { onConflict: "url", ignoreDuplicates: true }).select("id");
     if (error) return json({ error: error.message }, 500);

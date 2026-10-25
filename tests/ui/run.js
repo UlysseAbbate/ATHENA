@@ -41,15 +41,17 @@ const ts = new Date(Date.now() - 3 * 36e5).toISOString();
 const TABLES = {
   profiles: Object.values(USERS).map(u => ({ id: u.id, email: u.email, full_name: u.email.split("@")[0], role: u.role, access_until: u.role === "member" ? plus(20) : null, created_at: ts })),
   role_permissions: ["core_team", "member"].flatMap(r => ALLRES.map(res => ({ role: r, resource: res, can_read: PERMS[r].includes(res) || (r === "member" && res === "coverage"), can_write: PERMS[r].includes(res) && r === "core_team" || ["volunteers_add", "stakeholders_add"].includes(res) }))),
-  plan_categories: [{ id: 1, name: "SOLNEY story", sort: 1, shared: true }, { id: 2, name: "Press", sort: 2, shared: false }],
-  plan_entries: [{ id: "p1", plan_date: iso(today), category_id: 1, content: "Launch housing pledge", updated_at: ts }, { id: "p2", plan_date: plus(2), category_id: 2, content: "Op-ed in the Standard", updated_at: ts }],
-  local_party_visits: [{ id: "v1", local_party: "Richmond Park", request: "Street stall", visit_date: plus(3), updated_at: ts }],
+  plan_categories: [{ id: 1, name: "SOLNEY story", sort: 1, shared: true }, { id: 2, name: "Press", sort: 2, shared: false }, { id: 3, name: "Local Party Visits", sort: 3, shared: true }],
+  plan_entries: [{ id: "p1", plan_date: iso(today), category_id: 1, content: "Launch housing pledge", updated_at: ts }, { id: "p3", plan_date: iso(today), category_id: 3, content: "Richmond Park street stall", updated_at: ts }, { id: "p2", plan_date: plus(2), category_id: 2, content: "Op-ed in the Standard", updated_at: ts }],
+  local_party_visits: [{ id: "v1", local_party: "Richmond Park", request: "Street stall", contact_name: "Pat", contact_phone: "0701", taken_by: "Louis", actioning: "Sarah", visit_date: iso(today), updated_at: ts },
+    { id: "v2", local_party: "Hounslow", request: "AGM", visit_date: null, updated_at: ts }],
   governance_items: [{ id: "g1", title: "Register with Electoral Commission", area: "Legal", status: "To do", due_date: plus(-1), updated_at: ts }],
   content_items: [{ id: "c1", name: "Housing video", status: "In Development", scheduled: plus(4), platforms: "Instagram", updated_at: ts }],
   media_coverage: [{ id: "m1", covered_on: iso(today), outlet: "BBC News", headline: "Sarah Olney on Heathrow", url: "https://example.org/a", source: "auto", updated_at: ts },
-    { id: "m2", covered_on: plus(-3), outlet: "Standard", headline: "Olney backs rent reform", url: "https://example.org/b", source: "manual", updated_at: ts }],
-  volunteers: [{ id: "vo1", name: "Alex", role_wanted: "Canvassing", accepted: null, created_by: USERS.member.id, created_at: ts, updated_at: ts }],
-  stakeholders: [{ id: "s1", name: "Jo Bloggs", organisation: "Shelter", sector: "Campaign", created_by: USERS.core.id, updated_at: ts }],
+    { id: "m2", covered_on: plus(-3), outlet: "Standard", headline: "Olney backs rent reform", url: "https://example.org/b", source: "manual", updated_at: ts },
+    { id: "m3", covered_on: plus(-1), outlet: "BlueSky", headline: "Out in Kingston talking about the cost of living", url: "https://example.org/c", source: "social", updated_at: ts }],
+  contacts: [{ id: "vo1", kind: "volunteer", name: "Alex Volunteer", organisation: "Lib Dems", sector: "Lib Dems", email: "alex@test.invalid", phone: "0700", owner: "Louis", notes: "Role: Canvassing", created_by: USERS.member.id, created_at: ts, updated_at: ts },
+    { id: "s1", kind: "stakeholder", name: "Jo Bloggs", organisation: "Shelter", sector: "Campaign", email: null, phone: null, owner: "Sarah", notes: null, created_by: USERS.core.id, created_at: ts, updated_at: ts }],
   budget_items: [{ id: "b1", item: "Leaflets", amount: 1200, category: "Print", updated_at: ts }, { id: "b2", item: "Hall hire", amount: 300, category: "Events", updated_at: ts }],
   policies: [{ id: "po1", policy: "Rent controls", theme: "Housing", updated_at: ts }],
   social_accounts: ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"].map((p, i) => ({ id: "sa" + i, organisation: "Sarah Olney", platform: p, handle: i ? null : "@sarah", url: null, updated_at: ts })),
@@ -227,6 +229,27 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.waitForTimeout(350);
         const txt = await page.$eval("#main", m => m.innerText);
         check(`${who}: tab ${t} renders`, txt.length > 20 && !/Loading…$/.test(txt.trim()), txt.slice(0, 60).replace(/\n/g, " "));
+      }
+      // the merged pages: Media (news + social) and Volunteers & stakeholders; visits live on the Campaign plan
+      check(`${who}: old pages are merged away`, !tabs.some(t => ["Local party visits", "Social media", "Coverage", "Volunteers", "Stakeholders"].includes(t)) && tabs.includes("Media") && tabs.includes("Volunteers & stakeholders"), tabs.join("|"));
+      await page.click('#tabs button:text-is("Volunteers & stakeholders")'); await page.waitForTimeout(350);
+      const heads = await page.$$eval("#main table th", hs => hs.map(h => h.textContent.replace(/[▲▼]/g, "").trim()));
+      check(`${who}: people columns are Full name / Organisation / Sector / Email / Phone / Point of contact / Notes`, heads.slice(0, 7).join("|") === "Full name|Organisation|Sector|Email|Phone|Point of contact|Notes", heads.join("|"));
+      await page.click('#main [data-fl="1"]');
+      const vrows = await page.$$eval("#main tbody tr", rs => rs.map(r => r.innerText));
+      check(`${who}: volunteers are filed under Lib Dems`, vrows.length === 1 && /Alex Volunteer/.test(vrows[0]) && (vrows[0].match(/Lib Dems/g) || []).length === 2, vrows.join("|"));
+      await page.click('#tabs button:text-is("Media")'); await page.waitForTimeout(350);
+      check(`${who}: media lists news and social in one table`, /Sarah Olney on Heathrow/.test(await page.$eval("#main", m => m.innerText)) && /Out in Kingston/.test(await page.$eval("#main", m => m.innerText)));
+      await page.click('#main [data-fl="2"]');
+      const mrows = await page.$$eval("#m1 tbody tr", rs => rs.map(r => r.innerText));
+      check(`${who}: the Social media filter shows platform posts only`, mrows.length === 1 && /BlueSky/.test(mrows[0]) && /Out in Kingston/.test(mrows[0]), mrows.join("|"));
+      await page.goto(BASE + "/lovelace/#coverage"); await page.waitForTimeout(600);
+      check(`${who}: the old #coverage address opens Media`, (await page.$eval("#tabs button.on", b => b.textContent)) === "Media");
+      if (who !== "member") {
+        await page.click('#tabs button:text-is("Campaign plan")'); await page.waitForTimeout(450);
+        const plan = await page.$eval("#main", m => m.innerText);
+        check(`${who}: the plan shows a dated visit's details under Local Party Visits`, /Richmond Park/.test(plan) && /contact Pat 0701/.test(plan) && /taken by Louis/.test(plan), plan.slice(0, 200).replace(/\n/g, " "));
+        check(`${who}: visit requests sit under the plan`, /Local party visit requests/.test(plan) && /1 without a date yet/.test(plan));
       }
       if (who !== "member") {
         // sorting + CSV on the budget table

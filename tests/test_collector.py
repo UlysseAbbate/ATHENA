@@ -141,15 +141,62 @@ def test_media_filters_party_and_collects_olney(monkeypatch):
         {"title": "Football results round-up", "summary": "", "link": "https://o.test/4", "published": now},
     ]
     monkeypatch.setattr(U, "_feed_entries", lambda f: (entries, "ok"))
+    pages = {"https://o.test/1": "<p>Nothing here</p>",
+             "https://o.test/3": "<nav>Sarah Olney</nav><article>The Richmond Park MP, Sarah Olney, said it was a disgrace.</article>",
+             "https://o.test/4": "<script>var x='Olney'</script><p>Scores</p>"}
+    monkeypatch.setattr(U, "get", lambda url, **kw: Resp(pages[url]))
     monkeypatch.setitem(U.CONFIG, "media", {"title_pattern": U.CONFIG["media"]["title_pattern"], "lookback_days": 14,
                                             "outlets": [{"name": "Outlet", "feeds": ["https://o.test/rss"]},
                                                         {"name": "No feed", "feeds": []}]})
     items, cov = U.collect_media()
     assert {i["url"] for i in items} == {"https://o.test/1", "https://o.test/2", "https://o.test/3"}
-    assert [c["url"] for c in cov] == ["https://o.test/2"]
+    assert sorted(c["url"] for c in cov) == ["https://o.test/2", "https://o.test/3"]   # 3 names her only inside the article
+    assert [c for c in cov if c["url"].endswith("/3")][0]["notes"] == "Mentioned in the article text"
     assert cov[0]["covered_on"] and cov[0]["outlet"] == "Outlet"
     by = {h["name"]: h for h in U.health}
     assert by["Outlet"]["ok"] and not by["No feed"]["ok"]
+
+
+def test_article_mentions_ignores_menus_and_scripts():
+    pat = U.re.compile(U.CONFIG["coverage"]["pattern"], U.re.I)
+    assert U.mentions("<article>Sarah Olney spoke</article>", pat)
+    assert not U.mentions("<header>Olney</header><script>Olney</script><p>x</p>", pat)
+
+
+def test_first_line_cuts_at_a_word():
+    assert U.first_line("Short post") == "Short post"
+    out = U.first_line("word " * 60)
+    assert out.endswith("…") and len(out) <= 112 and "  " not in out
+
+
+def test_bluesky_posts_become_media_rows():
+    data = {"feed": [
+        {"post": {"uri": "at://did:plc:x/app.bsky.feed.post/3abc", "author": {"handle": "sarah.bsky.social"},
+                  "record": {"text": "Proud to back\nlocal schools today", "createdAt": U.NOW.isoformat()}}},
+        {"reason": {"$type": "repost"}, "post": {"uri": "at://y/app.bsky.feed.post/3zzz", "author": {"handle": "other.bsky.social"},
+                                                 "record": {"text": "not hers", "createdAt": U.NOW.isoformat()}}},
+        {"post": {"uri": "at://did:plc:x/app.bsky.feed.post/3old", "author": {"handle": "sarah.bsky.social"},
+                  "record": {"text": "ancient", "createdAt": "2020-01-01T00:00:00Z"}}}]}
+    rows = U.bsky_rows("Sarah Olney MP", "sarah.bsky.social", data, U.NOW - timedelta(days=14))
+    assert len(rows) == 1
+    r = rows[0]
+    assert r["outlet"] == "BlueSky" and r["source"] == "social" and r["headline"] == "Proud to back local schools today"
+    assert r["url"] == "https://bsky.app/profile/sarah.bsky.social/post/3abc" and r["notes"].startswith("Sarah Olney MP:")
+
+
+def test_collect_social_reads_only_open_platforms(monkeypatch):
+    monkeypatch.setenv("INGEST_URL", "https://i.test")
+    monkeypatch.setenv("INGEST_TOKEN", "t")
+    monkeypatch.setattr(U, "_ingest", lambda p: {"accounts": [
+        {"organisation": "London Lib Dems", "platform": "Instagram", "handle": "londonlibdems"},
+        {"organisation": "London Lib Dems", "platform": "BlueSky", "handle": "ldn.bsky.social"}]})
+    seen = []
+    feed = {"feed": [{"post": {"uri": "at://x/app.bsky.feed.post/3k", "author": {"handle": "ldn.bsky.social"},
+                               "record": {"text": "Hello London", "createdAt": U.NOW.isoformat()}}}]}
+    monkeypatch.setattr(U, "get", lambda url, **kw: (seen.append(url), Resp(json.dumps(feed)))[1])
+    U.health.clear()
+    rows = U.collect_social()
+    assert len(rows) == 1 and len(seen) == 1 and "bsky" in seen[0]
 
 
 # ------------------------------------------------------------------ merge keeps what earlier runs learned

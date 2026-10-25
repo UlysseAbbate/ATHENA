@@ -726,6 +726,8 @@ def collect_media() -> tuple[list[dict], list[dict]]:
     olney = re.compile(CONFIG.get("coverage", {}).get("pattern", r"Sarah Olney|\bOlney\b"), re.I)
     since = NOW - timedelta(days=int(cfg.get("lookback_days", 14)))
     items, coverage, seen, seen_cov = [], [], set(), set()
+    body_days = float(CONFIG.get("coverage", {}).get("article_days", 2))
+    unread: list[tuple[str, str, str, datetime | None]] = []   # recent stories whose headline does not name her: read the article itself
     for o in cfg["outlets"]:
         feeds = o.get("feeds", [])
         if not feeds and not o.get("url"):
@@ -755,10 +757,14 @@ def collect_media() -> tuple[list[dict], list[dict]]:
                 date = parse_date(e.get("published") or e.get("updated"))
                 if not link or len(title) < 8 or (date and date < since):
                     continue
-                if olney.search(title + " " + summary) and link not in seen_cov:
+                if olney.search(title + " " + summary):
+                    if link not in seen_cov:
+                        seen_cov.add(link)
+                        coverage.append({"covered_on": (date or NOW).astimezone(LONDON).date().isoformat(),
+                                         "outlet": o["name"], "headline": title, "url": link})
+                elif link not in seen_cov and (not date or date >= NOW - timedelta(days=body_days)):
                     seen_cov.add(link)
-                    coverage.append({"covered_on": (date or NOW).astimezone(LONDON).date().isoformat(),
-                                     "outlet": o["name"], "headline": title, "url": link})
+                    unread.append((o["name"], title, link, date))
                 # headline or standfirst must be about the party (own-party sites are exempt)
                 if not o.get("all") and not relevant.search(title + " " + summary):
                     continue
@@ -771,8 +777,121 @@ def collect_media() -> tuple[list[dict], list[dict]]:
         ok = got > 0     # a quiet fortnight is not a failure: only flag outlets whose feeds returned nothing at all
         found = [w for w in why if w.startswith("configured feed failed")]
         record("media", o["name"], ok, n, "; ".join(why) if not ok else "; ".join(found + ([] if n else [f"quiet: {got} recent stories, none about the Lib Dems"])))
-    print(f"media: {len(items)} items; Sarah Olney coverage: {len(coverage)} stories")
+    found = scan_articles(unread, olney, int(CONFIG.get("coverage", {}).get("max_articles", 150)))
+    coverage += found
+    print(f"media: {len(items)} items; Sarah Olney coverage: {len(coverage)} stories ({len(found)} found inside articles)")
     return items, coverage
+
+
+def mentions(html: str, pattern: re.Pattern) -> bool:
+    """Does the article's own text (not its menus, scripts or styles) name her?"""
+    soup = BeautifulSoup(html, "lxml")
+    for t in soup(["script", "style", "noscript", "nav", "header", "footer", "aside", "form"]):
+        t.decompose()
+    return bool(pattern.search(soup.get_text(" ", strip=True)))
+
+
+def scan_articles(unread, pattern, limit: int) -> list[dict]:
+    """Rolling check for ANY mention of Sarah Olney: open each recent story from the feeds that did not name her in its
+    headline or standfirst and look in the article text. Pages go through get(): robots.txt is respected, hosts are spaced out."""
+    from concurrent.futures import ThreadPoolExecutor
+    todo = unread[:limit]
+
+    def one(u):
+        outlet, title, link, date = u
+        try:
+            if not mentions(get(link, timeout=(6, 15)).text, pattern):
+                return None
+        except Exception:  # noqa: BLE001
+            return "skipped"
+        return {"covered_on": (date or NOW).astimezone(LONDON).date().isoformat(), "outlet": outlet, "headline": title,
+                "url": link, "notes": "Mentioned in the article text"}
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        res = list(ex.map(one, todo))
+    hits = [r for r in res if isinstance(r, dict)]
+    skipped = sum(r == "skipped" for r in res)
+    record("media", "Article scan (any mention of Sarah Olney)", bool(todo) and skipped < len(todo), len(hits),
+           f"{len(todo)} articles read, {skipped} could not be opened (robots.txt, paywall or error)" + (f"; {len(unread) - len(todo)} left for the next run" if len(unread) > len(todo) else ""))
+    return hits
+
+
+# ------------------------------------------------------------ social media
+SOCIAL_LOOKBACK_DAYS = 14
+
+
+def first_line(text: str, n: int = 110) -> str:
+    """The first line or so of a caption: enough to give the overall idea."""
+    t = re.sub(r"\s+", " ", (text or "")).strip()
+    if len(t) <= n:
+        return t
+    cut = t[:n].rsplit(" ", 1)[0]
+    return cut.rstrip(" ,;:-") + "…"
+
+
+def bsky_rows(org: str, handle: str, data: dict, since: datetime) -> list[dict]:
+    rows = []
+    for f in data.get("feed", []):
+        post = f.get("post", {})
+        if f.get("reason") or post.get("author", {}).get("handle", "").lower() != handle.lower():
+            continue    # reposts are someone else's words
+        rec = post.get("record", {})
+        text, date = rec.get("text", ""), parse_date(rec.get("createdAt"))
+        rkey = (post.get("uri") or "").rsplit("/", 1)[-1]
+        if not text.strip() or not rkey or (date and date < since):
+            continue
+        rows.append({"covered_on": (date or NOW).astimezone(LONDON).date().isoformat(), "outlet": "BlueSky", "source": "social",
+                     "headline": first_line(text), "url": f"https://bsky.app/profile/{handle}/post/{rkey}",
+                     "notes": f"{org}: {text}"[:600]})
+    return rows
+
+
+def substack_rows(org: str, entries: list, since: datetime) -> list[dict]:
+    rows = []
+    for e in entries:
+        date = parse_date(e.get("published") or e.get("updated"))
+        title, link = clean(e.get("title", ""), 300), e.get("link", "")
+        if not title or not link or (date and date < since):
+            continue
+        rows.append({"covered_on": (date or NOW).astimezone(LONDON).date().isoformat(), "outlet": "Substack", "source": "social",
+                     "headline": first_line(title), "url": link, "notes": f"{org}: {clean(e.get('summary', ''), 500)}"[:600]})
+    return rows
+
+
+def collect_social() -> list[dict]:
+    """Posts from the accounts listed on Lovelace's Media page that can be read openly: BlueSky (public API) and Substack (RSS).
+    Instagram, Facebook, X, TikTok and LinkedIn do not offer an open feed and forbid scraping, so they are not read."""
+    if not ingest_configured():
+        print("social: INGEST_URL / INGEST_TOKEN not set, skipping")
+        return []
+    try:
+        accounts = _ingest({"action": "social_accounts"}).get("accounts", [])
+    except Exception as e:  # noqa: BLE001
+        record("media", "Social accounts", False, 0, f"could not read the list of accounts: {e}")
+        return []
+    since = NOW - timedelta(days=SOCIAL_LOOKBACK_DAYS)
+    rows: list[dict] = []
+    for a in accounts:
+        org, plat, handle = a["organisation"], a["platform"], (a.get("handle") or "").strip().lstrip("@")
+        if plat not in ("BlueSky", "Substack") or not handle:
+            continue
+        name = f"{org} on {plat}"
+        try:
+            if plat == "BlueSky":
+                r = get("https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed",
+                        params={"actor": handle, "limit": 30, "filter": "posts_no_replies"})
+                got = bsky_rows(org, handle, r.json(), since)
+            else:
+                host = handle if "." in handle else f"{handle}.substack.com"
+                entries, why = _feed_entries(f"https://{host}/feed")
+                if not entries:
+                    raise RuntimeError(why)
+                got = substack_rows(org, entries, since)
+            rows += got
+            record("media", name, True, len(got), "" if got else "no posts in the last fortnight")
+        except Exception as e:  # noqa: BLE001
+            record("media", name, False, 0, getattr(e, "args", [e])[0])
+    print(f"social: {len(rows)} posts from {len(accounts)} accounts with handles")
+    return rows
 
 
 # ----------------------------------------------------------------- polling
@@ -1193,7 +1312,7 @@ def upload(coverage: list[dict] | None = None) -> bool:
             print(f"upload of {name} failed: {e}", file=sys.stderr)
     if coverage:
         try:
-            print(f"coverage: {_ingest({'action': 'coverage', 'rows': coverage}).get('added', 0)} new stories added to the Mall")
+            print(f"coverage: {_ingest({'action': 'coverage', 'rows': coverage}).get('added', 0)} new stories and posts added to Lovelace's Media page")
         except Exception as e:  # noqa: BLE001
             ok = False
             print(f"coverage upload failed: {e}", file=sys.stderr)
@@ -1230,6 +1349,7 @@ def main() -> int:
     if run("media"):
         got, coverage = collect_media()
         items += got
+        coverage += collect_social()
     if run("polling"):
         poll_items, pollsters = collect_polling()
         items += poll_items
