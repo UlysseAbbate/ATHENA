@@ -8,10 +8,10 @@ const main = $("#main");
 const ROLES = { core_team: "Core team", executive: "Executive", local_party_chair: "Local party chair",
   candidate: "Candidate", support_team: "Support team", member: "Member" };
 const RESOURCES = {
-  plan_full: "Full campaign plan (all rows)", plan_shared: "Shared plan rows (Solney story, milestones, policy, digital, campaigns, visits)",
+  plan_full: "Full campaign plan (all rows)", plan_shared: "Shared plan sections (campaigning and constituency activity)", plan_constituency: "Edit the Constituency Activity sections of the plan",
   visits: "Local party visit details and contacts (shown on the Campaign plan)", budget: "Budget & governance",
   volunteers_all: "Full volunteer list (People page)", volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies",
-  social: "Tracked social accounts and content pipeline (Media page)", coverage: "Media page: news coverage and social posts",
+  social: "Tracked social accounts (Media page)", coverage: "Media page: news coverage and social posts",
   stakeholders_all: "Full stakeholder list (People page)", stakeholders_add: "Add stakeholders (own entries visible to the adder)",
   users: "Team & access: see users / change roles", permissions: "Edit this permissions table",
   audit: "Activity log (who changed what)", ulysse: "Lucien policy tracker (only the admin can change this row)" };
@@ -228,14 +228,14 @@ async function renderPlan() {
     canVisits ? sb.from("local_party_visits").select("id,visit_date") : Promise.resolve({ data: [] })
   ]);
   if (cats.error || ents.error || vis.error || allVis.error) return showError(cats.error || ents.error || vis.error || allVis.error);
-  // visit details (who asked, contact, who is actioning) sit under the plan's "Local Party Visits" row on the visit's date
-  const vcat = cats.data.find(c => c.name === "Local Party Visits");
+  // visit details (who asked, contact, who is actioning) sit under the plan's Campaigning section on the visit's date
+  const vcat = cats.data.find(c => c.name.startsWith("Campaigning"));
   const partyKey = v => String(v.local_party || "").toLowerCase().replace(/ and /g, " ").split(/\s+/)[0];
   const visitDetail = v => [v.request, v.contact_name && `contact ${v.contact_name}${v.contact_phone ? " " + v.contact_phone : ""}`, v.taken_by && `taken by ${v.taken_by}`,
     v.actioning && `actioning ${v.actioning}`, v.notes].filter(Boolean).join(" · ");
   const visitsOn = d => vis.data.filter(v => v.visit_date === d);
   const matched = (v, entries) => entries.some(e => e.content.toLowerCase().includes(partyKey(v)));
-  const canCat = c => can("plan_full", "write") || (can("plan_shared", "write") && c.shared);
+  const canCat = c => can("plan_full", "write") || (can("plan_shared", "write") && c.shared) || (c.constituency && can("plan_constituency", "write"));
   const today = iso(new Date());
   main.innerHTML = `<div class="row"><div class="seg"><button data-m="day" class="${mode === "day" ? "on" : ""}">Day</button><button data-m="week" class="${mode === "week" ? "on" : ""}">Week</button></div>
     <button class="btn" data-n="-1">◀</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1">▶</button>
@@ -262,15 +262,19 @@ async function renderPlan() {
     $("#vreq").ontoggle = e => { if (e.target.open && !$("#vreqb").dataset.on) { $("#vreqb").dataset.on = 1; crud(VISITS, $("#vreqb"), renderPlan); } };
   }
   if (mode === "day") {
-    pv.innerHTML = cats.data.map(c => {
+    const section = c => {
       const list = byKey[c.id + "|" + date] || [];
       const isV = vcat && c.id === vcat.id, vday = isV ? visitsOn(date) : [];
       const vline = (v, own) => `<div class="${own ? "entry" : "ovline muted"}"><span>${own ? "" : "↳ "}<b>${esc(v.local_party)}</b>${visitDetail(v) ? ": " + esc(visitDetail(v)) : ""}</span>${can("visits", "write") ? `<span class="acts"><button class="btn sm" data-v="${v.id}">Edit visit</button></span>` : ""}</div>`;
       const body = isV ? list.map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>` +
           vday.filter(v => e.content.toLowerCase().includes(partyKey(v))).map(v => vline(v, false)).join("")).join("") + vday.filter(v => !matched(v, list)).map(v => vline(v, true)).join("") : null;
-      return `<div class="sec ${c.shared ? "shared" : ""}"><h3>${esc(c.name)} ${c.shared && can("plan_full", "read") ? '<span class="pill">visible to all roles</span>' : ""} ${canCat(c) ? `<button class="btn sm" data-add="${c.id}">+ Add</button>` : ""}</h3>
+      return `<div class="sec ${c.shared ? "shared" : ""}"><h3>${esc(c.name.replace(/^Constituency Activity: /, ""))} ${c.shared && !c.constituency && can("plan_full", "read") ? '<span class="pill">visible to all roles</span>' : ""} ${canCat(c) ? `<button class="btn sm" data-add="${c.id}">+ Add</button>` : ""}</h3>
         ${(isV ? body : list.map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>`).join("")) || '<span class="muted">Nothing planned.</span>'}</div>`;
-    }).join("");
+    };
+    // the constituency sections sit together under one heading, open when any of them has something on this day
+    const first = cats.data.findIndex(c => c.constituency), cons = cats.data.filter(c => c.constituency);
+    pv.innerHTML = cats.data.map((c, i) => !c.constituency ? section(c) : i !== first ? "" :
+      `<details class="card cons" ${cons.some(k => (byKey[k.id + "|" + date] || []).length) ? "open" : ""}><summary><b>Constituency Activity</b> <span class="muted">· ${cons.length} sections, one per GLA constituency</span></summary>${cons.map(section).join("")}</details>`).join("");
     pv.onclick = e => {
       const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]"), vb = e.target.closest("[data-v]");
       if (vb) return visitForm(vis.data.find(v => v.id === vb.dataset.v));
@@ -294,7 +298,7 @@ function visitForm(row) {
     onDelete: async () => { const { error: e } = await sb.from("local_party_visits").delete().eq("id", row.id); if (!e) renderPlan(); return e; } });
 }
 const VISITS = { table: "local_party_visits", title: "", order: ["visit_date", true], canEdit: () => can("visits", "write"),
-  note: "Requests from local parties and who is handling them. A visit with a date shows its details on the plan for that day, under Local Party Visits (add a line there too, so everyone who sees the plan sees the visit). Contains contact details.",
+  note: "Requests from local parties and who is handling them. A visit with a date shows its details on the plan for that day, under Campaigning (add a line there too, so everyone who sees the plan sees the visit). Contains contact details.",
   fields: [T("local_party", "Local party", "text", { req: true }), T("request", "Request"), T("taken_by", "Who took it"), T("actioning", "Who actioning"),
     T("happening", "When happening"), T("visit_date", "Date (if fixed)", "date"), T("contact_name", "Contact"), T("contact_phone", "Number"), T("notes", "Notes", "textarea")] };
 const POLICIES = { table: "policies", title: "Policies", order: ["theme", true], canEdit: () => can("policies", "write"),
@@ -316,10 +320,6 @@ const BUDGET = { table: "budget_items", title: "Budget", order: ["created_at", t
 const GOVERNANCE = { table: "governance_items", title: "Governance (legal, compliance, finance controls)", order: ["due_date", true], canEdit: () => can("budget", "write"),
   fields: [T("title", "Item", "text", { req: true }), T("area", "Area", "select", { options: ["Legal", "Finance", "Compliance", "Data protection", "Other"] }),
     T("status", "Status", "select", { options: ["To do", "In progress", "Done"] }), T("owner", "Owner"), T("due_date", "Due", "date"), T("notes", "Notes", "textarea")] };
-const CONTENT = { table: "content_items", title: "Content pipeline (Sarah's own posts)", order: ["scheduled", false], canEdit: () => can("social", "write"),
-  fields: [T("name", "Name", "text", { req: true }), T("platforms", "Platforms"), T("creator", "Creator"), T("proof_read", "Proof read", "select", { options: ["Yes", "No"] }),
-    T("content_type", "Type", "select", { options: ["Photo", "Video", "Video/Reel", "Text", "Article", "Other"] }), T("description", "Description / metadata", "textarea"),
-    T("drive_link", "Google Drive"), T("scheduled", "Scheduled", "date"), T("status", "Status", "select", { options: ["Idea", "In Development", "Ready", "Complete"] })] };
 
 /* ------------------------------------------------------------------ budget & governance */
 async function renderBudget() {
@@ -348,13 +348,11 @@ async function renderPeople() {
 
 /* ------------------------------------------------------------------ media: news coverage and social posts, plus the tracked accounts */
 async function renderMedia() {
-  main.innerHTML = `<div id="m1"></div>${can("social", "read") ? '<details class="card" id="m2" style="margin-top:18px"><summary><b>Tracked social accounts</b> <span class="muted">· London Lib Dems, London Young Liberals, Sarah Olney MP, Hina Bokhari AM, City Hall Lib Dems</span></summary><div id="m2b"></div></details>' +
-    '<details class="card" id="m3" style="margin-top:12px"><summary><b>Sarah\'s content pipeline</b></summary><div id="m3b"></div></details>' : ""}`;
+  main.innerHTML = `<div id="m1"></div>${can("social", "read") ? '<details class="card" id="m2" style="margin-top:18px"><summary><b>Tracked social accounts</b> <span class="muted">· London Lib Dems, London Young Liberals, Sarah Olney MP, Hina Bokhari AM, City Hall Lib Dems</span></summary><div id="m2b"></div></details>' : ""}`;
   await crud(MEDIA, $("#m1"), renderMedia);
   if (!can("social", "read")) return;
   const open = (id, fn) => { const d = $(id); d.ontoggle = () => { if (d.open && !d.dataset.on) { d.dataset.on = 1; fn(); } }; };
   open("#m2", () => renderAccounts($("#m2b")));
-  open("#m3", () => crud(CONTENT, $("#m3b"), renderMedia));
 }
 async function renderAccounts(host) {
   const w = can("social", "write");
@@ -427,15 +425,12 @@ async function renderTeam() {
 async function renderToday() {
   const today = iso(new Date()), week = addDays(today, 6), fortnight = addDays(today, 13);
   const q = (ok, fn) => ok ? fn().then(r => r.error ? { error: r.error } : r) : Promise.resolve(null);
-  const [cats, ents, visits, gov, content, cov, vols] = await Promise.all([
+  const [cats, ents, gov, cov] = await Promise.all([
     q(can("plan_full", "read") || can("plan_shared", "read"), () => sb.from("plan_categories").select("*").order("sort")),
     q(can("plan_full", "read") || can("plan_shared", "read"), () => sb.from("plan_entries").select("*").gte("plan_date", today).lte("plan_date", week).order("plan_date")),
-    q(can("visits", "read"), () => sb.from("local_party_visits").select("*").gte("visit_date", today).lte("visit_date", fortnight).order("visit_date")),
     q(can("budget", "read"), () => sb.from("governance_items").select("*").neq("status", "Done").lte("due_date", fortnight).order("due_date")),
-    q(can("social", "read"), () => sb.from("content_items").select("*").neq("status", "Complete").gte("scheduled", today).lte("scheduled", fortnight).order("scheduled")),
-    q(can("coverage", "read"), () => sb.from("media_coverage").select("*").order("covered_on", { ascending: false }).limit(6)),
-    q(can("volunteers_all", "read") || can("stakeholders_all", "read"), () => sb.from("contacts").select("id,kind,created_at"))]);
-  const firstError = [cats, ents, visits, gov, content, cov, vols].find(r => r?.error);
+    q(can("coverage", "read"), () => sb.from("media_coverage").select("*").order("covered_on", { ascending: false }).limit(6))]);
+  const firstError = [cats, ents, gov, cov].find(r => r?.error);
   if (firstError) return showError(firstError.error);
   const card = (title, body, tab) => `<section class="card ov"><h3>${esc(title)}${tab ? ` <a href="#${tab}" data-go="${tab}" class="muted">open ›</a>` : ""}</h3>${body}</section>`;
   const none = t => `<p class="muted">${esc(t)}</p>`;
@@ -451,12 +446,8 @@ async function renderToday() {
     parts.push(card("Governance due", gov.data.map(g => `<div class="ovline ${g.due_date < today ? "late" : ""}"><b>${esc(fmtShort(g.due_date))}</b> ${esc(g.title)} <span class="muted">· ${esc(g.area)} · ${esc(g.status)}${g.owner ? " · " + esc(g.owner) : ""}</span></div>`).join("") ||
       none("Nothing due in the next fortnight."), "budget"));
   }
-  if (visits) parts.push(card("Local party visits", visits.data.filter(v => v.visit_date).map(v => `<div class="ovline"><b>${esc(fmtShort(v.visit_date))}</b> ${esc(v.local_party)}${v.request ? ` <span class="muted">· ${esc(v.request)}</span>` : ""}</div>`).join("") || none("No visits in the next fortnight."), "plan"));
-  if (content) parts.push(card("Content scheduled", content.data.map(c => `<div class="ovline"><b>${esc(fmtShort(c.scheduled))}</b> ${esc(c.name)} <span class="muted">· ${esc(c.status || "")}${c.platforms ? " · " + esc(c.platforms) : ""}</span></div>`).join("") || none("Nothing scheduled in the next fortnight."), "media"));
   if (cov) parts.push(card("Latest media", cov.data.map(c => { const u = safeUrl(c.url);
     return `<div class="ovline"><b>${esc(fmtShort(c.covered_on))}</b> ${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(c.headline)}</a>` : esc(c.headline)} <span class="muted">· ${esc(c.outlet)}</span></div>`; }).join("") || none("Nothing logged yet."), "media"));
-  if (vols) { const vo = vols.data.filter(v => v.kind === "volunteer").length, st = vols.data.filter(v => v.kind === "stakeholder").length, recent = vols.data.filter(v => v.created_at >= addDays(today, -7)).length;
-    parts.push(card("Volunteers & stakeholders", `<div class="ovstat"><b>${vo}</b> volunteers · <b>${st}</b> stakeholders · <b>${recent}</b> added this week</div>`, "people")); }
   main.innerHTML = `<h2>${esc(fmtDay(today))}</h2><div class="ovgrid">${parts.join("") || card("Welcome", none("Pick a page above."))}</div>`;
   main.onclick = e => { const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); go(g.dataset.go); } };
 }

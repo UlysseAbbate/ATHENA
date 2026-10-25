@@ -33,7 +33,7 @@ const PEOPLE = { lucien: [{ user_id: "p1", email: "reader@test.invalid", full_na
           { user_id: "p3", email: "bm@test.invalid", full_name: "", level: "staff", is_manager: true, grant_ceiling: 3, expires_at: null, last_sign_in_at: null }],
   lovelace: [{ user_id: "p4", email: "core@test.invalid", full_name: "", level: "core_team", is_manager: true, grant_ceiling: null, expires_at: null, last_sign_in_at: null }] };
 const PERMS = {
-  core_team: ["plan_full", "plan_shared", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit"],
+  core_team: ["plan_full", "plan_shared", "plan_constituency", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit"],
   member: ["plan_shared", "volunteers_add", "stakeholders_add", "coverage"],
 };
 const ALLRES = [...PERMS.core_team, "ulysse"];
@@ -41,7 +41,7 @@ const ts = new Date(Date.now() - 3 * 36e5).toISOString();
 const TABLES = {
   profiles: Object.values(USERS).map(u => ({ id: u.id, email: u.email, full_name: u.email.split("@")[0], role: u.role, access_until: u.role === "member" ? plus(20) : null, created_at: ts })),
   role_permissions: ["core_team", "member"].flatMap(r => ALLRES.map(res => ({ role: r, resource: res, can_read: PERMS[r].includes(res) || (r === "member" && res === "coverage"), can_write: PERMS[r].includes(res) && r === "core_team" || ["volunteers_add", "stakeholders_add"].includes(res) }))),
-  plan_categories: [{ id: 1, name: "SOLNEY story", sort: 1, shared: true }, { id: 2, name: "Press", sort: 2, shared: false }, { id: 3, name: "Local Party Visits", sort: 3, shared: true }],
+  plan_categories: [{ id: 1, name: "Main News + Solney Story", sort: 1, shared: false }, { id: 4, name: "Constituency Activity: North East", sort: 11, shared: true, constituency: true }, { id: 5, name: "Constituency Activity: West Central", sort: 12, shared: true, constituency: true }, { id: 2, name: "Media (broadcast, print, digital, Substack)", sort: 40, shared: false }, { id: 3, name: "Campaigning (campaign actions, visits)", sort: 50, shared: true }],
   plan_entries: [{ id: "p1", plan_date: iso(today), category_id: 1, content: "Launch housing pledge", updated_at: ts }, { id: "p3", plan_date: iso(today), category_id: 3, content: "Richmond Park street stall", updated_at: ts }, { id: "p2", plan_date: plus(2), category_id: 2, content: "Op-ed in the Standard", updated_at: ts }],
   local_party_visits: [{ id: "v1", local_party: "Richmond Park", request: "Street stall", contact_name: "Pat", contact_phone: "0701", taken_by: "Louis", actioning: "Sarah", visit_date: iso(today), updated_at: ts },
     { id: "v2", local_party: "Hounslow", request: "AGM", visit_date: null, updated_at: ts }],
@@ -224,6 +224,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.waitForSelector(".ovgrid", { timeout: 5000 });
       const ov = await page.$$eval(".card.ov h3", hs => hs.map(h => h.textContent.replace(" open ›", "")));
       check(`${who}: overview cards`, ov.length >= 2 && (who === "member" ? !ov.includes("Governance due") : ov.includes("Governance due")), ov.join(" | "));
+      check(`${who}: overview has no visits, content or contacts cards`, !ov.some(h => /visits|Content|Volunteers|stakeholders/i.test(h)), ov.join(" | "));
       for (const t of tabs) {
         await page.click(`#tabs button:text-is("${t}")`);
         await page.waitForTimeout(350);
@@ -244,11 +245,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       const mrows = await page.$$eval("#m1 tbody tr", rs => rs.map(r => r.innerText));
       check(`${who}: the Social media filter shows platform posts only`, mrows.length === 1 && /BlueSky/.test(mrows[0]) && /Out in Kingston/.test(mrows[0]), mrows.join("|"));
       await page.goto(BASE + "/lovelace/#coverage"); await page.waitForTimeout(600);
+      check(`${who}: media has no content pipeline`, !/content pipeline/i.test(await page.$eval("#main", m => m.innerText)));
       check(`${who}: the old #coverage address opens Media`, (await page.$eval("#tabs button.on", b => b.textContent)) === "Media");
       if (who !== "member") {
         await page.click('#tabs button:text-is("Campaign plan")'); await page.waitForTimeout(450);
         const plan = await page.$eval("#main", m => m.innerText);
-        check(`${who}: the plan shows a dated visit's details under Local Party Visits`, /Richmond Park/.test(plan) && /contact Pat 0701/.test(plan) && /taken by Louis/.test(plan), plan.slice(0, 200).replace(/\n/g, " "));
+        check(`${who}: the plan shows a dated visit's details under Campaigning`, /Richmond Park/.test(plan) && /contact Pat 0701/.test(plan) && /taken by Louis/.test(plan), plan.slice(0, 200).replace(/\n/g, " "));
+        check(`${who}: the plan has the new sections, constituencies grouped`, /Main News \+ Solney Story/.test(plan) && /Constituency Activity/.test(plan) && /Media \(broadcast, print, digital, Substack\)/.test(plan) && /Campaigning \(campaign actions, visits\)/.test(plan) && !/Local Party Visits\n/.test(plan), plan.slice(0, 300).replace(/\n/g, " "));
+        check(`${who}: a chair-level role can add to a constituency section`, await page.$$eval("details.cons [data-add]", bs => bs.length) === 2);
         check(`${who}: visit requests sit under the plan`, /Local party visit requests/.test(plan) && /1 without a date yet/.test(plan));
       }
       if (who !== "member") {

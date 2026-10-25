@@ -43,12 +43,12 @@ The full schema is in `supabase/migrations/` and the ingest function in `supabas
 ## Lovelace (formerly The Mall)
 
 **Pages:**
-- **Overview:** today's and this week's plan, governance due or overdue, upcoming local party visits, scheduled content, latest media and contact numbers. Each card appears only if your role can see that area.
-- **Campaign plan:** day and week views. Local party visits sit on their dates (with the contact and who is taking it); visits with no date yet are listed under "Local party visit requests". Only the shared rows are visible to every role.
+- **Overview:** today's and this week's plan, governance due or overdue, governance due and the latest media. Each card appears only if your role can see that area.
+- **Campaign plan:** day and week views, in seven sections: Main News + Solney Story; Constituency Activity (one section for each of the 14 GLA constituencies, plus one for anything across several); Parliamentary Activity (DBIST, Commons, Lords); Media (broadcast, print, digital, Substack); Campaigning (campaign actions, visits); London News and Events; Internal Actions (governance, meetings, party actions). Local party visits sit on their dates under Campaigning (with the contact and who is taking each); visits with no date yet are listed under "Local party visit requests". Constituency sections can be edited by local party chairs and above (the *Edit the Constituency Activity sections* row of the permissions grid).
 - **Budget & governance**
 - **Volunteers & stakeholders:** one list (Full name, Organisation, Sector, Email, Phone, Point of contact, Notes). Volunteers are filed under Lib Dems. Anyone allowed to add can add; only the full-list roles see everyone's.
 - **Policies**
-- **Media:** news coverage and social posts in one table (social posts show the platform as the outlet and the first line of the caption as the headline), plus the tracked accounts and the content pipeline.
+- **Media:** news coverage and social posts in one table (social posts show the platform as the outlet and the first line of the caption as the headline), plus the tracked accounts.
 - **Team & access:** people, roles, access dates, last sign-in, the permissions grid and recent activity.
 
 **What every table has:**

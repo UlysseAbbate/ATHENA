@@ -26,7 +26,7 @@ const ts = new Date(Date.now() - 3 * 36e5).toISOString();
 const TABLES = {
   profiles: Object.values(USERS).map(u => ({ id: u.id, email: u.email, full_name: u.email.split("@")[0], role: u.role, access_until: u.role === "member" ? plus(20) : null, created_at: ts })),
   role_permissions: ["core_team", "member"].flatMap(r => ALLRES.map(res => ({ role: r, resource: res, can_read: PERMS[r].includes(res) || (r === "member" && res === "coverage"), can_write: PERMS[r].includes(res) && r === "core_team" || ["volunteers_add", "stakeholders_add"].includes(res) }))),
-  plan_categories: [{ id: 1, name: "SOLNEY story", sort: 1, shared: true }, { id: 2, name: "Press", sort: 2, shared: false }],
+  plan_categories: [{ id: 1, name: "Main News + Solney Story", sort: 1, shared: false }, { id: 4, name: "Constituency Activity: North East", sort: 11, shared: true, constituency: true }, { id: 2, name: "Media (broadcast, print, digital, Substack)", sort: 40, shared: false }],
   plan_entries: [{ id: "p1", plan_date: iso(today), category_id: 1, content: "Launch housing pledge", updated_at: ts }, { id: "p2", plan_date: plus(2), category_id: 2, content: "Op-ed in the Standard", updated_at: ts }],
   local_party_visits: [{ id: "v1", local_party: "Richmond Park", request: "Street stall", visit_date: plus(3), updated_at: ts }],
   governance_items: [{ id: "g1", title: "Register with Electoral Commission", area: "Legal", status: "To do", due_date: plus(-1), updated_at: ts }],
