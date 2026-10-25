@@ -208,6 +208,22 @@ select t.fails($$select * from public.api_snapshots$$, 'permission denied', 'sig
 select t.fails($$select public.libby_reset_sequences()$$, 'permission denied', 'nor run its maintenance functions');
 select t.as_super();
 
+-- campaign plan sections: constituencies are editable by local party chairs and above, the other sections as before
+select t.eq($$select count(*)::text from public.plan_categories where constituency$$, '15', 'the plan has a section for each of the 14 GLA constituencies and one for all');
+select t.as_super();
+insert into public.plan_categories (name, sort, shared) values ('Media (test)', 40, false);
+update public.profiles set role = 'member' where id = :MEM;
+select t.as_user(:MEM);
+select t.fails($$insert into public.plan_entries (plan_date, category_id, content) values (current_date, (select id from public.plan_categories where name = 'Constituency Activity: North East'), 'x')$$, 'row-level security', 'a member cannot edit a constituency section');
+select t.eq($$select (count(*) > 0)::text from public.plan_categories where constituency$$, 'true', 'but can read them');
+select t.as_super();
+update public.profiles set role = 'local_party_chair' where id = :MEM;
+select t.as_user(:MEM);
+select t.ok($$insert into public.plan_entries (plan_date, category_id, content) values (current_date, (select id from public.plan_categories where name = 'Constituency Activity: North East'), 'chair entry')$$, 'a local party chair can edit a constituency section');
+select t.fails($$insert into public.plan_entries (plan_date, category_id, content) values (current_date, (select id from public.plan_categories where name like 'Media%'), 'x')$$, 'row-level security', 'but not the media section');
+select t.as_super();
+update public.profiles set role = 'member' where id = :MEM;
+
 -- audit
 select t.eq($$select (count(*) > 0)::text from public.audit_log where table_name = 'access_grants' and label = 'peer@t.invalid · libby · peers'$$, 'true', 'grants are audited with person, program and level');
 select t.eq($$select (count(*) > 0)::text from public.audit_log where table_name = 'access_codes'$$, 'true', 'codes are audited');

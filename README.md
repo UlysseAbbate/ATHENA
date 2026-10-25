@@ -43,12 +43,12 @@ The full schema is in `supabase/migrations/` and the ingest function in `supabas
 ## Lovelace (formerly The Mall)
 
 **Pages:**
-- **Overview:** today's and this week's plan, governance due or overdue, upcoming local party visits, scheduled content, latest media and contact numbers. Each card appears only if your role can see that area.
-- **Campaign plan:** day and week views. Local party visits sit on their dates (with the contact and who is taking it); visits with no date yet are listed under "Local party visit requests". Only the shared rows are visible to every role.
+- **Overview:** today's and this week's plan, governance due or overdue, governance due and the latest media. Each card appears only if your role can see that area.
+- **Campaign plan:** day and week views, in seven sections: Main News + Solney Story; Constituency Activity (one section for each of the 14 GLA constituencies, plus one for anything across several); Parliamentary Activity (DBIST, Commons, Lords); Media (broadcast, print, digital, Substack); Campaigning (campaign actions, visits); London News and Events; Internal Actions (governance, meetings, party actions). Local party visits sit on their dates under Campaigning (with the contact and who is taking each); visits with no date yet are listed under "Local party visit requests". Constituency sections can be edited by local party chairs and above (the *Edit the Constituency Activity sections* row of the permissions grid).
 - **Budget & governance**
 - **Volunteers & stakeholders:** one list (Full name, Organisation, Sector, Email, Phone, Point of contact, Notes). Volunteers are filed under Lib Dems. Anyone allowed to add can add; only the full-list roles see everyone's.
 - **Policies**
-- **Media:** news coverage and social posts in one table (social posts show the platform as the outlet and the first line of the caption as the headline), plus the tracked accounts and the content pipeline.
+- **Media:** news coverage and social posts in one table (social posts show the platform as the outlet and the first line of the caption as the headline), plus the tracked accounts.
 - **Team & access:** people, roles, access dates, last sign-in, the permissions grid and recent activity.
 
 **What every table has:**
@@ -60,7 +60,7 @@ The full schema is in `supabase/migrations/` and the ingest function in `supabas
 Pages refresh themselves when you come back to the browser tab, so you see other people's changes.
 
 **The Media page fills itself** at 6am and 6pm (London):
-- **News:** the collector reads the media outlets' RSS feeds and adds any story naming Sarah Olney, first by headline and standfirst, then by opening each story from the last two days and looking for her name in the article text (up to 150 pages a run; robots.txt is respected). These are marked *auto*.
+- **News:** the collector reads the media outlets' RSS feeds and adds any story naming Sarah Olney, first by headline and standfirst, then by opening each story from the last two days and looking for her name in the article text (up to 400 pages a run; robots.txt is respected). These are marked *auto*.
 - **Social posts:** it reads the accounts listed under *Tracked accounts* (London Lib Dems, London Young Liberals, Sarah Olney MP, Hina Bokhari AM, City Hall Lib Dems), but only where a platform allows it: **BlueSky** (public API) and **Substack** (RSS). Put the handle in the account's row and the next run picks it up.
 - **Instagram, Facebook, X, TikTok and LinkedIn** have no open feed and forbid scraping, so they are not read automatically; add their posts by hand, or connect an approved API later.
 - Duplicates by URL (and, for news, outlet + headline) are skipped. Anything else can still be added by hand.
