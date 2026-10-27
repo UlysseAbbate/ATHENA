@@ -1,6 +1,7 @@
 // Checks sign-in (Athena session -> LIBBY level), the shared-code sign-in with its guessing throttle, and the security headers,
 // without Cloudflare or a database (fetch is stubbed).   Run with:  node scripts/libby/check-access.mjs
 import { onRequestPost as codeLogin } from '../../functions/api/code-login.js';
+import { onRequestPost as claimCode } from '../../functions/api/claim-code.js';
 import { onRequest as middleware } from '../../functions/api/libby/_middleware.js';
 import { onRequestGet as me } from '../../functions/api/libby/me.js';
 import { MAX } from '../../lib/libby/throttle.js';
@@ -23,6 +24,7 @@ globalThis.fetch = async (url, init = {}) => {
   }
   if (u.pathname.endsWith('/rpc/level_of')) { levelCalls++; const b = JSON.parse(init.body); return json(revoked && b.p_user === 'code-1' ? null : LEVELS[b.p_user] ?? null); }
   if (u.pathname.endsWith('/rpc/redeem_access_code')) return json(JSON.parse(init.body).p_code === CODE ? [{ id: 'code-1', label: 'Peers', program: 'libby', level: 'whips' }] : []);
+  if (u.pathname.endsWith('/rpc/claim_access_code')) { const b = JSON.parse(init.body); return json(b.p_code === 'test-beta-code-1' ? [{ program: 'libby', level: 'beta' }] : []); }
   if (u.pathname.endsWith('/rpc/link_code_identity')) return new Response(null, { status: 204 });
   if (u.pathname === '/auth/v1/admin/users') return json({ id: 'code-1' });
   if (u.pathname === '/auth/v1/admin/generate_link') return json({ hashed_token: 'h' });
@@ -111,6 +113,20 @@ r = await me(ctx('/api/libby/me', { token: 'tok-beta' }));
 ok(r.status === 200 && (await r.json()).name === 'Beta tester', '/me tells a Beta tester their level');
 r = await middleware(ctx('/api/libby/people-roles', { token: 'tok-dev', method: 'POST' }));
 ok(r.status === 200, 'the Developer level can do everything the admin can');
+
+// ---- claiming a shared code on a signed-in account (the beta code)
+const claim = async (code, token = 'tok-none') => {
+  const req = new Request('https://athena.test/api/claim-code', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ code }) });
+  return claimCode({ request: req, env });
+};
+r = await claimCode({ request: new Request('https://athena.test/api/claim-code', { method: 'POST', body: '{}' }), env });
+ok(r.status === 401, 'claiming a code needs a sign-in');
+r = await claim('test-beta-code-1');
+ok(r.status === 200 && (await r.json()).level === 'beta', 'a signed-in person with the right code gets its level');
+r = await claim('not-the-code');
+ok(r.status === 401, 'a wrong code is refused');
+r = await claim('short');
+ok(r.status === 401, 'and so is one that is too short to be a code');
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll access checks passed.');
 process.exit(failed ? 1 : 0);

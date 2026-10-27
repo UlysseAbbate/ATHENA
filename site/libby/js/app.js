@@ -7,6 +7,7 @@ import { ensureLDPeers, setForceRefresh } from './api.js';
 import { todayIso, errorBox } from './ui.js';
 import { setLevel, hasLevel, currentLevel } from './session.js';
 import { PAGES, MENU, menuFor, tabsFor, placeOf, canOpenPage, GROUPS } from './pages.js';
+import { chosenEdition, chooseEdition, renderGate } from './gate.js';
 
 const app = document.getElementById('app');
 let renderToken = 0;
@@ -95,7 +96,8 @@ async function route() {
 function showWho(name) {
   const foot = document.querySelector('.foot');
   if (!foot) return;
-  foot.insertAdjacentHTML('beforeend', '<p class="small">Signed in as ' + name + '. <a href="../">Athena home</a> &middot; <button type="button" class="linkish" id="logout">Sign out</button></p>');
+  foot.insertAdjacentHTML('beforeend', '<p class="small">Signed in as ' + name + '. <a href="../">Athena home</a> &middot; <button type="button" class="linkish" id="switch">Beta / Developer</button> &middot; <button type="button" class="linkish" id="logout">Sign out</button></p>');
+  document.getElementById('switch').addEventListener('click', () => { chooseEdition(''); location.reload(); });
   document.getElementById('logout').addEventListener('click', async () => {
     try { await LibbyAuth.signOut(); } catch (e) { /* reload anyway */ }
     location.reload();
@@ -167,12 +169,21 @@ async function start() {
     const res = await fetch('/api/libby/me', { headers: { accept: 'application/json' } });
     if (res.status === 401) { await LibbyAuth.signOut(); location.reload(); return; }
     const me = await res.json();
+    // Everyone signed in comes through the gate first: Beta test (with the beta code) or Developer (the administrator only).
+    let edition = chosenEdition();
+    if ((edition === 'developer' && me.level !== 'developer') || (edition === 'beta' && !me.level)) edition = '';
+    if (!edition) {
+      plainScreen('');
+      renderGate(app, { me: { ...me, level: res.ok ? me.level : '' }, token: session.access_token, onEnter: () => location.reload(),
+        signOut: async () => { chooseEdition(''); await LibbyAuth.signOut(); location.reload(); } });
+      return;
+    }
     if (res.status === 403) {
       plainScreen('<header class="page-head"><h1>No access yet</h1><p class="lede">You are signed in' + (me.email ? ' as ' + String(me.email).replace(/[<>&]/g, '') : '') + ', but have not been given access to LIBBY. Ask the person who looks after Athena.</p><p><a class="button" href="../">Back to Athena</a> <button type="button" class="button button-quiet" id="so">Sign out</button></p></header>');
       document.getElementById('so').addEventListener('click', async () => { await LibbyAuth.signOut(); location.reload(); });
       return;
     }
-    setLevel(me.level);
+    setLevel(edition === 'beta' ? 'beta' : me.level);   // the beta shows only Comms, Policy and Data, whoever opens it
     showWho(String((me.email ? me.email + ' (' + (me.name || me.level) + ')' : me.name || me.level)).replace(/[<>&]/g, ''));
   } catch (e) { /* if this fails the pages show only read-only options */ }
   buildMenu();

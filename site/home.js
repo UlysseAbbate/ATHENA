@@ -15,6 +15,6 @@
   const manages = Object.entries(pg).some(([id, v]) => v.manager && id !== "lovelace");   // Lovelace is still managed in its own Team & access
   if (acc.admin || manages) n.insertAdjacentHTML("beforeend", card("access/", "Access", "Who can open what", "Give people access to each program, set levels and end dates, and make shared access codes."));
   if (acc.admin) n.insertAdjacentHTML("beforeend", card("admin/", "Admin", "System status", "Collector health, sources and recent activity."));
-  if (!n.children.length) n.insertAdjacentHTML("beforeend", '<p class="lede">You are signed in, but have not been given access to anything yet. Ask the person who looks after Athena.</p>');
+  if (!n.children.length) n.insertAdjacentHTML("beforeend", '<p class="lede">Your account has been created. It is waiting for the administrator to give it access: nothing opens until then.</p>');
   Shell.mount(hd, { sub: "One login for every program", email: acc.session.user.email, signOut: () => Athena.sb.auth.signOut() });
 })();
