@@ -17,8 +17,14 @@
 //   admin          everything, including the back-channel operations
 // Roles with the same number are equal: to give Spokespeople or the Leader's office their own access later, raise or lower their number here
 // (and give pages and routes that level in the lists below).
-export const RANK = { peers: 1, whips: 2, spokesperson: 2, leader: 2, staff: 3, admin: 4 };
-export const LEVEL_NAMES = { peers: 'Peer', whips: 'Whip', spokesperson: 'Spokesperson', leader: 'Leader\u2019s office', staff: 'Staff', admin: 'Admin' };
+//   beta           Beta tester: ONLY the pages marked `beta: true` below (today Comms, Policy and Data), read-only. Not a step on the ladder:
+//                  see canOpenPage() and betaMay(), which are what keep a beta tester out of everything else
+//   developer      the Developer site: everything, plus the pages marked `level: DEVELOPER` (work in progress). Only the admin can give it,
+//                  and the admin always has it
+export const RANK = { beta: 1, peers: 1, whips: 2, spokesperson: 2, leader: 2, staff: 3, admin: 4, developer: 5 };
+export const LEVEL_NAMES = { beta: 'Beta tester', peers: 'Peer', whips: 'Whip', spokesperson: 'Spokesperson', leader: 'Leader\u2019s office', staff: 'Staff', admin: 'Admin', developer: 'Developer' };
+export const BETA = 'beta';
+export const DEVELOPER = 'developer';
 /** The roles in the order they are offered on the sign-in page and in the roles table. */
 export const ROLE_ORDER = ['peers', 'whips', 'spokesperson', 'leader', 'staff', 'admin'];
 
@@ -31,6 +37,9 @@ export const BACKCHANNEL = 'admin';
 
 export const atLeast = (have, need) => (RANK[have] || 0) >= (RANK[need || 'peers'] || 0);
 
+/** May a person at this level open this page? A beta tester may open only the pages marked `beta: true`; everyone else goes by level. */
+export const canOpenPage = (page, level) => level === BETA ? !!page.beta : atLeast(level, page.level);
+
 /* ------------------------------------------------------------------ the menu */
 
 // The top menu, in order. `level` is the lowest level that sees the item. `title` and `text` are used for the home page card.
@@ -39,6 +48,14 @@ export const MENU = [
   { id: 'legislation', label: 'Legislation', href: '#/legislation', level: 'peers', title: 'Legislation', text: 'Every live Bill in the Lords: stage dates, the documents for each stage and amendments.' },
   { id: 'business', label: 'Business', href: '#/business', level: 'peers', title: 'Business', text: 'Future business, past business (votes, questions, committees, Hansard) and Comms.' },
   { id: 'group', label: "LD Peers' Group", href: '#/peers-group', level: 'peers', title: "LD Peers' Group", text: 'Liberal Democrat policy, the Wallace Room, voting and Lords data, and the tools for the Whips and advisers.' },
+  { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
+];
+
+// What a beta tester sees in the menu and on the home page, in place of MENU.
+export const BETA_MENU = [
+  { id: 'comms', label: 'Comms', href: '#/comms', title: 'Comms', text: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.' },
+  { id: 'policy', label: 'Policy', href: '#/policy', title: 'Policy', text: 'Search conference motions and policy papers, or browse them by portfolio.' },
+  { id: 'data', label: 'Data', href: '#/data', title: 'Data', text: 'Voting analysis and the House of Lords Library data dashboards.' },
 ];
 
 // Groups of subpages. Each group is shown as a hub page (cards) and as a row of buttons above each of its pages.
@@ -61,7 +78,7 @@ export const GROUPS = {
 //   api       the /api routes behind this page and who may use them: [ ['route-name', { GET: level, '*': level }] ]
 //             'GET' is reading and '*' is anything else (saving, uploading). A route not listed here may be read by Peers and changed by no one but Admin.
 export const PAGES = [
-  { id: 'home', match: /^\/?$/, view: 'home-page.js', fn: 'renderHome', nav: '' },
+  { id: 'home', match: /^\/?$/, view: 'home-page.js', fn: 'renderHome', nav: '', beta: true },
 
   { id: 'today', match: /^\/today$/, view: 'day-page.js', fn: 'renderDay', params: (m, c) => ({ date: c.today }), nav: 'today',
     api: [['oq-suggest', { '*': WHIPS_FEATURES }], ['todays-list', { '*': WHIPS_FEATURES }]] },
@@ -81,12 +98,14 @@ export const PAGES = [
   { id: 'past', match: /^\/past(?:\/([a-z]+)(?:\/([a-z]+))?)?$/, view: 'past-page.js', fn: 'renderPast', params: (m) => ({ kind: m[1] || '', sub: m[2] || '' }),
     group: 'business', tab: 'past', tabLabel: 'Past', href: '#/past', card: 'Lords divisions, written questions and statements, committee work and Hansard.' },
   { id: 'comms', match: /^\/comms$/, view: 'comms-page.js', fn: 'renderComms', group: 'business', tab: 'comms', tabLabel: 'Comms', href: '#/comms',
-    card: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.',
+    card: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.', beta: true,
     api: [['comms', { GET: 'peers', '*': WHIPS_FEATURES }]] },
 
   // LD Peers' Group
   { id: 'policy', match: /^\/policy$/, view: 'policy-page.js', fn: 'renderPolicy', group: 'group', tab: 'policy', tabLabel: 'Policy', href: '#/policy',
-    card: 'Search conference motions and policy papers, or browse them by portfolio.' },
+    card: 'Search conference motions and policy papers, or browse them by portfolio.', beta: true,
+    // (the portfolio list is what the Policy page filters by)
+    betaApi: ['policy/.*', 'portfolios(?:/[A-Za-z]+)?'] },
   { id: 'wallace-room', match: /^\/wallace-room$/, view: 'wallace-room-page.js', fn: 'renderWallaceRoom', group: 'group', tab: 'wallace', tabLabel: 'Wallace Room', href: '#/wallace-room',
     card: 'Book the Wallace Room: see who has it and when, by week or month, and book it once or on a repeat.',
     api: [['room-bookings', { GET: 'peers', '*': 'peers' }]] },
@@ -98,7 +117,7 @@ export const PAGES = [
   { id: 'roles', match: /^\/roles$/, view: 'roles-page.js', fn: 'renderRoles', level: BACKCHANNEL, group: 'group', tab: 'roles', tabLabel: 'Roles', href: '#/roles',
     card: 'Say who is a Whip, a Spokesperson and so on, and add staff who are not on the Members list.' },
   { id: 'data', match: /^\/data(?:\/(votes|lords))?$/, view: 'data-page.js', fn: 'renderData', params: (m) => ({ sub: m[1] || '' }), level: 'whips',
-    group: 'group', tab: 'data', tabLabel: 'Data', href: '#/data', card: 'Voting analysis and the House of Lords Library data dashboards.',
+    group: 'group', tab: 'data', tabLabel: 'Data', href: '#/data', card: 'Voting analysis and the House of Lords Library data dashboards.', beta: true,
     api: [['data/.*', { '*': 'whips' }]] },
   { id: 'advisers', match: /^\/advisers$/, view: 'advisers-page.js', fn: 'renderAdvisers', level: 'staff', group: 'group', tab: 'advisers', tabLabel: 'Advisers', href: '#/advisers',
     card: 'Every page the advisers use: Bill advisers, groupings, the rota, hymn sheet uploads and data.' },
@@ -106,6 +125,9 @@ export const PAGES = [
     api: [['advisers', { '*': 'staff' }], ['groupings', { GET: WHIPS_FEATURES, '*': 'staff' }]] },
   { id: 'bulletin-editor', match: /^\/bulletin-editor$/, view: 'bulletin-editor-page.js', fn: 'renderBulletinEditor', level: 'staff', group: 'group', tab: 'advisers',
     api: [['bulletin', { GET: 'peers', '*': 'staff' }]] },
+
+  // The Developer site: you only (the admin). Put work in progress here, with `level: DEVELOPER`, until it is ready to go live.
+  { id: 'developer', match: /^\/developer$/, view: 'developer-page.js', fn: 'renderDeveloper', level: DEVELOPER, nav: 'developer' },
 
   // The two hub pages
   { id: 'business', match: /^\/business$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'business' }), nav: 'business' },
@@ -150,14 +172,15 @@ export const ADVISER_LINKS = [
 /* ------------------------------------------------------------------ helpers (used by the website, the server and the checker) */
 
 /** The menu items a person at this level sees. */
-export const menuFor = (level) => MENU.filter((m) => atLeast(level, m.level));
+export const menuFor = (level) => level === BETA ? BETA_MENU : MENU.filter((m) => atLeast(level, m.level));
 
 /** The buttons (and hub cards) of a group that a person at this level may open. */
-export const tabsFor = (group, level) => PAGES.filter((p) => p.group === group && p.tabLabel && atLeast(level, p.level))
+export const tabsFor = (group, level) => PAGES.filter((p) => p.group === group && p.tabLabel && canOpenPage(p, level))
   .map((p) => ({ tab: p.tab, label: p.tabLabel, href: p.href, card: p.card }));
 
 /** For a page that matched an address: which menu item to highlight, and which group and button it sits under. */
-export function placeOf(page, m, ctx) {
+export function placeOf(page, m, ctx, level) {
+  if (level === BETA) return { menu: page.id, group: '', tab: '' };   // a beta tester's menu is the three pages themselves, with no groups
   let menu = typeof page.nav === 'function' ? page.nav(m, ctx) : page.nav;
   const inGroup = !!page.group && !menu; // a page can step out of its group, e.g. a day that is today
   if (!menu) menu = page.group || page.id;
@@ -175,3 +198,8 @@ export function requiredLevel(method, path) {
   for (const [re, by] of API_RULES) if (re.test(path)) return by[key] || by['*'] || 'admin'; // anything a rule does not name needs an Admin
   return key === 'GET' ? 'peers' : 'admin';
 }
+
+/** What a beta tester may ask the server for: reading only, and only the routes behind the pages marked `beta: true` (plus /me, handled by the server). */
+const BETA_ROUTES = [...new Set([...PAGES.filter((p) => p.beta).flatMap((p) => [...(p.api || []).map(([route]) => route), ...(p.betaApi || [])]), 'status'])]
+  .map((route) => new RegExp(`^/api/libby/(?:${route})$`));
+export const betaMay = (method, path) => ['GET', 'HEAD'].includes(String(method || 'GET').toUpperCase()) && BETA_ROUTES.some((re) => re.test(path));

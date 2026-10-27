@@ -9,8 +9,8 @@ let failed = 0;
 const ok = (cond, name) => { console.log(`${cond ? 'ok  ' : 'FAIL'}  ${name}`); if (!cond) failed++; };
 
 // A fake Supabase: tokens map to people; levels map to people; one live shared code.
-const TOKENS = { 'tok-peer': 'u-peer', 'tok-admin': 'u-admin', 'tok-none': 'u-none', 'tok-code': 'code-1' };
-const LEVELS = { 'u-peer': 'peers', 'u-admin': 'admin', 'code-1': 'whips' };
+const TOKENS = { 'tok-peer': 'u-peer', 'tok-admin': 'u-admin', 'tok-none': 'u-none', 'tok-code': 'code-1', 'tok-beta': 'u-beta', 'tok-dev': 'u-dev' };
+const LEVELS = { 'u-peer': 'peers', 'u-admin': 'admin', 'code-1': 'whips', 'u-beta': 'beta', 'u-dev': 'developer' };
 const failures = [];
 let levelCalls = 0, authDown = false, revoked = false;
 const CODE = 'peers-basic-pass';
@@ -98,6 +98,19 @@ levelCalls = 0;
 TOKENS['tok-code-fresh'] = 'code-1';
 r = await middleware(ctx('/api/libby/status', { token: 'tok-code-fresh' }));
 ok(r.status === 403, 'switching a code off closes the door for everyone using it');
+
+
+// ---- the beta test and the Developer site
+const beta = async (path, method = 'GET') => (await middleware(ctx(path, { token: 'tok-beta', method }))).status;
+ok(await beta('/api/libby/comms') === 200 && await beta('/api/libby/policy/search') === 200 && await beta('/api/libby/portfolios') === 200 && await beta('/api/libby/data/votes') === 200 && await beta('/api/libby/status') === 200,
+  'a Beta tester can read what is behind Comms, Policy and Data');
+ok(await beta('/api/libby/comms', 'POST') === 403 && await beta('/api/libby/room-bookings', 'POST') === 403, 'but not change anything');
+ok(await beta('/api/libby/day/today') === 403 && await beta('/api/libby/bills') === 403 && await beta('/api/libby/future') === 403 && await beta('/api/libby/bulletin') === 403
+  && await beta('/api/libby/room-bookings') === 403 && await beta('/api/libby/people-roles') === 403 && await beta('/api/libby/ld-peers') === 403, 'and nothing else, even though a Peer could read it');
+r = await me(ctx('/api/libby/me', { token: 'tok-beta' }));
+ok(r.status === 200 && (await r.json()).name === 'Beta tester', '/me tells a Beta tester their level');
+r = await middleware(ctx('/api/libby/people-roles', { token: 'tok-dev', method: 'POST' }));
+ok(r.status === 200, 'the Developer level can do everything the admin can');
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll access checks passed.');
 process.exit(failed ? 1 : 0);

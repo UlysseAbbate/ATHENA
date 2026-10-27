@@ -176,9 +176,10 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       }
       // LIBBY, under the same sign-in: the page runs under its own security policy and asks the server who this is
       if (who === "admin" || who === "core") {
+        let lvl = "admin";
         await page.route(BASE + "/api/libby/**", route => {
           const u = new URL(route.request().url()), j = (b, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(b) });
-          if (u.pathname.endsWith("/me")) return who === "admin" ? j({ level: "admin", name: "Admin", email: USERS.admin.email }) : j({ error: "You have not been given access to LIBBY.", noAccess: true, email: USERS.core.email }, 403);
+          if (u.pathname.endsWith("/me")) return who === "admin" ? j({ level: lvl, name: { admin: "Admin", beta: "Beta tester", developer: "Developer" }[lvl], email: USERS.admin.email }) : j({ error: "You have not been given access to LIBBY.", noAccess: true, email: USERS.core.email }, 403);
           if (u.pathname.endsWith("/status")) return j({ updated: null, lastRun: null, next: { hour: 8, tomorrow: false }, hours: [8] });
           return j({}, 404);
         });
@@ -189,6 +190,25 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/business"); await page.waitForTimeout(600);
           const hub = await page.$eval("#app", b => b.innerText);
           check("admin: LIBBY section pages load their files (Business hub)", !/couldn.t load/i.test(hub) && /Business/.test(hub), hub.slice(0, 100).replace(/\n/g, " "));
+        }
+        if (who === "admin") {   // the three editions: Beta tester (Comms, Policy, Data only), Admin (live), Developer (plus the Developer page)
+          const menu = async () => page.$$eval(".topnav a", as => as.map(a => a.textContent));
+          lvl = "beta"; await page.goto(BASE + "/libby/"); await page.waitForTimeout(900);
+          check("beta: the menu is Comms, Policy, Data", (await menu()).join("|") === "Comms|Policy|Data", (await menu()).join("|"));
+          const bh = await page.$eval("#app", b => b.innerText);
+          check("beta: the home page offers just those three", /Comms/.test(bh) && /Policy/.test(bh) && /Data/.test(bh) && !/Legislation|Today/.test(bh), bh.slice(0, 160).replace(/\n/g, " "));
+          await page.goto(BASE + "/libby/#/legislation"); await page.waitForTimeout(500);
+          check("beta: other pages say not available", /Not available/.test(await page.$eval("#app", b => b.innerText)));
+          await page.goto(BASE + "/libby/#/developer"); await page.waitForTimeout(500);
+          check("beta: and so does the Developer page", /Not available/.test(await page.$eval("#app", b => b.innerText)));
+          lvl = "admin"; await page.goto(BASE + "/libby/"); await page.waitForTimeout(900);
+          check("admin: the live menu has no Developer item", !(await menu()).includes("Developer") && (await menu()).includes("Legislation"), (await menu()).join("|"));
+          lvl = "developer"; await page.goto(BASE + "/libby/"); await page.waitForTimeout(900);
+          check("developer: the menu has Developer", (await menu()).includes("Developer") && (await menu()).includes("Legislation"), (await menu()).join("|"));
+          await page.goto(BASE + "/libby/#/developer"); await page.waitForTimeout(600);
+          const dv = await page.$eval("#app", b => b.innerText);
+          check("developer: the Developer page lists the editions and every page", /Beta test/.test(dv) && /Every page/.test(dv) && /policy/.test(dv) && !/couldn.t load/i.test(dv), dv.slice(0, 120).replace(/\n/g, " "));
+          lvl = "admin";
         }
         const cspErr = errors.filter(e => /Content Security Policy|violates/i.test(e));
         check(`${who}: LIBBY page has no security-policy violations`, cspErr.length === 0, cspErr.join("|"));

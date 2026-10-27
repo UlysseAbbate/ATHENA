@@ -3,7 +3,7 @@
 // site/libby/js/pages.js for this route (403 if too low).
 
 import { identityFromRequest, AuthUnavailable } from '../../../lib/libby/identity.js';
-import { RANK, requiredLevel, atLeast } from '../../../lib/libby/access.js';
+import { RANK, requiredLevel, atLeast, betaMay, BETA } from '../../../lib/libby/access.js';
 
 const NO_STORE = { 'cache-control': 'no-store' };
 
@@ -41,7 +41,8 @@ async function gate(ctx) {
   if (path.endsWith('/api/libby/me')) return ctx.next();   // /me explains a missing level itself
   if (!RANK[who.level]) return jsonReply({ error: 'You have not been given access to LIBBY.', noAccess: true }, 403);
 
-  if (!atLeast(who.level, requiredLevel(request.method, path))) {
+  // A beta tester may only read what is behind the beta pages; nothing else, whatever its usual level.
+  if (who.level === BETA ? !betaMay(request.method, path) : !atLeast(who.level, requiredLevel(request.method, path))) {
     return jsonReply({ error: 'Your access level does not allow this.' }, 403);
   }
   ctx.data.level = who.level;
