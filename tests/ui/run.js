@@ -255,6 +255,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("amendments: one table, columns Signed peers / Place / Explanatory statement / buttons", heads.slice(0, 3).join("|") === "Signed peers|Place in the Bill|Member\u2019s explanatory statement" && heads.length === 4, heads.join("|"));
           check("amendments: the old Lib Dem / signed lists are gone", (await page.$$eval("#ams h3", h => h.map(x => x.textContent))).every(t => !/Lib Dem amendments|other amendments we have signed/i.test(t)) && (await page.$$(".am-table tbody tr.am-row")).length === 3);
           check("amendments: each signed peer is on its own line", (await page.$$eval("tr.am-row:first-child .am-peer", ps => ps.map(p => p.textContent.trim()))).join("|") === "Lord Alpha|Baroness Beta");
+          check("amendments: the title row has filter buttons and is frozen", (await page.$$(".am-table thead .tf-btn")).length === 3 && (await page.$eval(".am-table thead th", h => getComputedStyle(h).position)) === "sticky");
           const place = await page.$eval("tr.am-row .place", t => t.textContent.trim());
           check("amendments: the place is shortened to C3, P2, L14", /C3, P2, L14/.test(place) && !/Clause/.test(place), place);
           check("amendments: the explanatory statement is filled in from the API", /Statement for 101/.test(await page.$eval("tr.am-row [data-mes]", t => t.textContent)));
@@ -272,6 +273,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.click('[data-flagfilter=""]');
           await page.click('[data-aid-row="102"] [data-comment-btn]'); await page.waitForTimeout(250);
           check("amendments: Comment opens the amendment text and comment box", await page.$eval('[data-aid-more="102"]', t => !t.hidden && /Add a comment/.test(t.textContent) && /leave out subsection/.test(t.textContent)));
+          await page.click(".am-table thead th:nth-child(2) .tf-btn"); await page.waitForTimeout(150);
+          await page.click('.tf-pop [data-s="desc"]'); await page.waitForTimeout(200);
+          check("amendments: Sort Z to A in the filter reorders the rows, each with its detail row", (await page.$$eval("tr.am-row .place strong", ts => ts.map(t => t.textContent))).join(",") === "14,13,12" && (await page.$$eval("tbody tr", rs => rs.map(r => r.className.split(" ")[0]))).join(" ") === "am-row am-more am-row am-more am-row am-more");
           lvl = "developer";
         }
         const cspErr = errors.filter(e => /Content Security Policy|violates/i.test(e));
@@ -348,6 +352,26 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#b1 [data-csv]")]);
         const csv = fs.readFileSync(await dl.path(), "utf8");
         check(`${who}: CSV export`, csv.includes("Leaflets") && csv.includes("Item"), csv.split("\n")[0]);
+        // column filters and the frozen title row (site/shared/tables.js)
+        await page.waitForTimeout(300);
+        const heads = await page.$$eval("#b1 thead th", hs => hs.filter(h => h.textContent.trim()).map(h => ({ filter: !!h.querySelector(".tf-btn"), pos: getComputedStyle(h).position })));
+        check(`${who}: every column title has a filter button and sticks to the top`, heads.length >= 3 && heads.every(h => h.filter && h.pos === "sticky"), JSON.stringify(heads));
+        const catIdx = (await page.$$eval("#b1 thead th", hs => hs.map(h => h.dataset.tfName))).indexOf("Category");
+        await page.click(`#b1 thead th:nth-child(${catIdx + 1}) .tf-btn`); await page.waitForTimeout(150);
+        if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `table-filter-${scheme}.png`) }); }
+        await page.emulateMedia({ colorScheme: "light" });
+        const vals = await page.$$eval(".tf-pop .tf-list label span", ss => ss.map(x => x.textContent));
+        check(`${who}: the filter lists the column's values`, vals.includes("Print") && vals.includes("Events"), vals.join("|"));
+        await page.click('.tf-pop .tf-list li:has-text("Print") input'); await page.click(".tf-pop [data-ok]"); await page.waitForTimeout(200);
+        const left = await page.$$eval("#b1 tbody tr:not(.tf-off) td:first-child", ts => ts.map(t => t.textContent));
+        check(`${who}: unticking Print leaves only Events`, left.join("|") === "Hall hire" && /showing 1 of 2/.test(await page.$eval(".tf-bar", b => b.innerText)), left.join("|"));
+        const [dl2] = await Promise.all([page.waitForEvent("download"), page.click("#b1 [data-csv]")]);
+        const csv2 = fs.readFileSync(await dl2.path(), "utf8");
+        check(`${who}: the CSV download follows the filter`, csv2.includes("Hall hire") && !csv2.includes("Leaflets"), csv2.slice(0, 80));
+        await page.fill("#b1 [data-q]", "hall"); await page.waitForTimeout(150);
+        check(`${who}: the filter survives the page redrawing its table`, (await page.$$("#b1 tbody tr:not(.tf-off)")).length === 1 && (await page.$$(".tf-bar")).length === 1);
+        await page.fill("#b1 [data-q]", ""); await page.click(".tf-bar [data-clear]"); await page.waitForTimeout(200);
+        check(`${who}: Clear filters brings every row back`, (await page.$$("#b1 tbody tr:not(.tf-off)")).length === 2 && (await page.$$(".tf-bar")).length === 0);
         // conflict protection on plan entries (mock returns 0 rows updated)
         await page.click('#tabs button:text-is("Campaign plan")'); await page.waitForTimeout(300);
         await page.click("[data-e=p1]");
