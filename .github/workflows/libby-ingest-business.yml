@@ -1,11 +1,13 @@
-# Loads the Lords Whips' Office Forthcoming Business (PDF) into Supabase.
-# Runs on sitting-day mornings and after lunch; can also be run by hand (Actions → Run workflow).
-name: Ingest Whips' Forthcoming Business
+# Loads the Lords' own Future Business and Order Paper into Supabase from the Lords Business API (scripts/libby/ingest_lordsbusiness.py).
+# Runs on weekday mornings and after lunch, and as part of "Refresh data"; can also be run by hand (Actions -> Run workflow).
+# (This replaces reading the Whips' Office website, which refuses automated requests.)
+name: Ingest Lords Business
 
 on:
   schedule:
-    # Times are UTC. 06:30, 10:30 and 13:30 UTC ≈ 07:30, 11:30, 14:30 London in summer time.
+    # Times are UTC. 06:30, 10:30 and 13:30 UTC = 07:30, 11:30, 14:30 London in summer time.
     - cron: '30 6,10,13 * * 1-5'
+  workflow_call:
   workflow_dispatch:
 
 jobs:
@@ -20,9 +22,9 @@ jobs:
           cache: pip
           cache-dependency-path: scripts/libby/requirements.txt
       - run: pip install -r scripts/libby/requirements.txt
-      - name: Ingest Forthcoming Business
+      - name: Ingest Future Business and the Order Paper
         working-directory: scripts/libby
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python ingest_whips.py
+        run: python ingest_lordsbusiness.py
