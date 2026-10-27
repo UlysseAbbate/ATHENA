@@ -6,7 +6,7 @@
 import { ensureLDPeers, setForceRefresh } from './api.js';
 import { todayIso, errorBox } from './ui.js';
 import { setLevel, hasLevel, currentLevel } from './session.js';
-import { PAGES, MENU, menuFor, tabsFor, placeOf, GROUPS } from './pages.js';
+import { PAGES, MENU, menuFor, tabsFor, placeOf, canOpenPage, GROUPS } from './pages.js';
 
 const app = document.getElementById('app');
 let renderToken = 0;
@@ -65,7 +65,7 @@ async function route() {
     app.innerHTML = '<header class="page-head"><h1>Page not found</h1><p class="lede">That address does not match a section. <a href="#/">Go to the home page</a>.</p></header>';
     return;
   }
-  if (!hasLevel(page.level || 'peers')) {
+  if (!canOpenPage(page, currentLevel())) {
     renderSubnav('', '');
     app.innerHTML = '<header class="page-head"><h1>Not available</h1><p class="lede">Your access level does not include this page. <a href="#/">Go to the home page</a>.</p></header>';
     return;
@@ -75,7 +75,7 @@ async function route() {
   app.innerHTML = '';
   window.scrollTo(0, 0);
   try {
-    await ensureLDPeers();
+    if (currentLevel() !== 'beta') await ensureLDPeers();   // (the list of Lib Dem peers is not part of the beta)
     if (token !== renderToken) return;
     let mod;
     try {

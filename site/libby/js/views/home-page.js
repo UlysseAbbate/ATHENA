@@ -22,6 +22,8 @@ export async function renderHome(el) {
         </a>`).join('')}
     </nav>`;
 
+  if (currentLevel() === 'beta') return;   // beta testers get just their three sections: none of the live panels, bulletin or counts
+
   liveStrip(el.querySelector('#live'), { compact: true });
 
   // The Whips' Office Bulletin: between the live panels and the sections. It is left out if it cannot be read or is empty.

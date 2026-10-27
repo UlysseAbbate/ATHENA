@@ -147,6 +147,11 @@ how the Whips' Office tools work is in `docs/libby/README.md`, and how to add a 
 Access page. Server routes need these Cloudflare Pages secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, `SESSION_SECRET`,
 `ANTHROPIC_API_KEY`. The steps to bring it live are in `docs/PHASE-4-GO-LIVE.md`.
 
+**Three editions, one site.** The edition a person sees is their LIBBY level, set on the Access page:
+- **Live:** Peer, Whip, Spokesperson, Leader's office, Staff, Admin, as before.
+- **Beta test:** the *Beta tester* level (can also be a shared code). They see only **Comms, Policy and Data**, read-only; the menu, the pages and the server all enforce it, so other addresses and routes are refused.
+- **Developer:** the *Developer* level, above Admin, which only the admin can give (you always have it). It adds the **Developer** page (a register of every page and who can open it) and any page marked `level: DEVELOPER` in `site/libby/js/pages.js`, for work in progress. Mark a page `beta: true` to show it to beta testers.
+
 ## Checks
 
 `.github/workflows/checks.yml` runs on every pull request and push to main (LIBBY's own checks run in `libby-check.yml`):
