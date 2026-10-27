@@ -23,13 +23,13 @@ export function minutesText(m) {
 
 /* ------------------------------------------------------------------ duty Whips */
 
-/** The two duty Whips for the day, from the Whips page. Shown on every day. */
+/** The two duty Whips for the day, from the Advisers page. Shown on every day. */
 export function dutyWhipsHtml(data) {
   const names = data.dutyWhips || [];
   return `<aside class="duty-box" aria-label="Duty Whips">
     <span class="duty-label">Duty Whips</span>
     ${names.length ? names.map((n) => `<strong class="duty-name">${peer(n, true)}</strong>`).join('<span class="muted"> and </span>') : '<em class="muted">not yet chosen</em>'}
-    ${can('whips') ? '<a class="small duty-link" href="#/whips/duty">Choose on the Whips page</a>' : ''}
+    ${can('staff') ? '<a class="small duty-link" href="#/duty-whips">Choose on the Advisers page</a>' : ''}
   </aside>`;
 }
 

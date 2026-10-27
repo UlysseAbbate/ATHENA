@@ -109,10 +109,12 @@ export const PAGES = [
   { id: 'wallace-room', match: /^\/wallace-room$/, view: 'wallace-room-page.js', fn: 'renderWallaceRoom', group: 'group', tab: 'wallace', tabLabel: 'Wallace Room', href: '#/wallace-room',
     card: 'Book the Wallace Room: see who has it and when, by week or month, and book it once or on a repeat.',
     api: [['room-bookings', { GET: 'peers', '*': 'peers' }]] },
-  { id: 'whips', match: /^\/whips(?:\/(duty|availability|hymn-sheets))?$/, view: 'whips-page.js', fn: 'renderWhips', params: (m) => ({ sub: m[1] || '' }), level: 'whips',
-    group: 'group', tab: 'whips', tabLabel: 'Whips', href: '#/whips', card: 'The duty rota, availability for whipping, and the hymn sheets.',
-    api: [['duty-whips', { GET: 'whips', '*': 'staff' }], ['whip-availability', { GET: 'whips', '*': 'whips' }], ['hymn-sheets', { GET: 'whips', '*': 'staff' }],
-      ['people-roles', { GET: 'whips', '*': BACKCHANNEL }]] },
+  { id: 'whips', match: /^\/whips(?:\/availability)?$/, view: 'whips-page.js', fn: 'renderWhips', level: 'whips',
+    group: 'group', tab: 'whips', tabLabel: 'Whips', href: '#/whips', card: 'Mark the days you would prefer to be duty whip, have no preference, or are not free.',
+    api: [['whip-availability', { GET: 'whips', '*': 'whips' }], ['people-roles', { GET: 'whips', '*': BACKCHANNEL }]] },
+  // Duty Whips: Staff choose the rota (on the Advisers page; the rota itself shows on every day's page)
+  { id: 'duty-whips', match: /^\/duty-whips$/, view: 'duty-page.js', fn: 'renderDuty', level: 'staff', group: 'group', tab: 'advisers',
+    api: [['duty-whips', { GET: 'whips', '*': 'staff' }]] },
   // Who is a Whip, Spokesperson and so on. Back-channel: Admin only. Everyone from Whips up reads the list (the Whips pages use it).
   { id: 'roles', match: /^\/roles$/, view: 'roles-page.js', fn: 'renderRoles', level: BACKCHANNEL, group: 'group', tab: 'roles', tabLabel: 'Roles', href: '#/roles',
     card: 'Say who is a Whip, a Spokesperson and so on, and add staff who are not on the Members list.' },
@@ -120,7 +122,7 @@ export const PAGES = [
     group: 'group', tab: 'data', tabLabel: 'Data', href: '#/data', card: 'Voting analysis and the House of Lords Library data dashboards.', beta: true,
     api: [['data/.*', { '*': 'whips' }]] },
   { id: 'advisers', match: /^\/advisers$/, view: 'advisers-page.js', fn: 'renderAdvisers', level: 'staff', group: 'group', tab: 'advisers', tabLabel: 'Advisers', href: '#/advisers',
-    card: 'Every page the advisers use: Bill advisers, groupings, the rota, hymn sheet uploads and data.' },
+    card: 'Every page the advisers use: Bill advisers, groupings and grids, the bulletin, the duty rota, availability and the Wallace Room.' },
   { id: 'adviser-editor', match: /^\/adviser-editor$/, view: 'adviser-editor-page.js', fn: 'renderAdviserEditor', level: 'staff', group: 'group', tab: 'advisers',
     api: [['advisers', { '*': 'staff' }], ['groupings', { GET: WHIPS_FEATURES, '*': 'staff' }]] },
   { id: 'bulletin-editor', match: /^\/bulletin-editor$/, view: 'bulletin-editor-page.js', fn: 'renderBulletinEditor', level: 'staff', group: 'group', tab: 'advisers',
@@ -144,28 +146,16 @@ export const SHARED_API = [
 // The buttons on the Advisers page (Staff and Admin): [ section, [ [button, address, what it is for] ] ].
 export const ADVISER_LINKS = [
   ['Legislation', [
-    ['Bill advisers', '#/adviser-editor', 'Say which adviser looks after each Bill. They show on the Legislation page.'],
-    ['Groupings, grids and hymn sheets', '#/adviser-editor?tab=groupings', 'Upload the Government Whips\u2019 grouping, check it, and save it to build the grids and hymn sheets.'],
-    ['All Bills', '#/legislation', 'Open a Bill for amendments, comments, draft amendments and the Whips\u2019 Office documents.'],
+    ['Update Bill Advisers', '#/adviser-editor', 'Say which adviser looks after each Bill. They show on the Legislation page.'],
+    ['Upload Groupings, Grids & Hymn Sheets', '#/adviser-editor?tab=groupings', 'Upload the Government Whips\u2019 grouping, check it, and save it to build the grids and hymn sheets.'],
   ]],
-  ['Whips', [
-    ['Whips page', '#/whips', 'What the Whips see: the duty rota, availability and hymn sheets.'],
-    ['Duty Whips: choose the rota', '#/whips/duty', 'Choose the two duty whips for each day.'],
-    ['Availability: see who is free', '#/whips/availability', 'Who has marked each day green, amber or red.'],
-    ['Hymn Sheets: upload', '#/whips/hymn-sheets', 'Upload hymn sheets for the Whips to download, or delete old ones.'],
-  ]],
-  ['Data', [
-    ['Voting Data', '#/data/votes', 'Government wins and defeats, and where the Lib Dems made the difference.'],
-    ['Lords Data', '#/data/lords', 'The House of Lords Library data dashboards.'],
-  ]],
-  ['Rooms', [
-    ['Wallace Room', '#/wallace-room', 'See every booking and book the room. Staff and Admin can cancel anyone\u2019s booking, or a whole repeating series.'],
-  ]],
-  ['Home page', [
+  ['Whipping', [
     ['Whips\u2019 Office Bulletin', '#/bulletin-editor', 'Write the messages in the box on the home page. They stay there until you change them.'],
+    ['Duty Whips: choose the rota', '#/duty-whips', 'Choose the two duty whips for each day.'],
+    ['Availability: see who is free', '#/whips', 'Who has marked each day green, amber or red.'],
   ]],
-  ['Communications', [
-    ['Comms', '#/comms', 'The latest posts, and where to update the X, Instagram and LinkedIn posts.'],
+  ['Office', [
+    ['Wallace Room', '#/wallace-room', 'See every booking and book the room. Staff and Admin can cancel anyone\u2019s booking, or a whole repeating series.'],
   ]],
 ];
 
