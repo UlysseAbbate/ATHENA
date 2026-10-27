@@ -19,8 +19,6 @@ jobs:
           node-version: '22'
       - name: Check the site
         run: node scripts/libby/check-site.mjs
-      - name: Check the Today's Lists parser
-        run: node scripts/libby/check.mjs
       - name: Check the Today's List PDF reader and the estimated times
         run: node scripts/libby/check-list.mjs
       - name: Check sign-in, the guessing throttle and the security headers
