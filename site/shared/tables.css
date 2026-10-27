@@ -1,0 +1,36 @@
+/* Column filters, sorting and the frozen title row (see tables.js). Loaded after each page's own styles. */
+
+/* The title row stays at the top. A table in a box that scrolls keeps its titles at the top of the box. */
+.table-wrap, .tablewrap { overflow: auto; max-height: 78vh; }
+th.tf-head { position: sticky; top: 0; z-index: 2; background-color: var(--card); }
+.table-wrap th.tf-head, .tablewrap th.tf-head { box-shadow: 0 1px 0 var(--rule-strong, var(--line)); }
+
+/* the title cell: text, sort arrow, filter button */
+th.tf-head { white-space: nowrap; }
+th.tf-sortable { cursor: pointer; user-select: none; }
+.tf-dir { font-size: .7em; }
+.tf-btn { margin-left: .35rem; padding: .1rem .25rem; line-height: 1; border: 1px solid transparent; background: transparent; color: inherit; opacity: .6; cursor: pointer; border-radius: 4px; vertical-align: middle; }
+.tf-btn:hover, .tf-btn:focus-visible { opacity: 1; border-color: currentColor; }
+th.tf-active .tf-btn { opacity: 1; background: var(--yellow, var(--mark, #FDBB30)); color: #111; border-color: #111; }
+
+/* the "Filtered: showing 3 of 12 rows" line */
+.tf-bar { margin: .4rem 0; font-size: .9rem; }
+.tf-clear { background: none; border: 0; padding: 0; color: var(--link, var(--ink)); text-decoration: underline; cursor: pointer; font: inherit; }
+
+/* a row hidden by a column filter */
+tr.tf-off { display: none !important; }
+
+/* the filter list */
+.tf-pop { position: fixed; z-index: 1000; display: flex; flex-direction: column; gap: .4rem; padding: .6rem; background: var(--card); color: var(--ink);
+  border: 2px solid var(--outline, var(--ink)); border-radius: 8px; box-shadow: 0 8px 28px rgba(0, 0, 0, .28); font-size: .9rem; font-weight: 400; text-transform: none; letter-spacing: 0; text-align: left; }
+.tf-pop button { font: inherit; cursor: pointer; color: var(--ink); background: var(--card); border: 1px solid var(--rule-strong, var(--ink)); border-radius: 6px; padding: .25rem .6rem; }
+.tf-pop .tf-sorts, .tf-pop .tf-links, .tf-pop .tf-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+.tf-pop .tf-links button { border: 0; background: none; text-decoration: underline; padding: 0; }
+.tf-pop .tf-ok { background: var(--btn-bg, #111); color: var(--btn-fg, #FDBB30); border-color: var(--outline, #111); font-weight: 700; }
+.tf-search { width: 100%; padding: .35rem .5rem; border: 2px solid var(--rule-strong, var(--ink)); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; }
+.tf-list { list-style: none; margin: 0; padding: 0; overflow: auto; min-height: 3rem; max-height: 14rem; border: 1px solid var(--rule, var(--ink)); }
+.tf-list li { padding: .1rem .4rem; }
+.tf-list label { display: flex; gap: .4rem; align-items: baseline; cursor: pointer; }
+.tf-list label span { flex: 1; overflow-wrap: anywhere; }
+.tf-list small { opacity: .6; }
+.tf-note { margin: 0; opacity: .75; font-size: .85rem; }

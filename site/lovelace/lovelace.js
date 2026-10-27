@@ -206,7 +206,7 @@ async function crud(cfg, host = main, after) {
   draw();
   $("[data-q]", host).oninput = draw;
   const add = $("[data-add]", host); if (add) add.onclick = () => form(null);
-  $("[data-csv]", host).onclick = () => csvDownload(cfg.table, cfg.fields, shown);
+  $("[data-csv]", host).onclick = () => csvDownload(cfg.table, cfg.fields, window.TableTools ? TableTools.visibleOnly($("table", host), shown) : shown);   // (a column filter on the table narrows the download too)
   host.onclick = e => {
     const b = e.target.closest("[data-edit]"); if (b) return form(data.find(r => r.id === b.dataset.edit));
     const fl = e.target.closest("[data-fl]"); if (fl) { fst.i = +fl.dataset.fl; return draw(); }
