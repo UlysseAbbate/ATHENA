@@ -181,6 +181,19 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           const u = new URL(route.request().url()), j = (b, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(b) });
           if (u.pathname.endsWith("/me")) return who === "admin" ? j({ level: lvl, name: { admin: "Admin", beta: "Beta tester", developer: "Developer" }[lvl], email: USERS.admin.email }) : j({ error: "You have not been given access to LIBBY.", noAccess: true, email: USERS.core.email }, 403);
           if (u.pathname.endsWith("/status")) return j({ updated: null, lastRun: null, next: { hour: 8, tomorrow: false }, hours: [8] });
+          if (u.pathname.endsWith("/api/libby/bills/1")) return j({ id: 1, title: "Test Bill [HL]", longTitle: "A Bill to test", originatingHouse: "Lords", currentStage: "Report stage", url: "https://bills.parliament.uk/bills/1", sponsors: [], summary: "",
+            commonsStages: [], lordsStages: [{ id: 9, description: "Report stage", takesAmendments: true, status: "in progress", billStageId: 50, dates: [], forthcoming: [], docs: [], documents: [], otherDocs: [], slots: [] }], commonsDocs: [], otherDocs: [], unassignedForthcoming: [] });
+          if (u.pathname.endsWith("/api/libby/bills/1/amendments")) {
+            const sp = (n, ld, lead) => ({ name: n, lead: !!lead, ld });
+            return j({ billId: 1, billStageId: 50, total: 3, ours: [], supported: [], all: [
+              { id: 101, number: "12", place: "Clause 3, page 2, line 14", summary: "Leave out subsection (2)", sponsors: [sp("Lord Alpha", true, true), sp("Baroness Beta", true)], lead: "Lord Alpha", leadIsLD: true, ldSigned: true },
+              { id: 102, number: "13", place: "Clause 4, page 3, line 1", summary: "Insert a review", sponsors: [sp("Lord Gamma", false, true), sp("Baroness Beta", true)], lead: "Lord Gamma", leadIsLD: false, ldSigned: true },
+              { id: 103, number: "14", place: "After Clause 9", summary: "New Clause", sponsors: [sp("Lord Delta", false, true)], lead: "Lord Delta", leadIsLD: false, ldSigned: false }] });
+          }
+          if (u.pathname.endsWith("/api/libby/bills/1/amendment")) { const aid = u.searchParams.get("aid"); return j({ id: Number(aid), location: "Clause 3", text: ["Page 2, line 14, leave out subsection (2)"], explanatoryStatement: `Statement for ${aid}: this removes the subsection.`, note: "" }); }
+          if (u.pathname.endsWith("/api/libby/comments")) return j({ comments: {} });
+          if (u.pathname.endsWith("/api/libby/amendment-flags")) return route.request().method() === "GET" ? j({ flags: {} }) : j({ ok: true });
+          if (u.pathname.endsWith("/api/libby/groupings")) return j({ groupings: [] });
           return j({}, 404);
         });
         await page.goto(BASE + "/libby/"); await page.waitForTimeout(1200);
@@ -216,6 +229,29 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/developer"); await page.waitForTimeout(600);
           const dv = await page.$eval("#app", b => b.innerText);
           check("developer: the Developer page lists the editions and every page", /Beta test/.test(dv) && /Every page/.test(dv) && /policy/.test(dv) && !/couldn.t load/i.test(dv), dv.slice(0, 120).replace(/\n/g, " "));
+          lvl = "admin"; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(600);
+          await page.goto(BASE + "/libby/#/bill/1?tab=amendments"); await page.waitForTimeout(1500);
+          const heads = await page.$$eval(".am-table thead th", hs => hs.map(h => h.textContent.trim()));
+          check("amendments: one table, columns Signed peers / Place / Explanatory statement / buttons", heads.slice(0, 3).join("|") === "Signed peers|Place in the Bill|Member\u2019s explanatory statement" && heads.length === 4, heads.join("|"));
+          check("amendments: the old Lib Dem / signed lists are gone", (await page.$$eval("#ams h3", h => h.map(x => x.textContent))).every(t => !/Lib Dem amendments|other amendments we have signed/i.test(t)) && (await page.$$(".am-table tbody tr.am-row")).length === 3);
+          check("amendments: each signed peer is on its own line", (await page.$$eval("tr.am-row:first-child .am-peer", ps => ps.map(p => p.textContent.trim()))).join("|") === "Lord Alpha|Baroness Beta");
+          const place = await page.$eval("tr.am-row .place", t => t.textContent.trim());
+          check("amendments: the place is shortened to C3, P2, L14", /C3, P2, L14/.test(place) && !/Clause/.test(place), place);
+          check("amendments: the explanatory statement is filled in from the API", /Statement for 101/.test(await page.$eval("tr.am-row [data-mes]", t => t.textContent)));
+          const btns = await page.$$eval("tr.am-row:first-child .am-actions button", bs => bs.map(b => b.textContent.trim()));
+          check("amendments: buttons are Comment, Voting, Content, Not Content", btns.join("|") === "Comment|Voting|Content|Not Content", btns.join("|"));
+          const bar = await page.$$eval("[data-flagfilter]", bs => bs.map(b => b.textContent.replace(/\s+\d+$/, "").trim()));
+          check("amendments: highlights are All, Lib Dem amendments, Lib Dem-signed, Voting, Content, Not Content", bar.join("|") === "All|Lib Dem amendments|Lib Dem-signed|Voting|Content|Not Content", bar.join("|"));
+          await page.click('tr.am-row:first-child [data-flag="content"]'); await page.waitForTimeout(200);
+          check("amendments: Content turns the row green", (await page.$eval("tr.am-row:first-child", t => t.className)).includes("am-flag-content"));
+          await page.click('tr.am-row:first-child [data-flag="notcontent"]'); await page.waitForTimeout(200);
+          check("amendments: Not Content replaces Content", (await page.$eval("tr.am-row:first-child", t => t.className)).includes("am-flag-notcontent") && (await page.$eval('tr.am-row:first-child [data-flag="content"]', b => b.getAttribute("aria-pressed"))) === "false");
+          await page.click('[data-flagfilter="ldsigned"]'); await page.waitForTimeout(200);
+          const vis = await page.$$eval("tr.am-row:not([hidden]) .place", ts => ts.map(t => t.textContent.trim()));
+          check("amendments: the Lib Dem-signed highlight shows the amendments we signed but did not lead", vis.length === 1 && /C4/.test(vis[0]), vis.join("|"));
+          await page.click('[data-flagfilter=""]');
+          await page.click('[data-aid-row="102"] [data-comment-btn]'); await page.waitForTimeout(250);
+          check("amendments: Comment opens the amendment text and comment box", await page.$eval('[data-aid-more="102"]', t => !t.hidden && /Add a comment/.test(t.textContent) && /leave out subsection/.test(t.textContent)));
           lvl = "admin";
         }
         const cspErr = errors.filter(e => /Content Security Policy|violates/i.test(e));

@@ -1,5 +1,6 @@
-// Flags on amendments: voting issue (green), priority issue (orange), one to watch (red). An amendment can carry several.
-//   GET  /api/amendment-flags?bill=:billId&stage=:billStageId  -> { flags: { [amendmentId]: ['voting', 'watch', ...] } }   (Whips and above)
+// Buttons on amendments: Voting (orange), Content (green), Not Content (red). Content and Not Content are the two positions, so setting one
+// clears the other; Voting can go with either.
+//   GET  /api/amendment-flags?bill=:billId&stage=:billStageId  -> { flags: { [amendmentId]: ['voting', 'content', ...] } }   (Whips and above)
 //   POST /api/amendment-flags  { billId, stageId, amendmentId, flag, on, author }                                          (needs the Whips' Office features)
 //     `on` true sets the flag, false clears it.
 
@@ -7,7 +8,8 @@ import { json, errorResponse } from '../../../lib/libby/util.js';
 import { sbSelect, supabaseConfigured } from '../../../lib/libby/supabase.js';
 import { passcodeProblem, cleanLine } from '../../../lib/libby/auth.js';
 
-const FLAGS = ['voting', 'priority', 'watch'];
+const FLAGS = ['voting', 'content', 'notcontent'];
+const OPPOSITE = { content: 'notcontent', notcontent: 'content' };
 const posInt = (v) => { const n = Number(v); return Number.isInteger(n) && n > 0 ? n : 0; };
 const missingTable = (err) => /amendment_flags/.test(String(err.message)) && /does not exist|relation|schema cache/.test(String(err.message));
 const MISSING = 'The amendment_flags table has not been created yet: run supabase/migrations/003_stakeholders-and-flags.sql in Supabase.';
@@ -57,6 +59,10 @@ export async function onRequestPost({ request, env }) {
         method: 'DELETE', headers: writeHeaders(env, 'return=minimal'),
       });
     if (!res.ok) throw new Error(`Supabase amendment_flags: ${res.status} ${await res.text()}`);
+    if (body.on && OPPOSITE[body.flag]) {   // the other position is cleared
+      const clear = await fetch(`${base}?bill_id=eq.${billId}&stage_id=eq.${stageId}&amendment_id=eq.${amendmentId}&flag=eq.${OPPOSITE[body.flag]}`, { method: 'DELETE', headers: writeHeaders(env, 'return=minimal') });
+      if (!clear.ok) throw new Error(`Supabase amendment_flags: ${clear.status} ${await clear.text()}`);
+    }
     return json({ ok: true, flag: body.flag, on: !!body.on });
   } catch (err) {
     if (missingTable(err)) return json({ error: MISSING }, { status: 503 });

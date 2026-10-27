@@ -466,14 +466,25 @@ button.room-free:hover, button.room-free:focus-visible { background: var(--sky);
 .flag-tag { font: 700 .75rem var(--head); padding: .1rem .5rem; color: var(--on-fill); }
 .flag-tag.flag-green { background: var(--green); } .flag-tag.flag-orange { background: var(--orange); } .flag-tag.flag-red { background: var(--red); }
 
-/* highlighted amendments: voting issue green, priority issue orange, one to watch red */
-.am { border-left: 6px solid transparent; }
-.am.am-flag-voting { background: var(--green-tint); border-left-color: var(--green); }
-.am.am-flag-priority { background: var(--orange-tint); border-left-color: var(--orange-rule); }
-.am.am-flag-watch { background: var(--red-tint); border-left-color: var(--red); }
-.all-table tr.am-flag-voting > * { background: var(--green-tint); }
-.all-table tr.am-flag-priority > * { background: var(--orange-tint); }
-.all-table tr.am-flag-watch > * { background: var(--red-tint); }
+/* highlighted amendments: Voting orange, Content green, Not Content red */
+.am-row > * { border-left: 0; }
+.all-table tr.am-flag-voting > * { background: var(--orange-tint); }
+.all-table tr.am-flag-content > * { background: var(--green-tint); }
+.all-table tr.am-flag-notcontent > * { background: var(--red-tint); }
+.all-table tr.am-flag-voting > :first-child { box-shadow: inset 6px 0 0 var(--orange-rule); }
+.all-table tr.am-flag-content > :first-child { box-shadow: inset 6px 0 0 var(--green); }
+.all-table tr.am-flag-notcontent > :first-child { box-shadow: inset 6px 0 0 var(--red); }
+.am-table .am-row { cursor: pointer; }
+.am-table .am-peers { min-width: 11rem; }
+.am-peer { display: block; }
+.am-table .place { white-space: nowrap; vertical-align: top; }
+.am-table td { vertical-align: top; }
+.am-table .mes-cell { min-width: 18rem; max-width: 42rem; }
+.mes-text { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+.am-table .am-actions { min-width: 15rem; }
+.am-table .am-more > td { background: var(--card); }
+.comment-btn { background: var(--ink); color: var(--card); border: 1px solid var(--ink); }   /* black in light mode, white in dark */
+.comment-btn:hover, .comment-btn:focus-visible { background: var(--ink); color: var(--card); opacity: .82; }
 
 .flag-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin: .5rem 0 1rem; }
 .flag-filter { font: 700 .82rem var(--head); background: var(--card); color: var(--ink); border: 1px solid var(--rule-strong); padding: .25rem .65rem; cursor: pointer; }
