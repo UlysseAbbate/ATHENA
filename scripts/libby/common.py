@@ -120,3 +120,30 @@ def keyword_portfolios(text, max_n=3, title=""):
     # Keep portfolios scoring at least a third of the best match.
     chosen = [c for c, s in ranked[:max_n] if s >= max(2, top / 3)] or [c for c, _ in ranked[:1]]
     return chosen or [CATCH_ALL]
+
+
+# What kind of business a line of the Order Paper / Forthcoming Business is (used by both ingests).
+DEPT_RE = re.compile(r"[\(,]\s*([A-Za-z]{2,6})\)\s*[‡†]*\s*$")
+
+
+def classify_kind(text, hint=""):
+    t, h = text.lower(), hint.lower()
+    if "private notice question" in h or "private notice question" in t:
+        return "pnq"
+    if "urgent question" in h:
+        return "uq"
+    if "statement" in h:
+        return "statement"
+    if "oral question" in h or re.search(r"to ask (his|her) majesty", t):
+        return "oq"
+    if re.search(r"(regulations|order|rules|scheme|code of practice)( \(no\. ?\d+\))? 20\d\d|approval motion|regret motion", t):
+        return "si"
+    if re.search(r"\bbill\b", t):
+        return "legislation"
+    if "question for short debate" in t:
+        return "qsd"
+    if re.search(r"report (from|of) the|\(\d+(st|nd|rd|th) report", t):
+        return "report"
+    if re.search(r"motion|to move|take note|debate", t):
+        return "motion"
+    return "other"

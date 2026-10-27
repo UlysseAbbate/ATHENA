@@ -48,7 +48,7 @@ export function addDays(iso, n) {
 export const KIND = {
   oq: 'Oral Question', pnq: 'Private Notice Question', uq: 'Urgent Question', statement: 'Statement',
   legislation: 'Legislation', si: 'Statutory instrument', report: 'Committee report', qsd: 'Short debate',
-  motion: 'Motion', other: 'Business', prayers: 'Prayers', introduction: 'Introductions',
+  motion: 'Motion', other: 'Business', prayers: 'Prayers', introduction: 'Introductions', committee: 'Committee',
 };
 
 export const loading = (what = 'Loading') => `<p class="state" role="status"><span class="spinner" aria-hidden="true"></span>${esc(what)}…</p>`;

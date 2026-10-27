@@ -1,0 +1,177 @@
+{
+ "ChamberContent": {
+  "ItemsOfBusiness": [
+   {
+    "ItemOfBusinessId": 177251,
+    "DisplayTextFormatted": "<em>Oral questions (40 minutes)</em>",
+    "DisplayTextPlain": "Oral questions (40 minutes)",
+    "Number": 0,
+    "WrittenQuestionStatus": null,
+    "MainMemberId": null,
+    "TimeMetadata": null
+   },
+   {
+    "ItemOfBusinessId": 177286,
+    "DisplayTextFormatted": "*<strong>Lord Young of Cookham</strong>&nbsp;to ask His Majesty's Government what progress has been made in enabling access to Child Trust Funds on behalf of adults who lack mental capacity.",
+    "DisplayTextPlain": "*Lord Young of Cookham\u00a0to ask His Majesty's Government what progress has been made in enabling access to Child Trust Funds on behalf of adults who lack mental capacity.",
+    "Number": 0,
+    "WrittenQuestionStatus": null,
+    "MainMemberId": 57,
+    "TimeMetadata": null
+   },
+   {
+    "ItemOfBusinessId": 177287,
+    "DisplayTextFormatted": "*<strong>Baroness Barran</strong>&nbsp;to ask His Majesty's Government what empirical evidence underpins the Secretary of State for Education&rsquo;s assertion that the introduction of vocational GCSEs will not lead to disadvantaged pupils being disproportionately steered towards vocational or non-academic pathways; and what measures they will take to safeguard against any perception of lowered expectations.",
+    "DisplayTextPlain": "*Baroness Barran\u00a0to ask His Majesty's Government what empirical evidence underpins the Secretary of State for Education\u2019s assertion that the introduction of vocational GCSEs will not lead to disadvantaged pupils being disproportionately steered towards vocational or non-academic pathways; and what measures they will take to safeguard against any perception of lowered expectations.",
+    "Number": 0,
+    "WrittenQuestionStatus": null,
+    "MainMemberId": 4703,
+    "TimeMetadata": null
+   },
+   {
+    "ItemOfBusinessId": 177288,
+    "DisplayTextFormatted": "*<strong>Lord Davidson of Glen Clova</strong>&nbsp;to ask His Majesty's Government what assessment they have made of the developing science on the adverse health effects of LED lighting.",
+    "DisplayTextPlain": "*Lord Davidson of Glen Clova\u00a0to ask His Majesty's Government what assessment they have made of the developing science on the adverse health effects of LED lighting.",
+    "Number": 0,
+    "WrittenQuestionStatus": null,
+    "MainMemberId": 3781,
+    "TimeMetadata": null
+   },
+   {
+    "ItemOfBusinessId": 178047,
+    "DisplayTextFormatted": "&dagger;*<strong>Lord Harlech</strong> to ask His Majesty's Government what oversight they intend to exercise over the budget of the Independent Football Regulator following its proposal for a levy of &pound;20.3 million a year, around double the amount originally estimated.&nbsp;",
+    "DisplayTextPlain": "\u2020*Lord Harlech to ask His Majesty's Government what oversight they intend to exercise over the budget of the Independent Football Regulator following its proposal for a levy of \u00a320.3 million a year, around double the amount originally estimated.\u00a0",
+    "Number": 0,
+    "WrittenQuestionStatus": null,
+    "MainMemberId": 4928,
+    "TimeMetadata": null
+   },
+   {
+    "ItemOfBusinessId": 178056,
+    "DisplayTextFormatted": "<strong>Health Bill&nbsp;</strong>Committee [Baroness Merron]&nbsp;<em>(Northern Ireland, Scottish and Welsh Legislative Consent sought) 12th Report from the Delegated Powers Committee</em>",
+    "DisplayTextPlain": "Health Bill\u00a0Committee [Baroness Merron]\u00a0(Northern Ireland, Scottish and Welsh Legislative Consent sought) 12th Report from the Delegated Powers Committee",
+    "Number": 0,
+    "WrittenQuestionStatus": null,
+    "MainMemberId": 347,
+    "TimeMetadata": null
+   },
+   {
+    "ItemOfBusinessId": 178057,
+    "DisplayTextFormatted": "<strong>Railways (Interoperability in Northern Ireland) (Convention on International Carriage by Rail) (Amendment) Regulations 2026</strong> Lord Hendy of Richmond Hill to move that the draft Regulations laid before the House on 29 June be approved. <em>9th Report from the Secondary Legislation Scrutiny Committee (Dinner break business, 1 hour)</em>",
+    "DisplayTextPlain": "Railways (Interoperability in Northern Ireland) (Convention on International Carriage by Rail) (Amendment) Regulations 2026 Lord Hendy of Richmond Hill to move that the draft Regulations laid before the House on 29 June be approved. 9th Report from the Secondary Legislation Scrutiny Committee (Dinner break business, 1 hour)",
+    "Number": 0,
+    "WrittenQuestionStatus": null,
+    "MainMemberId": 4972,
+    "TimeMetadata": null
+   },
+   {
+    "ItemOfBusinessId": 178058,
+    "DisplayTextFormatted": "<strong>Baroness Hoey</strong> to move, as an amendment to the above motion, at end to insert &ldquo;but that this House regrets that the draft Regulations\u202fwere not subject to a public consultation on the proposed divergence in rail regulations between Great Britain and Northern Ireland.&rdquo;",
+    "DisplayTextPlain": "Baroness Hoey to move, as an amendment to the above motion, at end to insert \u201cbut that this House regrets that the draft Regulations\u202fwere not subject to a public consultation on the proposed divergence in rail regulations between Great Britain and Northern Ireland.\u201d",
+    "Number": 0,
+    "WrittenQuestionStatus": null,
+    "MainMemberId": 210,
+    "TimeMetadata": null
+   }
+  ],
+  "SubSections": null
+ },
+ "GrandCommitteeContent": [
+  {
+   "Title": "Grand Committee",
+   "SittingTime": "16:15:00",
+   "SittingLocation": "Committee Rooms 2A and 3A",
+   "ItalicNote": "The Grand Committee is meeting in Committee Rooms 2A and 3A at 4.15pm.",
+   "ItemsOfBusiness": [
+    {
+     "ItemOfBusinessId": 178061,
+     "DisplayTextFormatted": "<em>The following two motions are expected to be debated together:</em>",
+     "DisplayTextPlain": "The following two motions are expected to be debated together:",
+     "Number": 0,
+     "WrittenQuestionStatus": null,
+     "MainMemberId": null,
+     "TimeMetadata": null
+    },
+    {
+     "ItemOfBusinessId": 178059,
+     "DisplayTextFormatted": "<strong>Pneumoconiosis etc. (Workers&rsquo; Compensation) (Payment of Claims) (Amendment) (No. 2) Regulations 2026</strong> Consideration in Grand Committee [Baroness Sherlock]",
+     "DisplayTextPlain": "Pneumoconiosis etc. (Workers\u2019 Compensation) (Payment of Claims) (Amendment) (No. 2) Regulations 2026 Consideration in Grand Committee [Baroness Sherlock]",
+     "Number": 0,
+     "WrittenQuestionStatus": null,
+     "MainMemberId": 4147,
+     "TimeMetadata": null
+    },
+    {
+     "ItemOfBusinessId": 178060,
+     "DisplayTextFormatted": "<strong>Mesothelioma Lump Sum Payments (Conditions and Amounts) (Amendment) (No. 2) Regulations 2026</strong> Consideration in Grand Committee [Baroness Sherlock]",
+     "DisplayTextPlain": "Mesothelioma Lump Sum Payments (Conditions and Amounts) (Amendment) (No. 2) Regulations 2026 Consideration in Grand Committee [Baroness Sherlock]",
+     "Number": 0,
+     "WrittenQuestionStatus": null,
+     "MainMemberId": 4147,
+     "TimeMetadata": null
+    },
+    {
+     "ItemOfBusinessId": 178062,
+     "DisplayTextFormatted": "<strong>Border Security, Asylum and Immigration Act 2025 (Specified Purposes Related to Policing) Regulations 2026</strong> Consideration in Grand Committee [Lord Collins of Highbury]",
+     "DisplayTextPlain": "Border Security, Asylum and Immigration Act 2025 (Specified Purposes Related to Policing) Regulations 2026 Consideration in Grand Committee [Lord Collins of Highbury]",
+     "Number": 0,
+     "WrittenQuestionStatus": null,
+     "MainMemberId": 4222,
+     "TimeMetadata": null
+    },
+    {
+     "ItemOfBusinessId": 178063,
+     "DisplayTextFormatted": "<strong>Licensing Act 2003 (Permitted Temporary Activities) (Amendment) Order 2026</strong> Consideration in Grand Committee [Lord Collins of Highbury]&nbsp;<em>13th Report from the Secondary Legislation Scrutiny Committee</em>",
+     "DisplayTextPlain": "Licensing Act 2003 (Permitted Temporary Activities) (Amendment) Order 2026 Consideration in Grand Committee [Lord Collins of Highbury]\u00a013th Report from the Secondary Legislation Scrutiny Committee",
+     "Number": 0,
+     "WrittenQuestionStatus": null,
+     "MainMemberId": 4222,
+     "TimeMetadata": null
+    },
+    {
+     "ItemOfBusinessId": 178064,
+     "DisplayTextFormatted": "<strong>Renewables Obligation and Electricity Capacity (Amendment) (British Industrial Competitiveness Scheme Excluded Electricity) Regulations 2026</strong> Consideration in Grand Committee [Lord Leong]&nbsp;<em>13th Report from the Secondary Legislation Scrutiny Committee</em>",
+     "DisplayTextPlain": "Renewables Obligation and Electricity Capacity (Amendment) (British Industrial Competitiveness Scheme Excluded Electricity) Regulations 2026 Consideration in Grand Committee [Lord Leong]\u00a013th Report from the Secondary Legislation Scrutiny Committee",
+     "Number": 0,
+     "WrittenQuestionStatus": null,
+     "MainMemberId": 4959,
+     "TimeMetadata": null
+    },
+    {
+     "ItemOfBusinessId": 178066,
+     "DisplayTextFormatted": "<strong>Private Rented Sector Database Regulations 2026</strong> Consideration in Grand Committee [Baroness Taylor of Stevenage]&nbsp;<em>Special attention drawn to the instrument by the Secondary Legislation Scrutiny Committee, 13th Report&nbsp;</em>",
+     "DisplayTextPlain": "Private Rented Sector Database Regulations 2026 Consideration in Grand Committee [Baroness Taylor of Stevenage]\u00a0Special attention drawn to the instrument by the Secondary Legislation Scrutiny Committee, 13th Report\u00a0",
+     "Number": 0,
+     "WrittenQuestionStatus": null,
+     "MainMemberId": 4956,
+     "TimeMetadata": null
+    },
+    {
+     "ItemOfBusinessId": 178067,
+     "DisplayTextFormatted": "<strong>Human Rights Act 1998 (Remedial) Order 2026</strong> Consideration in Grand Committee [Lord Lemos]&nbsp;<em>1st Report from the Joint Committee on Human Rights</em>",
+     "DisplayTextPlain": "Human Rights Act 1998 (Remedial) Order 2026 Consideration in Grand Committee [Lord Lemos]\u00a01st Report from the Joint Committee on Human Rights",
+     "Number": 0,
+     "WrittenQuestionStatus": null,
+     "MainMemberId": 5382,
+     "TimeMetadata": null
+    }
+   ],
+   "SubSections": null
+  }
+ ],
+ "Date": "2026-10-28T00:00:00",
+ "SectionName": "Order Paper",
+ "SectionId": 38,
+ "SectionType": 2,
+ "ChamberHeading": "Wednesday 28 October 2026 at 3.00pm",
+ "ChamberSubHeading": null,
+ "ChamberDateHeading": null,
+ "ChamberItalicNote": null,
+ "ChamberFooter": null,
+ "ChamberSittingTime": "15:00:00",
+ "GrandCommitteeHeading": "Grand Committee in the Committee Rooms 2A and 3A at 4.15pm",
+ "GrandCommitteeSubHeading": null,
+ "GrandCommitteeDateHeading": null,
+ "GrandCommitteeFooter": null,
+ "RunningHeader": "Future Business"
+}

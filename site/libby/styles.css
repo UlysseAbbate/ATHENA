@@ -874,3 +874,7 @@ button.ghost:hover { background: #111; color: var(--yellow); border-color: #111;
 .gate-card { background: var(--card); border: 1px solid var(--rule-strong); padding: 1rem 1.2rem; }
 .gate-card h2 { margin: 0 0 .3rem; font: 800 1.25rem var(--head); }
 .gate-card .field { margin-bottom: .6rem; }
+
+/* the speakers list under a debate (opened with the Speakers button) */
+.speakers-list { margin: .4rem 0 .2rem 0; padding: .5rem .9rem; background: var(--card); border: 1px solid var(--rule); }
+.speaker-order { margin: .2rem 0 0; padding-left: 1.4rem; columns: 2 16rem; }
