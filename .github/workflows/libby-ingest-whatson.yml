@@ -35,3 +35,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: python ingest_whatson.py --days ${{ inputs.days || '42' }}
+      - name: TEMPORARY - Ingest Lords Business (remove before merging)
+        working-directory: scripts/libby
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python ingest_lordsbusiness.py
