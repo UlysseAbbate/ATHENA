@@ -39,10 +39,10 @@ People sign in by choosing a **role** and typing that role's password. Six roles
 | Role | Can do |
 |---|---|
 | **Peer** | read (the Legislation, Business and Policy pages, and book the Wallace Room) |
-| **Whip** | also the Data page, the Whips pages (duty rota, Availability for Whipping, hymn sheets) and read stakeholders and amendment flags |
+| **Whip** | also the Data page, the Whips page (Availability for Whipping) and read stakeholders and amendment flags |
 | **Spokesperson** | the same as Whip for now |
 | **Leader's office** | the same as Whip for now |
-| **Staff** | everything except the back-channel operations: also comments, drafting, stakeholders, amendment flags, the Advisers pages, the duty rota, hymn sheet uploads, the Bulletin and Comms |
+| **Staff** | everything except the back-channel operations: also comments, drafting, stakeholders, amendment flags, the Advisers pages (Bill advisers, groupings and grids, the Bulletin, the duty rota, Availability, the Wallace Room) and Comms |
 | **Admin** | everything, including the back-channel operations |
 
 The only back-channel operation today is changing who has which role (the **Roles** page). Give a future back-channel route the `BACKCHANNEL`
