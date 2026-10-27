@@ -2,7 +2,7 @@
 # Visitors then get the saved copy straight away instead of waiting for the Parliament APIs; the "Refresh now" button at the
 # foot of the site is the way to ask for fresh data in between.
 #
-#   1. What's On calendar and Lords votes are loaded into Supabase (the two ingest workflows, called from here).
+#   1. The What's On calendar, the Lords' Order Paper and Future Business, and Lords votes are loaded into Supabase (the ingest workflows, called from here).
 #   2. scripts/build-snapshots.mjs then renews the saved copies: Bills, peers, committees, every Bill's stages, today and the
 #      coming week, the Future calendar, every portfolio, the Past business first pages, the Voting Data and the Lords Library list.
 #
@@ -41,6 +41,12 @@ jobs:
     uses: ./.github/workflows/libby-ingest-whatson.yml
     secrets: inherit
 
+  business:
+    needs: window
+    if: needs.window.outputs.go == 'true'
+    uses: ./.github/workflows/libby-ingest-business.yml
+    secrets: inherit
+
   votes:
     needs: window
     if: needs.window.outputs.go == 'true'
@@ -48,7 +54,7 @@ jobs:
     secrets: inherit
 
   snapshots:
-    needs: [window, whatson, votes]
+    needs: [window, whatson, business, votes]
     # Still renew the saved copies if one of the two loads failed (for example a source website was down): they use what is there.
     if: ${{ always() && needs.window.outputs.go == 'true' }}
     runs-on: ubuntu-latest

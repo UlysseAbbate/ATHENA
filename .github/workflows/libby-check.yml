@@ -25,3 +25,5 @@ jobs:
         run: node scripts/libby/check-list.mjs
       - name: Check sign-in, the guessing throttle and the security headers
         run: node scripts/libby/check-access.mjs
+      - name: Check how Lords business rows become a day
+        run: node scripts/libby/check-business.mjs

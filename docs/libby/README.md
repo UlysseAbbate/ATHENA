@@ -76,10 +76,10 @@ GitHub -> Settings -> Secrets and variables -> Actions: `SUPABASE_URL`, `SUPABAS
 ## Scheduled jobs (GitHub Actions)
 
 - `refresh-data.yml`: **8am, 10am, 12pm, 2pm, 4pm and 6pm London time, every day** (times in `lib/schedule.js`). It loads the What's On calendar
-  (`ingest-whatson.yml`) and the Lords divisions (`ingest-votes.yml`), then `scripts/build-snapshots.mjs` renews the saved copies of the slow
+  (`ingest-whatson.yml`, from the What's On API), the Lords' business (`libby-ingest-business.yml`) and the Lords divisions (`ingest-votes.yml`), then `scripts/build-snapshots.mjs` renews the saved copies of the slow
   Parliament lookups (see "Saved copies" below). Can be run by hand from the Actions tab.
 - `ingest-policy.yml`: the Lib Dem policy library, weekly.
-- `ingest-whips.yml`: Forthcoming Business PDF (currently blocked by the Whips' site; leave it disabled).
+- `libby-ingest-business.yml`: the Lords’ Future Business and Order Paper, from the Lords Business API (replaces the Whips’ Office PDF, which the Whips’ site refuses to serve to automated requests).
 - `check.yml`: checks the site on every commit.
 
 ## Saved copies (why pages open quickly)
@@ -162,3 +162,12 @@ environment (Settings -> Variables and secrets -> Preview), and it uses the same
 Almost always a script file is missing or has the wrong name. Open the browser console (Mac: Cmd+Option+J): "Failed to load module
 script ... text/html" means a file is missing. Run `node scripts/check-site.mjs` or look at the red cross next to the last commit
 on GitHub: it names the file. Cloudflare -> Deployments -> an earlier deployment -> Rollback restores the last good version.
+
+## Where the Forthcoming and Today's business come from
+
+Both pages are built from two official Parliament APIs (read by `scripts/libby/ingest_lordsbusiness.py` and `ingest_whatson.py`, mapped in `scripts/libby/parliament_api.py`, stored in `whips_business` and `whatson_events`):
+
+- **Lords Business API** (`services.lordsbusiness.parliament.uk`): the House's own **Future Business** (the coming sitting days) and the **Order Paper** for each coming sitting day, item by item, with the member named first (Parliament's member id, which marks Lib Dem peers exactly).
+- **What's On API** (`whatson-api.parliament.uk`): the calendar, with the members and their party, the Bill an item is about, the room, the times, the estimated rising time, the committee meetings, and each debate's **speakers list** (shown under the item when *Speakers* is pressed; Lib Dems are marked).
+
+For one day the page uses the uploaded Today's List if there is one, then the Whips' list if it can be read, then the Order Paper, then Future Business, then the calendar alone; the calendar is added on top for the Bill, the speakers, the room and the Committees section. The Whips' Office website and PDF are no longer needed.

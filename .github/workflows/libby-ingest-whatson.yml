@@ -1,6 +1,4 @@
-# Loads the UK Parliament What's On calendar into Supabase, using a real HTML parser
-# (scripts/libby/ingest_whatson.py) so hidden accessibility text can't leak into titles the way
-# it did with the old live text-based scrape.
+# Loads the UK Parliament What's On calendar into Supabase from the What's On API (scripts/libby/ingest_whatson.py).
 # It runs as the first step of "Refresh data" (refresh-data.yml: 8am, 10am, 12pm, 2pm, 4pm and 6pm London time),
 # and can also be run by hand from the Actions tab.
 name: Ingest What's On calendar

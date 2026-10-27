@@ -1,0 +1,138 @@
+[
+ {
+  "event_date": "2026-11-03",
+  "house": "Lords",
+  "section": "Committees",
+  "position": 0,
+  "start_time": "10:30",
+  "end_time": "13:30",
+  "category": "Oral evidence",
+  "title": "Justice and Home Affairs Committee",
+  "members": [],
+  "event_url": "https://whatson.parliament.uk/event/cal27939",
+  "speakers": false,
+  "event_id": 27939,
+  "location": "To be confirmed",
+  "bill_id": null,
+  "bill_name": null,
+  "committee": "Justice and Home Affairs Committee"
+ },
+ {
+  "event_date": "2026-11-03",
+  "house": "Lords",
+  "section": "Committees",
+  "position": 1,
+  "start_time": "15:45",
+  "end_time": "17:30",
+  "category": "Private Meeting",
+  "title": "Secondary Legislation Scrutiny Committee",
+  "members": [],
+  "event_url": "https://whatson.parliament.uk/event/cal25966",
+  "speakers": false,
+  "event_id": 25966,
+  "location": "Room 2A, Palace of Westminster",
+  "bill_id": null,
+  "bill_name": null,
+  "committee": "Secondary Legislation Scrutiny Committee"
+ },
+ {
+  "event_date": "2026-11-03",
+  "house": "Lords",
+  "section": "Chamber",
+  "position": 2,
+  "start_time": "14:30",
+  "end_time": null,
+  "category": "Oral questions",
+  "title": "Baroness Ashley of Lambeth and Lord Lehrfreund",
+  "members": [],
+  "event_url": "https://whatson.parliament.uk/event/cal56770",
+  "speakers": false,
+  "event_id": 56770,
+  "location": null,
+  "bill_id": null,
+  "bill_name": "",
+  "committee": null
+ },
+ {
+  "event_date": "2026-11-03",
+  "house": "Lords",
+  "section": "Grand Committee",
+  "position": 3,
+  "start_time": "15:45",
+  "end_time": null,
+  "category": "Debate",
+  "title": "Report by the Industry and Regulators Committee: Time is Money: How Regulators can Support Growth",
+  "members": [
+   {
+    "name": "Baroness Hayter of Kentish Town",
+    "party": "Labour",
+    "id": 4159
+   },
+   {
+    "name": "Baroness Lloyd of Effra",
+    "party": "Labour",
+    "id": 5414
+   }
+  ],
+  "event_url": "https://whatson.parliament.uk/event/cal56800",
+  "speakers": true,
+  "event_id": 56800,
+  "location": null,
+  "bill_id": null,
+  "bill_name": "",
+  "committee": null
+ },
+ {
+  "event_date": "2026-11-03",
+  "house": "Lords",
+  "section": "Chamber",
+  "position": 4,
+  "start_time": null,
+  "end_time": null,
+  "category": "Legislation",
+  "title": "Health Bill - committee stage (day 2)",
+  "members": [
+   {
+    "name": "Baroness Merron",
+    "party": "Labour",
+    "id": 347
+   }
+  ],
+  "event_url": "https://whatson.parliament.uk/event/cal56798",
+  "speakers": false,
+  "event_id": 56798,
+  "location": null,
+  "bill_id": 4124,
+  "bill_name": "Health Bill",
+  "committee": null
+ },
+ {
+  "event_date": "2026-11-03",
+  "house": "Lords",
+  "section": "Chamber",
+  "position": 5,
+  "start_time": null,
+  "end_time": null,
+  "category": "Orders and regulations",
+  "title": "Prison (Governor\u2019s and Adjudicators\u2019 Punishments) (Amendment) Rules 2026 and the associated regret motion in the name of Lord Farmer",
+  "members": [
+   {
+    "name": "Baroness Hyde of Bemerton",
+    "party": "Labour",
+    "id": 5425
+   },
+   {
+    "name": "Lord Farmer",
+    "party": "Conservative",
+    "id": 4321
+   }
+  ],
+  "event_url": "https://whatson.parliament.uk/event/cal56799",
+  "speakers": true,
+  "event_id": 56799,
+  "location": null,
+  "bill_id": null,
+  "bill_name": "",
+  "committee": null
+ }
+]

@@ -857,3 +857,7 @@ button.est:hover, button.est[aria-expanded="true"] { background: var(--btn-bg); 
 /* the theme button in the masthead (Auto / Light / Dark) */
 button.ghost { font: 600 .8rem var(--head); color: var(--masthead-fg); background: none; border: 1px solid currentColor; border-radius: 999px; padding: .2rem .8rem; cursor: pointer; }
 button.ghost:hover { background: #111; color: var(--yellow); border-color: #111; }
+
+/* the speakers list under a debate (opened with the Speakers button) */
+.speakers-list { margin: .4rem 0 .2rem 0; padding: .5rem .9rem; background: var(--card); border: 1px solid var(--rule); }
+.speaker-order { margin: .2rem 0 0; padding-left: 1.4rem; columns: 2 16rem; }

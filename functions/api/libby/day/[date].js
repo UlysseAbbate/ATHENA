@@ -1,9 +1,10 @@
 // GET /api/day/:date  (date = YYYY-MM-DD or "today")
 // The business for one sitting day, from the best available source:
 //   0. The Today's List PDF uploaded by Staff for that day (lib/list-store.js), when there is one
-//   1. Lords Whips' Office "Today's Lists" (today only — includes groupings of amendments)
-//   2. Parliament What's On API (any date)
-//   3. Forthcoming Business PDF rows stored in Supabase by the GitHub Action (future dates)
+//   1. Lords Whips' Office "Today's Lists" (today only — includes groupings of amendments), when it can be read
+//   2. The Lords' own Order Paper for that day (Lords Business API, stored by scripts/libby/ingest_lordsbusiness.py)
+//   3. The Lords' Future Business (the same API, for the coming weeks)
+//   4. The Parliament What's On API calendar (any date) — also used on top of 2 and 3 for the Bill, the speakers list and the committees
 
 import { json, safe, londonToday, addDays, isIsoDate, hansardQuery } from '../../../../lib/libby/util.js';
 import { snapshotted } from '../../../../lib/libby/snapshots.js';
@@ -11,22 +12,24 @@ import { sanitizeList, cleanSettings, listToSections, weekdayOf } from '../../..
 import { mergeRules } from '../../../../site/libby/js/docs/sitting-times.js';
 import { SAVED_DAYS_AHEAD } from '../../../../lib/libby/schedule.js'; // today and the coming week have a saved copy; older days are rarely opened
 import { whatsOn, whipsTodaysListText, activeLordsBillsTagged, ldPeers, ldMatcher, findCommonsDebate } from '../../../../lib/libby/parliament.js';
-import { parseWhipsTodaysList, sectionsFromWhatsOn, sectionsFromFB, enrichSections, itemCount } from '../../../../lib/libby/business.js';
-import { fbRows, sbSelect, supabaseConfigured } from '../../../../lib/libby/supabase.js';
+import { parseWhipsTodaysList, sectionsFromWhatsOn, sectionsFromFB, committeesFromWhatsOn, mergeWhatsOn, risingFromWhatsOn, enrichSections, itemCount } from '../../../../lib/libby/business.js';
+import { fbRows, orderPaperRows, sbSelect, supabaseConfigured } from '../../../../lib/libby/supabase.js';
 
 const SOURCES = {
   whips: { label: "Lords Whips' Office — Today's Lists", url: 'https://www.lordswhips.org.uk/todays-lists' },
   whatson: { label: "UK Parliament — What's On", url: 'https://whatson.parliament.uk/lords/' },
-  fb: { label: "Lords Whips' Office — Forthcoming Business", url: 'https://www.lordswhips.org.uk/fb' },
+  orderpaper: { label: 'House of Lords — Order Paper', url: 'https://lordsbusiness.parliament.uk/' },
+  fb: { label: 'House of Lords — Future Business', url: 'https://lordsbusiness.parliament.uk/' },
 };
 
 /** The business for one day, put together from every source. Takes a few outside calls, which is why today and the coming week are saved. */
 async function buildDay(ctx, date, today) {
   const { env } = ctx;
-  const [events, whipsText, fb, bills, peers] = await Promise.all([
+  const [events, whipsText, fb, orderPaper, bills, peers] = await Promise.all([
     safe(whatsOn(date, date, 'Lords', ctx), []),
     date === today ? safe(whipsTodaysListText(ctx), '') : Promise.resolve(''),
     date >= today ? safe(fbRows(env, date, date), []) : Promise.resolve([]),
+    safe(orderPaperRows(env, date, date), []),
     safe(activeLordsBillsTagged(ctx), []),
     safe(ldPeers(ctx), []),
   ]);
@@ -34,15 +37,22 @@ async function buildDay(ctx, date, today) {
   const whips = whipsText ? parseWhipsTodaysList(whipsText) : null;
   const candidates = [];
   if (whips && whips.date === date && itemCount(whips.sections)) candidates.push({ key: 'whips', sections: whips.sections, rising: whips.rising });
-  const wo = sectionsFromWhatsOn(events);
-  if (itemCount(wo)) candidates.push({ key: 'whatson', sections: wo, rising: {} });
+  const opSections = sectionsFromFB(orderPaper);
+  if (itemCount(opSections)) candidates.push({ key: 'orderpaper', sections: opSections, rising: {} });
   const fbSections = sectionsFromFB(fb);
   if (itemCount(fbSections)) candidates.push({ key: 'fb', sections: fbSections, rising: {} });
+  const wo = sectionsFromWhatsOn(events);
+  if (itemCount(wo)) candidates.push({ key: 'whatson', sections: wo, rising: {} });
 
-  // Prefer the Whips' list (richest detail); otherwise whichever source lists the most items.
-  const chosen = candidates.find((c) => c.key === 'whips') ||
-    candidates.sort((a, b) => itemCount(b.sections) - itemCount(a.sections))[0] ||
+  // The Whips' list if it could be read (it carries the groupings of amendments); otherwise the Lords' own papers, newest word first:
+  // the Order Paper, then Future Business, then the calendar.
+  const chosen = ['whips', 'orderpaper', 'fb', 'whatson'].map((k) => candidates.find((c) => c.key === k)).find(Boolean) ||
     { key: null, sections: [], rising: {} };
+  // The calendar adds what the papers do not say: the Bill, the speakers list, the room, and the committees meeting that day.
+  if (chosen.key && chosen.key !== 'whatson') mergeWhatsOn(chosen.sections, events);
+  if (!Object.keys(chosen.rising || {}).length) chosen.rising = risingFromWhatsOn(events);
+  const committees = committeesFromWhatsOn(events);
+  if (committees && !chosen.sections.some((s) => s.name === 'Committees')) chosen.sections.push(committees);
 
   const isLD = ldMatcher(peers);
   await enrichSections(chosen.sections, { date, bills, isLD, findDebate: findCommonsDebate });

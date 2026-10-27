@@ -18,7 +18,8 @@ function linkParts(item, found = {}) {
   if (item.link?.href) out.push(item.link.internal ? `<a href="${esc(item.link.href)}">${esc(item.link.label)}</a>` : extLink(item.link.href, item.link.label));
   if (item.secondaryLink?.href) out.push(extLink(item.secondaryLink.href, item.secondaryLink.label));
   for (const l of [found.instrument, found.report, found.library]) if (l?.href) out.push(extLink(l.href, l.label));
-  if (item.speakersUrl) out.push(extLink(item.speakersUrl, 'Speakers'));
+  if (item.speakersEventId) out.push(`<button type="button" class="linkish" data-speakers="${item.speakersEventId}">Speakers</button>`);
+  else if (item.speakersUrl) out.push(extLink(item.speakersUrl, 'Speakers'));
   return out;
 }
 
@@ -143,6 +144,29 @@ function fillDirectLinks(box, all) {
   Promise.all([next(), next(), next()]);
 }
 
+/** "Speakers" shows who is down to speak, in order, under the item: Liberal Democrats are marked. */
+function wireSpeakers(box) {
+  box.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-speakers]');
+    if (!btn) return;
+    e.preventDefault();
+    const host = btn.closest('li.item');
+    let out = host.querySelector('.speakers-list');
+    if (out) { out.hidden = !out.hidden; return; }
+    out = document.createElement('div');
+    out.className = 'speakers-list';
+    out.innerHTML = loading('Loading the speakers');
+    host.appendChild(out);
+    try {
+      const d = await api(`event-speakers?id=${btn.dataset.speakers}`);
+      out.innerHTML = d.speakers.length
+        ? `<p class="small muted">${d.speakers.length} speakers${d.ldCount ? `, ${d.ldCount} Liberal Democrat` : ''}</p><ol class="speaker-order">${d.speakers.map((s) =>
+          `<li>${peer(s.name, s.ld)} <span class="small muted">${esc(s.party)}</span></li>`).join('')}</ol>`
+        : '<p class="small muted">No speakers have been listed yet.</p>';
+    } catch (err) { out.innerHTML = errorBox(err); }
+  });
+}
+
 export async function renderDay(el, { date }) {
   const isToday = date === todayIso();
   el.innerHTML = `
@@ -217,6 +241,7 @@ export async function renderDay(el, { date }) {
 
     refreshTimes(box, data);
     wireDayList(box, state);
+    wireSpeakers(box);
     fillDirectLinks(box, all);
     box.querySelectorAll('details[data-oq]').forEach((d) => {
       d.addEventListener('toggle', () => {

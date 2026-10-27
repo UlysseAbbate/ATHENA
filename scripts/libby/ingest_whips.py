@@ -16,7 +16,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from pypdf import PdfReader
 
-from common import http_get, require_env, sb_delete, sb_insert
+from common import DEPT_RE, classify_kind, http_get, require_env, sb_delete, sb_insert
 
 FB_PAGE = "https://www.lordswhips.org.uk/fb"
 TODAY_PAGE = "https://www.lordswhips.org.uk/todays-lists"
@@ -30,30 +30,6 @@ HEADING_RE = re.compile(r"^(oral questions?|private notice question|questions on
 NOISE_RE = re.compile(r"^(page \d+|\d+\s*$|forthcoming business|the house is expected to rise|the grand committee is expected to rise|"
                       r"\(?\d+ minutes\)?$|timings in italics|items marked|the advertised business|the number of sessions|"
                       r"†\s*indicates|progress remains)", re.I)
-DEPT_RE = re.compile(r"[\(,]\s*([A-Za-z]{2,6})\)\s*[‡†]*\s*$")
-
-
-def classify_kind(text, hint=""):
-    t, h = text.lower(), hint.lower()
-    if "private notice question" in h or "private notice question" in t:
-        return "pnq"
-    if "urgent question" in h:
-        return "uq"
-    if "statement" in h:
-        return "statement"
-    if "oral question" in h or re.search(r"to ask (his|her) majesty", t):
-        return "oq"
-    if re.search(r"(regulations|order|rules|scheme|code of practice)( \(no\. ?\d+\))? 20\d\d|approval motion|regret motion", t):
-        return "si"
-    if re.search(r"\bbill\b", t):
-        return "legislation"
-    if "question for short debate" in t:
-        return "qsd"
-    if re.search(r"report (from|of) the|\(\d+(st|nd|rd|th) report", t):
-        return "report"
-    if re.search(r"motion|to move|take note|debate", t):
-        return "motion"
-    return "other"
 
 
 def infer_date(day, month_name, year):

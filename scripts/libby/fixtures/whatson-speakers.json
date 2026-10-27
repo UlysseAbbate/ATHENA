@@ -1,0 +1,52 @@
+[
+ {
+  "EventSpeakerId": 207720,
+  "Name": "Baroness D'Souza",
+  "ListAs": "D'Souza, B.",
+  "MemberFrom": "Life peer",
+  "Party": "Crossbench",
+  "PartyColour": "C0C0C0",
+  "MemberId": 3709,
+  "SpeakingOrder": 1
+ },
+ {
+  "EventSpeakerId": 207613,
+  "Name": "Lord Farmer",
+  "ListAs": "Farmer, L.",
+  "MemberFrom": "Life peer",
+  "Party": "Conservative",
+  "PartyColour": "0063ba",
+  "MemberId": 4321,
+  "SpeakingOrder": 2
+ },
+ {
+  "EventSpeakerId": 207793,
+  "Name": "Lord Foster of Bath",
+  "ListAs": "Foster of Bath, L.",
+  "MemberFrom": "Life peer",
+  "Party": "Liberal Democrat",
+  "PartyColour": "fc7d0b",
+  "MemberId": 214,
+  "SpeakingOrder": 3
+ },
+ {
+  "EventSpeakerId": 207772,
+  "Name": "Baroness Fox of Buckley",
+  "ListAs": "Fox of Buckley, B.",
+  "MemberFrom": "Life peer",
+  "Party": "Non-affiliated",
+  "PartyColour": "BBB",
+  "MemberId": 4887,
+  "SpeakingOrder": 4
+ },
+ {
+  "EventSpeakerId": 207721,
+  "Name": "Lord Garnier",
+  "ListAs": "Garnier, L.",
+  "MemberFrom": "Life peer",
+  "Party": "Conservative",
+  "PartyColour": "0063ba",
+  "MemberId": 337,
+  "SpeakingOrder": 5
+ }
+]
