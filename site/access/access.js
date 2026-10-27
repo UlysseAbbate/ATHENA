@@ -27,10 +27,40 @@ AuthUI.watchRecovery(sb, m);
   for (const l of data || []) (levels[l.program] ||= []).push(l);
   prog = mine.includes(location.hash.slice(1)) ? location.hash.slice(1) : mine[0];
   m.innerHTML = `<div class="page-head"><h1>Access</h1><p class="lede">Choose who can open each program, and at what level. Changes apply the next time they load a page.</p></div>
+    <div id="pending"></div>
     <div class="tabs" role="tablist" id="tabs">${mine.map(id => `<button role="tab" data-p="${id}">${esc(NAMES[id] || id)}</button>`).join("")}</div><div id="body"></div>`;
+  drawPending();
   document.getElementById("tabs").onclick = e => { const b = e.target.closest("[data-p]"); if (b) { prog = b.dataset.p; notice = null; history.replaceState(null, "", "#" + prog); draw(); } };
   draw();
 })();
+
+/* New accounts waiting for access (admin only): people who have signed up and been given nothing yet. Choose a program and level for each. */
+async function drawPending() {
+  const box = document.getElementById("pending");
+  if (!box || !isAdmin()) return;
+  const { data, error } = await sb.rpc("pending_accounts");
+  if (error || !data?.length) { box.innerHTML = ""; return; }
+  const programs = Object.keys(NAMES).filter(p => p !== "lovelace" && levels[p]?.length);   // Lovelace is still given in Lovelace itself
+  const levelOpts = p => (levels[p] || []).filter(canGive).map(l => `<option value="${l.level}">${esc(l.label)}</option>`).join("");
+  box.innerHTML = `<h2 class="h2-rule">New accounts waiting <span class="count">${data.length}</span></h2>
+    <p class="lede">These people have signed up and can see nothing yet. Choose a program and level for each.</p>
+    <div class="table-wrap"><table class="grid" id="waiting"><thead><tr><th>Account</th><th>Signed up</th><th>Program</th><th>Level</th><th></th></tr></thead><tbody>
+    ${data.map(r => `<tr data-e="${esc(r.email)}"><td>${esc(r.email)}</td><td>${esc(when(r.created_at))}</td>
+      <td><select data-p aria-label="Program for ${esc(r.email)}">${programs.map(p => `<option value="${p}">${esc(NAMES[p])}</option>`).join("")}</select></td>
+      <td><select data-l aria-label="Level for ${esc(r.email)}">${levelOpts(programs[0])}</select></td>
+      <td class="act"><button class="button button-small" data-give>Give access</button></td></tr>`).join("")}</tbody></table></div>`;
+  box.onchange = e => { const p = e.target.closest("[data-p]"); if (p) p.closest("tr").querySelector("[data-l]").innerHTML = levelOpts(p.value); };
+  box.onclick = async e => {
+    const b = e.target.closest("[data-give]"); if (!b) return;
+    const tr = b.closest("tr"), p = tr.querySelector("[data-p]").value;
+    b.disabled = true;
+    const r = await sb.rpc("grant_access", { p_email: tr.dataset.e, p_program: p, p_level: tr.querySelector("[data-l]").value, p_expires: null });
+    if (r.error) { b.disabled = false; say(r.error.message, true); return; }
+    notice = `<div class="state-ok" role="status">${esc(tr.dataset.e)} now has access to ${esc(NAMES[p])}.</div>`;
+    await drawPending();
+    if (p === prog) await draw(); else { prog = p; await draw(); }
+  };
+}
 
 async function draw() {
   document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.p === prog));

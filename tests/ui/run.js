@@ -22,7 +22,7 @@ const USERS = {
 const LEVELS = [
   ["lovelace", "member", "Member", 1], ["lovelace", "core_team", "Core team", 6],
   ["lucien", "access", "Access", 1],
-  ["libby", "peers", "Peer", 1], ["libby", "staff", "Staff", 3], ["libby", "admin", "Admin", 4]].map(([program, level, label, rank]) => ({ program, level, label, rank, admin_only: level === "admin" }));
+  ["libby", "beta", "Beta tester", 1], ["libby", "peers", "Peer", 1], ["libby", "staff", "Staff", 3], ["libby", "admin", "Admin", 4]].map(([program, level, label, rank]) => ({ program, level, label, rank, admin_only: level === "admin" }));
 const BIG = 2147483647;
 const programsFor = who => who === "admin" ? { lovelace: { level: "core_team", manager: true, limit: BIG }, lucien: { level: "access", manager: true, limit: BIG }, libby: { level: "admin", manager: true, limit: BIG } }
   : who === "core" ? { lovelace: { level: "core_team", manager: true, limit: BIG } }
@@ -84,6 +84,7 @@ async function mock(page, who, log) {
     if (url.pathname.startsWith("/rest/v1/rpc/")) {
       const fn = url.pathname.split("/").pop(), body = m === "POST" ? JSON.parse(req.postData() || "{}") : {};
       if (fn === "program_people") return json(PEOPLE[body.p] || []);
+      if (fn === "pending_accounts") return json(u.admin ? [{ user_id: "n1", email: "newbie@test.invalid", created_at: ts }] : []);
       log.push(`RPC ${fn} ${JSON.stringify(body)}`);
       return json(fn === "create_access_code" ? "abcd-1234-abcd-1234-abcd" : null);
     }
@@ -148,6 +149,11 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       const aTabs = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent)).catch(() => []);
       const aText = await page.$eval("body", b => b.innerText);
       check(`${who}: Access page shows the right programs`, JSON.stringify(aTabs) === JSON.stringify({ admin: ["Lovelace", "Lucien", "LIBBY"], core: ["Lovelace"], lmgr: ["Lucien"], member: [] }[who]) && (aTabs.length > 0 || /Not found/.test(aText)), aTabs.join(","));
+      check(`${who}: new accounts waiting are listed for the admin only`, ((await page.$$("#waiting tbody tr")).length === 1) === (who === "admin"));
+      if (who === "admin") {
+        await page.selectOption('#waiting [data-p]', "libby"); await page.selectOption('#waiting [data-l]', "beta"); await page.click("#waiting [data-give]"); await page.waitForTimeout(500);
+        check("admin: a waiting account can be given a program and level there", log.some(l => l.startsWith("RPC grant_access") && l.includes("newbie@test.invalid") && l.includes('"p_level":"beta"')), log.filter(l => l.startsWith("RPC")).join(";"));
+      }
       if (who === "admin" || who === "lmgr") {
         if (who === "admin") await page.click('#tabs button:text-is("LIBBY")');
         await page.waitForSelector("#add");   // only editable programs have it, so the table on screen is the right one
@@ -176,10 +182,11 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       }
       // LIBBY, under the same sign-in: the page runs under its own security policy and asks the server who this is
       if (who === "admin" || who === "core") {
-        let lvl = "admin";
+        let lvl = "developer";
+        const ed = v => page.evaluate(x => { try { if (x) sessionStorage.setItem("libbyEdition", x); else sessionStorage.removeItem("libbyEdition"); } catch { /* none */ } }, v);
         await page.route(BASE + "/api/libby/**", route => {
           const u = new URL(route.request().url()), j = (b, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(b) });
-          if (u.pathname.endsWith("/me")) return who === "admin" ? j({ level: lvl, name: { admin: "Admin", beta: "Beta tester", developer: "Developer" }[lvl], email: USERS.admin.email }) : j({ error: "You have not been given access to LIBBY.", noAccess: true, email: USERS.core.email }, 403);
+          if (u.pathname.endsWith("/me")) return who === "admin" && lvl !== "none" ? j({ level: lvl, name: { admin: "Admin", beta: "Beta tester", developer: "Developer" }[lvl], email: USERS.admin.email }) : j({ error: "You have not been given access to LIBBY.", noAccess: true, email: USERS.core.email }, 403);
           if (u.pathname.endsWith("/status")) return j({ updated: null, lastRun: null, next: { hour: 8, tomorrow: false }, hours: [8] });
           if (u.pathname.endsWith("/api/libby/bills/1")) return j({ id: 1, title: "Test Bill [HL]", longTitle: "A Bill to test", originatingHouse: "Lords", currentStage: "Report stage", url: "https://bills.parliament.uk/bills/1", sponsors: [], summary: "",
             commonsStages: [], lordsStages: [{ id: 9, description: "Report stage", takesAmendments: true, status: "in progress", billStageId: 50, dates: [], forthcoming: [], docs: [], documents: [], otherDocs: [], slots: [] }], commonsDocs: [], otherDocs: [], unassignedForthcoming: [] });
@@ -196,17 +203,32 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           if (u.pathname.endsWith("/api/libby/groupings")) return j({ groupings: [] });
           return j({}, 404);
         });
+        await page.route(BASE + "/api/claim-code", route => { let b = {}; try { b = JSON.parse(route.request().postData() || "{}"); } catch { /* none */ } return b.code === "test-beta-code-1" ? (lvl = "beta", route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, program: "libby", level: "beta" }) })) : route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: "That code is not right, or it has ended." }) }); });
+        await ed(who === "admin" ? "developer" : "");
         await page.goto(BASE + "/libby/"); await page.waitForTimeout(1200);
         const lb = await page.$eval("body", b => b.innerText);
-        check(`${who}: LIBBY ${who === "admin" ? "opens with the person's level" : "says they have no access yet"}`, who === "admin" ? /Signed in as owner@test.invalid \(Admin\)/.test(lb) : /No access yet/.test(lb), lb.slice(0, 80).replace(/\n/g, " "));
+        check(`${who}: LIBBY ${who === "admin" ? "opens with the person's level" : "shows the gate with the beta code box and no Developer"}`, who === "admin" ? /Signed in as owner@test.invalid \(Developer\)/.test(lb) : (/Beta access code/.test(lb) && (await page.$eval(".gate-card:nth-child(2) button", b => b.disabled))), lb.slice(0, 80).replace(/\n/g, " "));
         if (who === "admin") {   // a page file is loaded when opened: a wrong path shows as "couldn't load"
           await page.goto(BASE + "/libby/#/business"); await page.waitForTimeout(600);
           const hub = await page.$eval("#app", b => b.innerText);
           check("admin: LIBBY section pages load their files (Business hub)", !/couldn.t load/i.test(hub) && /Business/.test(hub), hub.slice(0, 100).replace(/\n/g, " "));
         }
+        if (who === "admin") {   // the gate: Beta test and Developer buttons for everyone signed in
+          await ed(""); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
+          const g = await page.$$eval(".gate-card button", bs => bs.map(b => `${b.textContent.trim()}${b.disabled ? " (locked)" : ""}`));
+          check("gate: a developer sees Beta and Developer, both open", g.join("|") === "Open the beta|Open the developer site", g.join("|"));
+          lvl = "none"; await ed(""); await page.reload(); await page.waitForTimeout(900);
+          const g2 = await page.$$eval(".gate-card button", bs => bs.map(b => `${b.textContent.trim()}${b.disabled ? " (locked)" : ""}`));
+          check("gate: someone with no level sees both buttons: Beta wants the code, Developer is locked", g2.join("|") === "Unlock the beta|Developer (locked)", g2.join("|"));
+          await page.fill('.gate input[name="code"]', "wrong-code-123"); await page.click(".gate form button"); await page.waitForTimeout(500);
+          check("gate: a wrong code says so", /not right/.test(await page.$eval(".gate", b => b.innerText)));
+          await page.fill('.gate input[name="code"]', "test-beta-code-1"); await page.click(".gate form button"); await page.waitForTimeout(1500);
+          check("gate: the beta code opens the beta (Comms, Policy, Data)", (await page.$$eval(".topnav a", as => as.map(a => a.textContent))).join("|") === "Comms|Policy|Data");
+          lvl = "developer";
+        }
         if (who === "admin") {   // the three editions: Beta tester (Comms, Policy, Data only), Admin (live), Developer (plus the Developer page)
           const menu = async () => page.$$eval(".topnav a", as => as.map(a => a.textContent));
-          lvl = "beta"; await page.goto(BASE + "/libby/"); await page.waitForTimeout(900);
+          lvl = "beta"; await ed("beta"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
           check("beta: the menu is Comms, Policy, Data", (await menu()).join("|") === "Comms|Policy|Data", (await menu()).join("|"));
           const bh = await page.$eval("#app", b => b.innerText);
           check("beta: the home page offers just those three", /Comms/.test(bh) && /Policy/.test(bh) && /Data/.test(bh) && !/Legislation|Today/.test(bh), bh.slice(0, 160).replace(/\n/g, " "));
@@ -214,7 +236,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("beta: other pages say not available", /Not available/.test(await page.$eval("#app", b => b.innerText)));
           await page.goto(BASE + "/libby/#/developer"); await page.waitForTimeout(500);
           check("beta: and so does the Developer page", /Not available/.test(await page.$eval("#app", b => b.innerText)));
-          lvl = "admin"; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(700); await page.goto(BASE + "/libby/#/advisers"); await page.waitForTimeout(700);
+          lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(700); await page.goto(BASE + "/libby/#/advisers"); await page.waitForTimeout(700);
           const adv = await page.$$eval("#app h2, #app .adv-list a.button", es => es.map(e => e.textContent));
           check("the Advisers page has exactly the Legislation / Whipping / Office buttons", adv.join("|") === ["Legislation", "Update Bill Advisers", "Upload Groupings, Grids & Hymn Sheets", "Whipping", "Whips\u2019 Office Bulletin", "Duty Whips: choose the rota", "Availability: see who is free", "Office", "Wallace Room"].join("|"), adv.join("|"));
           await page.goto(BASE + "/libby/#/duty-whips"); await page.waitForTimeout(700);
@@ -222,14 +244,12 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/whips"); await page.waitForTimeout(700);
           const wp = await page.$eval("#app", b => b.innerText);
           check("the Whips page is just Availability, with no Hymn Sheets or Duty Whips", /Availability for Whipping/.test(wp) && !/Hymn/i.test(wp) && !/Duty Whips/.test(wp), wp.slice(0, 120).replace(/\n/g, " "));
-          await page.goto(BASE + "/libby/"); await page.waitForTimeout(900);
-          check("admin: the live menu has no Developer item", !(await menu()).includes("Developer") && (await menu()).includes("Legislation"), (await menu()).join("|"));
-          lvl = "developer"; await page.goto(BASE + "/libby/"); await page.waitForTimeout(900);
+          lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
           check("developer: the menu has Developer", (await menu()).includes("Developer") && (await menu()).includes("Legislation"), (await menu()).join("|"));
           await page.goto(BASE + "/libby/#/developer"); await page.waitForTimeout(600);
           const dv = await page.$eval("#app", b => b.innerText);
           check("developer: the Developer page lists the editions and every page", /Beta test/.test(dv) && /Every page/.test(dv) && /policy/.test(dv) && !/couldn.t load/i.test(dv), dv.slice(0, 120).replace(/\n/g, " "));
-          lvl = "admin"; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(600);
+          lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(600);
           await page.goto(BASE + "/libby/#/bill/1?tab=amendments"); await page.waitForTimeout(1500);
           const heads = await page.$$eval(".am-table thead th", hs => hs.map(h => h.textContent.trim()));
           check("amendments: one table, columns Signed peers / Place / Explanatory statement / buttons", heads.slice(0, 3).join("|") === "Signed peers|Place in the Bill|Member\u2019s explanatory statement" && heads.length === 4, heads.join("|"));
@@ -252,7 +272,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.click('[data-flagfilter=""]');
           await page.click('[data-aid-row="102"] [data-comment-btn]'); await page.waitForTimeout(250);
           check("amendments: Comment opens the amendment text and comment box", await page.$eval('[data-aid-more="102"]', t => !t.hidden && /Add a comment/.test(t.textContent) && /leave out subsection/.test(t.textContent)));
-          lvl = "admin";
+          lvl = "developer";
         }
         const cspErr = errors.filter(e => /Content Security Policy|violates/i.test(e));
         check(`${who}: LIBBY page has no security-policy violations`, cspErr.length === 0, cspErr.join("|"));

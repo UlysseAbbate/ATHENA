@@ -868,3 +868,9 @@ button.est:hover, button.est[aria-expanded="true"] { background: var(--btn-bg); 
 /* the theme button in the masthead (Auto / Light / Dark) */
 button.ghost { font: 600 .8rem var(--head); color: var(--masthead-fg); background: none; border: 1px solid currentColor; border-radius: 999px; padding: .2rem .8rem; cursor: pointer; }
 button.ghost:hover { background: #111; color: var(--yellow); border-color: #111; }
+
+/* the gate: Beta test and Developer */
+.gate { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; margin: 1.2rem 0; max-width: 46rem; }
+.gate-card { background: var(--card); border: 1px solid var(--rule-strong); padding: 1rem 1.2rem; }
+.gate-card h2 { margin: 0 0 .3rem; font: 800 1.25rem var(--head); }
+.gate-card .field { margin-bottom: .6rem; }
