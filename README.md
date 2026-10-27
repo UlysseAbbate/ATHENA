@@ -26,7 +26,7 @@ The plan for bringing LIBBY in and retiring shared passwords is in `docs/MASTER-
   - The core team's own *Team & access* rights cannot be switched off, so nobody can lock everyone out.
   - Only the admin can open Lucien to a role.
   - Profiles: only role, name and access date can be changed through the API.
-- **Admin** = the account bound in the `admins` table (`ulysse.abbate@gmail.com`). `is_admin()` is checked in Postgres. The admin can do everything.
+- **Admin** = the account whose confirmed email is `ulysse.abbate@gmail.com`, hardwired in the database function `admin_email()` (migration `20261027120000_hardwire_admin_email.sql`). No table row can make anyone else the admin; to change it, a new migration is needed. `is_admin()` is checked in Postgres. The admin can do everything and always holds each program's top level (for LIBBY, Developer).
 - **Least privilege:**
   - Anonymous visitors have no table rights at all.
   - Signed-in users cannot `TRUNCATE`, and cannot see the admin tables.
