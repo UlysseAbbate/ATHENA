@@ -228,6 +228,15 @@ select t.fails($$insert into public.plan_entries (plan_date, category_id, conten
 select t.as_super();
 update public.profiles set role = 'member' where id = :MEM;
 
+-- the admin is hardwired to one email: a row in the old admins table makes no one an admin
+insert into public.admins (email, user_id) values ('member@t.invalid', :MEM);
+select t.as_user(:MEM);
+select t.eq($$select public.is_admin()::text$$, 'false', 'adding someone to the old admins table does not make them admin');
+select t.as_super();
+select t.eq($$select public.is_admin_user('00000000-0000-0000-0000-00000000000a')::text$$, 'true', 'the admin is the account with the hardwired email');
+select t.eq($$select public.is_admin_email('ULYSSE.ABBATE@gmail.com')::text$$, 'true', 'the email is matched without regard to capitals');
+delete from public.admins where email = 'member@t.invalid';
+
 -- audit
 select t.eq($$select (count(*) > 0)::text from public.audit_log where table_name = 'access_grants' and label = 'peer@t.invalid · libby · peers'$$, 'true', 'grants are audited with person, program and level');
 select t.eq($$select (count(*) > 0)::text from public.audit_log where table_name = 'access_codes'$$, 'true', 'codes are audited');
