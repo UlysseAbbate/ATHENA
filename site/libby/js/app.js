@@ -198,7 +198,7 @@ async function start() {
     if ((edition === 'developer' && me.level !== 'developer') || (edition === 'beta' && (!me.level || !betaOpen))) edition = '';
     if (!edition) {
       plainScreen('');
-      renderGate(app, { me: { ...me, level: res.ok ? me.level : '' }, token: session.access_token, onEnter: () => location.reload(), signOut,
+      renderGate(app, { me: { ...me, level: res.ok ? me.level : '' }, token: session.access_token, onEnter: () => { location.hash = '#/'; location.reload(); }, signOut,
         houseName: HOUSES[house].name, betaOpen, onBack: () => { chooseHouse(''); chooseEdition(''); location.reload(); } });
       return;
     }
