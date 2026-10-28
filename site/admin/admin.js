@@ -27,16 +27,16 @@ AuthUI.watchRecovery(sb, m);
   const updated = feed.data?.updated_at, staleH = updated ? (Date.now() - new Date(updated)) / 36e5 : Infinity;
   const row = (l, v) => `<tr><td>${l}</td><td class="n">${v ?? "–"}</td></tr>`;
   Shell.mount(document.getElementById("hd"), { sub: "Admin", home: "../", email: acc.session.user.email, signOut: () => sb.auth.signOut(),
-    programs: [{ href: "../access/", label: "Access" }, { href: "../lovelace/", label: "Lovelace" }, { href: "../lucien/", label: "Lucien" }, { href: "../libby/", label: "LIBBY" }] });
+    programs: [{ href: "../access/", label: "Access" }, { href: "../lovelace/", label: "LOVELACE" }, { href: "../lucien/", label: "LUCIEN" }, { href: "../libby/", label: "LIBBY" }] });
   m.innerHTML = `<div class="page-head"><h1>System status</h1></div>
-    ${staleH > STALE_HOURS ? `<div class="alert"><b>Lucien data is ${updated ? esc(ago(updated)) : "missing"}.</b> The collector should upload at 6am and 6pm: check GitHub → Actions → <i>Update tracker</i>.</div>`
+    ${staleH > STALE_HOURS ? `<div class="alert"><b>LUCIEN data is ${updated ? esc(ago(updated)) : "missing"}.</b> The collector should upload at 6am and 6pm: check GitHub → Actions → <i>Update tracker</i>.</div>`
       : `<div class="alert ok">Collector healthy: last upload ${esc(ago(updated))}.</div>`}
-    <h2 class="h2-rule">Lovelace</h2><table class="grid">
+    <h2 class="h2-rule">LOVELACE</h2><table class="grid">
       ${row("People signed up", people)}${row("Awaiting a role", pending)}
       ${row("Access ending in the next 14 days", (ending.data || []).map(p => `${esc(p.email)} (${esc(p.access_until)})`).join("<br>") || "none")}
       ${row("Volunteers", vols)}${row("Stakeholders", stk)}${row("Coverage entries", cov)}${row("Coverage added automatically this week", autoCov)}</table>
-    <p class="muted">Assign roles, access dates and permissions in <a href="../lovelace/#team">Lovelace → Team &amp; access</a>. Lucien can be opened to a role there too (only you can change that).</p>
-    <h2 class="h2-rule">Lucien sources</h2><table class="grid">
+    <p class="muted">Give people access (levels and end dates) on the <a href="../access/">Access page</a>. What each LOVELACE role can do is set in <a href="../lovelace/#team">LOVELACE → Team &amp; access</a>; LUCIEN can be opened to a role there too (only you can change that).</p>
+    <h2 class="h2-rule">LUCIEN sources</h2><table class="grid">
       ${row("Sources returning data", src.length ? `${src.length - bad.length} / ${src.length}` : "–")}
       ${bad.slice(0, 40).map(s => `<tr><td>${esc(s.name)} <span class="muted">· ${esc(s.group)}</span><small class="why">${esc(s.error || "no items")}</small></td><td class="n">✕</td></tr>`).join("")}</table>
     <h2 class="h2-rule">Recent activity</h2><table class="grid act">${(act.data || []).map(a => `<tr><td>${esc(new Date(a.at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" }))}</td>

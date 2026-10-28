@@ -22,7 +22,7 @@ Because the sign-in now happens in the browser, LIBBY's *page code* (not its dat
 
 ## Done already (24 Oct 2026)
 
-- Both migrations are applied to the live ATHENA project (`program_access`, `libby_tables`). Your own account was carried over as a Lovelace core-team manager; nothing else changed for existing users.
+- Both migrations are applied to the live ATHENA project (`program_access`, `libby_tables`). Your own account was carried over as a LOVELACE core-team manager; nothing else changed for existing users.
 - LIBBY's hand-entered data was copied from the old LIBBY project into ATHENA and checked against it: the 34 people and roles, the Wallace Room series and 65 bookings, 10 Bill advisers, the duty whip, the bulletin and the 3 amendment groupings. The old project was only read.
 - Not copied, because the scheduled jobs rebuild them: the policy library (286 documents, about 11,000 extracts), What's On events, Lords divisions, the saved Parliament copies. One Today's List PDF can simply be uploaded again. `scripts/libby/copy-data.mjs` copies everything if you prefer.
 

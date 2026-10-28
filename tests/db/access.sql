@@ -67,7 +67,7 @@ select t.fails($$insert into public.access_grants (user_id, program, level, is_m
 select t.fails($$update public.access_grants set is_manager = false where user_id = '00000000-0000-0000-0000-0000000000b1' and program = 'lucien'$$, 'own access', 'a manager cannot change their own grant');
 select t.fails($$insert into public.access_grants (user_id, program, level) values ('00000000-0000-0000-0000-00000000000a', 'lucien', 'access')$$, 'admin', 'a manager cannot touch the admin''s access');
 select t.fails($$insert into public.access_grants (user_id, program, level) values ('00000000-0000-0000-0000-0000000000f1', 'libby', 'peers')$$, 'do not manage', 'a Lucien manager cannot grant in LIBBY');
-select t.fails($$insert into public.access_grants (user_id, program, level) values ('00000000-0000-0000-0000-0000000000e1', 'lovelace', 'member')$$, 'managed in The Mall', 'Lovelace grants are only changed through the Mall until phase 3');
+select t.fails($$insert into public.access_grants (user_id, program, level) values ('00000000-0000-0000-0000-0000000000e1', 'lovelace', 'member')$$, 'do not manage', 'a Lucien manager cannot grant in LOVELACE either');
 select t.fails($$select public.set_manager('00000000-0000-0000-0000-0000000000f1', 'lucien', true)$$, 'Only the admin', 'a manager cannot use set_manager');
 select t.ok($$select public.grant_access('member@t.invalid', 'lucien', 'access', null)$$, 'grant by email works for a manager');
 select t.fails($$select public.grant_access('nobody@t.invalid', 'lucien', 'access', null)$$, 'No account', 'grant by email says when there is no account');
@@ -121,7 +121,16 @@ update public.access_grants set expires_at = null where user_id = :LM and progra
 select t.as_user(:A);
 select t.ok($$select public.set_manager('00000000-0000-0000-0000-0000000000d1', 'libby', true, 2)$$, 'admin makes a manager with a ceiling');
 select t.fails($$select public.set_manager('00000000-0000-0000-0000-0000000000f1', 'lucien', true)$$, 'Give them a level', 'a manager needs a level first');
-select t.fails($$select public.set_manager('00000000-0000-0000-0000-0000000000c1', 'lovelace', false)$$, 'managed in The Mall', 'Lovelace managers follow the Mall roles for now');
+select t.ok($$select public.set_manager('00000000-0000-0000-0000-0000000000c1', 'lovelace', false)$$, 'LOVELACE managers are made and removed like the others');
+select t.ok($$select public.set_manager('00000000-0000-0000-0000-0000000000c1', 'lovelace', true)$$, 'and made again');
+-- LOVELACE levels are given on the Access page: the grant sets the person's role and end date, and removing it takes the role away
+select t.ok($$select public.grant_access('member@t.invalid', 'lovelace', 'candidate', current_date + 30)$$, 'the admin gives a LOVELACE level');
+select t.eq($$select role::text from public.profiles where id = '00000000-0000-0000-0000-0000000000e1'$$, 'candidate', 'which becomes their LOVELACE role');
+select t.eq($$select access_until::text from public.profiles where id = '00000000-0000-0000-0000-0000000000e1'$$, (current_date + 30)::text, 'and their end date');
+select t.ok($$delete from public.access_grants where user_id = '00000000-0000-0000-0000-0000000000e1' and program = 'lovelace'$$, 'removing the grant');
+select t.eq($$select coalesce(role::text, 'none') from public.profiles where id = '00000000-0000-0000-0000-0000000000e1'$$, 'none', 'takes the role away');
+select t.eq($$select count(*)::text from public.access_grants where user_id = '00000000-0000-0000-0000-0000000000e1' and program = 'lovelace'$$, '0', 'and does not come back by itself');
+select t.ok($$select public.grant_access('member@t.invalid', 'lovelace', 'member', null)$$, 'and gives the member role again');
 select t.ok($$update public.access_grants set level = 'admin' where user_id = '00000000-0000-0000-0000-0000000000f1' and program = 'libby'$$, 'admin gives an admin-only level');
 select t.eq($$select count(*)::text from public.access_grants$$, (select count(*)::text from public.access_grants), 'admin sees every grant');
 select t.eq($$select jsonb_array_length(public.all_people())::text$$, '8', 'all_people lists every account');
@@ -199,7 +208,8 @@ select t.as_user(:BM);
 select t.eq($$select count(*)::text from public.program_people('libby') where email like '%codes.invalid'$$, '0', 'code accounts are not listed as people');
 select t.as_super();
 select t.as_user(:A);
-select t.fails($$select public.create_access_code('Mall', 'lovelace', 'member', null, null)$$, 'Lovelace codes', 'codes cannot be made for Lovelace yet');
+select t.ok($$select public.create_access_code('Volunteers', 'lovelace', 'member', null, null)$$, 'a shared code can be made for LOVELACE');
+select t.fails($$select public.create_access_code('Bad', 'lovelace', 'nonsense', null, null)$$, 'Unknown level', 'but not for a level that does not exist');
 select t.eq($$select count(*)::text from public.profiles where email like '%codes.invalid'$$, '0', 'code accounts are hidden from the Mall''s team list');
 select t.eq($$select (jsonb_array_length(public.all_people()) = 8)::text$$, 'true', 'and from the admin People list');
 select t.as_super();
@@ -264,6 +274,16 @@ select t.eq($$select (count(*) filter (where email = 'newbie@t.invalid'))::text 
 select t.eq($$select (count(*) filter (where email = 'member@t.invalid'))::text from public.pending_accounts()$$, '0', 'and not one that already has access');
 select t.as_user(:MEM);
 select t.eq($$select count(*)::text from public.pending_accounts()$$, '0', 'nobody else can see the waiting list');
+select t.as_super();
+
+-- a LOVELACE manager (the core team) gives LOVELACE levels from the Access page too, within their own limits
+select t.as_super();
+select t.as_user(:CORE);
+select t.ok($$select public.grant_access('outsider@t.invalid', 'lovelace', 'support_team', null)$$, 'a LOVELACE manager gives a LOVELACE level');
+select t.as_super();
+select t.eq($$select role::text from public.profiles where id = '00000000-0000-0000-0000-0000000000f1'$$, 'support_team', 'and it is their role');
+select t.as_user(:CORE);
+select t.fails($$select public.grant_access('core@t.invalid', 'lovelace', 'executive', null)$$, 'own access', 'but not to themselves');
 select t.as_super();
 
 -- audit

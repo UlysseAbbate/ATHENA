@@ -1,9 +1,10 @@
 /* Access: who can open each program, at what level, until when, and the shared access codes.
- * The admin sees every program; a program manager sees only the programs they manage. The rules (who may give what to whom)
+ * The admin starts on "Everyone": every account that has been made, with a level to choose for LOVELACE, LUCIEN and LIBBY on the one row.
+ * A tab for each program shows that program's people, managers and shared codes. A program manager sees only the programs they manage. The rules (who may give what to whom)
  * are enforced in the database; this page only offers what the database would accept. */
 const { sb, esc } = Athena;
 const m = document.getElementById("m");
-const NAMES = { lovelace: "Lovelace", lucien: "Lucien", libby: "LIBBY" };
+const NAMES = { lovelace: "LOVELACE", lucien: "LUCIEN", libby: "LIBBY" };
 const day = d => d ? new Date(d + "T12:00:00").toLocaleDateString("en-GB", { dateStyle: "medium" }) : "no end date";
 const when = d => d ? new Date(d).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : "never";
 
@@ -25,48 +26,58 @@ AuthUI.watchRecovery(sb, m);
   Shell.mount(document.getElementById("hd"), { sub: "Access", home: "../", email: acc.session.user.email, signOut: () => sb.auth.signOut() });
   const { data } = await sb.from("program_levels").select("*").order("rank");
   for (const l of data || []) (levels[l.program] ||= []).push(l);
-  prog = mine.includes(location.hash.slice(1)) ? location.hash.slice(1) : mine[0];
+  const tabs = [...(isAdmin() ? [["everyone", "Everyone"]] : []), ...mine.map(id => [id, NAMES[id] || id])];
+  const ids = tabs.map(t => t[0]);
+  prog = ids.includes(location.hash.slice(1)) ? location.hash.slice(1) : ids[0];
   m.innerHTML = `<div class="page-head"><h1>Access</h1><p class="lede">Choose who can open each program, and at what level. Changes apply the next time they load a page.</p></div>
-    <div id="pending"></div>
-    <div class="tabs" role="tablist" id="tabs">${mine.map(id => `<button role="tab" data-p="${id}">${esc(NAMES[id] || id)}</button>`).join("")}</div><div id="body"></div>`;
-  drawPending();
+    <div class="tabs" role="tablist" id="tabs">${tabs.map(([id, name]) => `<button role="tab" data-p="${id}">${esc(name)}</button>`).join("")}</div><div id="body"></div>`;
   document.getElementById("tabs").onclick = e => { const b = e.target.closest("[data-p]"); if (b) { prog = b.dataset.p; notice = null; history.replaceState(null, "", "#" + prog); draw(); } };
   draw();
 })();
 
-/* New accounts waiting for access (admin only): people who have signed up and been given nothing yet. Choose a program and level for each. */
-async function drawPending() {
-  const box = document.getElementById("pending");
-  if (!box || !isAdmin()) return;
-  const { data, error } = await sb.rpc("pending_accounts");
-  if (error || !data?.length) { box.innerHTML = ""; return; }
-  const programs = Object.keys(NAMES).filter(p => p !== "lovelace" && levels[p]?.length);   // Lovelace is still given in Lovelace itself
-  const levelOpts = p => (levels[p] || []).filter(canGive).map(l => `<option value="${l.level}">${esc(l.label)}</option>`).join("");
-  box.innerHTML = `<h2 class="h2-rule">New accounts waiting <span class="count">${data.length}</span></h2>
-    <p class="lede">These people have signed up and can see nothing yet. Choose a program and level for each.</p>
-    <div class="table-wrap"><table class="grid" id="waiting"><thead><tr><th>Account</th><th>Signed up</th><th>Program</th><th>Level</th><th></th></tr></thead><tbody>
-    ${data.map(r => `<tr data-e="${esc(r.email)}"><td>${esc(r.email)}</td><td>${esc(when(r.created_at))}</td>
-      <td><select data-p aria-label="Program for ${esc(r.email)}">${programs.map(p => `<option value="${p}">${esc(NAMES[p])}</option>`).join("")}</select></td>
-      <td><select data-l aria-label="Level for ${esc(r.email)}">${levelOpts(programs[0])}</select></td>
-      <td class="act"><button class="button button-small" data-give>Give access</button></td></tr>`).join("")}</tbody></table></div>`;
-  box.onchange = e => { const p = e.target.closest("[data-p]"); if (p) p.closest("tr").querySelector("[data-l]").innerHTML = levelOpts(p.value); };
-  box.onclick = async e => {
-    const b = e.target.closest("[data-give]"); if (!b) return;
-    const tr = b.closest("tr"), p = tr.querySelector("[data-p]").value;
-    b.disabled = true;
-    const r = await sb.rpc("grant_access", { p_email: tr.dataset.e, p_program: p, p_level: tr.querySelector("[data-l]").value, p_expires: null });
-    if (r.error) { b.disabled = false; say(r.error.message, true); return; }
-    notice = `<div class="state-ok" role="status">${esc(tr.dataset.e)} now has access to ${esc(NAMES[p])}.</div>`;
-    await drawPending();
-    if (p === prog) await draw(); else { prog = p; await draw(); }
+/* Everyone (admin only): every account that has been made, newest first, with a level to choose for each program, as on LOVELACE's old
+ * Team page. Choosing "No access" takes the program away. The end date under a level is optional. */
+async function drawEveryone(body) {
+  const { data, error } = await sb.rpc("all_people");
+  if (error) { body.innerHTML = `<div class="state-error">${esc(error.message)}</div>`; return; }
+  const people = (data || []).slice().sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
+  const programs = Object.keys(NAMES).filter(p => levels[p]?.length);
+  const grantOf = (r, p) => (r.grants || []).find(g => g.program === p);
+  const waiting = people.filter(r => !r.admin && !(r.grants || []).length).length;
+  const cell = (r, p) => {
+    if (r.admin) return `<td><span class="muted">Admin (everything)</span></td>`;
+    const g = grantOf(r, p);
+    return `<td><select data-ev="${p}" aria-label="${esc(NAMES[p])} level for ${esc(r.email)}"><option value="">No access</option>${(levels[p] || []).map(l => `<option value="${l.level}"${g?.level === l.level ? " selected" : ""}>${esc(l.label)}</option>`).join("")}</select>
+      ${g ? `<input type="date" data-eu="${p}" value="${g.expires_at || ""}" aria-label="${esc(NAMES[p])} access until for ${esc(r.email)}" title="Access until (optional)">` : ""}${g?.is_manager ? ' <span class="badge">Manager</span>' : ""}</td>`;
   };
+  body.innerHTML = `<div id="msg" role="alert"></div>${notice || ""}
+    <h2 class="h2-rule">Everyone <span class="count">${people.length}</span>${waiting ? ` <span class="pill" style="color:var(--red)">${waiting} waiting for access</span>` : ""}</h2>
+    <p class="muted">Everyone who has made an account, newest first. Choose their level in each program; "No access" removes it. The date under a level is optional: after it, they see nothing until it is extended.</p>
+    ${people.length ? `<div class="table-wrap"><table class="grid" id="everyone"><thead><tr><th>Account</th><th>Signed up</th><th>Last signed in</th>${programs.map(p => `<th>${esc(NAMES[p])}</th>`).join("")}</tr></thead><tbody>
+      ${people.map(r => `<tr data-u="${r.user_id}" data-e="${esc(r.email)}"><td>${esc(r.email)}${r.full_name ? `<small class="why">${esc(r.full_name)}</small>` : ""}${r.user_id === me() ? ` <span class="muted">(you)</span>` : ""}</td>
+        <td>${esc(when(r.created_at))}</td><td>${esc(when(r.last_sign_in_at))}</td>${programs.map(p => cell(r, p)).join("")}</tr>`).join("")}</tbody></table></div>` : `<p class="muted">Nobody has made an account yet.</p>`}`;
+  notice = null;
+  const tbl = body.querySelector("#everyone");
+  tbl?.addEventListener("change", async e => {
+    const tr = e.target.closest("tr[data-u]"); if (!tr) return;
+    const sel = e.target.closest("[data-ev]"), dt = e.target.closest("[data-eu]");
+    const p = (sel || dt)?.dataset.ev || (sel || dt)?.dataset.eu; if (!p) return;
+    const row = people.find(r => r.user_id === tr.dataset.u), cur = grantOf(row, p);
+    let r;
+    if (sel && !sel.value) r = await sb.from("access_grants").delete().eq("user_id", tr.dataset.u).eq("program", p);
+    else r = await sb.rpc("grant_access", { p_email: tr.dataset.e, p_program: p, p_level: sel ? sel.value : cur.level, p_expires: sel ? (cur?.expires_at || null) : (dt.value || null) });
+    if (r.error) { say(r.error.message, true); return drawEveryone(body); }
+    notice = `<div class="state-ok" role="status">${esc(tr.dataset.e)}: ${esc(NAMES[p])} ${sel && !sel.value ? "access removed" : "access saved"}.</div>`;
+    drawEveryone(body);
+  });
 }
 
 async function draw() {
   document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.p === prog));
   const body = document.getElementById("body");
+  if (prog === "everyone") { const n = notice; await drawEveryone(body); if (n) notice = null; return; }
   const [ppl, codes] = await Promise.all([sb.rpc("program_people", { p: prog }), sb.from("access_codes").select("*").eq("program", prog).order("created_at", { ascending: false })]);
-  const lv = levels[prog] || [], label = id => lv.find(l => l.level === id)?.label || id, readonly = prog === "lovelace";
+  const lv = levels[prog] || [], label = id => lv.find(l => l.level === id)?.label || id, readonly = false;
   const people = ppl.data || [];
   const opts = (sel, rowLevel) => lv.filter(l => canGive(l) || l.level === rowLevel).map(l => `<option value="${l.level}"${l.level === sel ? " selected" : ""}${canGive(l) ? "" : " disabled"}>${esc(l.label)}</option>`).join("");
   const rowRank = r => lv.find(l => l.level === r.level)?.rank ?? 0, rowAdminOnly = r => !!lv.find(l => l.level === r.level)?.admin_only;
@@ -74,7 +85,6 @@ async function draw() {
   const live = c => !c.revoked_at && (!c.expires_at || new Date(c.expires_at) > new Date()) && (c.max_uses == null || c.uses < c.max_uses);
 
   body.innerHTML = `<div id="msg" role="alert"></div>${notice || ""}
-    ${readonly ? `<div class="state-warn">Lovelace access is still managed in <a href="../lovelace/#team">Lovelace → Team &amp; access</a>. It moves to this page later. This list is read-only.</div>` : ""}
     <h2 class="h2-rule">People <span class="count">${people.length}</span></h2>
     ${people.length ? `<div class="table-wrap"><table class="grid" id="people"><thead><tr><th>Person</th><th>Level</th><th>Access until</th><th>Last signed in</th><th></th></tr></thead><tbody>
       ${people.map(r => `<tr data-u="${r.user_id}"><td>${esc(r.email)}${r.full_name ? `<small class="why">${esc(r.full_name)}</small>` : ""}${r.is_manager ? `<span class="badge">Manager</span>` : ""}${r.user_id === me() ? ` <span class="muted">(you)</span>` : ""}</td>
