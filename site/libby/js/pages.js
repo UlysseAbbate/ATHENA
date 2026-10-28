@@ -17,7 +17,7 @@
 //   admin          everything, including the back-channel operations
 // Roles with the same number are equal: to give Spokespeople or the Leader's office their own access later, raise or lower their number here
 // (and give pages and routes that level in the lists below).
-//   beta           Beta tester: ONLY the pages marked `beta: true` below (today Comms, Policy and Data), read-only. Not a step on the ladder:
+//   beta           Beta tester: ONLY the pages marked `beta: true` below (today only Data), read-only. Not a step on the ladder:
 //                  see canOpenPage() and betaMay(), which are what keep a beta tester out of everything else
 //   developer      the Developer site: everything, plus the pages marked `level: DEVELOPER` (work in progress). Only the admin can give it,
 //                  and the admin always has it
@@ -53,8 +53,6 @@ export const MENU = [
 
 // What a beta tester sees in the menu and on the home page, in place of MENU.
 export const BETA_MENU = [
-  { id: 'comms', label: 'Comms', href: '#/comms', title: 'Comms', text: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.' },
-  { id: 'policy', label: 'Policy', href: '#/policy', title: 'Policy', text: 'Search conference motions and policy papers, or browse them by portfolio.' },
   { id: 'data', label: 'Data', href: '#/data', title: 'Data', text: 'Voting analysis and the House of Lords Library data dashboards.' },
 ];
 
@@ -98,14 +96,12 @@ export const PAGES = [
   { id: 'past', match: /^\/past(?:\/([a-z]+)(?:\/([a-z]+))?)?$/, view: 'past-page.js', fn: 'renderPast', params: (m) => ({ kind: m[1] || '', sub: m[2] || '' }),
     group: 'business', tab: 'past', tabLabel: 'Past', href: '#/past', card: 'Lords divisions, written questions and statements, committee work and Hansard.' },
   { id: 'comms', match: /^\/comms$/, view: 'comms-page.js', fn: 'renderComms', group: 'business', tab: 'comms', tabLabel: 'Comms', href: '#/comms',
-    card: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.', beta: true,
+    card: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.',
     api: [['comms', { GET: 'peers', '*': WHIPS_FEATURES }]] },
 
   // LD Peers' Group
   { id: 'policy', match: /^\/policy$/, view: 'policy-page.js', fn: 'renderPolicy', group: 'group', tab: 'policy', tabLabel: 'Policy', href: '#/policy',
-    card: 'Search conference motions and policy papers, or browse them by portfolio.', beta: true,
-    // (the portfolio list is what the Policy page filters by)
-    betaApi: ['policy/.*', 'portfolios(?:/[A-Za-z]+)?'] },
+    card: 'Search conference motions and policy papers, or browse them by portfolio.' },
   { id: 'wallace-room', match: /^\/wallace-room$/, view: 'wallace-room-page.js', fn: 'renderWallaceRoom', group: 'group', tab: 'wallace', tabLabel: 'Wallace Room', href: '#/wallace-room',
     card: 'Book the Wallace Room: see who has it and when, by week or month, and book it once or on a repeat.',
     api: [['room-bookings', { GET: 'peers', '*': 'peers' }]] },

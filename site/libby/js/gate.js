@@ -1,5 +1,5 @@
 // The front door of LIBBY: two buttons, Beta test and Developer, shown to everyone who is signed in.
-//   Beta test   Comms, Policy and Data. Opens with the beta access code (typed once; it is then on the person's account).
+//   Beta test   the Data page. Opens with the beta access code (typed once; it is then on the person's account).
 //   Developer   everything, including work in progress. Only the administrator can open it.
 // The choice is remembered for the browser tab (sessionStorage); "Switch" in the footer comes back here.
 const KEY = 'libbyEdition';
@@ -20,7 +20,7 @@ export function renderGate(el, { me, token, onEnter, signOut }) {
     <div class="gate">
       <section class="gate-card" aria-labelledby="g-beta">
         <h2 id="g-beta">Beta test</h2>
-        <p>Comms, Policy and Data.</p>
+        <p>The Data page: voting analysis and the House of Lords Library data dashboards.</p>
         ${hasBeta ? '<p><button type="button" class="button" data-enter="beta">Open the beta</button></p>' : `
         <form data-code autocomplete="off">
           <label class="field"><span>Beta access code</span><input type="password" name="code" required minlength="8" maxlength="200" autocomplete="off"></label>
