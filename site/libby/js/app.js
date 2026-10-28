@@ -5,9 +5,9 @@
 
 import { ensureLDPeers, setForceRefresh } from './api.js';
 import { todayIso, errorBox } from './ui.js';
-import { setLevel, hasLevel, currentLevel } from './session.js';
-import { PAGES, MENU, menuFor, tabsFor, placeOf, canOpenPage, GROUPS } from './pages.js';
-import { chosenEdition, chooseEdition, renderGate } from './gate.js';
+import { setLevel, hasLevel, currentLevel, setHouse, currentHouse } from './session.js';
+import { PAGES, MENU, BETA_MENU, HOUSES, menuFor, tabsFor, placeOf, canOpenPage, inHouse, GROUPS } from './pages.js';
+import { chosenEdition, chooseEdition, renderGate, chosenHouse, chooseHouse, renderHouseGate } from './gate.js';
 
 const app = document.getElementById('app');
 let renderToken = 0;
@@ -20,7 +20,7 @@ if (topnavAtStart) topnavAtStart.style.visibility = 'hidden';
 function buildMenu() {
   const nav = document.querySelector('.topnav');
   if (!nav) return;
-  nav.innerHTML = menuFor(currentLevel()).map((m) => '<a href="' + m.href + '" data-nav="' + m.id + '">' + m.label + '</a>').join('');
+  nav.innerHTML = menuFor(currentLevel(), currentHouse()).map((m) => '<a href="' + m.href + '" data-nav="' + m.id + '">' + m.label + '</a>').join('');
   nav.style.visibility = '';
 }
 
@@ -33,7 +33,7 @@ function renderSubnav(group, tab) {
     box.className = 'subnav';
     app.insertAdjacentElement('beforebegin', box);
   }
-  const tabs = group ? tabsFor(group, currentLevel()) : [];
+  const tabs = group ? tabsFor(group, currentLevel(), currentHouse()) : [];
   if (tabs.length < 2) { box.innerHTML = ''; return; }
   const hub = MENU.find((x) => x.id === group); // the group's own page: the label links to it
   box.innerHTML = '<div class="subnav-inner"><a class="subnav-label" href="' + (hub ? hub.href : '#/') + '">' + GROUPS[group].title + '</a>'
@@ -66,7 +66,14 @@ async function route() {
     app.innerHTML = '<header class="page-head"><h1>Page not found</h1><p class="lede">That address does not match a section. <a href="#/">Go to the home page</a>.</p></header>';
     return;
   }
-  if (!canOpenPage(page, currentLevel())) {
+  if (!inHouse(page, currentHouse())) {   // a link to the other House's LIBBY
+    renderSubnav('', '');
+    const other = currentHouse() === 'commons' ? 'lords' : 'commons';
+    app.innerHTML = '<header class="page-head"><h1>' + HOUSES[other].name + '</h1><p class="lede">This page is in ' + HOUSES[other].name + ' (' + HOUSES[other].house + '). <button type="button" class="linkish" id="go-other">Switch to it</button> or <a href="#/">go to the home page</a>.</p></header>';
+    document.getElementById('go-other').addEventListener('click', () => { chooseHouse(other); location.reload(); });
+    return;
+  }
+  if (!canOpenPage(page, currentLevel(), currentHouse())) {
     renderSubnav('', '');
     app.innerHTML = '<header class="page-head"><h1>Not available</h1><p class="lede">Your access level does not include this page. <a href="#/">Go to the home page</a>.</p></header>';
     return;
@@ -96,12 +103,22 @@ async function route() {
 function showWho(name) {
   const foot = document.querySelector('.foot');
   if (!foot) return;
-  foot.insertAdjacentHTML('beforeend', '<p class="small">Signed in as ' + name + '. <a href="../">Athena home</a> &middot; <button type="button" class="linkish" id="switch">Beta / Developer</button> &middot; <button type="button" class="linkish" id="logout">Sign out</button></p>');
+  foot.insertAdjacentHTML('beforeend', '<p class="small">Signed in as ' + name + '. <a href="../">Athena home</a> &middot; <button type="button" class="linkish" id="switch-house">Commons / Lords</button> &middot; <button type="button" class="linkish" id="switch">Beta / Developer</button> &middot; <button type="button" class="linkish" id="logout">Sign out</button></p>');
   document.getElementById('switch').addEventListener('click', () => { chooseEdition(''); location.reload(); });
+  document.getElementById('switch-house').addEventListener('click', () => { chooseHouse(''); chooseEdition(''); location.hash = '#/'; location.reload(); });
   document.getElementById('logout').addEventListener('click', async () => {
     try { await LibbyAuth.signOut(); } catch (e) { /* reload anyway */ }
     location.reload();
   });
+}
+
+/** The House's name in the masthead and its colour on the page (Honourable LIBBY green, Noble LIBBY red). */
+function paintHouse(house) {
+  document.documentElement.dataset.house = house;
+  const name = document.querySelector('.brand-name');
+  if (name) name.textContent = HOUSES[house].name;
+  const members = document.querySelector('[data-members]');
+  if (members) members.textContent = HOUSES[house].members;
 }
 
 /** Sign-in and no-access screens (the menu is hidden: there is nothing to open yet). */
@@ -169,13 +186,20 @@ async function start() {
     const res = await fetch('/api/libby/me', { headers: { accept: 'application/json' } });
     if (res.status === 401) { await LibbyAuth.signOut(); location.reload(); return; }
     const me = await res.json();
-    // Everyone signed in comes through the gate first: Beta test (with the beta code) or Developer (the administrator only).
+    // Everyone signed in comes through the gate first: which House (Honourable LIBBY for the Commons, Noble LIBBY for the Lords), then
+    // Beta test (with the beta code) or Developer (the administrator only).
+    const signOut = async () => { chooseEdition(''); chooseHouse(''); await LibbyAuth.signOut(); location.reload(); };
+    const house = chosenHouse();
+    if (!house) { plainScreen(''); renderHouseGate(app, { me, onEnter: () => location.reload(), signOut }); return; }
+    setHouse(house);
+    paintHouse(house);
+    const betaOpen = BETA_MENU.some((x) => inHouse(x, house));   // a House with no beta pages yet cannot be opened as the beta
     let edition = chosenEdition();
-    if ((edition === 'developer' && me.level !== 'developer') || (edition === 'beta' && !me.level)) edition = '';
+    if ((edition === 'developer' && me.level !== 'developer') || (edition === 'beta' && (!me.level || !betaOpen))) edition = '';
     if (!edition) {
       plainScreen('');
-      renderGate(app, { me: { ...me, level: res.ok ? me.level : '' }, token: session.access_token, onEnter: () => location.reload(),
-        signOut: async () => { chooseEdition(''); await LibbyAuth.signOut(); location.reload(); } });
+      renderGate(app, { me: { ...me, level: res.ok ? me.level : '' }, token: session.access_token, onEnter: () => location.reload(), signOut,
+        houseName: HOUSES[house].name, betaOpen, onBack: () => { chooseHouse(''); chooseEdition(''); location.reload(); } });
       return;
     }
     if (res.status === 403) {

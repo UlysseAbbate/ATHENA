@@ -379,12 +379,15 @@ async function renderStakeholders(panel, { billId }) {
 
 /* ------------------------------------------------------------------ The page */
 
-export async function renderBill(el, { id }, query = {}) {
+export async function renderBill(el, { id, house }, query = {}) {
+  // Honourable LIBBY (the Commons) shows the amendments at the Commons stages, with Lib Dem MPs marked; the Lords drafting tool is the Lords'.
+  const commons = house === 'commons';
+  const base = commons ? '#/c' : '#';
   el.innerHTML = loading('Loading the Bill');
   let b;
   try { b = await api(`bills/${id}`); } catch (err) { el.innerHTML = errorBox(err); return; }
 
-  const stageOf = (re) => b.lordsStages.find((s) => s.takesAmendments && re.test(s.description));
+  const stageOf = (re) => (commons ? b.commonsStages : b.lordsStages).find((s) => s.takesAmendments && re.test(s.description));
   const committee = stageOf(/committee/i);
   const report = stageOf(/report/i);
   const usable = (s) => !!s && s.status !== 'not yet scheduled';
@@ -392,7 +395,7 @@ export async function renderBill(el, { id }, query = {}) {
     { key: 'committee', label: 'Committee', stage: committee },
     { key: 'report', label: 'Report', stage: report },
     { key: 'draft', label: 'Draft amendments' },
-  ].filter((t) => t.key !== 'draft' || can('whips'));
+  ].filter((t) => t.key !== 'draft' || (can('whips') && !commons));
 
   // The three sections, one button each. Stakeholders are for the Whips' Office team and above.
   const stageCount = b.commonsStages.length + b.lordsStages.length;
@@ -403,7 +406,7 @@ export async function renderBill(el, { id }, query = {}) {
   ];
 
   el.innerHTML = `
-    ${pageHeader(b.title, esc(b.longTitle), [['#/legislation', 'Legislation']])}
+    ${pageHeader(b.title, esc(b.longTitle), [[`${base}/legislation`, 'Legislation']])}
     <p class="bill-meta small">Current stage: <strong>${esc(b.currentStage)}</strong> \u00B7 Started in the ${esc(b.originatingHouse)} \u00B7
       ${extLink(b.url, 'Bill page on bills.parliament.uk')}</p>
     ${b.sponsors.length ? `<p class="small">Sponsors: ${b.sponsors.map((s) => `${peer(s.name, s.ld)}${s.department ? ` <span class="muted">(${esc(s.department)})</span>` : ''}`).join('; ')}</p>` : ''}
@@ -424,7 +427,7 @@ export async function renderBill(el, { id }, query = {}) {
     if (!cache.has(stageId)) {
       const none = Promise.resolve({ comments: {} });
       const p = Promise.all([
-        api(`bills/${id}/amendments?stage=${stageId}`),
+        api(`bills/${id}/amendments?stage=${stageId}${commons ? '&house=commons' : ''}`),
         (can('whips') ? api(`comments?bill=${id}&stage=${stageId}`) : none).then((r) => ({ comments: r.comments || {} })).catch((err) => ({ comments: {}, error: err.message })),
         (hasLevel('whips') ? api(`amendment-flags?bill=${id}&stage=${stageId}`) : Promise.resolve({ flags: {} })).then((r) => ({ flags: r.flags || {} })).catch((err) => ({ flags: {}, error: err.message })),
       ]).then(([d, c, f]) => ({ d, comments: c.comments, commentsError: c.error, flags: f.flags, flagsError: f.error }));
@@ -515,10 +518,10 @@ export async function renderBill(el, { id }, query = {}) {
   const openSection = (key) => {
     el.querySelectorAll('[data-sec]').forEach((btn) => btn.setAttribute('aria-selected', String(btn.dataset.sec === key)));
     el.querySelectorAll('section[role="tabpanel"][id^="sec-"]').forEach((sec) => { sec.hidden = sec.id !== `sec-${key}`; });
-    try { history.replaceState(null, '', `#/bill/${id}${key === 'stages' ? '' : `?tab=${key}`}`); } catch { /* the address is a convenience */ }
+    try { history.replaceState(null, '', `${base}/bill/${id}${key === 'stages' ? '' : `?tab=${key}`}`); } catch { /* the address is a convenience */ }
     if (opened.has(key)) return;
     opened.add(key);
-    if (key === 'amendments') show(usable(report) ? 'report' : usable(committee) ? 'committee' : (can('whips') ? 'draft' : 'committee'));
+    if (key === 'amendments') show(usable(report) ? 'report' : usable(committee) ? 'committee' : (can('whips') && !commons ? 'draft' : 'committee'));
     if (key === 'stakeholders') renderStakeholders(el.querySelector('#sec-stakeholders'), { billId: id });
   };
   el.querySelectorAll('[data-sec]').forEach((btn) => btn.addEventListener('click', () => openSection(btn.dataset.sec)));

@@ -109,6 +109,9 @@ ok(r.status === 403, 'switching a code off closes the door for everyone using it
 const beta = async (path, method = 'GET') => (await middleware(ctx(path, { token: 'tok-beta', method }))).status;
 ok(await beta('/api/libby/data/votes') === 200 && await beta('/api/libby/data/lords') === 200 && await beta('/api/libby/status') === 200,
   'a Beta tester can read what is behind the Data page');
+ok(await beta('/api/libby/commons/day/today') === 403 && await beta('/api/libby/commons/bills') === 403, 'the beta has no Honourable LIBBY (Commons) pages yet');
+r = await middleware(ctx('/api/libby/commons/day/today', { token: 'tok-peer' }));
+ok(r.status === 200, 'a Peer can read Honourable LIBBY (Commons) business');
 ok(await beta('/api/libby/comms') === 403 && await beta('/api/libby/policy/search') === 403 && await beta('/api/libby/portfolios') === 403, 'but no longer Comms or Policy');
 ok(await beta('/api/libby/data/votes', 'POST') === 403 && await beta('/api/libby/room-bookings', 'POST') === 403, 'but not change anything');
 ok(await beta('/api/libby/day/today') === 403 && await beta('/api/libby/bills') === 403 && await beta('/api/libby/future') === 403 && await beta('/api/libby/bulletin') === 403

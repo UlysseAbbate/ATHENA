@@ -1,4 +1,5 @@
 // GET /api/past/:kind
+// Add &house=commons for the House of Commons (Commons divisions, Commons written questions and statements).
 //   votes       ?skip=&q=            Lords divisions (lordsvotes-api) with the Lib Dem split
 //   questions   ?skip=&q=&ld=1       Lords written questions (questions-statements-api)
 //   statements  ?skip=&q=            Lords written ministerial statements
@@ -6,7 +7,7 @@
 //   hansard     ?month=YYYY-MM       sitting days with links to Lords and Commons Hansard
 
 import { json, errorResponse, safe, londonToday } from '../../../../lib/libby/util.js';
-import { lordsDivisions, writtenQuestions, writtenStatements, allCommittees, committeePublications, publicationGroup, isGovernmentResponse, COMMITTEE_CATEGORIES, whatsOn, isLDParty } from '../../../../lib/libby/parliament.js';
+import { lordsDivisions, commonsDivisions, writtenQuestions, writtenStatements, allCommittees, committeePublications, publicationGroup, isGovernmentResponse, COMMITTEE_CATEGORIES, whatsOn, isLDParty } from '../../../../lib/libby/parliament.js';
 import { weekdays } from '../../../../lib/libby/business.js';
 import { snapshotted } from '../../../../lib/libby/snapshots.js';
 
@@ -44,21 +45,24 @@ export async function onRequestGet(ctx) {
   const q = new URL(request.url).searchParams;
   const skip = Math.max(0, Number(q.get('skip')) || 0);
   const searchTerm = (q.get('q') || '').slice(0, 100);
+  const commons = q.get('house') === 'commons';
+  const house = commons ? 'Commons' : 'Lords';
+  const saved = (name) => (commons ? `commons:${name}` : name);
 
   try {
     switch (params.kind) {
       case 'votes':
-        return json({ items: await firstPage(ctx, 'votes', skip, searchTerm, () => lordsDivisions({ skip, take: 25, searchTerm })), skip }, { maxAge: 600 });
+        return json({ items: await firstPage(ctx, saved('votes'), skip, searchTerm, () => (commons ? commonsDivisions : lordsDivisions)({ skip, take: 25, searchTerm })), skip }, { maxAge: 600 });
 
       case 'questions': {
         const ldOnly = q.get('ld') === '1';
         // When filtering to Lib Dems, over-fetch so a page still has useful rows.
-        const items = await firstPage(ctx, ldOnly ? 'questions-ld' : 'questions', skip, searchTerm, () => writtenQuestions({ skip, take: ldOnly ? 100 : 25, searchTerm }));
+        const items = await firstPage(ctx, saved(ldOnly ? 'questions-ld' : 'questions'), skip, searchTerm, () => writtenQuestions({ skip, take: ldOnly ? 100 : 25, searchTerm, house }));
         return json({ items: ldOnly ? items.filter((i) => isLDParty(i.askerParty)) : items, skip, nextSkip: skip + (ldOnly ? 100 : 25) }, { maxAge: 600 });
       }
 
       case 'statements':
-        return json({ items: await firstPage(ctx, 'statements', skip, searchTerm, () => writtenStatements({ skip, take: 25, searchTerm })), skip }, { maxAge: 600 });
+        return json({ items: await firstPage(ctx, saved('statements'), skip, searchTerm, () => writtenStatements({ skip, take: 25, searchTerm, house })), skip }, { maxAge: 600 });
 
       case 'committees': {
         // ?committee=ID  → one committee's publications, grouped under the four headings

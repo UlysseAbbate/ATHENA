@@ -1,14 +1,31 @@
 import { api } from '../api.js';
 import { esc, hl, fmtShort, fmtDate, todayIso, loading, errorBox, empty, extLink, pageHeader, debounce } from '../ui.js';
 
-const PAGES = {
-  votes: { title: 'Lords votes', lede: 'Divisions in the House of Lords, with how Lib Dem peers voted.' },
-  questions: { title: 'Written questions', lede: 'Lords written questions and answers.' },
-  statements: { title: 'Written statements', lede: 'Written ministerial statements laid in the Lords.' },
-  committees: { title: 'Committees', lede: 'Lords, Commons and Joint committees, with their reports, ministerial correspondence and minutes.' },
-  hansard: { title: 'Hansard', lede: 'The official report of each sitting day, Lords and Commons.' },
+// The same page serves both LIBBYs: Noble LIBBY (#/past, the Lords) and Honourable LIBBY (#/c/past, the Commons). H says which, while a page is drawn.
+const LORDS = {
+  base: '#/past', q: '', who: 'peers',
+  pages: {
+    votes: { title: 'Lords votes', lede: 'Divisions in the House of Lords, with how Lib Dem peers voted.' },
+    questions: { title: 'Written questions', lede: 'Lords written questions and answers.' },
+    statements: { title: 'Written statements', lede: 'Written ministerial statements laid in the Lords.' },
+    committees: { title: 'Committees', lede: 'Lords, Commons and Joint committees, with their reports, ministerial correspondence and minutes.' },
+    hansard: { title: 'Hansard', lede: 'The official report of each sitting day, Lords and Commons.' },
+  },
+  yes: 'Contents', no: 'Not contents', yes1: 'content', no1: 'not content',
 };
-const crumbs = [['#/past', 'Past business']];
+const COMMONS = {
+  base: '#/c/past', q: '&house=commons', who: 'MPs',
+  pages: {
+    votes: { title: 'Commons votes', lede: 'Divisions in the House of Commons, with how Lib Dem MPs voted.' },
+    questions: { title: 'Written questions', lede: 'Commons written questions and answers.' },
+    statements: { title: 'Written statements', lede: 'Written ministerial statements made in the Commons.' },
+    committees: { title: 'Committees', lede: 'Commons, Lords and Joint committees, with their reports, ministerial correspondence and minutes.' },
+    hansard: { title: 'Hansard', lede: 'The official report of each sitting day, Commons and Lords.' },
+  },
+  yes: 'Ayes', no: 'Noes', yes1: 'aye', no1: 'no',
+};
+let H = LORDS;
+const crumbs = () => [[H.base, 'Past business']];
 
 function searchBar(placeholder, extra = '') {
   return `<form class="search" role="search" data-search>
@@ -26,7 +43,7 @@ function listPage(el, kind, renderRows, { placeholder, extra = '', step = 25, pa
   const load = async (reset) => {
     if (reset) { skip = 0; results.innerHTML = loading('Loading'); }
     try {
-      const d = await api(`past/${kind}?skip=${skip}&q=${encodeURIComponent(q)}${params()}`);
+      const d = await api(`past/${kind}?skip=${skip}&q=${encodeURIComponent(q)}${params()}${H.q}`);
       if (reset) results.innerHTML = '';
       results.insertAdjacentHTML('beforeend', d.items.length ? renderRows(d.items) : (reset ? empty('Nothing found.') : ''));
       skip = d.nextSkip ?? skip + step;
@@ -42,8 +59,8 @@ function listPage(el, kind, renderRows, { placeholder, extra = '', step = 25, pa
 const votesRows = (items) => `<ul class="records">${items.map((v) => `
   <li class="record">
     <p class="record-title">${extLink(v.url, v.title)}</p>
-    <p class="small">${esc(fmtDate(v.date))} · Division ${esc(v.number)} · Contents <strong>${esc(v.content)}</strong>, Not contents <strong>${esc(v.notContent)}</strong></p>
-    <p class="small"><mark class="ld">Lib Dems</mark> ${v.ldContent + v.ldNotContent ? `${v.ldContent} content, ${v.ldNotContent} not content` : 'did not vote'}</p>
+    <p class="small">${esc(fmtDate(v.date))} · Division ${esc(v.number)} · ${H.yes} <strong>${esc(v.content)}</strong>, ${H.no} <strong>${esc(v.notContent)}</strong></p>
+    <p class="small"><mark class="ld">Lib Dems</mark> ${v.ldContent == null ? '<span class="muted">not known</span>' : v.ldContent + v.ldNotContent ? `${v.ldContent} ${H.yes1}, ${v.ldNotContent} ${H.no1}` : 'did not vote'}</p>
   </li>`).join('')}</ul>`;
 
 const questionRows = (items) => `<ul class="records">${items.map((q) => `
@@ -80,7 +97,7 @@ const PUBLICATION_HEADINGS = [
 function committeeLanding(el) {
   el.insertAdjacentHTML('beforeend', `
     <nav class="index index-small" aria-label="Committee groups">${Object.entries(COMMITTEE_GROUPS).map(([key, title]) => `
-      <a class="index-row" href="#/past/committees/${key}">
+      <a class="index-row" href="${H.base}/committees/${key}">
         <span class="index-title"><span class="swipe">${esc(title)}</span></span>
         <span class="index-text" data-count="${key}"></span>
       </a>`).join('')}</nav>`);
@@ -146,7 +163,7 @@ async function hansard(el, month) {
     <form class="search" data-month><label class="field"><span>Month</span><input type="month" name="month" value="${esc(month)}" max="${todayIso().slice(0, 7)}"></label><button class="button" type="submit">Show</button></form>
     <p class="small">${extLink('https://hansard.parliament.uk/lords', 'Lords Hansard')} · ${extLink('https://hansard.parliament.uk/commons', 'Commons Hansard')} · ${extLink('https://hansard.parliament.uk/search', 'Search Hansard')}</p>
     <div data-h>${loading('Loading sitting days')}</div>`);
-  el.querySelector('[data-month]').addEventListener('submit', (e) => { e.preventDefault(); location.hash = `#/past/hansard?month=${new FormData(e.target).get('month')}`; });
+  el.querySelector('[data-month]').addEventListener('submit', (e) => { e.preventDefault(); location.hash = `${H.base}/hansard?month=${new FormData(e.target).get('month')}`; });
   const box = el.querySelector('[data-h]');
   try {
     const d = await api(`past/hansard?month=${month}`);
@@ -157,27 +174,28 @@ async function hansard(el, month) {
   } catch (err) { box.innerHTML = errorBox(err); }
 }
 
-export async function renderPast(el, { kind, sub }, query) {
+export async function renderPast(el, { kind, sub, house }, query) {
+  H = house === 'commons' ? COMMONS : LORDS;
   if (!kind) {
     el.innerHTML = `${pageHeader('Past business', 'What the House has already done.')}
-      <nav class="index index-small" aria-label="Past business sections">${Object.entries(PAGES).map(([k, p]) => `
-        <a class="index-row" href="#/past/${k}"><span class="index-title"><span class="swipe">${esc(p.title)}</span></span><span class="index-text">${esc(p.lede)}</span></a>`).join('')}</nav>`;
+      <nav class="index index-small" aria-label="Past business sections">${Object.entries(H.pages).map(([k, p]) => `
+        <a class="index-row" href="${H.base}/${k}"><span class="index-title"><span class="swipe">${esc(p.title)}</span></span><span class="index-text">${esc(p.lede)}</span></a>`).join('')}</nav>`;
     return;
   }
-  const page = PAGES[kind];
+  const page = H.pages[kind];
   if (!page) { el.innerHTML = empty('Unknown section.'); return; }
   if (kind === 'committees' && sub) {
     if (!COMMITTEE_GROUPS[sub]) { el.innerHTML = empty('Unknown committee group.'); return; }
     el.innerHTML = pageHeader(COMMITTEE_GROUPS[sub], 'Open a committee to see its reports, ministerial correspondence, minutes and other information.',
-      [...crumbs, ['#/past/committees', 'Committees']]);
+      [...crumbs(), [`${H.base}/committees`, 'Committees']]);
     await committeeGroup(el, sub);
     return;
   }
-  el.innerHTML = pageHeader(page.title, esc(page.lede), crumbs);
+  el.innerHTML = pageHeader(page.title, esc(page.lede), crumbs());
   if (kind === 'votes') listPage(el, kind, votesRows, { placeholder: 'e.g. Railways Bill' });
   if (kind === 'questions') listPage(el, kind, questionRows, {
     placeholder: 'e.g. social care', step: 25,
-    extra: '<label class="check"><input type="checkbox" name="ld"> Lib Dem peers only</label>',
+    extra: `<label class="check"><input type="checkbox" name="ld"> Lib Dem ${H.who} only</label>`,
     params: () => (el.querySelector('input[name="ld"]')?.checked ? '&ld=1' : ''),
   });
   if (kind === 'statements') listPage(el, kind, statementRows, { placeholder: 'e.g. NHS' });
