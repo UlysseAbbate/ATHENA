@@ -169,7 +169,12 @@ export async function onRequestGet(ctx) {
       currentStage: pick(pick(detail, 'currentStage') || {}, 'description') || '',
       sponsors,
       url: `https://bills.parliament.uk/bills/${id}`,
-      commonsStages: commonsStages.map((s) => ({ description: s.description, dates: s.dates })),
+      // (the Commons stages say which take amendments, so Honourable LIBBY can show the amendments at Committee and Report)
+      commonsStages: commonsStages.map((s) => {
+        const status = s.dates.length && s.dates.every((d) => d < today) ? 'done' : s.dates.some((d) => d >= today) ? 'scheduled' : s.dates.length ? 'in progress' : 'not yet scheduled';
+        return { billStageId: s.billStageId, description: s.description, dates: s.dates, status,
+          takesAmendments: /committee|report|consideration of lords/i.test(s.description) && !/second reading committee/i.test(s.description) };
+      }),
       lordsStages: lords,
       unassignedForthcoming: scheduled.filter((f) => !lords.some((l) => l.forthcoming.includes(f))),
       commonsDocs: commonsDocs.map((m) => ({ title: m.title, type: m.type, date: m.date, links: m.links })),

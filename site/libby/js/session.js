@@ -8,6 +8,11 @@ const NAME = 'adviserEditor';
 let level = '';
 export const setLevel = (l) => { level = RANK[l] ? l : ''; };
 export const currentLevel = () => level;
+
+// Which LIBBY: 'lords' (Noble LIBBY) or 'commons' (Honourable LIBBY). Chosen at the front door; pages ask it to read the right House.
+let house = 'lords';
+export const setHouse = (h) => { house = h === 'commons' ? 'commons' : 'lords'; };
+export const currentHouse = () => house;
 /** True if the signed-in person is at least this level ('peers', 'whips', 'staff' or 'admin'; Spokesperson and Leader's office count as 'whips'). Pages ask can('whips') for the Whips' Office features. */
 export const can = (need) => (RANK[level] || 0) >= (RANK[need === 'whips' ? WHIPS_FEATURES : need] || 0);
 

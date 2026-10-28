@@ -37,8 +37,18 @@ export const BACKCHANNEL = 'admin';
 
 export const atLeast = (have, need) => (RANK[have] || 0) >= (RANK[need || 'peers'] || 0);
 
-/** May a person at this level open this page? A beta tester may open only the pages marked `beta: true`; everyone else goes by level. */
-export const canOpenPage = (page, level) => level === BETA ? !!page.beta : atLeast(level, page.level);
+/* ------------------------------------------------------------------ the two Houses */
+
+// LIBBY comes in two: Honourable LIBBY for the House of Commons (green) and Noble LIBBY for the House of Lords (red). A page, a menu item or a
+// group belongs to one House through `house` ('lords' when not given: everything LIBBY had before was the Lords) or to both ('both').
+export const HOUSES = {
+  commons: { name: 'Honourable LIBBY', house: 'House of Commons', members: 'MPs' },
+  lords: { name: 'Noble LIBBY', house: 'House of Lords', members: 'peers' },
+};
+export const inHouse = (item, house = 'lords') => item.house === 'both' || (item.house || 'lords') === house;
+
+/** May a person at this level open this page, in this House? A beta tester may open only the pages marked `beta: true`; everyone else goes by level. */
+export const canOpenPage = (page, level, house = 'lords') => inHouse(page, house) && (level === BETA ? !!page.beta : atLeast(level, page.level));
 
 /* ------------------------------------------------------------------ the menu */
 
@@ -48,7 +58,12 @@ export const MENU = [
   { id: 'legislation', label: 'Legislation', href: '#/legislation', level: 'peers', title: 'Legislation', text: 'Every live Bill in the Lords: stage dates, the documents for each stage and amendments.' },
   { id: 'business', label: 'Business', href: '#/business', level: 'peers', title: 'Business', text: 'Future business, past business (votes, questions, committees, Hansard) and Comms.' },
   { id: 'group', label: "LD Peers' Group", href: '#/peers-group', level: 'peers', title: "LD Peers' Group", text: 'Liberal Democrat policy, the Wallace Room, voting and Lords data, and the tools for the Whips and advisers.' },
-  { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
+  // Honourable LIBBY (the Commons)
+  { id: 'c-today', label: 'Today', href: '#/c/today', level: 'peers', house: 'commons', title: "Today's business", text: 'The Chamber, Westminster Hall and the committees today, with Lib Dem MPs marked.' },
+  { id: 'c-legislation', label: 'Legislation', href: '#/c/legislation', level: 'peers', house: 'commons', title: 'Legislation', text: 'Every live Bill in the Commons: stage dates, documents and the amendments at Committee and Report.' },
+  { id: 'cbusiness', label: 'Business', href: '#/c/business', level: 'peers', house: 'commons', title: 'Business', text: 'Coming business, and past business: votes, written questions and statements, committees and Hansard.' },
+  { id: 'c-policy', label: 'Policy', href: '#/c/policy', level: 'peers', house: 'commons', title: 'Policy', text: 'Search conference motions and policy papers, or browse them by portfolio.' },
+  { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, house: 'both', title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
 ];
 
 // What a beta tester sees in the menu and on the home page, in place of MENU.
@@ -60,6 +75,7 @@ export const BETA_MENU = [
 export const GROUPS = {
   business: { title: 'Business', intro: 'What the House will do, what it has done, and what the team has been saying.' },
   group: { title: 'LD Peers\u2019 Group', intro: 'Policy, and the tools the Whips and advisers use.' },
+  cbusiness: { title: 'Business', intro: 'What the House of Commons will do, and what it has done.' },
 };
 
 /* ------------------------------------------------------------------ the pages */
@@ -76,7 +92,7 @@ export const GROUPS = {
 //   api       the /api routes behind this page and who may use them: [ ['route-name', { GET: level, '*': level }] ]
 //             'GET' is reading and '*' is anything else (saving, uploading). A route not listed here may be read by Peers and changed by no one but Admin.
 export const PAGES = [
-  { id: 'home', match: /^\/?$/, view: 'home-page.js', fn: 'renderHome', nav: '', beta: true },
+  { id: 'home', match: /^\/?$/, view: 'home-page.js', fn: 'renderHome', nav: '', beta: true, house: 'both' },
 
   { id: 'today', match: /^\/today$/, view: 'day-page.js', fn: 'renderDay', params: (m, c) => ({ date: c.today }), nav: 'today',
     api: [['oq-suggest', { '*': WHIPS_FEATURES }], ['todays-list', { '*': WHIPS_FEATURES }]] },
@@ -125,7 +141,22 @@ export const PAGES = [
     api: [['bulletin', { GET: 'peers', '*': 'staff' }]] },
 
   // The Developer site: you only (the admin). Put work in progress here, with `level: DEVELOPER`, until it is ready to go live.
-  { id: 'developer', match: /^\/developer$/, view: 'developer-page.js', fn: 'renderDeveloper', level: DEVELOPER, nav: 'developer' },
+  { id: 'developer', match: /^\/developer$/, view: 'developer-page.js', fn: 'renderDeveloper', level: DEVELOPER, nav: 'developer', house: 'both' },
+
+  // Honourable LIBBY: the House of Commons, from the Commons APIs (What's On, Bills, Commons Votes, written questions and statements,
+  // committees). The Lords Whips' Office pages (Comms, Whips, Wallace Room, Roles, Advisers) and the Lords voting analysis have no
+  // Commons counterpart and are not here.
+  { id: 'c-today', match: /^\/c\/today$/, view: 'commons-day-page.js', fn: 'renderCommonsDay', params: (m, c) => ({ date: c.today }), nav: 'c-today', house: 'commons' },
+  { id: 'c-day', match: /^\/c\/day\/(\d{4}-\d{2}-\d{2})$/, view: 'commons-day-page.js', fn: 'renderCommonsDay', params: (m) => ({ date: m[1] }),
+    nav: (m, c) => (m[1] === c.today ? 'c-today' : ''), group: 'cbusiness', tab: 'c-future', house: 'commons' },
+  { id: 'c-legislation', match: /^\/c\/legislation$/, view: 'legislation-page.js', fn: 'renderLegislation', params: () => ({ house: 'commons' }), nav: 'c-legislation', house: 'commons' },
+  { id: 'c-bill', match: /^\/c\/bill\/(\d+)$/, view: 'bill-page.js', fn: 'renderBill', params: (m) => ({ id: m[1], house: 'commons' }), nav: 'c-legislation', house: 'commons' },
+  { id: 'c-future', match: /^\/c\/future$/, view: 'commons-future-page.js', fn: 'renderCommonsFuture', group: 'cbusiness', tab: 'c-future', tabLabel: 'Coming up', href: '#/c/future',
+    card: 'The coming weeks in the Chamber and Westminster Hall, from the What\u2019s On calendar.', house: 'commons' },
+  { id: 'c-past', match: /^\/c\/past(?:\/([a-z]+)(?:\/([a-z]+))?)?$/, view: 'past-page.js', fn: 'renderPast', params: (m) => ({ kind: m[1] || '', sub: m[2] || '', house: 'commons' }),
+    group: 'cbusiness', tab: 'c-past', tabLabel: 'Past', href: '#/c/past', card: 'Commons divisions (with how the Lib Dem MPs voted), written questions and statements, committees and Hansard.', house: 'commons' },
+  { id: 'c-policy', match: /^\/c\/policy$/, view: 'policy-page.js', fn: 'renderPolicy', nav: 'c-policy', house: 'commons' },
+  { id: 'c-business', match: /^\/c\/business$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'cbusiness' }), nav: 'cbusiness', house: 'commons' },
 
   // The two hub pages
   { id: 'business', match: /^\/business$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'business' }), nav: 'business' },
@@ -157,11 +188,11 @@ export const ADVISER_LINKS = [
 
 /* ------------------------------------------------------------------ helpers (used by the website, the server and the checker) */
 
-/** The menu items a person at this level sees. */
-export const menuFor = (level) => level === BETA ? BETA_MENU : MENU.filter((m) => atLeast(level, m.level));
+/** The menu items a person at this level sees, in this House. */
+export const menuFor = (level, house = 'lords') => (level === BETA ? BETA_MENU : MENU.filter((m) => atLeast(level, m.level))).filter((m) => inHouse(m, house));
 
-/** The buttons (and hub cards) of a group that a person at this level may open. */
-export const tabsFor = (group, level) => PAGES.filter((p) => p.group === group && p.tabLabel && canOpenPage(p, level))
+/** The buttons (and hub cards) of a group that a person at this level may open, in this House. */
+export const tabsFor = (group, level, house = 'lords') => PAGES.filter((p) => p.group === group && p.tabLabel && canOpenPage(p, level, house))
   .map((p) => ({ tab: p.tab, label: p.tabLabel, href: p.href, card: p.card }));
 
 /** For a page that matched an address: which menu item to highlight, and which group and button it sits under. */

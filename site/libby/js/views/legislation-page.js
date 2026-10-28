@@ -12,35 +12,39 @@ function tags(b) {
   return chips + guess;
 }
 
-function table(bills, emptyText) {
+/** One table of Bills. In Honourable LIBBY (the Commons) the Bills open on the Commons Bill page, and there is no Adviser column (the advisers are the Lords Whips' Office's). */
+function table(bills, emptyText, commons) {
   if (!bills.length) return `<p class="state">${esc(emptyText)}</p>`;
+  const here = commons ? /commons/i : /lords/i;
   return `<div class="table-wrap"><table class="grid">
-    <thead><tr><th scope="col">Bill</th><th scope="col">Portfolio</th><th scope="col">Current stage</th><th scope="col">Date of next stage</th><th scope="col">Adviser</th></tr></thead>
+    <thead><tr><th scope="col">Bill</th><th scope="col">Portfolio</th><th scope="col">Current stage</th><th scope="col">Date of next stage</th>${commons ? '' : '<th scope="col">Adviser</th>'}</tr></thead>
     <tbody>${bills.map((b) => `
       <tr>
-        <th scope="row"><a href="#/bill/${b.id}">${esc(b.title)}</a></th>
+        <th scope="row"><a href="${commons ? '#/c/bill/' : '#/bill/'}${b.id}">${esc(b.title)}</a></th>
         <td>${tags(b)}</td>
-        <td>${esc(b.stage)}${b.stageHouse && !/lords/i.test(b.stageHouse) ? ` (${esc(b.stageHouse)})` : ''}</td>
+        <td>${esc(b.stage)}${b.stageHouse && !here.test(b.stageHouse) ? ` (${esc(b.stageHouse)})` : ''}</td>
         <td data-next="${b.id}"><span class="muted small">Checking…</span></td>
-        <td data-adviser="${b.id}"></td>
+        ${commons ? '' : `<td data-adviser="${b.id}"></td>`}
       </tr>`).join('')}</tbody></table></div>`;
 }
 
-export async function renderLegislation(el) {
-  el.innerHTML = `${pageHeader('Legislation', 'Every live Bill currently in the House of Lords. Open a Bill for its stage dates, the documents each stage needs and the amendments.')}
+export async function renderLegislation(el, { house } = {}) {
+  const commons = house === 'commons';
+  const where = commons ? 'Commons' : 'Lords';
+  el.innerHTML = `${pageHeader('Legislation', `Every live Bill currently in the House of ${where}. Open a Bill for its stage dates, the documents and the amendments.`)}
     <div id="bills">${loading('Loading Bills')}</div>`;
   const box = el.querySelector('#bills');
   let b;
   try {
-    b = await api('bills');
+    b = await api(commons ? 'commons/bills' : 'bills');
   } catch (err) {
     box.innerHTML = errorBox(err);
     return;
   }
   box.innerHTML = `
-    <section><h2 class="h2-rule">Government Bills <span class="count">${b.government.length}</span></h2>${table(b.government, 'No Government Bills are currently in the Lords.')}</section>
-    <section><h2 class="h2-rule">Private Members' Bills <span class="count">${b.privateMembers.length}</span></h2>${table(b.privateMembers, "No Private Members' Bills are currently in the Lords.")}</section>
-    ${b.other.length ? `<section><h2 class="h2-rule">Other Bills <span class="count">${b.other.length}</span></h2>${table(b.other, '')}</section>` : ''}
+    <section><h2 class="h2-rule">Government Bills <span class="count">${b.government.length}</span></h2>${table(b.government, `No Government Bills are currently in the ${where}.`, commons)}</section>
+    <section><h2 class="h2-rule">Private Members' Bills <span class="count">${b.privateMembers.length}</span></h2>${table(b.privateMembers, `No Private Members' Bills are currently in the ${where}.`, commons)}</section>
+    ${b.other.length ? `<section><h2 class="h2-rule">Other Bills <span class="count">${b.other.length}</span></h2>${table(b.other, '', commons)}</section>` : ''}
     <p class="small muted">Date of next stage is the next sitting published on bills.parliament.uk, or in the What's On calendar if that is sooner. "Not yet scheduled" means no sitting has been published for that Bill yet.</p>`;
 
   const ids = [...b.government, ...b.privateMembers, ...b.other].map((x) => x.id);
@@ -60,8 +64,8 @@ export async function renderLegislation(el) {
     }
   };
 
-  // 1. Advisers, plus dates found in the What's On calendar (one quick request).
-  try {
+  // 1. Advisers, plus dates found in the What's On calendar (one quick request). The Lords only: the advisers are the Lords Whips' Office's.
+  if (!commons) try {
     const extras = await api('bill-extras');
     box.querySelectorAll('[data-adviser]').forEach((td) => {
       const a = extras.advisers?.[td.dataset.adviser];

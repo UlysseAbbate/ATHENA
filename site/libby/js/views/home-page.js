@@ -1,7 +1,7 @@
 import { api } from '../api.js';
 import { esc, fmtDate, todayIso } from '../ui.js';
 import { liveStrip } from '../live-panel.js';
-import { currentLevel, hasLevel } from '../session.js';
+import { currentLevel, hasLevel, currentHouse } from '../session.js';
 import { menuFor } from '../pages.js';
 import { bulletinHtml } from '../bulletin-box.js';
 
@@ -9,12 +9,12 @@ export async function renderHome(el) {
   el.innerHTML = `
     <header class="page-head home-head">
       <p class="dateline">${esc(fmtDate(todayIso()))}</p>
-      <h1>Lords business, in one place</h1>
+      <h1>${currentHouse() === 'commons' ? 'Commons business, in one place' : 'Lords business, in one place'}</h1>
     </header>
     <div id="live"></div>
     <div id="bulletin"></div>
     <nav class="index" aria-label="Sections">
-      ${menuFor(currentLevel()).map((s) => `
+      ${menuFor(currentLevel(), currentHouse()).map((s) => `
         <a class="index-row" href="${s.href}">
           <span class="index-title"><span class="swipe">${esc(s.title)}</span></span>
           <span class="index-text">${esc(s.text)}</span>
@@ -22,7 +22,7 @@ export async function renderHome(el) {
         </a>`).join('')}
     </nav>`;
 
-  if (currentLevel() === 'beta') return;   // beta testers get just their three sections: none of the live panels, bulletin or counts
+  if (currentLevel() === 'beta' || currentHouse() !== 'lords') return;   // beta testers, and Honourable LIBBY, get just their sections: the live panels, bulletin and counts are the Lords'
 
   liveStrip(el.querySelector('#live'), { compact: true });
 

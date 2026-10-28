@@ -193,7 +193,8 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       // LIBBY, under the same sign-in: the page runs under its own security policy and asks the server who this is
       if (who === "admin" || who === "core") {
         let lvl = "developer";
-        const ed = v => page.evaluate(x => { try { if (x) sessionStorage.setItem("libbyEdition", x); else sessionStorage.removeItem("libbyEdition"); } catch { /* none */ } }, v);
+        // which LIBBY (house) and which edition the tab has chosen; the tests start in Noble LIBBY (the Lords) unless they say otherwise
+        const ed = (v, house = "lords") => page.evaluate(([x, h]) => { try { if (x) sessionStorage.setItem("libbyEdition", x); else sessionStorage.removeItem("libbyEdition"); if (h) sessionStorage.setItem("libbyHouse", h); else sessionStorage.removeItem("libbyHouse"); } catch { /* none */ } }, [v, house]);
         await page.route(BASE + "/api/libby/**", route => {
           const u = new URL(route.request().url()), j = (b, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(b) });
           if (u.pathname.endsWith("/me")) return who === "admin" && lvl !== "none" ? j({ level: lvl, name: { admin: "Admin", beta: "Beta tester", developer: "Developer" }[lvl], email: USERS.admin.email }) : j({ error: "You have not been given access to LIBBY.", noAccess: true, email: USERS.core.email }, 403);
@@ -211,6 +212,15 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           if (u.pathname.endsWith("/api/libby/comments")) return j({ comments: {} });
           if (u.pathname.endsWith("/api/libby/amendment-flags")) return route.request().method() === "GET" ? j({ flags: {} }) : j({ ok: true });
           if (u.pathname.endsWith("/api/libby/groupings")) return j({ groupings: [] });
+          if (u.pathname.includes("/api/libby/commons/day/")) return j({ date: "2026-11-03", rising: { Chamber: "19:00" }, source: { label: "UK Parliament \u2014 What's On (House of Commons)", url: "https://whatson.parliament.uk/commons/2026-11-03/" },
+            sections: [{ name: "Chamber", start: "11:30", items: [{ kind: "oq", category: "Oral questions", title: "HM Treasury", start: "11:30", end: null, peers: [], billId: null, link: null, eventUrl: "" },
+              { kind: "legislation", category: "Legislation", title: "Health Bill - report stage", start: null, peers: [{ name: "Daisy Cooper", party: "Liberal Democrat", ld: true }], billId: 4124, link: { href: "#/c/bill/4124", label: "Open Bill page", internal: true }, eventUrl: "" }] },
+              { name: "Westminster Hall", start: "09:30", items: [{ kind: "motion", category: "Westminster Hall debate", title: "Impact of extreme weather on train services", start: "14:30", peers: [{ name: "Josh Newbury", party: "Labour", ld: false }], eventUrl: "" }] }] });
+          if (u.pathname.endsWith("/api/libby/commons/bills")) return j({ government: [{ id: 4124, title: "Health Bill", stage: "Report stage", stageHouse: "Commons", portfolios: ["HEA"], portfolioBy: "dept" }], privateMembers: [], other: [] });
+          if (u.pathname.endsWith("/api/libby/bill-next")) return j({ dates: {}, missing: [], failed: [] });
+          if (u.pathname.endsWith("/api/libby/past/votes")) return j({ skip: 0, items: [u.searchParams.get("house") === "commons"
+            ? { id: 2462, number: 104, date: "2026-10-21", title: "Opposition day motion: Support for British farmers", content: 57, notContent: 279, ldContent: 53, ldNotContent: 0, url: "https://votes.parliament.uk/votes/commons/division/2462" }
+            : { id: 1, number: 1, date: "2026-10-21", title: "A Lords division", content: 100, notContent: 90, ldContent: 50, ldNotContent: 0, url: "https://votes.parliament.uk/votes/lords/division/1" }] });
           if (u.pathname.endsWith("/api/libby/data/votes")) {
             const tally = (n) => ({ divisions: n, govWin: n - 1, govDefeats: 1, ldCon: 1, ldLab: n - 2, ldAlone: 1, ldDiff: 1, conNeedLd: 0, labNeedLd: 1, ldNoSupport: 0 });
             const party = (i, v) => ({ intention: i, votes: v, rebels: 0, content: v, notContent: 0 });
@@ -230,6 +240,37 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/business"); await page.waitForTimeout(600);
           const hub = await page.$eval("#app", b => b.innerText);
           check("admin: LIBBY section pages load their files (Business hub)", !/couldn.t load/i.test(hub) && /Business/.test(hub), hub.slice(0, 100).replace(/\n/g, " "));
+        }
+        if (who === "admin") {   // the House comes first: Honourable LIBBY (Commons, green) or Noble LIBBY (Lords, red)
+          await ed("", ""); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
+          const hs = await page.$$eval(".house-card .house-name", ns => ns.map(n => n.textContent));
+          check("house gate: Honourable LIBBY and Noble LIBBY, before Beta / Developer", hs.join("|") === "Honourable LIBBY|Noble LIBBY", hs.join("|"));
+          const colours = await page.$$eval(".house-card", cs => cs.map(c => getComputedStyle(c).backgroundColor));
+          check("house gate: Honourable LIBBY is green and Noble LIBBY red", colours[0] === "rgb(0, 110, 70)" && colours[1] === "rgb(181, 9, 56)", colours.join("|"));
+          if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `libby-houses-${scheme}.png`), fullPage: true }); }
+          await page.emulateMedia({ colorScheme: "light" });
+          await page.click(".house-commons"); await page.waitForTimeout(900);
+          const g = await page.$eval("#app", a => a.innerText);
+          check("house gate: Honourable LIBBY then asks Beta or Developer (the beta has no Commons pages yet)", /Honourable LIBBY/.test(g) && /Not in the beta yet/.test(g) && /Open the developer site/.test(g), g.slice(0, 160).replace(/\n/g, " "));
+          await page.click('[data-enter="developer"]'); await page.waitForTimeout(1000);
+          const cm = await page.$$eval(".topnav a", as => as.map(a => a.textContent));
+          check("Honourable LIBBY: the Commons menu", cm.join("|") === "Today|Legislation|Business|Policy|Developer", cm.join("|"));
+          check("Honourable LIBBY: the masthead says so, with the Commons colour", (await page.$eval(".brand-name", b => b.textContent)) === "Honourable LIBBY" && (await page.getAttribute("html", "data-house")) === "commons");
+          await page.goto(BASE + "/libby/#/c/today"); await page.waitForTimeout(900);
+          const day = await page.$eval("#app", a => a.innerText);
+          check("Honourable LIBBY: today's Commons business, by section, with Lib Dem MPs marked", /Chamber/.test(day) && /Westminster Hall/.test(day) && /HM Treasury/.test(day) && (await page.$$("#app mark.ld")).length === 1 && /expected to rise 19:00/.test(day), day.slice(0, 200).replace(/\n/g, " "));
+          if (process.env.SHOTS) await page.screenshot({ path: path.join(process.env.SHOTS, "commons-today.png"), fullPage: true });
+          check("Honourable LIBBY: a Bill on the day links to its Commons Bill page", (await page.$eval('#app a[href="#/c/bill/4124"]', a => a.textContent)) === "Health Bill - report stage");
+          await page.goto(BASE + "/libby/#/c/legislation"); await page.waitForTimeout(900);
+          const lh = await page.$$eval("#app thead th", hs => hs.map(h => h.dataset.tfName || h.textContent.trim()));
+          check("Honourable LIBBY: the Commons Bills, opening on Commons Bill pages, with no Adviser column", (await page.$('#app a[href="#/c/bill/4124"]')) !== null && !lh.includes("Adviser"), lh.join("|"));
+          await page.goto(BASE + "/libby/#/c/past/votes"); await page.waitForTimeout(900);
+          const pv = await page.$eval("#app", a => a.innerText);
+          check("Honourable LIBBY: Commons votes, in Ayes and Noes, with the Lib Dem MPs", /Commons votes/.test(pv) && /Ayes 57/.test(pv) && /53 aye/.test(pv), pv.slice(0, 200).replace(/\n/g, " "));
+          await page.goto(BASE + "/libby/#/whips"); await page.waitForTimeout(600);
+          check("Honourable LIBBY: a Lords page offers to switch to Noble LIBBY", /This page is in Noble LIBBY/.test(await page.$eval("#app", a => a.innerText)));
+          await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(800);
+          check("Noble LIBBY: the masthead says so, with the Lords colour", (await page.$eval(".brand-name", b => b.textContent)) === "Noble LIBBY" && (await page.getAttribute("html", "data-house")) === "lords");
         }
         if (who === "admin") {   // the gate: Beta test and Developer buttons for everyone signed in
           await ed(""); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
