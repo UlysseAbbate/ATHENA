@@ -195,7 +195,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
             return j({ billId: 1, billStageId: 50, total: 3, ours: [], supported: [], all: [
               { id: 101, number: "12", place: "Clause 3, page 2, line 14", summary: "Leave out subsection (2)", sponsors: [sp("Lord Alpha", true, true), sp("Baroness Beta", true)], lead: "Lord Alpha", leadIsLD: true, ldSigned: true },
               { id: 102, number: "13", place: "Clause 4, page 3, line 1", summary: "Insert a review", sponsors: [sp("Lord Gamma", false, true), sp("Baroness Beta", true)], lead: "Lord Gamma", leadIsLD: false, ldSigned: true },
-              { id: 103, number: "14", place: "After Clause 9", summary: "New Clause", sponsors: [sp("Lord Delta", false, true)], lead: "Lord Delta", leadIsLD: false, ldSigned: false }] });
+              { id: 103, number: "", place: "After Clause 9", summary: "New Clause", sponsors: [sp("Lord Delta", false, true)], lead: "Lord Delta", leadIsLD: false, ldSigned: false }] });
           }
           if (u.pathname.endsWith("/api/libby/bills/1/amendment")) { const aid = u.searchParams.get("aid"); return j({ id: Number(aid), location: "Clause 3", text: ["Page 2, line 14, leave out subsection (2)"], explanatoryStatement: `Statement for ${aid}: this removes the subsection.`, note: "" }); }
           if (u.pathname.endsWith("/api/libby/comments")) return j({ comments: {} });
@@ -274,19 +274,23 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(600);
           await page.goto(BASE + "/libby/#/bill/1?tab=amendments"); await page.waitForTimeout(1500);
           const heads = await page.$$eval(".am-table thead th", hs => hs.map(h => h.textContent.trim()));
-          check("amendments: one table, columns Signed peers / Place / Explanatory statement / buttons", heads.slice(0, 3).join("|") === "Signed peers|Place in the Bill|Member\u2019s explanatory statement" && heads.length === 4, heads.join("|"));
+          check("amendments: one table, columns Signed peers / # / Location / Explanatory statement / buttons", heads.slice(0, 4).join("|") === "Signed peers|#|Location|Member\u2019s explanatory statement" && heads.length === 5, heads.join("|"));
           check("amendments: the old Lib Dem / signed lists are gone", (await page.$$eval("#ams h3", h => h.map(x => x.textContent))).every(t => !/Lib Dem amendments|other amendments we have signed/i.test(t)) && (await page.$$(".am-table tbody tr.am-row")).length === 3);
           check("amendments: each signed peer is on its own line", (await page.$$eval("tr.am-row:first-child .am-peer", ps => ps.map(p => p.textContent.trim()))).join("|") === "Lord Alpha|Baroness Beta");
-          check("amendments: the title row has filter buttons and is frozen", (await page.$$(".am-table thead .tf-btn")).length === 3 && (await page.$eval(".am-table thead th", h => getComputedStyle(h).position)) === "sticky");
+          if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(200); await page.screenshot({ path: path.join(process.env.SHOTS, `amendments-${scheme}.png`), fullPage: true }); }
+          await page.emulateMedia({ colorScheme: "light" });
+          check("amendments: the title row has filter buttons and is frozen", (await page.$$(".am-table thead .tf-btn")).length === 4 && (await page.$eval(".am-table thead th", h => getComputedStyle(h).position)) === "sticky");
           const place = await page.$eval("tr.am-row .place", t => t.textContent.trim());
-          check("amendments: the place is shortened to C3, P2, L14", /C3, P2, L14/.test(place) && !/Clause/.test(place), place);
+          check("amendments: Location is the short code, C3, P2, L14, and # is the number alone", /^C3, P2, L14$/.test(place) && (await page.$eval("tr.am-row .am-n", t => t.textContent.trim())) === "12", place);
+          check("amendments: an amendment with no number yet shows an em dash", (await page.$eval('[data-aid-row="103"] .am-n', t => t.textContent.trim())) === "\u2014");
           check("amendments: the explanatory statement is filled in from the API", /Statement for 101/.test(await page.$eval("tr.am-row [data-mes]", t => t.textContent)));
           const btns = await page.$$eval("tr.am-row:first-child .am-actions button", bs => bs.map(b => b.textContent.trim()));
-          check("amendments: buttons are Comment, Voting, Content, Not Content", btns.join("|") === "Comment|Voting|Content|Not Content", btns.join("|"));
+          check("amendments: buttons are Vote, C, NC and Comment", btns.join("|") === "Vote|C|NC|Comment", btns.join("|"));
           const bar = await page.$$eval("[data-flagfilter]", bs => bs.map(b => b.textContent.replace(/\s+\d+$/, "").trim()));
           check("amendments: highlights are All, Lib Dem amendments, Lib Dem-signed, Voting, Content, Not Content", bar.join("|") === "All|Lib Dem amendments|Lib Dem-signed|Voting|Content|Not Content", bar.join("|"));
           await page.click('tr.am-row:first-child [data-flag="content"]'); await page.waitForTimeout(200);
           check("amendments: Content turns the row green", (await page.$eval("tr.am-row:first-child", t => t.className)).includes("am-flag-content"));
+          check("amendments: Content also puts Vote on the amendment", (await page.$eval('tr.am-row:first-child [data-flag="voting"]', b => b.getAttribute("aria-pressed"))) === "true");
           await page.click('tr.am-row:first-child [data-flag="notcontent"]'); await page.waitForTimeout(200);
           check("amendments: Not Content replaces Content", (await page.$eval("tr.am-row:first-child", t => t.className)).includes("am-flag-notcontent") && (await page.$eval('tr.am-row:first-child [data-flag="content"]', b => b.getAttribute("aria-pressed"))) === "false");
           await page.click('[data-flagfilter="ldsigned"]'); await page.waitForTimeout(200);
@@ -297,7 +301,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("amendments: Comment opens the amendment text and comment box", await page.$eval('[data-aid-more="102"]', t => !t.hidden && /Add a comment/.test(t.textContent) && /leave out subsection/.test(t.textContent)));
           await page.click(".am-table thead th:nth-child(2) .tf-btn"); await page.waitForTimeout(150);
           await page.click('.tf-pop [data-s="desc"]'); await page.waitForTimeout(200);
-          check("amendments: Sort Z to A in the filter reorders the rows, each with its detail row", (await page.$$eval("tr.am-row .place strong", ts => ts.map(t => t.textContent))).join(",") === "14,13,12" && (await page.$$eval("tbody tr", rs => rs.map(r => r.className.split(" ")[0]))).join(" ") === "am-row am-more am-row am-more am-row am-more");
+          check("amendments: Sort Z to A in the filter reorders the rows, each with its detail row", (await page.$$eval("tr.am-row .am-n", ts => ts.map(t => t.textContent.trim()))).join(",") === "13,12,\u2014" && (await page.$$eval("tbody tr", rs => rs.map(r => r.className.split(" ")[0]))).join(" ") === "am-row am-more am-row am-more am-row am-more");
           lvl = "developer";
         }
         const cspErr = errors.filter(e => /Content Security Policy|violates/i.test(e));

@@ -1,5 +1,5 @@
 // The list of amendments at a stage (Bill page > Amendments > Committee / Report): ONE table with every amendment, in four columns:
-//   Signed peers (one per line)  |  Place in the Bill (C3, P2, L14)  |  Member's explanatory statement  |  buttons
+//   Signed peers (one per line)  |  # (the amendment's number, a dash while there is none)  |  Location (C3, P2, L14)  |  Member's explanatory statement  |  buttons
 // The row above it holds the highlights (Lib Dem amendments, Lib Dem-signed, Voting, Content, Not Content) that narrow the table.
 // The explanatory statements are fetched from the amendment API as rows scroll into view (a few at a time), and the whole
 // text of the amendment, with the comments, opens under a row when it is clicked or its Comment button is pressed.
@@ -19,10 +19,11 @@ export const shortPlace = (s) => String(s || '')
   .replace(/\bLine\s+(\d+)/gi, 'L$1');
 
 // The buttons the team can press on an amendment. Content and Not Content are the two positions, so setting one clears the other.
+// `label` is what the highlights say; `short` is on the small button in the row (Vote, C, NC).
 export const FLAG_DEFS = [
-  { key: 'voting', label: 'Voting', colour: 'orange' },
-  { key: 'content', label: 'Content', colour: 'green' },
-  { key: 'notcontent', label: 'Not Content', colour: 'red' },
+  { key: 'voting', label: 'Voting', short: 'Vote', colour: 'orange' },
+  { key: 'content', label: 'Content', short: 'C', colour: 'green' },
+  { key: 'notcontent', label: 'Not Content', short: 'NC', colour: 'red' },
 ];
 const OPPOSITE = { content: 'notcontent', notcontent: 'content' };
 const FLAG_ORDER = ['notcontent', 'content', 'voting'];   // an amendment with more than one takes the colour of the first of these
@@ -50,13 +51,13 @@ export function commentsHtml(list) {
     </form>`;
 }
 
-/** The buttons on a row: Comment (black), Voting (orange), Content (green), Not Content (red). People who may only look see the flags as labels. */
+/** The buttons on a row, on two lines: Vote (orange), C (green) and NC (red); then Comment (black). People who may only look see the flags as labels. */
 function amendmentActions(n, flags) {
   if (can('whips')) {
-    return `<button type="button" class="button button-small comment-btn" data-comment-btn>${n ? `Comment (${n})` : 'Comment'}</button>
-      ${FLAG_DEFS.map((f) => `<button type="button" class="button button-quiet button-small flag-btn flag-${f.colour}" data-flag="${f.key}" aria-pressed="${(flags || []).includes(f.key)}">${f.label}</button>`).join('')}`;
+    return `<span class="am-line">${FLAG_DEFS.map((f) => `<button type="button" class="button button-quiet button-small flag-btn flag-${f.colour}" data-flag="${f.key}" title="${f.label}" aria-label="${f.label}" aria-pressed="${(flags || []).includes(f.key)}">${f.short}</button>`).join('')}</span>
+      <span class="am-line"><button type="button" class="button button-small comment-btn" data-comment-btn>${n ? `Comment (${n})` : 'Comment'}</button></span>`;
   }
-  return FLAG_DEFS.filter((f) => (flags || []).includes(f.key)).map((f) => `<span class="flag-tag flag-${f.colour}">${f.label}</span>`).join('');
+  return FLAG_DEFS.filter((f) => (flags || []).includes(f.key)).map((f) => `<span class="flag-tag flag-${f.colour}">${f.short}</span>`).join('');
 }
 
 function amendmentRow(a, comments, flags) {
@@ -64,12 +65,13 @@ function amendmentRow(a, comments, flags) {
   return `
     <tr class="am-row${rowClass(flags)}" data-aid-row="${a.id}" data-flags="${esc((flags || []).join(' '))}">
       <td class="am-peers">${a.sponsors.map((s) => `<span class="am-peer">${peer(s.name, s.ld)}</span>`).join('') || '—'}</td>
-      <td class="place"><strong>${esc(a.number || '—')}</strong> ${esc(shortPlace(a.place) || '—')}</td>
+      <td class="am-n">${esc(a.number || '—')}</td>
+      <td class="place">${esc(shortPlace(a.place) || '—')}</td>
       <td class="mes-cell" data-mes><span class="muted small">Loading…</span></td>
       <td><div class="am-actions">${amendmentActions(n, flags)}</div></td>
     </tr>
     <tr class="am-more" data-aid-more="${a.id}" hidden>
-      <td colspan="4">
+      <td colspan="5">
         ${a.summary ? `<p><strong>${esc(a.summary)}</strong></p>` : ''}
         <div class="am-detail" data-detail></div>
         ${can('whips') ? `<div class="am-comments" data-comments>${commentsHtml(comments)}</div>` : ''}
@@ -79,7 +81,7 @@ function amendmentRow(a, comments, flags) {
 
 function allTable(d, comments, flags) {
   return `<div class="table-wrap"><table class="grid all-table am-table">
-    <thead><tr><th scope="col">Signed peers</th><th scope="col">Place in the Bill</th><th scope="col">Member’s explanatory statement</th><th scope="col"><span class="sr-only">Buttons</span></th></tr></thead>
+    <thead><tr><th scope="col">Signed peers</th><th scope="col">#</th><th scope="col">Location</th><th scope="col">Member’s explanatory statement</th><th scope="col"><span class="sr-only">Buttons</span></th></tr></thead>
     <tbody data-all>${d.all.map((a) => amendmentRow(a, comments[a.id], flags[a.id])).join('')}</tbody></table></div>`;
 }
 
@@ -213,7 +215,10 @@ export function wireAmendments(box, billId, stageId, state) {
     const before = state.flags[aid] || [];
     const on = !before.includes(flag);
     let after = on ? [...before, flag] : before.filter((k) => k !== flag);
-    if (on && OPPOSITE[flag]) after = after.filter((k) => k !== OPPOSITE[flag]);   // Content and Not Content cannot both be set
+    if (on && OPPOSITE[flag]) {
+      after = after.filter((k) => k !== OPPOSITE[flag]);   // Content and Not Content cannot both be set
+      if (!after.includes('voting')) after.push('voting');   // and a position on an amendment means it is one to vote on
+    }
     state.flags[aid] = after;
     if (!after.length) delete state.flags[aid];
     paintFlags(aid);

@@ -2,6 +2,7 @@
 // without Cloudflare or a database (fetch is stubbed).   Run with:  node scripts/libby/check-access.mjs
 import { onRequestPost as codeLogin } from '../../functions/api/code-login.js';
 import { onRequestPost as claimCode } from '../../functions/api/claim-code.js';
+import { onRequestPost as flagPost } from '../../functions/api/libby/amendment-flags.js';
 import { onRequest as middleware } from '../../functions/api/libby/_middleware.js';
 import { onRequestGet as me } from '../../functions/api/libby/me.js';
 import { MAX } from '../../lib/libby/throttle.js';
@@ -13,6 +14,7 @@ const ok = (cond, name) => { console.log(`${cond ? 'ok  ' : 'FAIL'}  ${name}`); 
 const TOKENS = { 'tok-peer': 'u-peer', 'tok-admin': 'u-admin', 'tok-none': 'u-none', 'tok-code': 'code-1', 'tok-beta': 'u-beta', 'tok-dev': 'u-dev' };
 const LEVELS = { 'u-peer': 'peers', 'u-admin': 'admin', 'code-1': 'whips', 'u-beta': 'beta', 'u-dev': 'developer' };
 const failures = [];
+const flagCalls = [];
 let levelCalls = 0, authDown = false, revoked = false;
 const CODE = 'peers-basic-pass';
 globalThis.fetch = async (url, init = {}) => {
@@ -25,6 +27,7 @@ globalThis.fetch = async (url, init = {}) => {
   if (u.pathname.endsWith('/rpc/level_of')) { levelCalls++; const b = JSON.parse(init.body); return json(revoked && b.p_user === 'code-1' ? null : LEVELS[b.p_user] ?? null); }
   if (u.pathname.endsWith('/rpc/redeem_access_code')) return json(JSON.parse(init.body).p_code === CODE ? [{ id: 'code-1', label: 'Peers', program: 'libby', level: 'whips' }] : []);
   if (u.pathname.endsWith('/rpc/claim_access_code')) { const b = JSON.parse(init.body); return json(b.p_code === 'test-beta-code-1' ? [{ program: 'libby', level: 'beta' }] : []); }
+  if (u.pathname.endsWith('/rest/v1/amendment_flags')) { flagCalls.push({ method: init.method, flag: init.body ? JSON.parse(init.body)[0].flag : new URLSearchParams(u.search).get('flag').replace('eq.', '') }); return new Response(null, { status: 201 }); }
   if (u.pathname.endsWith('/rpc/link_code_identity')) return new Response(null, { status: 204 });
   if (u.pathname === '/auth/v1/admin/users') return json({ id: 'code-1' });
   if (u.pathname === '/auth/v1/admin/generate_link') return json({ hashed_token: 'h' });
@@ -128,6 +131,19 @@ r = await claim('not-the-code');
 ok(r.status === 401, 'a wrong code is refused');
 r = await claim('short');
 ok(r.status === 401, 'and so is one that is too short to be a code');
+
+// ---- the amendment buttons: Content or Not Content also puts Voting on the amendment
+const setFlag = (flag, on = true) => flagPost({ env, request: new Request('https://athena.test/api/libby/amendment-flags', { method: 'POST', headers: { authorization: 'Bearer tok-admin', 'content-type': 'application/json' }, body: JSON.stringify({ billId: 1, stageId: 2, amendmentId: 3, flag, on }) }) });
+flagCalls.length = 0;
+r = await setFlag('content');
+ok(r.status === 200 && flagCalls.some((c) => c.method === 'POST' && c.flag === 'content') && flagCalls.some((c) => c.method === 'POST' && c.flag === 'voting') && flagCalls.some((c) => c.method === 'DELETE' && c.flag === 'notcontent'),
+  'setting Content also sets Voting, and clears Not Content');
+flagCalls.length = 0;
+r = await setFlag('voting');
+ok(flagCalls.length === 1 && flagCalls[0].flag === 'voting', 'setting Voting alone sets only Voting');
+flagCalls.length = 0;
+r = await setFlag('content', false);
+ok(flagCalls.length === 1 && flagCalls[0].method === 'DELETE', 'clearing Content leaves Voting as it is');
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll access checks passed.');
 process.exit(failed ? 1 : 0);
