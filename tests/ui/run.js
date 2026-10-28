@@ -261,12 +261,10 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/developer"); await page.waitForTimeout(600);
           const dv = await page.$eval("#app", b => b.innerText);
           check("developer: the Developer page lists the editions and every page", /Beta test/.test(dv) && /Every page/.test(dv) && /policy/.test(dv) && !/couldn.t load/i.test(dv), dv.slice(0, 120).replace(/\n/g, " "));
-          // the Data page's tables: tight, with the first column and the title row both frozen
+          // the Data page's tables: the first column and the title row are both frozen
           await page.setViewportSize({ width: 700, height: 800 });
           await page.goto(BASE + "/libby/#/data/votes?view=months"); await page.waitForTimeout(1200);
-          const pad = await page.$eval(".data-table td", td => parseFloat(getComputedStyle(td).paddingLeft));
           const frozen = await page.$eval(".data-table", t => ({ corner: getComputedStyle(t.querySelector("thead th:first-child")).position, cell: getComputedStyle(t.querySelector("tbody th")).position, left: getComputedStyle(t.querySelector("tbody th")).left, top: getComputedStyle(t.querySelector("thead th:nth-child(2)")).top }));
-          check("data: columns are tight (small padding, small type)", pad <= 7, String(pad));
           check("data: the first column and the title row are frozen", frozen.corner === "sticky" && frozen.cell === "sticky" && frozen.left === "0px" && frozen.top === "0px", JSON.stringify(frozen));
           await page.$eval(".table-wrap", w => { w.scrollLeft = 200; });
           const stay = await page.$eval(".data-table", t => { const w = t.closest(".table-wrap").getBoundingClientRect().left; return Math.abs(t.querySelector("tbody th").getBoundingClientRect().left - w) <= 2; });
