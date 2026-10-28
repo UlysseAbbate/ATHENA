@@ -9,6 +9,9 @@ const dark = { ...light, ...tokens(css.match(/:root\[data-theme="dark"\]\{[\s\S]
 // the device-preference block must define exactly what the explicit dark block does
 const auto = { ...light, ...tokens(css.match(/@media \(prefers-color-scheme:dark\)\{:root:not\(\[data-theme="light"\]\)\{[\s\S]*?\}\}/)[0]) };
 
+// LIBBY's two Houses, in light mode: the House colours replace the black bars, buttons and outlines (tokens.css, :root[data-house=...])
+const house = name => ({ ...light, ...tokens(css.match(new RegExp(`:root\\[data-house="${name}"\\]\\{[^}]*\\}`))[0]) });
+const HOUSES = { commons: house("commons"), lords: house("lords") };
 const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
 const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
 
@@ -26,6 +29,17 @@ for (const [name, set] of [["light", light], ["dark", dark]]) for (const [f, b, 
   const r = ratio(set[f], set[b]);
   if (r < min) { failed++; console.log(`FAIL  ${name}: ${what} (${f} ${set[f]} on ${b} ${set[b]}) = ${r.toFixed(2)}, needs ${min}`); }
 }
+const HOUSE_PAIRS = [
+  ["bar-fg", "bar-bg", 4.5, "heading text on a bar"], ["bar-text", "bar-bg", 4.5, "other text on a bar"], ["btn-fg", "btn-bg", 4.5, "button"],
+  ["btn-hover-fg", "btn-hover-bg", 4.5, "button hovered"], ["ink", "bar-bg", 4.5, "body text on the House colour"], ["outline", "paper", 3, "outline of a panel"], ["outline", "card", 3, "outline of a card"],
+  ["ink", "yellow", 4.5, "text on the yellow masthead"],
+];
+for (const [name, set] of Object.entries(HOUSES)) for (const [f, b, min, what] of HOUSE_PAIRS) {
+  const r = ratio(set[f], set[b]);
+  if (r < min) { failed++; console.log(`FAIL  ${name} LIBBY, light: ${what} (${f} ${set[f]} on ${b} ${set[b]}) = ${r.toFixed(2)}, needs ${min}`); }
+}
+// the House colours are only for light mode: the dark palettes override every one of them
+for (const [name, set] of Object.entries(HOUSES)) for (const k of Object.keys(set)) if (set[k] !== light[k] && dark[k] === undefined) { failed++; console.log(`FAIL  ${name}: --${k} is changed for the House but the dark palette does not set it, so it would leak into dark mode`); }
 for (const k of new Set([...Object.keys(dark), ...Object.keys(auto)])) if (dark[k] !== auto[k]) { failed++; console.log(`FAIL  dark palette differs between data-theme and device preference: --${k} ${dark[k]} vs ${auto[k]}`); }
-console.log(failed ? `\n${failed} problem(s)` : `contrast ok: ${PAIRS.length} pairs x 2 themes, dark palettes identical`);
+console.log(failed ? `\n${failed} problem(s)` : `contrast ok: ${PAIRS.length} pairs x 2 themes, ${HOUSE_PAIRS.length} x 2 Houses in light, dark palettes identical`);
 process.exit(failed ? 1 : 0);
