@@ -8,8 +8,8 @@ One site, one login, one admin console. Athena is the front door; three programs
 
 | Program | Stands for | Today | Becomes |
 |---|---|---|---|
-| **Lovelace** | London Organisation for Voters, Engagement, Liberalism, Action, Campaigns & Elections | The Mall (`athena/site/mall/`, plus the empty `MALL` repo) | `/lovelace/` |
-| **Lucien** | Letting You Catch Important Events & News | Ulysse policy tracker (`athena/site/ulysse/`, `tracker/`, `ulysse-ingest`) | `/lucien/` |
+| **LOVELACE** | London Organisation for Voters, Engagement, Liberalism, Action, Campaigns & Elections | The Mall (`athena/site/mall/`, plus the empty `MALL` repo) | `/lovelace/` |
+| **LUCIEN** | Letting You Catch Important Events & News | Ulysse policy tracker (`athena/site/ulysse/`, `tracker/`, `ulysse-ingest`) | `/lucien/` |
 | **LIBBY** | Liberal Intelligence for Business, Briefings and Year-round policy | Own repo, own site (odysseus.org.uk), shared role passwords | `/libby/` (unchanged in function) |
 
 Three requirements run through everything:
@@ -56,20 +56,20 @@ New, program-agnostic tables replace the Mall-only `profiles.role`:
 
 - `programs` — `lovelace`, `lucien`, `libby`, `admin`.
 - `program_levels` — the levels each program offers, ordered:
-  - Lovelace keeps its six roles (Core team … Member) and the existing `role_permissions` grid.
-  - Lucien: unchanged from Ulysse. It has no levels: a person either has access or does not (today: the admin, plus any role the admin opens it to). Same pages, same functions.
+  - LOVELACE keeps its six roles (Core team … Member) and the existing `role_permissions` grid.
+  - LUCIEN: unchanged from Ulysse. It has no levels: a person either has access or does not (today: the admin, plus any role the admin opens it to). Same pages, same functions.
   - LIBBY keeps its six levels (Peer, Whip, Spokesperson, Leader's office, Staff, Admin) and their ranks.
-- `access_grants (user_id, program, level, is_manager, expires_at, granted_by, granted_at)` — one row per person per program. `is_manager` is the **program manager** tier (§3.3). A person can be a Whip in LIBBY, a Candidate in Lovelace and have no Lucien access.
+- `access_grants (user_id, program, level, is_manager, expires_at, granted_by, granted_at)` — one row per person per program. `is_manager` is the **program manager** tier (§3.3). A person can be a Whip in LIBBY, a Candidate in LOVELACE and have no LUCIEN access.
 - `my_access()` returns every grant that has not expired; the home page, each program and the database all read from it.
 - Existing guard rails carry over, now per program: nobody edits their own grant; only the admin grants admin-level or program manager; the admin account cannot be changed by anyone else; the admin's own access cannot be switched off.
 - Every grant or revoke goes to `audit_log`.
-- Migration: existing `profiles.role` becomes a Lovelace grant; the admin gets all programs; Ulysse access already opened to a role becomes a Lucien grant for those people.
+- Migration: existing `profiles.role` becomes a LOVELACE grant; the admin gets all programs; Ulysse access already opened to a role becomes a LUCIEN grant for those people.
 
 **Where each program enforces it**
 
 | Program | Enforcement |
 |---|---|
-| Lovelace, Lucien | Row-level security in Postgres (as now), reading `access_grants` |
+| LOVELACE, LUCIEN | Row-level security in Postgres (as now), reading `access_grants` |
 | LIBBY | Cloudflare Functions verify the Supabase JWT, look up the person's LIBBY level, then apply the existing `pages.js` rules unchanged. The service-role key stays server-side. |
 
 ### 3.3 Admin console (`/admin/`) and the back-channel
@@ -77,7 +77,7 @@ New, program-agnostic tables replace the Mall-only `profiles.role`:
 The admin page grows from "system status" into the one place that controls access:
 
 - **People:** every account, last sign-in, program grants with level and *access until*, grant/change/revoke, invite by email.
-- **Programs:** the level tables and the permissions grids (Lovelace's grid moves here from *Team & access*, which then shows only Lovelace-level people).
+- **Programs:** the level tables and the permissions grids (LOVELACE's grid moves here from *Team & access*, which then shows only LOVELACE-level people).
 - **Back-channel operations** (admin only, never delegated): the actions LIBBY calls `BACKCHANNEL` plus everything that changes access itself. These live under `/admin/` and `/api/admin/*`, and are the only routes that accept admin-level changes.
 - **Activity:** one audit log across programs; collector health and failing sources (today's content) stays.
 - **Program manager (new tier, below admin):** a person the admin marks as manager of one program (or several). They can, **for that program only**:
@@ -86,18 +86,18 @@ The admin page grows from "system status" into the one place that controls acces
   - create and revoke that program's shared access codes (§3.5), up to a ceiling level the admin sets.
 
   They cannot: grant or remove manager status, touch an admin or another manager's grant, change their own grant, see other programs' people, or open the master console. The admin alone does those. Every action is audited.
-  - Lovelace today lets the core team manage *Team & access* and make other core-team members. That right becomes program-manager for Lovelace, given by the admin. Lucien, whose access only the admin could open to a role, gets a manager the same way.
+  - LOVELACE today lets the core team manage *Team & access* and make other core-team members. That right becomes program-manager for LOVELACE, given by the admin. LUCIEN, whose access only the admin could open to a role, gets a manager the same way.
 - You said "preferably through the back-channels, otherwise my own account": the back-channel is `/admin/` signed in as the admin account; there is no second route.
 
 ### 3.5 Shared access codes (one-password access)
 
-For when a group should get in with one basic password and no individual account (Peers now; other groups later; Lovelace is not Peers-only):
+For when a group should get in with one basic password and no individual account (Peers now; other groups later; LOVELACE is not Peers-only):
 
-- The admin (or a program manager, within their ceiling) creates a code in `/admin/`: a **label** ("Peers", "Lovelace volunteers"), the **program**, the **level**, an optional **expiry**, and an optional **maximum number of uses**. The password is shown once; only a hash is stored.
+- The admin (or a program manager, within their ceiling) creates a code in `/admin/`: a **label** ("Peers", "LOVELACE volunteers"), the **program**, the **level**, an optional **expiry**, and an optional **maximum number of uses**. The password is shown once; only a hash is stored.
 - Anyone can be given a code, change it (rotate), or switch it off at any time. Switching off or rotating signs out everyone who used it, as the LIBBY passwords did.
 - Signing in with a code is a field on the same sign-in page: "Use an access code instead". A Function checks the hash and issues a session limited to that program and level.
 - Same guessing protection as LIBBY (10 wrong tries in 15 minutes pauses that connection; only a keyed hash of the address is kept).
-- Trade-offs, stated plainly: code sessions are **not individuals**. The audit log shows "Peers code" rather than a name; per-person features (Lucien's read/unread state, a person's duty-whip entry) are shared across everyone on that code; and a leaked code works for whoever has it until rotated. Peers who want any of those things make their own account, which stays the default offered.
+- Trade-offs, stated plainly: code sessions are **not individuals**. The audit log shows "Peers code" rather than a name; per-person features (LUCIEN's read/unread state, a person's duty-whip entry) are shared across everyone on that code; and a leaked code works for whoever has it until rotated. Peers who want any of those things make their own account, which stays the default offered.
 - Codes can never carry admin or program-manager level.
 
 ### 3.4 One look: LIBBY's, in light and dark
@@ -119,7 +119,7 @@ athena/
   site/            home, shared/, admin/, lovelace/, lucien/, libby/   (libby/public moved here)
   functions/       Cloudflare Pages Functions: libby/*, admin/*        (libby/functions + libby/lib moved here)
   supabase/        one migration history, schemas: public (access, audit), lovelace, lucien, libby
-  tracker/         Lucien collector
+  tracker/         LUCIEN collector
   scripts/         LIBBY's Python and Node jobs
   .github/         workflows from all three, prefixed by program
   docs/            this plan, adding-a-page, performance
@@ -144,7 +144,7 @@ Each phase ends with something working and mergeable; nothing is switched off be
 | 0 | **Decide** | Answers to §7 | Open questions closed |
 | 1 | **Shared design** (built, on branch `master-plan`) | `libby.css` tokens, light + dark, theme toggle, shared header; restyle Athena home and `/admin/` | Home and admin pass UI tests in both themes |
 | 2 | **Access core** (database and the `/access/` screen built and tested; migration not yet applied to the live project; code sign-in comes with phase 4) | `programs`, `access_grants`, program-manager tier, `access_codes`, new `my_access()`, migration of existing roles, audit hooks, admin *People* and *Access codes* tabs | Admin can grant/revoke per program; a manager can manage only their program; a code signs in at its level and no higher; old Mall roles intact; RLS tests pass |
-| 3 | **Rename** (built) | Mall → Lovelace, Ulysse → Lucien (paths, titles, copy, redirects, CSP, README, workflows) and apply the shared look | Old URLs redirect; all UI tests green in both themes |
+| 3 | **Rename** (built) | Mall → LOVELACE, Ulysse → LUCIEN (paths, titles, copy, redirects, CSP, README, workflows) and apply the shared look | Old URLs redirect; all UI tests green in both themes |
 | 4 | **Bring LIBBY in** (code moved and signing in through Athena, tested; live data copy and secrets are steps for you, see `docs/PHASE-4-GO-LIVE.md`) | Code moved into `athena/`; sign-in via Athena; Functions verify JWT; levels read from `access_grants`; data copied to the Athena project | LIBBY at `athena.odysseus.org.uk/libby/` works for a Whip, Staff and Admin account, and for a Peer via own account and via a Peers code; odysseus.org.uk unaffected |
 | 5 | **LIBBY restyle** (built: one token file, light and dark, checked by tests) | LIBBY pages on the shared stylesheet with dark mode | Every LIBBY page reviewed in both themes |
 | 6 | **Cut over** | `athena.odysseus.org.uk` live, old shared passwords deleted from the new site, MALL archived. Optional, only if the admin asks: retire the old copy at odysseus.org.uk | One URL; one login; old routes redirect; odysseus.org.uk exactly as the admin left it |
@@ -162,7 +162,7 @@ Phases 1 and 2 can run in parallel. Phase 4 is the largest and riskiest.
 | 2 | All current shared passwords retired. The admin can create new single-password access codes at any time (§3.5). |
 | 3 | Address is `athena.odysseus.org.uk`. odysseus.org.uk and its current LIBBY site are left untouched. |
 | 4 | Peers may make their own accounts, and a one-password code remains available for Peers and, later, other groups. |
-| 5, 6 | Lovelace is the Mall renamed; Lucien is Ulysse renamed, with the same functions and access. |
+| 5, 6 | LOVELACE is the Mall renamed; LUCIEN is Ulysse renamed, with the same functions and access. |
 | 7 | New *program manager* tier, below admin, managing their own program's people. |
 
 **Still open (small; I will use the default unless told otherwise)**

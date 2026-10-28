@@ -1,4 +1,4 @@
-/* Lovelace: London Organisation for Voters, Engagement, Liberalism, Action, Campaigns & Elections (formerly The Mall).
+/* LOVELACE: London Organisation for Voters, Engagement, Liberalism, Action, Campaigns & Elections (formerly The Mall).
  * Static front end; all data and permissions live in Supabase (row-level security).
  * Nothing in this file is a security boundary: the server decides what each role can read or write. */
 const { sb, esc, safeUrl } = Athena;
@@ -14,7 +14,7 @@ const RESOURCES = {
   social: "Tracked social accounts (Media page)", coverage: "Media page: news coverage and social posts",
   stakeholders_all: "Full stakeholder list (People page)", stakeholders_add: "Add stakeholders (own entries visible to the adder)",
   users: "Team & access: see users / change roles", permissions: "Edit this permissions table",
-  audit: "Activity log (who changed what)", ulysse: "Lucien policy tracker (only the admin can change this row)" };
+  audit: "Activity log (who changed what)", ulysse: "LUCIEN policy tracker (only the admin can change this row)" };
 
 const pad = n => String(n).padStart(2, "0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -35,7 +35,7 @@ function showError(err) { main.prepend(notice(err.message || String(err))); wind
 /* ------------------------------------------------------------------ auth */
 function renderLogin() {
   $("#tabs").hidden = true; $("#who").textContent = "";
-  AuthUI.render(sb, main, { title: "Lovelace" });
+  AuthUI.render(sb, main, { title: "LOVELACE" });
 }
 
 async function boot() {
@@ -387,19 +387,19 @@ async function renderTeam() {
     can("audit", "read") ? sb.from("audit_log").select("*").order("at", { ascending: false }).limit(60) : Promise.resolve({ data: null })]);
   if (error || pe) return showError(error || pe);
   const last = Object.fromEntries((seen.data || []).map(r => [r.id, r.last_sign_in_at]));
-  const canRole = can("users", "write"), canPerm = can("permissions", "write");
+  const canPerm = can("permissions", "write");
   const today = iso(new Date());
   const pending = profs.filter(p => !p.role).length;
   const ended = p => p.access_until && p.access_until < today;
   main.innerHTML = `<h2>People ${pending ? `<span class="pill" style="color:var(--red)">${pending} awaiting a role</span>` : ""}</h2>
-    <p class="muted">Give each person a role. "Access until" is optional: after that date they see nothing until it is extended. You cannot change your own role.</p>
+    <p class="muted">Roles and end dates are given on the <a href="../access/#lovelace">Access page</a>, as for LUCIEN and LIBBY. This list shows who has what.</p>
     <div class="tablewrap"><table><thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Access until</th><th>Last signed in</th></tr></thead><tbody>${profs.map(p => {
-      const self = p.id === S.user.id, lock = !canRole || self;
+      const lock = true;   // read-only here: the Access page gives roles
       return `<tr class="${ended(p) ? "ended" : ""}"><td>${esc(p.email)}</td><td>${esc(p.full_name)}</td><td>${!lock ?
         `<select data-u="${p.id}"><option value="">(no access)</option>${Object.entries(ROLES).map(([k, l]) => `<option value="${k}" ${p.role === k ? "selected" : ""}>${l}</option>`).join("")}</select>` : esc(ROLES[p.role] || "none")}</td>
         <td>${!lock ? `<input type="date" data-until="${p.id}" value="${esc(p.access_until || "")}" style="width:auto">` : esc(p.access_until ? fmtShort(p.access_until) : "no end date")}${ended(p) ? ' <span class="pill">ended</span>' : ""}</td>
         <td class="muted">${esc(last[p.id] ? Athena.ago(last[p.id]) : "never")}</td></tr>`; }).join("")}</tbody></table></div>
-    <h2>What each role can do</h2><p class="muted">R = read, W = write. The core team's own "Team &amp; access" rights are locked so nobody can be locked out, and only the admin can open Lucien to a role.</p>
+    <h2>What each role can do</h2><p class="muted">R = read, W = write. The core team's own "Team &amp; access" rights are locked so nobody can be locked out, and only the admin can open LUCIEN to a role.</p>
     <div class="tablewrap"><table><thead><tr><th>Area</th>${Object.values(ROLES).map(l => `<th>${l}</th>`).join("")}</tr></thead><tbody>${Object.entries(RESOURCES).map(([res, label]) =>
       `<tr><td>${esc(label)}</td>${Object.keys(ROLES).map(role => { const p = perms.find(x => x.role === role && x.resource === res) || {};
         const locked = !canPerm || (role === "core_team" && (res === "users" || res === "permissions")) || (res === "ulysse" && !S.admin);
@@ -408,12 +408,7 @@ async function renderTeam() {
     <div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>${log.data.map(l => `<tr><td>${esc(new Date(l.at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" }))}</td>
       <td>${esc(l.user_email || "automatic")}</td><td>${esc(l.action)} · ${esc(TABLE_LABEL[l.table_name] || l.table_name)}${l.label ? ` · <i>${esc(l.label)}</i>` : ""}${l.changed?.length ? ` <span class="muted">(${esc(l.changed.join(", "))})</span>` : ""}</td></tr>`).join("") || '<tr><td colspan="3" class="muted">No changes yet.</td></tr>'}</tbody></table></div>` : ""}`;
   main.onchange = async e => {
-    const u = e.target.closest("[data-u]"), d = e.target.closest("[data-until]"), p = e.target.closest("[data-p]");
-    if (u || d) {
-      const id = (u || d).dataset.u || (u || d).dataset.until;
-      const patch = u ? { role: u.value || null } : { access_until: d.value || null };
-      const { error: er } = await sb.from("profiles").update(patch).eq("id", id); if (er) showError(er); else renderTeam();
-    }
+    const p = e.target.closest("[data-p]");
     if (p) { const [role, res, a] = p.dataset.p.split("|");
       const cur = perms.find(x => x.role === role && x.resource === res) || { can_read: false, can_write: false };
       const row = { role, resource: res, can_read: cur.can_read, can_write: cur.can_write, ["can_" + a]: p.checked };

@@ -17,10 +17,10 @@ const USERS = {
   admin: { id: "00000000-0000-0000-0000-0000000000a1", email: "owner@test.invalid", role: "core_team", admin: true },
   core: { id: "00000000-0000-0000-0000-0000000000c1", email: "core@test.invalid", role: "core_team", admin: false },
   member: { id: "00000000-0000-0000-0000-0000000000e1", email: "member@test.invalid", role: "member", admin: false },
-  lmgr: { id: "00000000-0000-0000-0000-0000000000b1", email: "lucienmgr@test.invalid", role: null, admin: false },   // manages Lucien only
+  lmgr: { id: "00000000-0000-0000-0000-0000000000b1", email: "lucienmgr@test.invalid", role: null, admin: false },   // manages LUCIEN only
 };
 const LEVELS = [
-  ["lovelace", "member", "Member", 1], ["lovelace", "core_team", "Core team", 6],
+  ["lovelace", "member", "Member", 1], ["lovelace", "candidate", "Candidate", 3], ["lovelace", "core_team", "Core team", 6],
   ["lucien", "access", "Access", 1],
   ["libby", "beta", "Beta tester", 1], ["libby", "peers", "Peer", 1], ["libby", "staff", "Staff", 3], ["libby", "admin", "Admin", 4]].map(([program, level, label, rank]) => ({ program, level, label, rank, admin_only: level === "admin" }));
 const BIG = 2147483647;
@@ -84,7 +84,10 @@ async function mock(page, who, log) {
     if (url.pathname.startsWith("/rest/v1/rpc/")) {
       const fn = url.pathname.split("/").pop(), body = m === "POST" ? JSON.parse(req.postData() || "{}") : {};
       if (fn === "program_people") return json(PEOPLE[body.p] || []);
-      if (fn === "pending_accounts") return json(u.admin ? [{ user_id: "n1", email: "newbie@test.invalid", created_at: ts }] : []);
+      if (fn === "all_people") return json(u.admin ? [
+        { user_id: USERS.admin.id, email: USERS.admin.email, full_name: "", created_at: ts, last_sign_in_at: ts, admin: true, grants: [] },
+        { user_id: "n1", email: "newbie@test.invalid", full_name: "", created_at: ts, last_sign_in_at: null, admin: false, grants: [] },
+        { user_id: USERS.core.id, email: USERS.core.email, full_name: "Cora Core", created_at: ts, last_sign_in_at: ts, admin: false, grants: [{ program: "lovelace", level: "core_team", is_manager: true, grant_ceiling: null, expires_at: null }] }] : []);
       log.push(`RPC ${fn} ${JSON.stringify(body)}`);
       return json(fn === "create_access_code" ? "abcd-1234-abcd-1234-abcd" : null);
     }
@@ -140,19 +143,26 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.goto(BASE + "/");
       await page.waitForTimeout(600);
       const links = await page.$$eval("#n a b", bs => bs.map(b => b.textContent));
-      check(`${who}: home shows Lucien to the admin and Lucien people only`, links.includes("Lucien") === (who === "admin" || who === "lmgr"), links.join(","));
-      check(`${who}: home shows Access only to the admin and non-Lovelace managers`, links.includes("Access") === (who === "admin" || who === "lmgr"), links.join(","));
+      check(`${who}: home shows LUCIEN to the admin and LUCIEN people only`, links.includes("LUCIEN") === (who === "admin" || who === "lmgr"), links.join(","));
+      check(`${who}: home shows Access only to the admin and program managers`, links.includes("Access") === (who === "admin" || who === "lmgr" || who === "core"), links.join(","));
 
       // the Access page: admin sees every program, a program manager only theirs, others nothing
       await page.goto(BASE + "/access/");
       await page.waitForTimeout(800);
       const aTabs = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent)).catch(() => []);
       const aText = await page.$eval("body", b => b.innerText);
-      check(`${who}: Access page shows the right programs`, JSON.stringify(aTabs) === JSON.stringify({ admin: ["Lovelace", "Lucien", "LIBBY"], core: ["Lovelace"], lmgr: ["Lucien"], member: [] }[who]) && (aTabs.length > 0 || /Not found/.test(aText)), aTabs.join(","));
-      check(`${who}: new accounts waiting are listed for the admin only`, ((await page.$$("#waiting tbody tr")).length === 1) === (who === "admin"));
-      if (who === "admin") {
-        await page.selectOption('#waiting [data-p]', "libby"); await page.selectOption('#waiting [data-l]', "beta"); await page.click("#waiting [data-give]"); await page.waitForTimeout(500);
-        check("admin: a waiting account can be given a program and level there", log.some(l => l.startsWith("RPC grant_access") && l.includes("newbie@test.invalid") && l.includes('"p_level":"beta"')), log.filter(l => l.startsWith("RPC")).join(";"));
+      check(`${who}: Access page shows the right programs`, JSON.stringify(aTabs) === JSON.stringify({ admin: ["Everyone", "LOVELACE", "LUCIEN", "LIBBY"], core: ["LOVELACE"], lmgr: ["LUCIEN"], member: [] }[who]) && (aTabs.length > 0 || /Not found/.test(aText)), aTabs.join(","));
+      if (who === "admin") {   // Everyone: one row per account, a level to choose for each program
+        const rows = await page.$$eval("#everyone tbody tr", rs => rs.map(r => r.dataset.e));
+        check("admin: Everyone lists every account, with the ones waiting for access", rows.length === 3 && rows.includes("newbie@test.invalid") && /1 waiting for access/.test(await page.$eval("#body", b => b.innerText)), rows.join(","));
+        const sels = await page.$$eval('#everyone tr[data-e="newbie@test.invalid"] select', ss => ss.map(x => x.dataset.ev));
+        check("admin: each account has a level for LOVELACE, LUCIEN and LIBBY", sels.join(",") === "lovelace,lucien,libby", sels.join(","));
+        if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `access-everyone-${scheme}.png`), fullPage: true }); }
+        await page.emulateMedia({ colorScheme: "light" });
+        await page.selectOption('#everyone tr[data-e="newbie@test.invalid"] select[data-ev="lovelace"]', "candidate"); await page.waitForTimeout(500);
+        check("admin: choosing a LOVELACE level gives it", log.some(l => l.startsWith("RPC grant_access") && l.includes("newbie@test.invalid") && l.includes('"p_program":"lovelace"') && l.includes('"p_level":"candidate"')), log.filter(l => l.startsWith("RPC")).join(";"));
+        await page.selectOption('#everyone tr[data-e="core@test.invalid"] select[data-ev="lovelace"]', ""); await page.waitForTimeout(500);
+        check("admin: choosing No access removes it", log.some(l => l.startsWith("DELETE access_grants")), log.slice(-4).join(";"));
       }
       if (who === "admin" || who === "lmgr") {
         if (who === "admin") await page.click('#tabs button:text-is("LIBBY")');
@@ -176,8 +186,8 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("admin: you cannot edit a row that is yourself, a manager above the limit is editable only by admin", (await page.$('tr[data-u="p3"] select[data-f=level]:not([disabled])')) !== null);
           if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.screenshot({ path: path.join(process.env.SHOTS, `access-${scheme}.png`), fullPage: true }); }
           await page.emulateMedia({ colorScheme: "light" });
-          await page.click('#tabs button:text-is("Lovelace")'); await page.waitForTimeout(400);
-          check("admin: Lovelace is read-only (managed in the Mall)", /still managed in/.test(await page.$eval("#body", b => b.innerText)) && (await page.$("#add")) === null);
+          await page.click('#tabs button:text-is("LOVELACE")'); await page.waitForTimeout(400);
+          check("admin: LOVELACE is managed here like the others (people, levels, give access, codes)", (await page.$("#add")) !== null && (await page.$("#mk")) !== null && !/still managed in/.test(await page.$eval("#body", b => b.innerText)));
         }
       }
       // LIBBY, under the same sign-in: the page runs under its own security policy and asks the server who this is
@@ -412,7 +422,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         const team = await page.$eval("#main", m => m.innerText);
         check(`${who}: team page has access dates, last seen, activity`, /Access until/i.test(team) && /Last signed in/i.test(team) && /Recent activity/i.test(team));
         const ulysseLocked = await page.$eval('[data-p="member|ulysse|read"]', e => e.disabled);
-        check(`${who}: Lucien permission editable only by admin`, ulysseLocked === (who !== "admin"));
+        check(`${who}: LUCIEN permission editable only by admin`, ulysseLocked === (who !== "admin"));
         const selfLocked = await page.$$eval(`[data-u="${USERS[who].id}"]`, e => e.length === 0);
         check(`${who}: cannot edit own role`, selfLocked);
       }

@@ -1,4 +1,4 @@
-/* Lucien (formerly Ulysse) front end. Data comes from Supabase tables readable only by the admin (and any role the admin opens Lucien to);
+/* LUCIEN (formerly Ulysse) front end. Data comes from Supabase tables readable only by the admin (and any role the admin opens LUCIEN to);
  * nothing here is a security boundary. */
 const { sb, esc } = Athena;
 const $ = id => document.getElementById(id);
@@ -260,7 +260,7 @@ function bind() {
   });
 }
 
-function signIn() { AuthUI.render(sb, document.body, { title: "Lucien" }); }
+function signIn() { AuthUI.render(sb, document.body, { title: "LUCIEN" }); }
 (async function init() {
   AuthUI.watchRecovery(sb, document.body);
   let acc;

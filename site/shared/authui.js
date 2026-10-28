@@ -1,4 +1,4 @@
-/* Shared email + password sign-in used by Athena, Lovelace, Lucien, Access and Admin.
+/* Shared email + password sign-in used by Athena, LOVELACE, LUCIEN, Access and Admin.
  * Usage: AuthUI.render(sb, hostElement)   -> shows Sign in / Create account / Access code / Forgot password
  *        (an access code is a shared password for a group: the server checks it at /api/code-login)
  *        AuthUI.watchRecovery(sb, hostElement) -> shows "set a new password" after a reset link

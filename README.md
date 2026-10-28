@@ -5,8 +5,8 @@ One static site (`site/`, hosted on Cloudflare) in front of one Supabase project
 | Page | Who sees it | What it is |
 |---|---|---|
 | `/` | everyone | Home: one sign-in, then the programs you may open |
-| `/lovelace/` | anyone with a role | **Lovelace** (*London Organisation for Voters, Engagement, Liberalism, Action, Campaigns & Elections*): campaign workspace. Formerly *The Mall* (`/mall/` still redirects). |
-| `/lucien/` | the admin, plus anyone given Lucien access | **Lucien** (*Letting You Catch Important Events & News*): policy tracker. Formerly *Ulysse* (`/ulysse/` still redirects). |
+| `/lovelace/` | anyone with a role | **LOVELACE** (*London Organisation for Voters, Engagement, Liberalism, Action, Campaigns & Elections*): campaign workspace. Formerly *The Mall* (`/mall/` still redirects). |
+| `/lucien/` | the admin, plus anyone given LUCIEN access | **LUCIEN** (*Letting You Catch Important Events & News*): policy tracker. Formerly *Ulysse* (`/ulysse/` still redirects). |
 | `/access/` | the admin and program managers | Who can open what, at which level, until when; shared access codes |
 | `/admin/` | the admin only | System status: collector health, failing sources, access ending soon, recent activity |
 
@@ -17,21 +17,21 @@ The plan for bringing LIBBY in and retiring shared passwords is in `docs/MASTER-
 ## Access model
 
 - **Sign-in** is email + password (`site/shared/authui.js`). A new account sees nothing until someone with *Team & access* rights gives it a role.
-- **Roles:** Core team, Executive, Local party chair, Candidate, Support team, Member. What each role may read or write is the `role_permissions` table, edited in *Lovelace → Team & access*.
+- **Roles:** Core team, Executive, Local party chair, Candidate, Support team, Member. What each role may read or write is the `role_permissions` table, edited in *LOVELACE → Team & access*.
 - **Time-limited access:** each person can have an *Access until* date. After it, `my_role()` returns nothing and they see nothing until it is extended.
 - **Guard rails (in the database, not the page):**
   - Nobody can change their own role or access date.
   - Only the core team can grant or remove core-team access.
   - Nobody but the admin can change the admin's account.
   - The core team's own *Team & access* rights cannot be switched off, so nobody can lock everyone out.
-  - Only the admin can open Lucien to a role.
+  - Only the admin can open LUCIEN to a role.
   - Profiles: only role, name and access date can be changed through the API.
 - **Admin** = the account whose confirmed email is `ulysse.abbate@gmail.com`, hardwired in the database function `admin_email()` (migration `20261027120000_hardwire_admin_email.sql`). No table row can make anyone else the admin; to change it, a new migration is needed. `is_admin()` is checked in Postgres. The admin can do everything and always holds each program's top level (for LIBBY, Developer).
 - **Least privilege:**
   - Anonymous visitors have no table rights at all.
   - Signed-in users cannot `TRUNCATE`, and cannot see the admin tables.
   - Permission checks run once per query (fast RLS).
-- **Activity log:** every insert, update and delete in Lovelace is recorded in `audit_log`: who, when, which table, which fields. Values are not recorded. Readable by roles with *Activity log* (core team by default) and shown on *Team & access* and `/admin/`.
+- **Activity log:** every insert, update and delete in LOVELACE is recorded in `audit_log`: who, when, which table, which fields. Values are not recorded. Readable by roles with *Activity log* (core team by default) and shown on *Team & access* and `/admin/`.
 - **Edit conflicts:** rows carry `updated_at`/`updated_by` (set by the database). An edit only saves if nobody changed the row since it was opened; otherwise the page says so and reloads it.
 - **Security headers** (`site/_headers`):
   - A strict Content-Security-Policy: scripts only from this site, data only from the Athena Supabase project.
@@ -40,7 +40,18 @@ The plan for bringing LIBBY in and retiring shared passwords is in `docs/MASTER-
 
 The full schema is in `supabase/migrations/` and the ingest function in `supabase/functions/ulysse-ingest/`. Both are already applied to the live project; the files are the record.
 
-## Lovelace (formerly The Mall)
+## How people get in
+
+1. **Athena sign-in** (one account for everything). A new account sees nothing and is told it is waiting for the administrator.
+2. **The home page** shows only what the account may open: LOVELACE, LUCIEN, LIBBY, and, for the administrator (`ulysse.abbate@gmail.com`) and any program manager the administrator appoints, **Access**; **Admin** is the administrator's alone.
+3. **Access** (`/access/`): the administrator starts on **Everyone**: every account that has been made, newest first, with a level to choose for **LOVELACE, LUCIEN and LIBBY** on the one row ("No access" removes it; an optional end date sits under each level; accounts with nothing yet are counted as waiting). A tab for each program shows that program's people, managers and shared codes. LOVELACE is given here like the others: the grant sets the person's role and end date (the database copies it onto their profile, which LOVELACE's screens read); LOVELACE → Team & access still sets what each role can do. A program manager (for example LOVELACE's core team) sees only their own program's tab.
+4. **LIBBY** opens on a gate with two buttons, shown to everyone signed in: **Beta test** (the Data page; opened by the shared beta code, which is then kept on the person's account) and **Developer** (everything, including work in progress; only the administrator can open it). *Beta / Developer* in the page footer comes back to the gate. The beta code is made like any shared code (Access → LIBBY → Access codes, level *Beta tester*) and is stored only as a hash.
+
+## Tables
+
+Every table on the site gets, from `site/shared/tables.js` and `tables.css`: a **filter arrow on each column title** (a list of the column's values with a search box, as in Excel or Google Sheets), **sorting**, and a **title row that stays at the top** while you scroll. A "Filtered: showing 3 of 12 rows" line with *Clear filters* appears while a filter is on, and LOVELACE's CSV download follows it. Add `data-nofilter` to a `<table>` to leave it alone.
+
+## LOVELACE (formerly The Mall)
 
 **Pages:**
 - **Overview:** today's and this week's plan, governance due or overdue, governance due and the latest media. Each card appears only if your role can see that area.
@@ -65,7 +76,7 @@ Pages refresh themselves when you come back to the browser tab, so you see other
 - **Instagram, Facebook, X, TikTok and LinkedIn** have no open feed and forbid scraping, so they are not read automatically; add their posts by hand, or connect an approved API later.
 - Duplicates by URL (and, for news, outlet + headline) are skipped. Anything else can still be added by hand.
 
-## Lucien (policy tracker, formerly Ulysse)
+## LUCIEN (policy tracker, formerly Ulysse)
 
 Refreshed automatically at 6am and 6pm London time by GitHub Actions (`.github/workflows/update.yml`, or *Run workflow* by hand). It tracks:
 
@@ -159,7 +170,7 @@ Access page. Server routes need these Cloudflare Pages secrets: `SUPABASE_URL`, 
 - JavaScript syntax
 - **database rules** (`tests/db/run.sh`): every migration applied to a throwaway Postgres, then who may grant what to whom, access codes, expiry, audit
 - **design tokens** (`tests/contrast.js`, `tests/libby-css.js`): WCAG contrast of every colour pair in light and dark, and no fixed colours in LIBBY's stylesheet
-- browser tests (`tests/ui/run.js`): every page as admin, core team, member and a Lucien manager against a mocked database, under the real security headers,
+- browser tests (`tests/ui/run.js`): every page as admin, core team, member and a LUCIEN manager against a mocked database, under the real security headers,
   in both themes, failing on any console error or CSP violation
 
 ```bash

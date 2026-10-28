@@ -1,5 +1,5 @@
 /* ATHENA design tokens: LIBBY's Focus-leaflet colours and fonts, in light and dark. The ONE place colours are chosen.
- * Every program loads this file; shared/libby.css (Athena, Lovelace, Lucien, Access, Admin) and libby/styles.css (LIBBY) use only these tokens.
+ * Every program loads this file; shared/libby.css (Athena, LOVELACE, LUCIEN, Access, Admin) and libby/styles.css (LIBBY) use only these tokens.
  * Light is the default; dark follows the device (prefers-color-scheme) unless the person chose a theme: <html data-theme="light|dark">
  * (set by theme.js) always wins over the device. In dark, the leaflet "black" things flip to cream/yellow so outlines, bars and
  * buttons stay visible; yellow stays yellow. */
