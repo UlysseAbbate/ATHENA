@@ -201,6 +201,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           if (u.pathname.endsWith("/api/libby/comments")) return j({ comments: {} });
           if (u.pathname.endsWith("/api/libby/amendment-flags")) return route.request().method() === "GET" ? j({ flags: {} }) : j({ ok: true });
           if (u.pathname.endsWith("/api/libby/groupings")) return j({ groupings: [] });
+          if (u.pathname.endsWith("/api/libby/data/votes")) {
+            const tally = (n) => ({ divisions: n, govWin: n - 1, govDefeats: 1, ldCon: 1, ldLab: n - 2, ldAlone: 1, ldDiff: 1, conNeedLd: 0, labNeedLd: 1, ldNoSupport: 0 });
+            const party = (i, v) => ({ intention: i, votes: v, rebels: 0, content: v, notContent: 0 });
+            const div = (id, date, title) => ({ id, date, title, url: "https://votes.parliament.uk/votes/lords/" + id, department: "DHSC", result: "Content", content: 200, notContent: 150, majority: 50,
+              parties: { con: party("Not Content", 80), lab: party("Content", 120), ld: party("Content", 70) }, splits: [], govWin: true, ldCon: false, ldLab: true, ldAlone: false, ldDiff: false, conNeedLd: false, labNeedLd: false, ldNoSupport: false });
+            return j({ from: "2024-07-04", to: "2026-10-28", updated: null, total: tally(20), months: [{ month: "2026-09", ...tally(8) }, { month: "2026-10", ...tally(12) }],
+              departments: [{ department: "DHSC", ...tally(10) }, { department: "MoJ", ...tally(10) }], divisions: [div(1, "2026-09-10", "Health Bill: amendment 1"), div(2, "2026-10-12", "Courts Bill: clause 4")] });
+          }
           return j({}, 404);
         });
         await page.route(BASE + "/api/claim-code", route => { let b = {}; try { b = JSON.parse(route.request().postData() || "{}"); } catch { /* none */ } return b.code === "test-beta-code-1" ? (lvl = "beta", route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, program: "libby", level: "beta" }) })) : route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: "That code is not right, or it has ended." }) }); });
@@ -253,6 +261,18 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/developer"); await page.waitForTimeout(600);
           const dv = await page.$eval("#app", b => b.innerText);
           check("developer: the Developer page lists the editions and every page", /Beta test/.test(dv) && /Every page/.test(dv) && /policy/.test(dv) && !/couldn.t load/i.test(dv), dv.slice(0, 120).replace(/\n/g, " "));
+          // the Data page's tables: tight, with the first column and the title row both frozen
+          await page.setViewportSize({ width: 700, height: 800 });
+          await page.goto(BASE + "/libby/#/data/votes?view=months"); await page.waitForTimeout(1200);
+          const pad = await page.$eval(".data-table td", td => parseFloat(getComputedStyle(td).paddingLeft));
+          const frozen = await page.$eval(".data-table", t => ({ corner: getComputedStyle(t.querySelector("thead th:first-child")).position, cell: getComputedStyle(t.querySelector("tbody th")).position, left: getComputedStyle(t.querySelector("tbody th")).left, top: getComputedStyle(t.querySelector("thead th:nth-child(2)")).top }));
+          check("data: columns are tight (small padding, small type)", pad <= 7, String(pad));
+          check("data: the first column and the title row are frozen", frozen.corner === "sticky" && frozen.cell === "sticky" && frozen.left === "0px" && frozen.top === "0px", JSON.stringify(frozen));
+          await page.$eval(".table-wrap", w => { w.scrollLeft = 200; });
+          const stay = await page.$eval(".data-table", t => { const w = t.closest(".table-wrap").getBoundingClientRect().left; return Math.abs(t.querySelector("tbody th").getBoundingClientRect().left - w) <= 2; });
+          check("data: scrolled sideways, the first column stays at the left edge", stay);
+          if (process.env.SHOTS) for (const [view, name] of [["months", "data-months"], ["divisions", "data-divisions"]]) { await page.goto(BASE + "/libby/#/data/votes?view=" + view); await page.waitForTimeout(900); await page.screenshot({ path: path.join(process.env.SHOTS, name + ".png"), fullPage: true }); }
+          await page.setViewportSize({ width: 1280, height: 720 });
           lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(600);
           await page.goto(BASE + "/libby/#/bill/1?tab=amendments"); await page.waitForTimeout(1500);
           const heads = await page.$$eval(".am-table thead th", hs => hs.map(h => h.textContent.trim()));

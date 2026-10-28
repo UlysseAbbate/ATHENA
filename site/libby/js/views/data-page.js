@@ -191,7 +191,7 @@ function divisionsTable(list, cols = ['govWin', 'ldCon', 'ldLab', 'ldAlone', 'ld
       ${cols.map((c) => `<th scope="col">${esc(labels[c])}</th>`).join('')}</tr></thead><tbody>
     ${list.map((x) => `<tr>
       <td class="nowrap">${esc(fmtDate(x.date, { day: 'numeric', month: 'short', year: 'numeric' }))}</td>
-      <td>${extLink(x.url, x.title)} <span class="small muted">#${esc(x.id)}</span></td>
+      <td class="divtitle">${extLink(x.url, x.title)} <span class="small muted">#${esc(x.id)}</span></td>
       <td>${esc(x.department)}</td>
       <td class="nowrap">${esc(x.result)} <span class="muted small">${x.content}\u2013${x.notContent}</span></td>
       <td class="num">${x.majority}</td>
@@ -206,7 +206,7 @@ function splitsTable(list) {
   const names = { con: 'Conservative', lab: 'Labour', ld: 'Lib Dem' };
   return `<p class="small muted">${rows.length} divisions where at least one Conservative, Labour or Lib Dem peer voted against the way most of their party voted.</p>
     <div class="table-wrap"><table class="grid data-table"><thead><tr><th scope="col">Date</th><th scope="col">Division</th><th scope="col">Conservative</th><th scope="col">Labour</th><th scope="col">Lib Dem</th></tr></thead><tbody>
-    ${rows.map((x) => `<tr><td class="nowrap">${esc(fmtDate(x.date, { day: 'numeric', month: 'short', year: 'numeric' }))}</td><td>${extLink(x.url, x.title)}</td>
+    ${rows.map((x) => `<tr><td class="nowrap">${esc(fmtDate(x.date, { day: 'numeric', month: 'short', year: 'numeric' }))}</td><td class="divtitle">${extLink(x.url, x.title)}</td>
       ${['con', 'lab', 'ld'].map((k) => { const p = x.parties[k]; return `<td>${p.rebels && p.intention !== 'Abstain' ? `<strong>${p.content} content / ${p.notContent} not content</strong>` : `<span class="muted">${p.intention === 'Abstain' ? 'Did not vote' : 'United'}</span>`}</td>`; }).join('')}
     </tr>`).join('')}</tbody></table></div>
     <p class="small muted">${Object.values(names).join(', ')}: "United" means every member who voted took the same side.</p>`;
