@@ -16,23 +16,28 @@
   /* surfaces and text */
   --paper:#FFFFFF;--card:#FFFFFF;--ink:#111111;--muted:#4B4B4B;--rule:#D9D9D9;--rule-strong:#8A8A8A;--chip:#F4F2EA;--hi:#FBF8EC;
   /* leaflet devices: outline of panels, the hard shadow, bars, buttons */
-  --outline:#111111;--pop-colour:#FDBB30;--bar-bg:#111111;--bar-fg:#FDBB30;
+  --outline:#111111;--pop-colour:#FDBB30;--bar-bg:#111111;--bar-fg:#FDBB30;--bar-text:#FFFFFF;
   --btn-bg:#111111;--btn-fg:#FDBB30;--btn-hover-bg:#2A2A2A;--btn-hover-fg:#FDBB30;
   --shadow:0 1px 2px rgba(17,17,17,.06),0 6px 18px rgba(17,17,17,.07);--shadow-hover:0 2px 4px rgba(17,17,17,.08),0 10px 26px rgba(17,17,17,.10);
   --masthead-line:rgba(17,17,17,.18);--hover-tint:rgba(17,17,17,.09);
   --masthead-bg:#FDBB30;--masthead-fg:#111111;--masthead-rule:#111111;
   --err-bg:#FDECEC;--err:#B3141C;--ok-bg:#E4F2E5;--warn-bg:#FFF3CF;
   --c-committee:#1F4E79;--c-thinktank:#2E7D32;--c-media:#B8480F;--c-polling:#7B3FA0;
-  --commons:#006E46;--lords:#B50938;--house-fg:#FFFFFF;
+  --commons:#006E46;--lords:#B50938;--house-fg:#FFFFFF;--commons-light:#3DB483;--lords-light:#E5566F;
   --on-fill:#FFFFFF;--orange:#B8480F;--orange-rule:#F28C1B;--orange-tint:#FDEBDD;--green-tint:#E4F2E5;--red-tint:#FBE3E3;--mark:#FDBB30;--sky:#E9EEF7;--sky-line:#C5D0E6;
   --head:'Libre Franklin','Franklin Gothic Heavy','Arial Black',Arial,sans-serif;--body:Arial,'Helvetica Neue',Helvetica,sans-serif;
   --radius:12px;--measure:72ch;
 }
+/* LIBBY's two Houses, in light mode: yellow ("orange") stays the main colour; where the leaflet used black (bars, buttons, outlines, the footer) the
+ * House's light colour is used instead: light green for Honourable LIBBY (the Commons), light red for Noble LIBBY (the Lords). Text on those is
+ * black. Dark mode is untouched: these come BEFORE the dark palettes, which override them. */
+:root[data-house="commons"]{--bar-bg:#3DB483;--bar-fg:#111111;--bar-text:#111111;--btn-bg:#3DB483;--btn-fg:#111111;--btn-hover-bg:#5CC79B;--btn-hover-fg:#111111;--outline:#006E46;--masthead-rule:#3DB483;--rule-strong:#5E9C82;}
+:root[data-house="lords"]{--bar-bg:#E5566F;--bar-fg:#111111;--bar-text:#111111;--btn-bg:#E5566F;--btn-fg:#111111;--btn-hover-bg:#EE7B8E;--btn-hover-fg:#111111;--outline:#B50938;--masthead-rule:#E5566F;--rule-strong:#B26B77;}
 /* the dark palette, written once and applied two ways (device preference, or an explicit choice) */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   color-scheme:dark;
   --paper:#141414;--card:#1D1D1B;--ink:#F2EFE6;--muted:#B5B1A4;--rule:#35332D;--rule-strong:#5A574D;--chip:#262520;--hi:#26230F;--yellow-pale:#2D2812;
-  --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;
+  --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;--bar-text:#FFFFFF;
   --btn-bg:#FDBB30;--btn-fg:#111111;--btn-hover-bg:#FFD36B;--btn-hover-fg:#111111;
   --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.30);--shadow-hover:0 2px 4px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.4);
   --masthead-line:rgba(0,0,0,.35);--hover-tint:rgba(17,17,17,.09);
@@ -43,7 +48,7 @@
 :root[data-theme="dark"]{
   color-scheme:dark;
   --paper:#141414;--card:#1D1D1B;--ink:#F2EFE6;--muted:#B5B1A4;--rule:#35332D;--rule-strong:#5A574D;--chip:#262520;--hi:#26230F;--yellow-pale:#2D2812;
-  --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;
+  --outline:#F2EFE6;--pop-colour:#FDBB30;--bar-bg:#000000;--bar-fg:#FDBB30;--bar-text:#FFFFFF;
   --btn-bg:#FDBB30;--btn-fg:#111111;--btn-hover-bg:#FFD36B;--btn-hover-fg:#111111;
   --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.30);--shadow-hover:0 2px 4px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.4);
   --masthead-line:rgba(0,0,0,.35);--hover-tint:rgba(17,17,17,.09);
