@@ -104,9 +104,10 @@ ok(r.status === 403, 'switching a code off closes the door for everyone using it
 
 // ---- the beta test and the Developer site
 const beta = async (path, method = 'GET') => (await middleware(ctx(path, { token: 'tok-beta', method }))).status;
-ok(await beta('/api/libby/comms') === 200 && await beta('/api/libby/policy/search') === 200 && await beta('/api/libby/portfolios') === 200 && await beta('/api/libby/data/votes') === 200 && await beta('/api/libby/status') === 200,
-  'a Beta tester can read what is behind Comms, Policy and Data');
-ok(await beta('/api/libby/comms', 'POST') === 403 && await beta('/api/libby/room-bookings', 'POST') === 403, 'but not change anything');
+ok(await beta('/api/libby/data/votes') === 200 && await beta('/api/libby/data/lords') === 200 && await beta('/api/libby/status') === 200,
+  'a Beta tester can read what is behind the Data page');
+ok(await beta('/api/libby/comms') === 403 && await beta('/api/libby/policy/search') === 403 && await beta('/api/libby/portfolios') === 403, 'but no longer Comms or Policy');
+ok(await beta('/api/libby/data/votes', 'POST') === 403 && await beta('/api/libby/room-bookings', 'POST') === 403, 'but not change anything');
 ok(await beta('/api/libby/day/today') === 403 && await beta('/api/libby/bills') === 403 && await beta('/api/libby/future') === 403 && await beta('/api/libby/bulletin') === 403
   && await beta('/api/libby/room-bookings') === 403 && await beta('/api/libby/people-roles') === 403 && await beta('/api/libby/ld-peers') === 403, 'and nothing else, even though a Peer could read it');
 r = await me(ctx('/api/libby/me', { token: 'tok-beta' }));

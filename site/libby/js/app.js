@@ -183,7 +183,7 @@ async function start() {
       document.getElementById('so').addEventListener('click', async () => { await LibbyAuth.signOut(); location.reload(); });
       return;
     }
-    setLevel(edition === 'beta' ? 'beta' : me.level);   // the beta shows only Comms, Policy and Data, whoever opens it
+    setLevel(edition === 'beta' ? 'beta' : me.level);   // the beta shows only the Data page, whoever opens it
     showWho(String((me.email ? me.email + ' (' + (me.name || me.level) + ')' : me.name || me.level)).replace(/[<>&]/g, ''));
   } catch (e) { /* if this fails the pages show only read-only options */ }
   buildMenu();

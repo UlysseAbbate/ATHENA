@@ -149,7 +149,7 @@ Access page. Server routes need these Cloudflare Pages secrets: `SUPABASE_URL`, 
 
 **Three editions, one site.** The edition a person sees is their LIBBY level, set on the Access page:
 - **Live:** Peer, Whip, Spokesperson, Leader's office, Staff, Admin, as before.
-- **Beta test:** the *Beta tester* level (can also be a shared code). They see only **Comms, Policy and Data**, read-only; the menu, the pages and the server all enforce it, so other addresses and routes are refused.
+- **Beta test:** the *Beta tester* level (can also be a shared code). They see only the **Data** page, read-only (more pages are added to the beta by marking them `beta: true`); the menu, the pages and the server all enforce it, so other addresses and routes are refused.
 - **Developer:** the *Developer* level, above Admin, which only the admin can give (you always have it). It adds the **Developer** page (a register of every page and who can open it) and any page marked `level: DEVELOPER` in `site/libby/js/pages.js`, for work in progress. Mark a page `beta: true` to show it to beta testers.
 
 ## Checks

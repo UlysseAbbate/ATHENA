@@ -223,15 +223,19 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.fill('.gate input[name="code"]', "wrong-code-123"); await page.click(".gate form button"); await page.waitForTimeout(500);
           check("gate: a wrong code says so", /not right/.test(await page.$eval(".gate", b => b.innerText)));
           await page.fill('.gate input[name="code"]', "test-beta-code-1"); await page.click(".gate form button"); await page.waitForTimeout(1500);
-          check("gate: the beta code opens the beta (Comms, Policy, Data)", (await page.$$eval(".topnav a", as => as.map(a => a.textContent))).join("|") === "Comms|Policy|Data");
+          check("gate: the beta code opens the beta (Data only)", (await page.$$eval(".topnav a", as => as.map(a => a.textContent))).join("|") === "Data");
           lvl = "developer";
         }
-        if (who === "admin") {   // the three editions: Beta tester (Comms, Policy, Data only), Admin (live), Developer (plus the Developer page)
+        if (who === "admin") {   // the three editions: Beta tester (Data only), Admin (live), Developer (plus the Developer page)
           const menu = async () => page.$$eval(".topnav a", as => as.map(a => a.textContent));
           lvl = "beta"; await ed("beta"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
-          check("beta: the menu is Comms, Policy, Data", (await menu()).join("|") === "Comms|Policy|Data", (await menu()).join("|"));
+          check("beta: the menu is Data only", (await menu()).join("|") === "Data", (await menu()).join("|"));
           const bh = await page.$eval("#app", b => b.innerText);
-          check("beta: the home page offers just those three", /Comms/.test(bh) && /Policy/.test(bh) && /Data/.test(bh) && !/Legislation|Today/.test(bh), bh.slice(0, 160).replace(/\n/g, " "));
+          check("beta: the home page offers just Data", /Data/.test(bh) && !/Comms|Policy|Legislation|Today/.test(bh), bh.slice(0, 160).replace(/\n/g, " "));
+          await page.goto(BASE + "/libby/#/comms"); await page.waitForTimeout(400);
+          check("beta: Comms and Policy are not part of the beta now", /Not available/.test(await page.$eval("#app", b => b.innerText)));
+          await page.goto(BASE + "/libby/#/policy"); await page.waitForTimeout(400);
+          check("beta: ... nor Policy", /Not available/.test(await page.$eval("#app", b => b.innerText)));
           await page.goto(BASE + "/libby/#/legislation"); await page.waitForTimeout(500);
           check("beta: other pages say not available", /Not available/.test(await page.$eval("#app", b => b.innerText)));
           await page.goto(BASE + "/libby/#/developer"); await page.waitForTimeout(500);
