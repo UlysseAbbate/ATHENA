@@ -1,5 +1,5 @@
-// Buttons on amendments: Voting (orange), Content (green), Not Content (red). Content and Not Content are the two positions, so setting one
-// clears the other; Voting can go with either.
+// Buttons on amendments: Vote (orange), C = Content (green), NC = Not Content (red). Content and Not Content are the two positions, so setting
+// one clears the other and also puts Voting on the amendment.
 //   GET  /api/amendment-flags?bill=:billId&stage=:billStageId  -> { flags: { [amendmentId]: ['voting', 'content', ...] } }   (Whips and above)
 //   POST /api/amendment-flags  { billId, stageId, amendmentId, flag, on, author }                                          (needs the Whips' Office features)
 //     `on` true sets the flag, false clears it.
@@ -59,7 +59,13 @@ export async function onRequestPost({ request, env }) {
         method: 'DELETE', headers: writeHeaders(env, 'return=minimal'),
       });
     if (!res.ok) throw new Error(`Supabase amendment_flags: ${res.status} ${await res.text()}`);
-    if (body.on && OPPOSITE[body.flag]) {   // the other position is cleared
+    if (body.on && OPPOSITE[body.flag]) {   // a position (Content or Not Content) is also a Voting amendment...
+      const vote = await fetch(base, {
+        method: 'POST', headers: writeHeaders(env, 'resolution=merge-duplicates,return=minimal'),
+        body: JSON.stringify([{ bill_id: billId, stage_id: stageId, amendment_id: amendmentId, flag: 'voting', set_by: cleanLine(body.author, 80) || null, set_at: new Date().toISOString() }]),
+      });
+      if (!vote.ok) throw new Error(`Supabase amendment_flags: ${vote.status} ${await vote.text()}`);
+      // ...and the other position is cleared
       const clear = await fetch(`${base}?bill_id=eq.${billId}&stage_id=eq.${stageId}&amendment_id=eq.${amendmentId}&flag=eq.${OPPOSITE[body.flag]}`, { method: 'DELETE', headers: writeHeaders(env, 'return=minimal') });
       if (!clear.ok) throw new Error(`Supabase amendment_flags: ${clear.status} ${await clear.text()}`);
     }

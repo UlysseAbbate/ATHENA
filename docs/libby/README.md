@@ -104,11 +104,10 @@ Each Bill has three buttons: **Stages**, **Amendments** and **Stakeholders** (Wh
 - **Stages**: each stage lists its documents as a few dropdowns by kind (Notices of amendments, Marshalled lists, Written submissions and
   evidence, Briefings, Memoranda, Impact assessments, Letters...). The kinds and what goes in each are in `public/js/doc-groups.js`:
   change a pattern there to move a kind of document.
-- **Amendments**: one table of every amendment at the stage: Signed peers (one per line), Place in the Bill (C3, P2, L14), the Member's
-  explanatory statement (fetched from the Parliament API as rows come into view) and buttons. The buttons are *Comment* (black), *Voting*
-  (orange), *Content* (green) and *Not Content* (red); Content and Not Content cancel each other. Click a row, or Comment, to open the text
-  and comments. The highlights above the table (All, Lib Dem amendments, Lib Dem-signed, Voting, Content, Not Content) narrow the table.
-  Saved in `amendment_flags`.
+- **Amendments**: one table of every amendment at the stage: Signed peers (one per line), # (the amendment's number, a dash while there is none), Location (C3, P2, L14),
+  the Member's explanatory statement (fetched from the Parliament API as rows come into view) and small buttons on two lines: *Vote* (orange), *C* (Content, green) and
+  *NC* (Not Content, red); then *Comment* (black). C and NC cancel each other, and setting either also sets Vote. Click a row, or Comment, to open the text and
+  comments. The highlights above the table (All, Lib Dem amendments, Lib Dem-signed, Voting, Content, Not Content) narrow the table. Saved in `amendment_flags`.
 - **Stakeholders**: organisation, name, contact, their position, and a briefing typed in, uploaded (Word or PDF, up to 4 MB), or both.
   Saved in `bill_stakeholders` (the file in `bill_stakeholder_files`). Both need `supabase/migrations/003_stakeholders-and-flags.sql`.
 

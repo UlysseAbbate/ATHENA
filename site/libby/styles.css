@@ -481,7 +481,11 @@ button.room-free:hover, button.room-free:focus-visible { background: var(--sky);
 .am-table td { vertical-align: top; }
 .am-table .mes-cell { min-width: 18rem; max-width: 42rem; }
 .mes-text { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
-.am-table .am-actions { min-width: 15rem; }
+.am-table .am-actions { display: flex; flex-direction: column; align-items: flex-end; gap: .2rem; min-width: 0; }
+.am-table .am-line { display: flex; gap: .2rem; }
+.am-table .button-small { font-size: .74rem; padding: .08rem .38rem; line-height: 1.25; border-width: 1px; }
+.am-table .am-n { white-space: nowrap; font-weight: 800; text-align: center; width: 1%; }
+.am-table td:last-child, .am-table th:last-child { width: 1%; white-space: nowrap; }
 .am-table .am-more > td { background: var(--card); }
 .comment-btn { background: var(--ink); color: var(--card); border: 1px solid var(--ink); }   /* black in light mode, white in dark */
 .comment-btn:hover, .comment-btn:focus-visible { background: var(--ink); color: var(--card); opacity: .82; }
