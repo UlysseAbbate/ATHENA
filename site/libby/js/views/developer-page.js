@@ -13,13 +13,13 @@ export async function renderDeveloper(el) {
   }).join('');
   el.innerHTML = `${pageHeader('Developer', 'Only you can see this page. It lists every page, who can open it, and how to put new work in front of the beta testers.')}
     <section>
-      <h2>The three editions</h2>
+      <h2>The editions</h2>
       <div class="table-wrap"><table class="grid">
         <thead><tr><th scope="col">Edition</th><th scope="col">Who</th><th scope="col">What they see</th></tr></thead>
         <tbody>
-          <tr><th scope="row">Live</th><td>${ROLE_ORDER.filter((r) => r !== 'admin').map((r) => esc(LEVEL_NAMES[r])).join(', ')}</td><td>Every page up to their level.</td></tr>
-          <tr><th scope="row">Beta test</th><td>${esc(LEVEL_NAMES.beta)}</td><td>${BETA_MENU.map((m) => esc(m.label)).join(', ')} only, read-only. Nothing else opens, even by typing the address, and the server refuses everything else.</td></tr>
-          <tr><th scope="row">Developer</th><td>${esc(LEVEL_NAMES.developer)} (you)</td><td>Everything, plus the pages marked <i>Developer only</i> below.</td></tr>
+          <tr><th scope="row">Beta test</th><td>Everyone with LIBBY access, and the shared beta code. A person with a level (${ROLE_ORDER.filter((r) => r !== 'admin').map((r) => esc(LEVEL_NAMES[r])).join(', ')}) sees every page up to it.</td><td>Today, Business, Legislation and Lib Dems 150 for everyone; the Whips\u2019 page from Whip up; the Advisers\u2019 page from Staff up.</td></tr>
+          <tr><th scope="row">Beta tester</th><td>${esc(LEVEL_NAMES.beta)} (the shared beta code)</td><td>${BETA_MENU.map((m) => esc(m.label)).join(', ')} only, read-only. Nothing else opens, even by typing the address, and the server refuses everything else.</td></tr>
+          <tr><th scope="row">Developer</th><td>${esc(LEVEL_NAMES.developer)} (you): the <i>Developer version</i> button in the foot</td><td>Everything, plus the pages marked <i>Developer only</i> below.</td></tr>
         </tbody></table></div>
     </section>
     <section>

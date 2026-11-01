@@ -1,4 +1,4 @@
-// Honourable LIBBY: one day of House of Commons business (#/c/today and #/c/day/YYYY-MM-DD), from the What's On calendar:
+// Honourable LIBBY: one day of House of Commons business (#/today and #/c/day/YYYY-MM-DD), from the What's On calendar:
 // the Chamber, Westminster Hall, the general committees and the select committees, with the times, the members (Lib Dem MPs marked)
 // and a link to each Bill's page.
 import { api } from '../api.js';
@@ -23,10 +23,10 @@ export function commonsItemHtml(i) {
 export async function renderCommonsDay(el, { date }) {
   const isToday = date === todayIso();
   el.innerHTML = `
-    ${pageHeader(isToday ? "Today's business" : fmtDate(date), isToday ? `House of Commons · ${esc(fmtDate(date))}` : 'House of Commons', isToday ? [] : [['#/c/future', 'Coming up']])}
+    ${pageHeader(isToday ? "Today's business" : fmtDate(date), isToday ? `House of Commons · ${esc(fmtDate(date))}` : 'House of Commons', isToday ? [] : [['#/future', 'Coming up']])}
     <nav class="day-nav" aria-label="Other days">
       <a href="#/c/day/${addDays(date, -1)}">Previous day</a>
-      ${isToday ? '' : '<a href="#/c/today">Today</a>'}
+      ${isToday ? '' : '<a href="#/today">Today</a>'}
       <a href="#/c/day/${addDays(date, 1)}">Next day</a>
     </nav>
     <div id="business">${loading('Loading the day’s business')}</div>`;
@@ -35,7 +35,7 @@ export async function renderCommonsDay(el, { date }) {
   try { d = await api(`commons/day/${date}`); } catch (err) { box.innerHTML = errorBox(err); return; }
   if (!box.isConnected) return;
   if (!d.sections.length) {
-    box.innerHTML = '<p class="state">No House of Commons business is published for this day. It may be a non-sitting day, or the business has not been announced. See what is <a href="#/c/future">coming up</a>.</p>';
+    box.innerHTML = '<p class="state">No House of Commons business is published for this day. It may be a non-sitting day, or the business has not been announced. See what is <a href="#/future">coming up</a>.</p>';
     return;
   }
   box.innerHTML = `<p class="source small muted">Source: ${extLink(d.source.url, d.source.label)}</p>

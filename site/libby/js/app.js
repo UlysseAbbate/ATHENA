@@ -5,9 +5,10 @@
 
 import { ensureLDPeers, setForceRefresh } from './api.js';
 import { todayIso, errorBox } from './ui.js';
-import { setLevel, hasLevel, currentLevel, setHouse, currentHouse } from './session.js';
-import { PAGES, MENU, BETA_MENU, HOUSES, menuFor, tabsFor, placeOf, canOpenPage, inHouse, GROUPS } from './pages.js';
-import { chosenEdition, chooseEdition, renderGate, chosenHouse, chooseHouse, renderHouseGate } from './gate.js';
+import { setLevel, hasLevel, currentLevel, currentHouse } from './session.js';
+import { PAGES, MENU, HOUSES, menuFor, tabsFor, placeOf, canOpenPage, inHouse, GROUPS } from './pages.js';
+import { chosenEdition, chooseEdition, renderGate } from './gate.js';
+import { applyHouse, savedHouse, renderHouseSwitch } from './house-switch.js';
 
 const app = document.getElementById('app');
 let renderToken = 0;
@@ -41,6 +42,18 @@ function renderSubnav(group, tab) {
     + '</div>';
 }
 
+/** The Commons / Lords buttons at the top of Today and Business (and the pages under them). */
+function drawHouseSwitch(show) {
+  let box = document.getElementById('houseswitch');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'houseswitch';
+    box.className = 'houseswitch';
+    app.insertAdjacentElement('beforebegin', box);
+  }
+  renderHouseSwitch(box, show, () => { buildMenu(); route(); });
+}
+
 async function route() {
   const raw = location.hash.replace(/^#/, '') || '/';
   const [path, qs = ''] = raw.split('?');
@@ -61,6 +74,8 @@ async function route() {
     if (a.hasAttribute('aria-current')) a.setAttribute('aria-current', 'page');
   });
 
+  drawHouseSwitch(!!(page && page.switch));
+
   if (!page) {
     renderSubnav('', '');
     app.innerHTML = '<header class="page-head"><h1>Page not found</h1><p class="lede">That address does not match a section. <a href="#/">Go to the home page</a>.</p></header>';
@@ -70,7 +85,7 @@ async function route() {
     renderSubnav('', '');
     const other = currentHouse() === 'commons' ? 'lords' : 'commons';
     app.innerHTML = '<header class="page-head"><h1>' + HOUSES[other].name + '</h1><p class="lede">This page is in ' + HOUSES[other].name + ' (' + HOUSES[other].house + '). <button type="button" class="linkish" id="go-other">Switch to it</button> or <a href="#/">go to the home page</a>.</p></header>';
-    document.getElementById('go-other').addEventListener('click', () => { chooseHouse(other); location.reload(); });
+    document.getElementById('go-other').addEventListener('click', () => { applyHouse(other); buildMenu(); route(); });
     return;
   }
   if (!canOpenPage(page, currentLevel(), currentHouse())) {
@@ -83,7 +98,7 @@ async function route() {
   app.innerHTML = '';
   window.scrollTo(0, 0);
   try {
-    if (currentLevel() !== 'beta') await ensureLDPeers();   // (the list of Lib Dem peers is not part of the beta)
+    await ensureLDPeers();
     if (token !== renderToken) return;
     let mod;
     try {
@@ -100,25 +115,22 @@ async function route() {
   }
 }
 
-function showWho(name) {
+/** The foot of the page: who is signed in, the Developer version button (for people with developer access), Team & access (the administrator's alone) and Sign out.
+ *  The Theme button sits in the same foot (index.html). */
+function showWho(name, { developer, edition }) {
   const foot = document.querySelector('.foot');
   if (!foot) return;
-  foot.insertAdjacentHTML('beforeend', '<p class="small">Signed in as ' + name + '. <a href="../">Athena home</a> &middot; <button type="button" class="linkish" id="switch-house">Commons / Lords</button> &middot; <button type="button" class="linkish" id="switch">Beta / Developer</button> &middot; <button type="button" class="linkish" id="logout">Sign out</button></p>');
-  document.getElementById('switch').addEventListener('click', () => { chooseEdition(''); location.reload(); });
-  document.getElementById('switch-house').addEventListener('click', () => { chooseHouse(''); chooseEdition(''); location.hash = '#/'; location.reload(); });
+  foot.insertAdjacentHTML('beforeend', '<p class="small">Signed in as ' + name + '. <a href="../">Athena home</a>'
+    + (developer ? ' &middot; <button type="button" class="linkish" id="switch-edition">' + (edition === 'developer' ? 'Back to the Beta test' : 'Developer version') + '</button>'
+      + ' &middot; <button type="button" class="linkish" id="foot-team">Team &amp; access</button>' : '')
+    + ' &middot; <button type="button" class="linkish" id="logout">Sign out</button></p>');
+  document.getElementById('switch-edition')?.addEventListener('click', () => { chooseEdition(edition === 'developer' ? '' : 'developer'); location.hash = '#/'; location.reload(); });
+  document.getElementById('foot-team')?.addEventListener('click', () => { location.hash = '#/team'; });
   document.getElementById('logout').addEventListener('click', async () => {
+    chooseEdition('');
     try { await LibbyAuth.signOut(); } catch (e) { /* reload anyway */ }
     location.reload();
   });
-}
-
-/** The House's name in the masthead and its colour on the page (Honourable LIBBY green, Noble LIBBY red). */
-function paintHouse(house) {
-  document.documentElement.dataset.house = house;
-  const name = document.querySelector('.brand-name');
-  if (name) name.textContent = HOUSES[house].name;
-  const members = document.querySelector('[data-members]');
-  if (members) members.textContent = HOUSES[house].members;
 }
 
 /** Sign-in and no-access screens (the menu is hidden: there is nothing to open yet). */
@@ -182,33 +194,24 @@ async function refreshNow() {
 async function start() {
   const session = await LibbyAuth.ready();
   if (!session) { app.innerHTML = ''; AuthUI.render(LibbyAuth.sb, app, { title: 'Sign in to LIBBY' }); return; }
+  applyHouse(savedHouse());
   try {
     const res = await fetch('/api/libby/me', { headers: { accept: 'application/json' } });
     if (res.status === 401) { await LibbyAuth.signOut(); location.reload(); return; }
     const me = await res.json();
-    // Everyone signed in comes through the gate first: which House (Honourable LIBBY for the Commons, Noble LIBBY for the Lords), then
-    // Beta test (with the beta code) or Developer (the administrator only).
-    const signOut = async () => { chooseEdition(''); chooseHouse(''); await LibbyAuth.signOut(); location.reload(); };
-    const house = chosenHouse();
-    if (!house) { plainScreen(''); renderHouseGate(app, { me, onEnter: () => location.reload(), signOut }); return; }
-    setHouse(house);
-    paintHouse(house);
-    const betaOpen = BETA_MENU.some((x) => inHouse(x, house));   // a House with no beta pages yet cannot be opened as the beta
-    let edition = chosenEdition();
-    if ((edition === 'developer' && me.level !== 'developer') || (edition === 'beta' && (!me.level || !betaOpen))) edition = '';
-    if (!edition) {
-      plainScreen('');
-      renderGate(app, { me: { ...me, level: res.ok ? me.level : '' }, token: session.access_token, onEnter: () => location.reload(), signOut,
-        houseName: HOUSES[house].name, betaOpen, onBack: () => { chooseHouse(''); chooseEdition(''); location.reload(); } });
-      return;
-    }
+    const signOut = async () => { chooseEdition(''); await LibbyAuth.signOut(); location.reload(); };
+    // Everyone goes straight to the Beta test. Someone with no LIBBY access yet is asked for the beta access code. A person with developer access
+    // gets a button in the foot to open the developer version.
     if (res.status === 403) {
-      plainScreen('<header class="page-head"><h1>No access yet</h1><p class="lede">You are signed in' + (me.email ? ' as ' + String(me.email).replace(/[<>&]/g, '') : '') + ', but have not been given access to LIBBY. Ask the person who looks after Athena.</p><p><a class="button" href="../">Back to Athena</a> <button type="button" class="button button-quiet" id="so">Sign out</button></p></header>');
-      document.getElementById('so').addEventListener('click', async () => { await LibbyAuth.signOut(); location.reload(); });
+      plainScreen('');
+      renderGate(app, { me, token: session.access_token, onEnter: () => { location.hash = '#/'; location.reload(); }, signOut });
       return;
     }
-    setLevel(edition === 'beta' ? 'beta' : me.level);   // the beta shows only the Data page, whoever opens it
-    showWho(String((me.email ? me.email + ' (' + (me.name || me.level) + ')' : me.name || me.level)).replace(/[<>&]/g, ''));
+    const developer = me.level === 'developer';
+    const edition = developer && chosenEdition() === 'developer' ? 'developer' : 'beta';
+    // The Beta test shows a developer everything except the developer-only pages (the Developer page and work in progress).
+    setLevel(developer ? (edition === 'developer' ? 'developer' : 'admin') : me.level);
+    showWho(String((me.email ? me.email + ' (' + (me.name || me.level) + ')' : me.name || me.level)).replace(/[<>&]/g, ''), { developer, edition });
   } catch (e) { /* if this fails the pages show only read-only options */ }
   buildMenu();
   window.addEventListener('hashchange', route);

@@ -72,14 +72,15 @@ const TABS = [
   ["people", "Volunteers & stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
   ["policies", "Policies", () => can("policies", "read"), () => crud(POLICIES)],
   ["media", "Media", () => can("coverage", "read") || can("social", "read"), renderMedia],
-  ["team", "Team & access", () => S.admin, renderTeam]   // the administrator's alone, as on LUCIEN and LIBBY
+  ["team", "Team & access", () => S.admin, renderTeam, true]   // the administrator's alone: its button is in the footer, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
 const ALIAS = { visits: "plan", social: "media", coverage: "media", volunteers: "people", stakeholders: "people" };
 function buildTabs() {
   const vis = TABS.filter(t => t[3] && t[2]());
   const nav = $("#tabs"); nav.hidden = false;
-  nav.innerHTML = vis.map(t => `<button data-t="${t[0]}">${esc(t[1])}</button>`).join("");
+  if (S.admin) Shell.footLink("team", "Team & access", () => go("team"));
+  nav.innerHTML = vis.filter(t => !t[4]).map(t => `<button data-t="${t[0]}">${esc(t[1])}</button>`).join("");
   nav.onclick = e => { const b = e.target.closest("button"); if (b) go(b.dataset.t); };
   const hash = ALIAS[location.hash.slice(1)] || location.hash.slice(1);
   go(vis.some(t => t[0] === hash) ? hash : S.tab && vis.some(t => t[0] === S.tab) ? S.tab : vis[0]?.[0]);

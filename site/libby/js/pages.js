@@ -52,32 +52,36 @@ export const canOpenPage = (page, level, house = 'lords') => inHouse(page, house
 
 /* ------------------------------------------------------------------ the menu */
 
-// The top menu, in order. `level` is the lowest level that sees the item. `title` and `text` are used for the home page card.
+// The top menu, in order. `level` is the lowest level that sees the item; `beta: true` shows it to beta testers too. `title` and `text` are used for the home page card.
+// Today and Business have buttons at the top to switch between Honourable LIBBY (the Commons, green) and Noble LIBBY (the Lords, red).
 export const MENU = [
-  { id: 'today', label: 'Today', href: '#/today', level: 'peers', title: "Today's business", text: 'Live proceedings, the order of business, Oral Questions with suggested supplementaries.' },
-  { id: 'legislation', label: 'Legislation', href: '#/legislation', level: 'peers', title: 'Legislation', text: 'Every live Bill in the Lords: stage dates, the documents for each stage and amendments.' },
-  { id: 'business', label: 'Business', href: '#/business', level: 'peers', title: 'Business', text: 'Future business, past business (votes, questions, committees, Hansard) and Comms.' },
-  { id: 'group', label: "LD Peers' Group", href: '#/peers-group', level: 'peers', title: "LD Peers' Group", text: 'Liberal Democrat policy, the Wallace Room, voting and Lords data, and the tools for the Whips and advisers.' },
-  // Honourable LIBBY (the Commons)
-  { id: 'c-today', label: 'Today', href: '#/c/today', level: 'peers', house: 'commons', title: "Today's business", text: 'The Chamber, Westminster Hall and the committees today, with Lib Dem MPs marked.' },
-  { id: 'c-legislation', label: 'Legislation', href: '#/c/legislation', level: 'peers', house: 'commons', title: 'Legislation', text: 'Every live Bill in the Commons: stage dates, documents and the amendments at Committee and Report.' },
-  { id: 'cbusiness', label: 'Business', href: '#/c/business', level: 'peers', house: 'commons', title: 'Business', text: 'Coming business, and past business: votes, written questions and statements, committees and Hansard.' },
-  { id: 'c-policy', label: 'Policy', href: '#/c/policy', level: 'peers', house: 'commons', title: 'Policy', text: 'Search conference motions and policy papers, or browse them by portfolio.' },
+  { id: 'today', label: 'Today', href: '#/today', level: 'peers', beta: true, house: 'both', title: "Today's business", text: 'What is happening in the Commons or the Lords today: the order of business, Oral Questions and the committees.' },
+  { id: 'business', label: 'Business', href: '#/business', level: 'peers', beta: true, house: 'both', title: 'Business', text: 'The coming weeks by calendar or by portfolio, past business (votes, questions, committees, Hansard) and Comms.' },
+  { id: 'legislation', label: 'Legislation', href: '#/legislation', level: 'peers', beta: true, house: 'both', title: 'Legislation', text: 'Every live Bill in Parliament: where it is, the next stage, the documents for each stage and the amendments.' },
+  { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, the Wallace Room, Room 391, work experience support and the guides.' },
+  { id: 'whips-office', label: 'Whips', href: '#/whips-office', level: 'whips', house: 'both', title: "Whips' page", text: 'Availability for whipping, and the voting analysis and Lords Library data.' },
+  { id: 'advisers-office', label: 'Advisers', href: '#/advisers-office', level: 'staff', house: 'both', title: "Advisers' page", text: 'Bill advisers, groupings and grids, the bulletin and the duty rota, and the roles.' },
   { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, house: 'both', title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
-  { id: 'team', label: 'Team & access', href: '#/team', level: DEVELOPER, house: 'both', title: 'Team & access', text: 'Who has LIBBY, at what level and until when, the access codes, and recent changes. Visible only to you.' },
 ];
 
-// What a beta tester sees in the menu and on the home page, in place of MENU.
-export const BETA_MENU = [
-  { id: 'data', label: 'Data', href: '#/data', title: 'Data', text: 'Voting analysis and the House of Lords Library data dashboards.' },
-];
+// What a beta tester sees in the menu: the items marked `beta: true`.
+export const BETA_MENU = MENU.filter((m) => m.beta);
 
 // Groups of subpages. Each group is shown as a hub page (cards) and as a row of buttons above each of its pages.
 export const GROUPS = {
-  business: { title: 'Business', intro: 'What the House will do, what it has done, and what the team has been saying.' },
-  group: { title: 'LD Peers\u2019 Group', intro: 'Policy, and the tools the Whips and advisers use.' },
-  cbusiness: { title: 'Business', intro: 'What the House of Commons will do, and what it has done.' },
+  business: { title: 'Business', intro: 'What Parliament will do, what it has done, and what the team has been saying.' },
+  lds150: { title: 'Lib Dems 150', intro: 'Policy, the rooms, work experience support and the guides.' },
+  'whips-office': { title: 'Whips\u2019 page', intro: 'For Whips and above: availability for whipping, and the data.' },
+  'advisers-office': { title: 'Advisers\u2019 page', intro: 'For Staff and Admin: the advisers\u2019 tools, and who has which role.' },
 };
+
+// Buttons on the Lib Dems 150 page that open a guide. A link that is not known yet is left empty: the button then says the link is to come.
+export const LD150_LINKS = [
+  ['Organogram', 'https://libdemsparli.retool.com/embedded/public/c9c6ad33-7973-479f-b03b-5a5f4f4b53c2/LibDems', 'Who is who across the Liberal Democrats in Parliament.'],
+  ['Rolling Top Lines', '', 'The current top lines, kept up to date.'],
+  ['Parliamentary Best Practice', '', 'How to get the most out of Parliament.'],
+  ['MPs Staff New Starter Guide', '', 'A guide for new members of MPs\u2019 staff.'],
+];
 
 /* ------------------------------------------------------------------ the pages */
 
@@ -92,77 +96,80 @@ export const GROUPS = {
 //   tabLabel, href, card   give a page its own button and hub card (the main page of a tab)
 //   api       the /api routes behind this page and who may use them: [ ['route-name', { GET: level, '*': level }] ]
 //             'GET' is reading and '*' is anything else (saving, uploading). A route not listed here may be read by Peers and changed by no one but Admin.
-export const PAGES = [
-  { id: 'home', match: /^\/?$/, view: 'home-page.js', fn: 'renderHome', nav: '', beta: true, house: 'both' },
+// Reads a beta tester may make (read-only) for the pages marked `beta: true`, beyond the routes listed under `api`.
+const BETA_READS = ['ld-peers', 'live', 'bulletin', 'day/.*', 'bills', 'bills/.*', 'bill-extras', 'bill-next', 'future', 'portfolios', 'portfolios/.*', 'commons/.*', 'past/.*', 'item-links', 'event-speakers',
+  'policy/.*', 'room-bookings', 'work-experience', 'comms', 'todays-list'];
 
-  { id: 'today', match: /^\/today$/, view: 'day-page.js', fn: 'renderDay', params: (m, c) => ({ date: c.today }), nav: 'today',
+export const PAGES = [
+  { id: 'home', match: /^\/?$/, view: 'home-page.js', fn: 'renderHome', nav: '', beta: true, house: 'both', betaApi: BETA_READS },
+
+  // Today: the Commons or the Lords, by the buttons at the top (the day pages are the same two views for any date)
+  { id: 'today', match: /^\/today$/, view: 'today-page.js', fn: 'renderToday', params: (m, c) => ({ date: c.today }), nav: 'today', beta: true, house: 'both', switch: true,
     api: [['oq-suggest', { '*': WHIPS_FEATURES }], ['todays-list', { '*': WHIPS_FEATURES }]] },
   { id: 'day', match: /^\/day\/(\d{4}-\d{2}-\d{2})$/, view: 'day-page.js', fn: 'renderDay', params: (m) => ({ date: m[1] }),
-    nav: (m, c) => (m[1] === c.today ? 'today' : ''), group: 'business', tab: 'future' },
+    nav: (m, c) => (m[1] === c.today ? 'today' : ''), group: 'business', tab: 'future', beta: true, house: 'lords', switch: true },
+  { id: 'c-day', match: /^\/c\/day\/(\d{4}-\d{2}-\d{2})$/, view: 'commons-day-page.js', fn: 'renderCommonsDay', params: (m) => ({ date: m[1] }),
+    nav: (m, c) => (m[1] === c.today ? 'today' : ''), group: 'business', tab: 'future', beta: true, house: 'commons', switch: true },
 
-  { id: 'legislation', match: /^\/legislation$/, view: 'legislation-page.js', fn: 'renderLegislation', nav: 'legislation' },
-  { id: 'bill', match: /^\/bill\/(\d+)$/, view: 'bill-page.js', fn: 'renderBill', params: (m) => ({ id: m[1] }), nav: 'legislation',
+  // Legislation: every live Bill, in either House
+  { id: 'legislation', match: /^\/legislation$/, view: 'legislation-page.js', fn: 'renderLegislation', nav: 'legislation', beta: true, house: 'both' },
+  { id: 'bill', match: /^\/bill\/(\d+)$/, view: 'bill-page.js', fn: 'renderBill', params: (m) => ({ id: m[1] }), nav: 'legislation', beta: true, house: 'both',
     api: [['comments|grid-text|draft-amendment', { '*': WHIPS_FEATURES }],
       // Stakeholder notes and amendment flags are internal: Whips and above may read them, WHIPS_FEATURES may change them.
       ['bill-stakeholders|amendment-flags', { GET: 'whips', '*': WHIPS_FEATURES }]] },
+  { id: 'c-bill', match: /^\/c\/bill\/(\d+)$/, view: 'bill-page.js', fn: 'renderBill', params: (m) => ({ id: m[1], house: 'commons' }), nav: 'legislation', beta: true, house: 'both' },
 
-  // Business
-  { id: 'future', match: /^\/future$/, view: 'future-page.js', fn: 'renderFuture', group: 'business', tab: 'future', tabLabel: 'Future', href: '#/future',
-    card: 'Forthcoming Business by calendar or by portfolio, with secondary legislation and committee reports.' },
-  { id: 'portfolio', match: /^\/portfolio\/([A-Za-z]+)$/, view: 'portfolio-page.js', fn: 'renderPortfolio', params: (m) => ({ code: m[1].toUpperCase() }), group: 'business', tab: 'future' },
+  // Business: the coming weeks by calendar or by portfolio, past business and Comms
+  { id: 'business', match: /^\/business$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'business' }), nav: 'business', beta: true, house: 'both', switch: true },
+  { id: 'future', match: /^\/future$/, view: 'future-page.js', fn: 'renderFuture', group: 'business', tab: 'future', tabLabel: 'Future', href: '#/future', beta: true, house: 'both', switch: true,
+    card: 'The coming weeks by calendar or by portfolio: Oral Questions, legislation, secondary legislation and committee reports.' },
+  { id: 'portfolio', match: /^\/portfolio\/([A-Za-z]+)$/, view: 'portfolio-page.js', fn: 'renderPortfolio', params: (m) => ({ code: m[1].toUpperCase() }), group: 'business', tab: 'future', beta: true, house: 'both', switch: true },
   { id: 'past', match: /^\/past(?:\/([a-z]+)(?:\/([a-z]+))?)?$/, view: 'past-page.js', fn: 'renderPast', params: (m) => ({ kind: m[1] || '', sub: m[2] || '' }),
-    group: 'business', tab: 'past', tabLabel: 'Past', href: '#/past', card: 'Lords divisions, written questions and statements, committee work and Hansard.' },
-  { id: 'comms', match: /^\/comms$/, view: 'comms-page.js', fn: 'renderComms', group: 'business', tab: 'comms', tabLabel: 'Comms', href: '#/comms',
+    group: 'business', tab: 'past', tabLabel: 'Past', href: '#/past', beta: true, house: 'both', switch: true, card: 'Divisions, written questions and statements, committee work and Hansard.' },
+  { id: 'comms', match: /^\/comms$/, view: 'comms-page.js', fn: 'renderComms', group: 'business', tab: 'comms', tabLabel: 'Comms', href: '#/comms', beta: true, house: 'lords', switch: true,
     card: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.',
     api: [['comms', { GET: 'peers', '*': WHIPS_FEATURES }]] },
 
-  // LD Peers' Group
-  { id: 'policy', match: /^\/policy$/, view: 'policy-page.js', fn: 'renderPolicy', group: 'group', tab: 'policy', tabLabel: 'Policy', href: '#/policy',
+  // Lib Dems 150: the parts of the old LD Peers' Group page that are not for the Whips or the advisers
+  { id: 'lds150', match: /^\/lib-dems-150$/, view: 'lds150-page.js', fn: 'renderLds150', nav: 'lds150', beta: true, house: 'both' },
+  { id: 'policy', match: /^\/policy$/, view: 'policy-page.js', fn: 'renderPolicy', group: 'lds150', tab: 'policy', tabLabel: 'Policy', href: '#/policy', beta: true, house: 'both',
     card: 'Search conference motions and policy papers, or browse them by portfolio.' },
-  { id: 'wallace-room', match: /^\/wallace-room$/, view: 'wallace-room-page.js', fn: 'renderWallaceRoom', group: 'group', tab: 'wallace', tabLabel: 'Wallace Room', href: '#/wallace-room',
+  { id: 'wallace-room', match: /^\/wallace-room$/, view: 'wallace-room-page.js', fn: 'renderWallaceRoom', params: () => ({ room: 'wallace' }), group: 'lds150', tab: 'wallace', tabLabel: 'Wallace Room', href: '#/wallace-room', beta: true, house: 'both',
     card: 'Book the Wallace Room: see who has it and when, by week or month, and book it once or on a repeat.',
     api: [['room-bookings', { GET: 'peers', '*': 'peers' }]] },
+  { id: 'room-391', match: /^\/room-391$/, view: 'wallace-room-page.js', fn: 'renderWallaceRoom', params: () => ({ room: '391' }), group: 'lds150', tab: 'room391', tabLabel: 'Room 391', href: '#/room-391', beta: true, house: 'both',
+    card: 'Book Room 391, in the same way as the Wallace Room.' },
+  { id: 'work-experience', match: /^\/work-experience$/, view: 'work-experience-page.js', fn: 'renderWorkExperience', group: 'lds150', tab: 'work', tabLabel: 'Work Experience Support', href: '#/work-experience', beta: true, house: 'both',
+    card: 'Ask for a Peer to host work experience students at a date and time, and see who can.',
+    api: [['work-experience', { GET: 'peers', '*': 'peers' }]] },
+
+  // The Whips' page (Whips and above): availability for whipping, and the data
+  { id: 'whips-office', match: /^\/whips-office$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'whips-office' }), level: 'whips', nav: 'whips-office', house: 'both' },
   { id: 'whips', match: /^\/whips(?:\/availability)?$/, view: 'whips-page.js', fn: 'renderWhips', level: 'whips',
-    group: 'group', tab: 'whips', tabLabel: 'Whips', href: '#/whips', card: 'Mark the days you would prefer to be duty whip, have no preference, or are not free.',
+    group: 'whips-office', tab: 'availability', tabLabel: 'Availability', href: '#/whips', house: 'both', card: 'Mark the days you would prefer to be duty whip, have no preference, or are not free.',
     api: [['whip-availability', { GET: 'whips', '*': 'whips' }], ['people-roles', { GET: 'whips', '*': BACKCHANNEL }]] },
-  // Duty Whips: Staff choose the rota (on the Advisers page; the rota itself shows on every day's page)
-  { id: 'duty-whips', match: /^\/duty-whips$/, view: 'duty-page.js', fn: 'renderDuty', level: 'staff', group: 'group', tab: 'advisers',
-    api: [['duty-whips', { GET: 'whips', '*': 'staff' }]] },
-  // Who is a Whip, Spokesperson and so on. Back-channel: Admin only. Everyone from Whips up reads the list (the Whips pages use it).
-  { id: 'roles', match: /^\/roles$/, view: 'roles-page.js', fn: 'renderRoles', level: BACKCHANNEL, group: 'group', tab: 'roles', tabLabel: 'Roles', href: '#/roles',
-    card: 'Say who is a Whip, a Spokesperson and so on, and add staff who are not on the Members list.' },
   { id: 'data', match: /^\/data(?:\/(votes|lords))?$/, view: 'data-page.js', fn: 'renderData', params: (m) => ({ sub: m[1] || '' }), level: 'whips',
-    group: 'group', tab: 'data', tabLabel: 'Data', href: '#/data', card: 'Voting analysis and the House of Lords Library data dashboards.', beta: true,
+    group: 'whips-office', tab: 'data', tabLabel: 'Data', href: '#/data', house: 'both', card: 'Voting analysis and the House of Lords Library data dashboards.',
     api: [['data/.*', { '*': 'whips' }]] },
-  { id: 'advisers', match: /^\/advisers$/, view: 'advisers-page.js', fn: 'renderAdvisers', level: 'staff', group: 'group', tab: 'advisers', tabLabel: 'Advisers', href: '#/advisers',
+
+  // The Advisers' page (Staff and above): the advisers' tools, and the roles
+  { id: 'advisers-office', match: /^\/advisers-office$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'advisers-office' }), level: 'staff', nav: 'advisers-office', house: 'both' },
+  { id: 'advisers', match: /^\/advisers$/, view: 'advisers-page.js', fn: 'renderAdvisers', level: 'staff', group: 'advisers-office', tab: 'advisers', tabLabel: 'Advisers', href: '#/advisers', house: 'both',
     card: 'Every page the advisers use: Bill advisers, groupings and grids, the bulletin, the duty rota, availability and the Wallace Room.' },
-  { id: 'adviser-editor', match: /^\/adviser-editor$/, view: 'adviser-editor-page.js', fn: 'renderAdviserEditor', level: 'staff', group: 'group', tab: 'advisers',
+  { id: 'roles', match: /^\/roles$/, view: 'roles-page.js', fn: 'renderRoles', level: BACKCHANNEL, group: 'advisers-office', tab: 'roles', tabLabel: 'Roles', href: '#/roles', house: 'both',
+    card: 'Say who is a Whip, a Spokesperson and so on, and add staff who are not on the Members list.' },
+  // Duty Whips: Staff choose the rota (on the Advisers page; the rota itself shows on every day's page)
+  { id: 'duty-whips', match: /^\/duty-whips$/, view: 'duty-page.js', fn: 'renderDuty', level: 'staff', group: 'advisers-office', tab: 'advisers', house: 'both',
+    api: [['duty-whips', { GET: 'whips', '*': 'staff' }]] },
+  { id: 'adviser-editor', match: /^\/adviser-editor$/, view: 'adviser-editor-page.js', fn: 'renderAdviserEditor', level: 'staff', group: 'advisers-office', tab: 'advisers', house: 'both',
     api: [['advisers', { '*': 'staff' }], ['groupings', { GET: WHIPS_FEATURES, '*': 'staff' }]] },
-  { id: 'bulletin-editor', match: /^\/bulletin-editor$/, view: 'bulletin-editor-page.js', fn: 'renderBulletinEditor', level: 'staff', group: 'group', tab: 'advisers',
+  { id: 'bulletin-editor', match: /^\/bulletin-editor$/, view: 'bulletin-editor-page.js', fn: 'renderBulletinEditor', level: 'staff', group: 'advisers-office', tab: 'advisers', house: 'both',
     api: [['bulletin', { GET: 'peers', '*': 'staff' }]] },
 
   // The Developer site: you only (the admin). Put work in progress here, with `level: DEVELOPER`, until it is ready to go live.
   { id: 'developer', match: /^\/developer$/, view: 'developer-page.js', fn: 'renderDeveloper', level: DEVELOPER, nav: 'developer', house: 'both' },
-  { id: 'team', match: /^\/team$/, view: 'team-page.js', fn: 'renderTeam', level: DEVELOPER, nav: 'team', house: 'both' },
-
-  // Honourable LIBBY: the House of Commons, from the Commons APIs (What's On, Bills, Commons Votes, written questions and statements,
-  // committees). The Lords Whips' Office pages (Comms, Whips, Wallace Room, Roles, Advisers) and the Lords voting analysis have no
-  // Commons counterpart and are not here.
-  { id: 'c-today', match: /^\/c\/today$/, view: 'commons-day-page.js', fn: 'renderCommonsDay', params: (m, c) => ({ date: c.today }), nav: 'c-today', house: 'commons' },
-  { id: 'c-day', match: /^\/c\/day\/(\d{4}-\d{2}-\d{2})$/, view: 'commons-day-page.js', fn: 'renderCommonsDay', params: (m) => ({ date: m[1] }),
-    nav: (m, c) => (m[1] === c.today ? 'c-today' : ''), group: 'cbusiness', tab: 'c-future', house: 'commons' },
-  { id: 'c-legislation', match: /^\/c\/legislation$/, view: 'legislation-page.js', fn: 'renderLegislation', params: () => ({ house: 'commons' }), nav: 'c-legislation', house: 'commons' },
-  { id: 'c-bill', match: /^\/c\/bill\/(\d+)$/, view: 'bill-page.js', fn: 'renderBill', params: (m) => ({ id: m[1], house: 'commons' }), nav: 'c-legislation', house: 'commons' },
-  { id: 'c-future', match: /^\/c\/future$/, view: 'commons-future-page.js', fn: 'renderCommonsFuture', group: 'cbusiness', tab: 'c-future', tabLabel: 'Coming up', href: '#/c/future',
-    card: 'The coming weeks in the Chamber and Westminster Hall, from the What\u2019s On calendar.', house: 'commons' },
-  { id: 'c-past', match: /^\/c\/past(?:\/([a-z]+)(?:\/([a-z]+))?)?$/, view: 'past-page.js', fn: 'renderPast', params: (m) => ({ kind: m[1] || '', sub: m[2] || '', house: 'commons' }),
-    group: 'cbusiness', tab: 'c-past', tabLabel: 'Past', href: '#/c/past', card: 'Commons divisions (with how the Lib Dem MPs voted), written questions and statements, committees and Hansard.', house: 'commons' },
-  { id: 'c-policy', match: /^\/c\/policy$/, view: 'policy-page.js', fn: 'renderPolicy', nav: 'c-policy', house: 'commons' },
-  { id: 'c-business', match: /^\/c\/business$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'cbusiness' }), nav: 'cbusiness', house: 'commons' },
-
-  // The two hub pages
-  { id: 'business', match: /^\/business$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'business' }), nav: 'business' },
-  { id: 'group', match: /^\/peers-group$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'group' }), nav: 'group' },
+  // Team & access: the administrator's alone (the button is in the footer). The page reads the database directly, which answers only the administrator.
+  { id: 'team', match: /^\/team$/, view: 'team-page.js', fn: 'renderTeam', level: BACKCHANNEL, nav: '', house: 'both' },
 ];
 
 // Routes that are not tied to one page.
@@ -199,7 +206,6 @@ export const tabsFor = (group, level, house = 'lords') => PAGES.filter((p) => p.
 
 /** For a page that matched an address: which menu item to highlight, and which group and button it sits under. */
 export function placeOf(page, m, ctx, level) {
-  if (level === BETA) return { menu: page.id, group: '', tab: '' };   // a beta tester's menu is the three pages themselves, with no groups
   let menu = typeof page.nav === 'function' ? page.nav(m, ctx) : page.nav;
   const inGroup = !!page.group && !menu; // a page can step out of its group, e.g. a day that is today
   if (!menu) menu = page.group || page.id;
@@ -218,7 +224,7 @@ export function requiredLevel(method, path) {
   return key === 'GET' ? 'peers' : 'admin';
 }
 
-/** What a beta tester may ask the server for: reading only, and only the routes behind the pages marked `beta: true` (plus /me, handled by the server). */
-const BETA_ROUTES = [...new Set([...PAGES.filter((p) => p.beta).flatMap((p) => [...(p.api || []).map(([route]) => route), ...(p.betaApi || [])]), 'status'])]
+/** What a beta tester may ask the server for: reading only, and only the routes a page marked `beta: true` lists under `betaApi` (plus /me, handled by the server). Nothing is allowed just because a Peer may read it. */
+const BETA_ROUTES = [...new Set([...PAGES.filter((p) => p.beta).flatMap((p) => p.betaApi || []), 'status'])]
   .map((route) => new RegExp(`^/api/libby/(?:${route})$`));
 export const betaMay = (method, path) => ['GET', 'HEAD'].includes(String(method || 'GET').toUpperCase()) && BETA_ROUTES.some((re) => re.test(path));

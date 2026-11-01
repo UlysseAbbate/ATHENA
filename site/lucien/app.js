@@ -270,7 +270,7 @@ function signIn() { AuthUI.render(sb, document.body, { title: "LUCIEN" }); }
   if (!Athena.may(acc, "ulysse")) return Athena.notFound();
   state.uid = acc.session.user.id;
   // Team & access: the administrator's alone, as on LOVELACE and LIBBY
-  if (acc.admin) $("tabs").insertAdjacentHTML("beforeend", '<button data-tab="team">Team &amp; access</button>');
+  if (acc.admin) Shell.footLink("team", "Team & access", () => { state.tab = "team"; document.querySelectorAll("#tabs button").forEach(x => x.classList.remove("on")); state.shown = PAGE; render(); window.scrollTo(0, 0); });
   const [feed, polls, health, read] = await Promise.all([load("feed"), load("polls"), load("health"), loadRead()]);
   state.items = (feed?.items || []).filter(i => i.title); state.polls = polls?.rows || []; state.health = health?.sources || []; state.read = read;
   state.items.forEach(i => (i.geo || []).forEach(g => { if (/^(Europe|United States|Russia|Middle East|China|Africa|Global)/.test(g)) GEO_META[g] = "International"; }));

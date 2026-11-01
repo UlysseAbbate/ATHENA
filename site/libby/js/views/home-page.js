@@ -22,7 +22,7 @@ export async function renderHome(el) {
         </a>`).join('')}
     </nav>`;
 
-  if (currentLevel() === 'beta' || currentHouse() !== 'lords') return;   // beta testers, and Honourable LIBBY, get just their sections: the live panels, bulletin and counts are the Lords'
+  if (currentHouse() !== 'lords') return;   // Honourable LIBBY gets just its sections: the live panels, bulletin and counts are the Lords'
 
   liveStrip(el.querySelector('#live'), { compact: true });
 

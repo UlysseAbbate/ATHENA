@@ -1,4 +1,4 @@
-// The Wallace Room (#/wallace-room): a booking calendar, by week or by month, in 30-minute slots.
+// The Wallace Room (#/wallace-room) and Room 391 (#/room-391): the same booking calendar for each room, by week or by month, in 30-minute slots.
 // Everyone signed in can see every booking and book the room under their own name; a booking can repeat.
 // The rules (opening hours, limits, how a repeat becomes dates) are in public/js/wallace-rules.js, shared with the server.
 import { api } from '../api.js';
@@ -37,7 +37,10 @@ async function post(body) {
 
 /* ------------------------------------------------------------------ the page */
 
-export async function renderWallaceRoom(el, _params, query) {
+const ROOMS = { wallace: { name: ROOM_NAME, path: 'wallace-room' }, '391': { name: 'Room 391', path: 'room-391' } };
+
+export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
+  const R = ROOMS[room] || ROOMS.wallace;
   const view = query.view === 'month' ? 'month' : 'week';
   const anchor = isIso(query.from) ? query.from : todayIso();
   const today = todayIso();
@@ -48,14 +51,14 @@ export async function renderWallaceRoom(el, _params, query) {
   const lastOfMonth = isoAddDays(addMonths(first, 1), -1);
   const to = view === 'month' ? isoAddDays(lastOfMonth, 6 - weekdayOf(lastOfMonth)) : isoAddDays(from, 6);
 
-  const link = (v, d) => `#/wallace-room?view=${v}&from=${d}`;
+  const link = (v, d) => `#/${R.path}?view=${v}&from=${d}`;
   const prev = view === 'month' ? addMonths(first, -1) : isoAddDays(from, -7);
   const next = view === 'month' ? addMonths(first, 1) : isoAddDays(from, 7);
   const period = view === 'month'
     ? fmtDate(first, { month: 'long', year: 'numeric' })
     : `${fmtDate(from, { day: 'numeric', month: 'short' })} to ${fmtDate(isoAddDays(from, 6), { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-  el.innerHTML = `${pageHeader(ROOM_NAME, 'See who has the room and when. Choose your name, then book a free slot: once, or on a repeat. Everyone can see every booking.')}
+  el.innerHTML = `${pageHeader(R.name, 'See who has the room and when. Choose your name, then book a free slot: once, or on a repeat. Everyone can see every booking.')}
     <div id="room-root">
       <div class="room-controls">
         <div class="toggle" role="group" aria-label="Show the calendar by">
@@ -64,7 +67,7 @@ export async function renderWallaceRoom(el, _params, query) {
         </div>
         <nav class="room-nav" aria-label="Move the calendar">
           <a class="button button-quiet" href="${link(view, prev)}">Earlier</a>
-          <a class="button button-quiet" href="#/wallace-room?view=${view}">Today</a>
+          <a class="button button-quiet" href="#/${R.path}?view=${view}">Today</a>
           <a class="button button-quiet" href="${link(view, next)}">Later</a>
           <strong class="room-period">${esc(period)}</strong>
         </nav>
@@ -88,7 +91,7 @@ export async function renderWallaceRoom(el, _params, query) {
 
   let data; let peers = [];
   try {
-    [data, peers] = await Promise.all([api(`room-bookings?from=${from}&to=${to}`), loadPeers().catch(() => [])]);
+    [data, peers] = await Promise.all([api(`room-bookings?room=${room}&from=${from}&to=${to}`), loadPeers().catch(() => [])]);
   } catch (err) { cal.innerHTML = errorBox(err); return; }
   if (!root.isConnected) return;
   let bookings = data.bookings || [];
@@ -102,7 +105,7 @@ export async function renderWallaceRoom(el, _params, query) {
   let openDetail = null; // the id of the booking whose details are showing
 
   const reload = async () => {
-    const d = await api(`room-bookings?from=${from}&to=${to}`);
+    const d = await api(`room-bookings?room=${room}&from=${from}&to=${to}`);
     bookings = d.bookings || [];
     series = d.series || {};
   };
@@ -178,7 +181,7 @@ export async function renderWallaceRoom(el, _params, query) {
     const ends = endTimesAfter(start);
     const end = pre.end && ends.includes(pre.end) ? pre.end : (ends.includes(toTime(toMinutes(start) + 60)) ? toTime(toMinutes(start) + 60) : ends[0]);
     showNotice(`<form class="room-form" data-book>
-      <h2 class="h2-rule">Book the ${esc(ROOM_NAME)}</h2>
+      <h2 class="h2-rule">Book ${esc(R.name === ROOM_NAME ? 'the ' + R.name : R.name)}</h2>
       <div class="row">
         <label class="field field-narrow"><span>Book as</span><select name="peer" required><option value="">Choose your name\u2026</option>${peers.map((n) => `<option value="${esc(n)}" ${n === who ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>
         <label class="field field-narrow"><span>Date</span><input type="date" name="date" value="${date}" min="${today}" required></label>
@@ -249,7 +252,7 @@ export async function renderWallaceRoom(el, _params, query) {
     if (!peer) { formStatus.textContent = 'Choose your name first.'; return; }
     formStatus.textContent = 'Booking\u2026';
     const result = await post({
-      action: 'book', peer, date: field(form, 'date').value, start: field(form, 'start').value, end: field(form, 'end').value,
+      action: 'book', room, peer, date: field(form, 'date').value, start: field(form, 'start').value, end: field(form, 'end').value,
       note: field(form, 'note').value, repeat: repeatOf(form), skipConflicts,
     });
     if (result.ok) {
