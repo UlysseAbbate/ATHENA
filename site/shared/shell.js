@@ -14,12 +14,23 @@ window.Shell = (() => {
       <a class="brand" href="${esc(home)}"><span class="brand-name">${esc(opts.name || "Athena")}</span><span class="brand-sub">${esc(opts.sub || "")}</span></a>
       <div class="tools">${opts.slot || ""}${opts.home && opts.name ? `<a href="${esc(opts.home)}">Athena</a>` : ""}${nav ? `<nav class="topnav" aria-label="Programs">${nav}</nav>` : ""}
         ${opts.email ? `<span class="who" title="${esc(opts.email)}">${esc(opts.email)}</span><button type="button" class="ghost" id="shell-so">Sign out</button>` : ""}
-        ${Theme.toggleHtml()}</div></div>`;
+        </div></div>`;
     const tabs = opts.tabs && document.getElementById(opts.tabs);
     if (tabs) host.append(tabs);
-    Theme.wire(host);
+    footer();
     const so = host.querySelector("#shell-so");
     if (so && opts.signOut) so.onclick = async () => { await opts.signOut(); location.reload(); };
   }
-  return { mount, esc };
+  /* The foot of every page: the theme button and any links a program adds (for example Team & access, the administrator's alone).
+   * It is built once and kept when the header is drawn again (signing in redraws it). */
+  const links = [];
+  function footer() {
+    let f = document.getElementById("shell-foot");
+    if (!f) { f = document.createElement("footer"); f.id = "shell-foot"; f.className = "foot shell-foot"; document.body.append(f); }
+    f.innerHTML = `<p>${links.map(l => `<button type="button" class="linkish" data-foot="${esc(l.id)}">${esc(l.label)}</button>`).join(" · ")}${links.length ? " · " : ""}${Theme.toggleHtml()}</p>`;
+    f.querySelectorAll("[data-foot]").forEach(b => { b.onclick = () => links.find(l => l.id === b.dataset.foot)?.run(); });
+    Theme.wire(f);
+  }
+  function footLink(id, label, run) { if (!links.some(l => l.id === id)) links.push({ id, label, run }); footer(); }
+  return { mount, footLink, esc };
 })();

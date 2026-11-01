@@ -1,7 +1,8 @@
 import { api } from '../api.js';
+import { currentHouse } from '../session.js';
 import { esc, hl, fmtShort, fmtDate, todayIso, loading, errorBox, empty, extLink, pageHeader, debounce } from '../ui.js';
 
-// The same page serves both LIBBYs: Noble LIBBY (#/past, the Lords) and Honourable LIBBY (#/c/past, the Commons). H says which, while a page is drawn.
+// The same page serves both LIBBYs: Noble LIBBY (#/past, the Lords) and Honourable LIBBY (the Commons). H says which, while a page is drawn.
 const LORDS = {
   base: '#/past', q: '', who: 'peers',
   pages: {
@@ -14,7 +15,7 @@ const LORDS = {
   yes: 'Contents', no: 'Not contents', yes1: 'content', no1: 'not content',
 };
 const COMMONS = {
-  base: '#/c/past', q: '&house=commons', who: 'MPs',
+  base: '#/past', q: '&house=commons', who: 'MPs',
   pages: {
     votes: { title: 'Commons votes', lede: 'Divisions in the House of Commons, with how Lib Dem MPs voted.' },
     questions: { title: 'Written questions', lede: 'Commons written questions and answers.' },
@@ -175,7 +176,7 @@ async function hansard(el, month) {
 }
 
 export async function renderPast(el, { kind, sub, house }, query) {
-  H = house === 'commons' ? COMMONS : LORDS;
+  H = (house || currentHouse()) === 'commons' ? COMMONS : LORDS;
   if (!kind) {
     el.innerHTML = `${pageHeader('Past business', 'What the House has already done.')}
       <nav class="index index-small" aria-label="Past business sections">${Object.entries(H.pages).map(([k, p]) => `

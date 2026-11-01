@@ -1,4 +1,4 @@
-// The Wallace Room booking system.
+// The room booking system (the Wallace Room and Room 391; ?room=wallace|391, default wallace).
 //   GET  /api/room-bookings?from=YYYY-MM-DD&to=YYYY-MM-DD   -> { bookings: [ { id, seriesId, peer, note, date, start, end } ], series: { id: { rule } } }
 //   POST /api/room-bookings { action: 'book', peer, date, start, end, note, repeat?: { every, days, until }, skipConflicts? }
 //   POST /api/room-bookings { action: 'cancel', id, as, scope: 'one' | 'following' | 'all' }
@@ -19,6 +19,8 @@ import {
 
 const MAX_SPAN_DAYS = 70;
 const COLUMNS = 'id,series_id,peer,note,start_at,end_at';
+const ROOMS = ['wallace', '391'];
+const roomOf = (v) => (ROOMS.includes(String(v)) ? String(v) : 'wallace');
 
 const toBooking = (r) => ({
   id: r.id, seriesId: r.series_id || null, peer: r.peer, note: r.note || '',
@@ -33,6 +35,7 @@ const fail = (message, status = 400, extra = {}) => json({ error: message, ...ex
 
 export async function onRequestGet({ request, env }) {
   const q = new URL(request.url).searchParams;
+  const room = roomOf(q.get('room'));
   const from = isIsoDate(q.get('from')) ? q.get('from') : londonToday();
   let to = isIsoDate(q.get('to')) ? q.get('to') : addDays(from, 34);
   if (to < from) to = from;
@@ -40,13 +43,13 @@ export async function onRequestGet({ request, env }) {
   if (!supabaseConfigured(env)) return fail('Supabase settings are missing in Cloudflare.', 503);
   try {
     const rows = await sbSelect(env, 'room_bookings',
-      `select=${COLUMNS}&start_at=gte.${from}T00:00:00&start_at=lt.${addDays(to, 1)}T00:00:00&order=start_at.asc&limit=2000`);
+      `select=${COLUMNS}&room=eq.${room}&start_at=gte.${from}T00:00:00&start_at=lt.${addDays(to, 1)}T00:00:00&order=start_at.asc&limit=2000`);
     const seriesIds = [...new Set(rows.map((r) => r.series_id).filter(Boolean))];
     const series = {};
     if (seriesIds.length) {
       for (const s of await sbSelect(env, 'room_series', `select=id,peer,rule&id=in.(${seriesIds.join(',')})`)) series[s.id] = { peer: s.peer, rule: s.rule };
     }
-    return json({ from, to, bookings: rows.map(toBooking), series });
+    return json({ room, from, to, bookings: rows.map(toBooking), series });
   } catch (err) {
     if (missingTable(err)) return fail('The room booking tables have not been created yet: run schema.sql in Supabase.', 503);
     return errorResponse(err);
@@ -55,6 +58,7 @@ export async function onRequestGet({ request, env }) {
 
 /** Book the room once, or on a repeating pattern. */
 async function book(env, body) {
+  const room = roomOf(body.room);
   const peer = cleanLine(body.peer, 80);
   if (!peer) return fail('Choose your name first.');
   const date = body.date;
@@ -78,7 +82,7 @@ async function book(env, body) {
 
   // Which dates are already taken at that time?
   const existing = await sbSelect(env, 'room_bookings',
-    `select=${COLUMNS}&start_at=gte.${dates[0]}T00:00:00&start_at=lt.${addDays(dates[dates.length - 1], 1)}T00:00:00&order=start_at.asc&limit=2000`);
+    `select=${COLUMNS}&room=eq.${room}&start_at=gte.${dates[0]}T00:00:00&start_at=lt.${addDays(dates[dates.length - 1], 1)}T00:00:00&order=start_at.asc&limit=2000`);
   const clashes = [];
   const free = [];
   for (const d of dates) {
@@ -94,11 +98,11 @@ async function book(env, body) {
   let seriesId = null;
   if (repeat && dates.length > 1) {
     const rule = { from: date, until: repeat.until, every: Math.min(4, Math.max(1, Math.floor(Number(repeat.every)) || 1)), days: [...new Set([...(Array.isArray(repeat.days) ? repeat.days.map(Number) : []), weekdayOf(date)])].filter((d) => d >= 0 && d <= 6).sort(), start, end };
-    const res = await fetch(`${env.SUPABASE_URL}/rest/v1/room_series`, { method: 'POST', headers: wHeaders(env, 'return=representation'), body: JSON.stringify([{ peer, note: note || null, rule }]) });
+    const res = await fetch(`${env.SUPABASE_URL}/rest/v1/room_series`, { method: 'POST', headers: wHeaders(env, 'return=representation'), body: JSON.stringify([{ peer, note: note || null, rule, room }]) });
     if (!res.ok) throw new Error(`Supabase room_series: ${res.status} ${await res.text()}`);
     seriesId = (await res.json())[0].id;
   }
-  const rows = free.map((d) => ({ series_id: seriesId, peer, note: note || null, start_at: `${d}T${start}:00`, end_at: `${d}T${end}:00` }));
+  const rows = free.map((d) => ({ series_id: seriesId, room, peer, note: note || null, start_at: `${d}T${start}:00`, end_at: `${d}T${end}:00` }));
   const ins = await fetch(`${env.SUPABASE_URL}/rest/v1/room_bookings`, { method: 'POST', headers: wHeaders(env, 'return=representation'), body: JSON.stringify(rows) });
   if (!ins.ok) {
     if (seriesId) await fetch(`${env.SUPABASE_URL}/rest/v1/room_series?id=eq.${seriesId}`, { method: 'DELETE', headers: wHeaders(env) });

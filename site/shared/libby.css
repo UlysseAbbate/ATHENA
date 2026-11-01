@@ -117,3 +117,10 @@ code,.code{font:700 1rem ui-monospace,Menlo,Consolas,monospace;background:var(--
 footer.foot{max-width:1120px;margin:0 auto;padding:1rem 1.25rem 2.5rem;color:var(--muted);font-size:.85rem}
 @media (max-width:600px){.brand-sub{display:none}.masthead-inner{align-items:flex-start}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* the foot added by shell.js: the Theme button and any links a program adds (Team & access) */
+footer.shell-foot{border-top:3px solid var(--yellow);margin-top:3rem;max-width:none;padding:1.25rem max(1.25rem,calc((100vw - 1120px)/2 + 1.25rem)) 2.5rem}
+.shell-foot p{margin:0;display:flex;flex-wrap:wrap;gap:.4rem .8rem;align-items:center}
+.shell-foot .linkish{all:unset;cursor:pointer;color:var(--ink);font:700 .85rem var(--head);text-decoration:underline;text-decoration-color:var(--yellow-deep);text-underline-offset:3px}
+.shell-foot .linkish:hover{background:var(--yellow);color:#111}
+.shell-foot .ghost{background:transparent;color:var(--ink);border:1px solid var(--rule-strong);border-radius:99px;padding:.15rem .8rem;font:700 .8rem var(--head);cursor:pointer}
+.shell-foot .ghost:hover{background:var(--yellow);color:#111;border-color:var(--yellow)}
