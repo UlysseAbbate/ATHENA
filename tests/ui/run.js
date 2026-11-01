@@ -63,7 +63,7 @@ const TABLES = {
   ulysse_read: [],
   program_levels: LEVELS,
   access_grants: [],
-  access_codes: [{ id: "k1", label: "Peers", program: "libby", level: "peers", expires_at: null, max_uses: null, uses: 3, revoked_at: null, created_at: ts }],
+  access_codes: [{ id: "k1", label: "Peers", program: "libby", level: "peers", code_text: "Peers2026-test", expires_at: null, max_uses: null, uses: 3, revoked_at: null, created_at: ts }],
 };
 
 function access(u) {
@@ -86,6 +86,7 @@ async function mock(page, who, log) {
     if (url.pathname.startsWith("/rest/v1/rpc/")) {
       const fn = url.pathname.split("/").pop(), body = m === "POST" ? JSON.parse(req.postData() || "{}") : {};
       if (fn === "program_people") return json(PEOPLE[body.p] || []);
+      if (fn === "program_codes") return json((TABLES.access_codes || []).filter(c => c.program === body.p).map(c => ({ ...c, code: c.code_text || null })));
       if (fn === "all_people") return json(u.admin ? [
         { user_id: USERS.admin.id, email: USERS.admin.email, full_name: "", created_at: ts, last_sign_in_at: ts, admin: true, grants: [] },
         { user_id: "n1", email: "newbie@test.invalid", full_name: "", created_at: ts, last_sign_in_at: null, admin: false, grants: [] },
@@ -179,7 +180,13 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.fill("#ae", "new@test.invalid"); await page.click('#add button[type=submit]'); await page.waitForTimeout(500);
         check(`${who}: Give access calls grant_access`, log.some(l => l.startsWith("RPC grant_access") && l.includes("new@test.invalid")), log.filter(l => l.startsWith("RPC")).join(";"));
         await page.fill("#cl", "Volunteers"); await page.fill("#cc", "simple-pass-1"); await page.click('#mk button[type=submit]'); await page.waitForTimeout(500);
-        check(`${who}: a new code is shown once`, (await page.$eval("#newcode", e => e.textContent).catch(() => "")) === "abcd-1234-abcd-1234-abcd" && log.some(l => l.startsWith("RPC create_access_code") && l.includes("simple-pass-1")));
+        check(`${who}: a new code is shown, and kept in the table`, (await page.$eval("#newcode", e => e.textContent).catch(() => "")) === "abcd-1234-abcd-1234-abcd" && log.some(l => l.startsWith("RPC create_access_code") && l.includes("simple-pass-1")));
+        if (await page.$("#codes")) {
+          const kept = await page.$eval("#codes", t => t.innerText);
+          check(`${who}: the codes table shows each code (to copy), its level, end time and use`, /Peers2026-test/.test(kept) && (await page.$$("#codes [data-copy]")).length >= 1 && (await page.$$("#codes select[data-cl]")).length >= 1 && (await page.$$("#codes input[data-ce]")).length >= 1 && /Used/.test(kept), kept.slice(0, 120).replace(/\n/g, " "));
+          await page.selectOption("#codes select[data-cl]", { index: 0 }); await page.waitForTimeout(400);
+          check(`${who}: changing a code's level calls set_code_level`, log.some(l => l.startsWith("RPC set_code_level")), log.filter(l => l.startsWith("RPC")).slice(-4).join(";"));
+        }
         if (who === "admin") {
           page.once("dialog", d => d.accept());
           await page.click("#codes [data-off]"); await page.waitForTimeout(400);

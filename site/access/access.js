@@ -6,6 +6,7 @@ const { sb, esc } = Athena;
 const m = document.getElementById("m");
 const NAMES = { lovelace: "LOVELACE", lucien: "LUCIEN", libby: "LIBBY" };
 const day = d => d ? new Date(d + "T12:00:00").toLocaleDateString("en-GB", { dateStyle: "medium" }) : "no end date";
+const localInput = d => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 16); };
 const when = d => d ? new Date(d).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : "never";
 
 let acc, levels = {}, prog, notice = null;
@@ -76,7 +77,7 @@ async function draw() {
   document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.p === prog));
   const body = document.getElementById("body");
   if (prog === "everyone") { const n = notice; await drawEveryone(body); if (n) notice = null; return; }
-  const [ppl, codes] = await Promise.all([sb.rpc("program_people", { p: prog }), sb.from("access_codes").select("*").eq("program", prog).order("created_at", { ascending: false })]);
+  const [ppl, codes] = await Promise.all([sb.rpc("program_people", { p: prog }), sb.rpc("program_codes", { p: prog })]);
   const lv = levels[prog] || [], label = id => lv.find(l => l.level === id)?.label || id, readonly = false;
   const people = ppl.data || [];
   const opts = (sel, rowLevel) => lv.filter(l => canGive(l) || l.level === rowLevel).map(l => `<option value="${l.level}"${l.level === sel ? " selected" : ""}${canGive(l) ? "" : " disabled"}>${esc(l.label)}</option>`).join("");
@@ -100,11 +101,14 @@ async function draw() {
       <div><label for="au">Until (optional)</label><input id="au" type="date"></div><button class="button" type="submit">Give access</button></form>
       <p class="muted">They need an account first. Anyone can create one on the sign-in page; they see nothing until you give them a level.</p>
       <h2 class="h2-rule">Access codes <span class="count">${(codes.data || []).filter(live).length} live</span></h2>
-      <p class="lede">A code lets a group in with one password and no account. Everyone using it appears as the code's label, not by name. Switch it off at any time and everyone using it is signed out.</p>
-      ${(codes.data || []).length ? `<div class="table-wrap"><table class="grid" id="codes"><thead><tr><th>Label</th><th>Level</th><th>Ends</th><th>Used</th><th>Status</th><th></th></tr></thead><tbody>
-        ${codes.data.map(c => `<tr data-c="${c.id}"><td>${esc(c.label)}</td><td>${esc(label(c.level))}</td><td>${esc(c.expires_at ? when(c.expires_at) : "no end")}</td>
+      <p class="lede">A code lets a group in with one password and no account. Everyone using it appears as the code's label, not by name. The codes are kept here, so you can copy them again, change what they give and when they end, and see how often each has been used. Switch one off and everyone using it is signed out.</p>
+      ${(codes.data || []).length ? `<div class="table-wrap"><table class="grid" id="codes"><thead><tr><th>Code</th><th>Label</th><th>Level</th><th>Ends</th><th>Used</th><th>Status</th><th></th></tr></thead><tbody>
+        ${codes.data.map(c => `<tr data-c="${c.id}"><td>${c.code ? `<code>${esc(c.code)}</code> <button class="button button-small button-quiet" data-copy="${esc(c.code)}">Copy</button>` : `<span class="muted">made before codes were kept</span>`}</td>
+          <td>${esc(c.label)}</td>
+          <td><select data-cl aria-label="Level for the code ${esc(c.label)}">${opts(c.level, c.level)}</select></td>
+          <td><input type="datetime-local" data-ce value="${c.expires_at ? localInput(c.expires_at) : ""}" aria-label="Ends, for the code ${esc(c.label)}"></td>
           <td>${c.uses}${c.max_uses != null ? ` / ${c.max_uses}` : ""}</td><td>${c.revoked_at ? "switched off" : live(c) ? "live" : "ended"}</td>
-          <td class="act">${live(c) ? `<button class="button button-small button-quiet" data-off>Switch off</button>` : ""}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">No codes yet.</p>`}
+          <td class="act">${live(c) ? `<button class="button button-small button-quiet" data-off>Switch off</button>` : c.revoked_at ? `<button class="button button-small button-quiet" data-on>Switch on</button>` : ""}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">No codes yet.</p>`}
       <form class="row-form" id="mk"><div><label for="cl">Label (who it is for)</label><input id="cl" required maxlength="60" placeholder="e.g. Peers"></div>
         <div><label for="cv">Level</label><select id="cv">${opts(lv.find(canGive)?.level)}</select></div>
         <div><label for="cc">Password (leave empty for a random one)</label><input id="cc" autocomplete="off" minlength="8"></div>
@@ -134,8 +138,15 @@ async function draw() {
     run(sb.rpc("grant_access", { p_email: body.querySelector("#ae").value, p_program: prog, p_level: body.querySelector("#al").value, p_expires: body.querySelector("#au").value || null }));
   });
   body.querySelector("#codes")?.addEventListener("click", e => {
-    if (e.target.matches("[data-off]") && confirm("Switch this code off? Everyone using it will be signed out."))
-      run(sb.rpc("revoke_access_code", { p_id: e.target.closest("tr").dataset.c }));
+    const id = e.target.closest("tr")?.dataset.c;
+    if (e.target.matches("[data-off]") && confirm("Switch this code off? Everyone using it will be signed out.")) run(sb.rpc("revoke_access_code", { p_id: id }));
+    if (e.target.matches("[data-on]")) run(sb.rpc("restore_access_code", { p_id: id }), `<div class="state-ok" role="status">Code switched on again.</div>`);
+    if (e.target.matches("[data-copy]")) { navigator.clipboard?.writeText(e.target.dataset.copy); e.target.textContent = "Copied"; }
+  });
+  body.querySelector("#codes")?.addEventListener("change", e => {
+    const id = e.target.closest("tr")?.dataset.c;
+    if (e.target.matches("[data-cl]")) run(sb.rpc("set_code_level", { p_id: id, p_level: e.target.value }), `<div class="state-ok" role="status">The code now gives ${esc(label(e.target.value))}.</div>`);
+    if (e.target.matches("[data-ce]")) run(sb.rpc("set_code_expiry", { p_id: id, p_expires: e.target.value ? new Date(e.target.value).toISOString() : null }), `<div class="state-ok" role="status">End time saved.</div>`);
   });
   body.querySelector("#mk")?.addEventListener("submit", async e => {
     e.preventDefault();
@@ -143,7 +154,7 @@ async function draw() {
     const r = await sb.rpc("create_access_code", { p_label: label, p_program: prog, p_level: body.querySelector("#cv").value,
       p_expires: end ? new Date(end).toISOString() : null, p_max_uses: +body.querySelector("#cm").value || null, p_code: body.querySelector("#cc").value || null });
     if (r.error) return say(r.error.message, true);
-    await run(Promise.resolve({}), `<div class="state-ok"><b>Code made for ${esc(label)}.</b> Copy it now: it cannot be shown again.<br><code id="newcode">${esc(r.data)}</code> <button class="button button-small button-quiet" type="button" id="cp">Copy</button></div>`);
+    await run(Promise.resolve({}), `<div class="state-ok"><b>Code made for ${esc(label)}:</b> <code id="newcode">${esc(r.data)}</code> <button class="button button-small button-quiet" type="button" id="cp">Copy</button> It is kept in the table below.</div>`);
     document.getElementById("cp")?.addEventListener("click", ev => { navigator.clipboard?.writeText(r.data); ev.target.textContent = "Copied"; });
   });
 }
