@@ -2,7 +2,7 @@ import { api } from '../api.js';
 import { esc, fmtDate, todayIso } from '../ui.js';
 import { liveStrip } from '../live-panel.js';
 import { currentLevel, hasLevel, currentHouse } from '../session.js';
-import { menuFor } from '../pages.js';
+import { menuFor, isRestricted } from '../pages.js';
 import { bulletinHtml } from '../bulletin-box.js';
 
 export async function renderHome(el) {
@@ -22,7 +22,7 @@ export async function renderHome(el) {
         </a>`).join('')}
     </nav>`;
 
-  if (currentHouse() !== 'lords') return;   // Honourable LIBBY gets just its sections: the live panels, bulletin and counts are the Lords'
+  if (currentHouse() !== 'lords' || isRestricted(currentLevel())) return;   // Honourable LIBBY gets just its sections: the live panels, bulletin and counts are the Lords'
 
   liveStrip(el.querySelector('#live'), { compact: true });
 

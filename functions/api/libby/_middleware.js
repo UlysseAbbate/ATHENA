@@ -3,7 +3,7 @@
 // site/libby/js/pages.js for this route (403 if too low).
 
 import { identityFromRequest, AuthUnavailable } from '../../../lib/libby/identity.js';
-import { RANK, requiredLevel, atLeast, betaMay, BETA } from '../../../lib/libby/access.js';
+import { RANK, requiredLevel, atLeast, betaMay, BETA, isRestricted, liveMay } from '../../../lib/libby/access.js';
 
 const NO_STORE = { 'cache-control': 'no-store' };
 
@@ -45,6 +45,8 @@ async function gate(ctx) {
   if (who.level === BETA ? !betaMay(request.method, path) : !atLeast(who.level, requiredLevel(request.method, path))) {
     return jsonReply({ error: 'Your access level does not allow this.' }, 403);
   }
+  // For now every level except Admin and Developer may only read what is behind the Data page (pages.js: LIVE_PAGES).
+  if (isRestricted(who.level) && !liveMay(request.method, path)) return jsonReply({ error: 'Only the Data page is open for now.' }, 403);
   ctx.data.level = who.level;
   ctx.data.email = who.email;
 
