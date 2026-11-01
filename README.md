@@ -54,13 +54,13 @@ Every table on the site gets, from `site/shared/tables.js` and `tables.css`: a *
 ## LOVELACE (formerly The Mall)
 
 **Pages:**
-- **Overview:** today's and this week's plan, governance due or overdue, governance due and the latest media. Each card appears only if your role can see that area.
-- **Campaign plan:** day and week views, in seven sections: Main News + Solney Story; Constituency Activity (one section for each of the 14 GLA constituencies, plus one for anything across several); Parliamentary Activity (DBIST, Commons, Lords); Media (broadcast, print, digital, Substack); Campaigning (campaign actions, visits); London News and Events; Internal Actions (governance, meetings, party actions). Local party visits sit on their dates under Campaigning (with the contact and who is taking each); visits with no date yet are listed under "Local party visit requests". Constituency sections can be edited by local party chairs and above (the *Edit the Constituency Activity sections* row of the permissions grid).
+- **Overview:** the campaign plan for this week in a clean read-only layout, by the five headings (Main News, Across London, Campaigning, Media, Internal Actions), with a button to *This Week*.
+- **This Week** (the campaign plan): day and week views, under five headings: **Main News**; **Across London** (Constituency Activity, one section for each of the 14 GLA constituencies plus one for several; and Local Party Activity, where the visit requests sit); **Campaigning** (Mayoral Activity, Action Days, Other Events); **Media** (Parliamentary News, GLA News, Council News, Media Activity; the three news sections show the latest coverage of their topic and link to the Media page); **Internal Actions** (Executive, Campaigns Committee, Governance, Membership, Candidates). Local party visits sit on their dates under Local Party Activity; visits with no date yet are listed under "Local party visit requests". Constituency sections and Local Party Activity can be edited by local party chairs and above (the *Edit the Constituency Activity sections* row of the permissions grid).
 - **Budget & governance**
 - **Volunteers & stakeholders:** one list (Full name, Organisation, Sector, Email, Phone, Point of contact, Notes). Volunteers are filed under Lib Dems. Anyone allowed to add can add; only the full-list roles see everyone's.
 - **Policies**
-- **Media:** news coverage and social posts in one table (social posts show the platform as the outlet and the first line of the caption as the headline), plus the tracked accounts.
-- **Team & access:** people, roles, access dates, last sign-in, the permissions grid and recent activity.
+- **Media:** two sections. **Overall Media** is wider political news (Parliament, GLA, council; give a story a topic and it shows on *This Week*). **Lib Dem Media** is the news about us and the tracked accounts' posts, found automatically at 6am and 6pm (social posts show the platform as the outlet and the first line of the caption as the headline), plus the tracked accounts.
+- **Team & access** (the administrator's alone, as on LUCIEN and LIBBY): people, roles, access dates, last sign-in, the permissions grid and recent activity. On LUCIEN and LIBBY the same page (`site/shared/teampage.js`) lists people, levels, access codes and recent access changes.
 
 **What every table has:**
 - search

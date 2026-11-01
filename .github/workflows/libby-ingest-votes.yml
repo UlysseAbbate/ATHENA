@@ -1,5 +1,5 @@
 # Copies House of Lords divisions (Lords Votes API) into Supabase for the Data page's Voting Data.
-# It runs as a step of "Refresh data" (refresh-data.yml: 8am, 10am, 12pm, 2pm, 4pm and 6pm London time) and can be run by hand.
+# It runs as a step of "Refresh data" (refresh-data.yml: 6am and 6pm London time) and can be run by hand.
 # For a full rebuild, run it by hand with "since" set to 2024-07-09.
 # Tick "probe" to print the shape of the Lords Votes API's replies in the log instead of loading anything.
 name: Ingest Lords votes

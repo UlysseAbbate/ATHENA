@@ -223,10 +223,11 @@ function renderHealth() {
 
 /* ---------------------------------------------------------------- render + events */
 function render(keepControls) {
-  const tab = state.tab, health = tab === "health", poll = tab === "polling";
+  const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", other = health || team;
   saveView();
-  $("healthpanel").hidden = !health; $("list").hidden = health; $("controls").hidden = health; $("overview").hidden = health || poll;
-  $("pollpanel").hidden = !poll; document.querySelector(".listhead").hidden = health;
+  $("healthpanel").hidden = !health; $("teampanel").hidden = !team; $("list").hidden = other; $("controls").hidden = other; $("overview").hidden = other || poll;
+  $("pollpanel").hidden = !poll; document.querySelector(".listhead").hidden = other;
+  if (team) return TeamPage.render($("teampanel"), { program: "lucien", name: "LUCIEN" });
   if (health) return renderHealth();
   if (!keepControls) renderControls();
   const rows = rowsFor();
@@ -268,6 +269,8 @@ function signIn() { AuthUI.render(sb, document.body, { title: "LUCIEN" }); }
   if (!acc) return signIn();
   if (!Athena.may(acc, "ulysse")) return Athena.notFound();
   state.uid = acc.session.user.id;
+  // Team & access: the administrator's alone, as on LOVELACE and LIBBY
+  if (acc.admin) $("tabs").insertAdjacentHTML("beforeend", '<button data-tab="team">Team &amp; access</button>');
   const [feed, polls, health, read] = await Promise.all([load("feed"), load("polls"), load("health"), loadRead()]);
   state.items = (feed?.items || []).filter(i => i.title); state.polls = polls?.rows || []; state.health = health?.sources || []; state.read = read;
   state.items.forEach(i => (i.geo || []).forEach(g => { if (/^(Europe|United States|Russia|Middle East|China|Africa|Global)/.test(g)) GEO_META[g] = "International"; }));
@@ -275,6 +278,7 @@ function signIn() { AuthUI.render(sb, document.body, { title: "LUCIEN" }); }
   $("updated").textContent = feed ? `Updated ${Athena.ago(feed.updated)}` : "No data yet. Run the collector.";
   if (staleH > 15) $("updated").classList.add("stale");
   restoreView();
+  if (state.tab === "team" && !acc.admin) state.tab = "all";
   // "since your last visit": the previous visit's time, kept for this whole browser session (reloads do not reset it)
   try {
     let base = sessionStorage.getItem("ulysse.baseline");

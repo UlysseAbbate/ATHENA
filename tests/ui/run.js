@@ -41,15 +41,17 @@ const ts = new Date(Date.now() - 3 * 36e5).toISOString();
 const TABLES = {
   profiles: Object.values(USERS).map(u => ({ id: u.id, email: u.email, full_name: u.email.split("@")[0], role: u.role, access_until: u.role === "member" ? plus(20) : null, created_at: ts })),
   role_permissions: ["core_team", "member"].flatMap(r => ALLRES.map(res => ({ role: r, resource: res, can_read: PERMS[r].includes(res) || (r === "member" && res === "coverage"), can_write: PERMS[r].includes(res) && r === "core_team" || ["volunteers_add", "stakeholders_add"].includes(res) }))),
-  plan_categories: [{ id: 1, name: "Main News + Solney Story", sort: 1, shared: false }, { id: 4, name: "Constituency Activity: North East", sort: 11, shared: true, constituency: true }, { id: 5, name: "Constituency Activity: West Central", sort: 12, shared: true, constituency: true }, { id: 2, name: "Media (broadcast, print, digital, Substack)", sort: 40, shared: false }, { id: 3, name: "Campaigning (campaign actions, visits)", sort: 50, shared: true }],
-  plan_entries: [{ id: "p1", plan_date: iso(today), category_id: 1, content: "Launch housing pledge", updated_at: ts }, { id: "p3", plan_date: iso(today), category_id: 3, content: "Richmond Park street stall", updated_at: ts }, { id: "p2", plan_date: plus(2), category_id: 2, content: "Op-ed in the Standard", updated_at: ts }],
+  plan_categories: [{ id: 1, name: "Main News", grp: "Main News", sort: 1, shared: false }, { id: 4, name: "Constituency Activity: North East", grp: "Across London", sort: 11, shared: true, constituency: true }, { id: 5, name: "Constituency Activity: West Central", grp: "Across London", sort: 12, shared: true, constituency: true }, { id: 6, name: "Local Party Activity", grp: "Across London", sort: 30, shared: true, constituency: true },
+    { id: 8, name: "Mayoral Activity", grp: "Campaigning", sort: 50, shared: true }, { id: 3, name: "Action Days", grp: "Campaigning", sort: 51, shared: true }, { id: 7, name: "Parliamentary News", grp: "Media", sort: 60, shared: false }, { id: 2, name: "Media Activity", grp: "Media", sort: 63, shared: false }],
+  plan_entries: [{ id: "p1", plan_date: iso(today), category_id: 1, content: "Launch housing pledge", updated_at: ts }, { id: "p3", plan_date: iso(today), category_id: 6, content: "Richmond Park street stall", updated_at: ts }, { id: "p2", plan_date: plus(2), category_id: 2, content: "Op-ed in the Standard", updated_at: ts }],
   local_party_visits: [{ id: "v1", local_party: "Richmond Park", request: "Street stall", contact_name: "Pat", contact_phone: "0701", taken_by: "Louis", actioning: "Sarah", visit_date: iso(today), updated_at: ts },
     { id: "v2", local_party: "Hounslow", request: "AGM", visit_date: null, updated_at: ts }],
   governance_items: [{ id: "g1", title: "Register with Electoral Commission", area: "Legal", status: "To do", due_date: plus(-1), updated_at: ts }],
   content_items: [{ id: "c1", name: "Housing video", status: "In Development", scheduled: plus(4), platforms: "Instagram", updated_at: ts }],
-  media_coverage: [{ id: "m1", covered_on: iso(today), outlet: "BBC News", headline: "Sarah Olney on Heathrow", url: "https://example.org/a", source: "auto", updated_at: ts },
-    { id: "m2", covered_on: plus(-3), outlet: "Standard", headline: "Olney backs rent reform", url: "https://example.org/b", source: "manual", updated_at: ts },
-    { id: "m3", covered_on: plus(-1), outlet: "BlueSky", headline: "Out in Kingston talking about the cost of living", url: "https://example.org/c", source: "social", updated_at: ts }],
+  media_coverage: [{ id: "m1", covered_on: iso(today), outlet: "BBC News", headline: "Sarah Olney on Heathrow", url: "https://example.org/a", source: "auto", kind: "libdem", updated_at: ts },
+    { id: "m2", covered_on: plus(-3), outlet: "Standard", headline: "Olney backs rent reform", url: "https://example.org/b", source: "manual", kind: "libdem", updated_at: ts },
+    { id: "m3", covered_on: plus(-1), outlet: "BlueSky", headline: "Out in Kingston talking about the cost of living", url: "https://example.org/c", source: "social", kind: "libdem", updated_at: ts },
+    { id: "m4", covered_on: plus(-1), outlet: "Hansard", headline: "Heathrow expansion debated in the Commons", url: "https://example.org/d", source: "manual", kind: "overall", topic: "parliament", updated_at: ts }],
   contacts: [{ id: "vo1", kind: "volunteer", name: "Alex Volunteer", organisation: "Lib Dems", sector: "Lib Dems", email: "alex@test.invalid", phone: "0700", owner: "Louis", notes: "Role: Canvassing", created_by: USERS.member.id, created_at: ts, updated_at: ts },
     { id: "s1", kind: "stakeholder", name: "Jo Bloggs", organisation: "Shelter", sector: "Campaign", email: null, phone: null, owner: "Sarah", notes: null, created_by: USERS.core.id, created_at: ts, updated_at: ts }],
   budget_items: [{ id: "b1", item: "Leaflets", amount: 1200, category: "Print", updated_at: ts }, { id: "b2", item: "Hall hire", amount: 300, category: "Events", updated_at: ts }],
@@ -101,6 +103,9 @@ async function mock(page, who, log) {
     if (eqProgram) rows = rows.filter(r => "eq." + r.program === eqProgram);
     const eqName = url.searchParams.get("name");
     if (eqName) rows = rows.filter(r => "eq." + r.name === eqName);
+    const eqKind = url.searchParams.get("kind");
+    if (eqKind) rows = rows.filter(r => "eq." + r.kind === eqKind);
+    if (url.searchParams.get("topic") === "not.is.null") rows = rows.filter(r => r.topic);
     if ((req.headers()["accept"] || "").includes("vnd.pgrst.object")) return json(rows[0] || null);
     return json(rows);
   });
@@ -254,7 +259,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("house gate: Honourable LIBBY then asks Beta or Developer (the beta has no Commons pages yet)", /Honourable LIBBY/.test(g) && /Not in the beta yet/.test(g) && /Open the developer site/.test(g), g.slice(0, 160).replace(/\n/g, " "));
           await page.click('[data-enter="developer"]'); await page.waitForTimeout(1000);
           const cm = await page.$$eval(".topnav a", as => as.map(a => a.textContent));
-          check("Honourable LIBBY: the Commons menu", cm.join("|") === "Today|Legislation|Business|Policy|Developer", cm.join("|"));
+          check("Honourable LIBBY: the Commons menu", cm.join("|") === "Today|Legislation|Business|Policy|Developer|Team & access", cm.join("|"));
           check("Honourable LIBBY: the masthead says so, with the Commons colour", (await page.$eval(".brand-name", b => b.textContent)) === "Honourable LIBBY" && (await page.getAttribute("html", "data-house")) === "commons");
           await page.goto(BASE + "/libby/#/c/today"); await page.waitForTimeout(900);
           const day = await page.$eval("#app", a => a.innerText);
@@ -309,6 +314,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("the Whips page is just Availability, with no Hymn Sheets or Duty Whips", /Availability for Whipping/.test(wp) && !/Hymn/i.test(wp) && !/Duty Whips/.test(wp), wp.slice(0, 120).replace(/\n/g, " "));
           lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
           check("developer: the menu has Developer", (await menu()).includes("Developer") && (await menu()).includes("Legislation"), (await menu()).join("|"));
+          await page.goto(BASE + "/libby/#/team"); await page.waitForTimeout(700);
+          const tm = await page.$eval("#app", b => b.innerText);
+          check("developer: LIBBY has Team & access (people, levels, codes, activity)", /Team & access/.test(tm) && /peer@test\.invalid/.test(tm) && /What each level is/.test(tm) && /Peers/.test(tm) && /Recent activity/.test(tm), tm.slice(0, 120).replace(/\n/g, " "));
           await page.goto(BASE + "/libby/#/developer"); await page.waitForTimeout(600);
           const dv = await page.$eval("#app", b => b.innerText);
           check("developer: the Developer page lists the editions and every page", /Beta test/.test(dv) && /Every page/.test(dv) && /policy/.test(dv) && !/couldn.t load/i.test(dv), dv.slice(0, 120).replace(/\n/g, " "));
@@ -385,11 +393,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.goto(BASE + "/lovelace/");
       await page.waitForSelector("#tabs button", { timeout: 5000 });
       const tabs = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent));
-      check(`${who}: lovelace tabs`, who === "member" ? !tabs.includes("Budget & governance") && tabs.includes("Overview") : tabs.includes("Budget & governance") && tabs.includes("Team & access"), tabs.join(" | "));
-      await page.waitForSelector(".ovgrid", { timeout: 5000 });
-      const ov = await page.$$eval(".card.ov h3", hs => hs.map(h => h.textContent.replace(" open ›", "")));
-      check(`${who}: overview cards`, ov.length >= 2 && (who === "member" ? !ov.includes("Governance due") : ov.includes("Governance due")), ov.join(" | "));
-      check(`${who}: overview has no visits, content or contacts cards`, !ov.some(h => /visits|Content|Volunteers|stakeholders/i.test(h)), ov.join(" | "));
+      check(`${who}: lovelace tabs`, who === "member" ? !tabs.includes("Budget & governance") && tabs.includes("Overview") : tabs.includes("Budget & governance") && tabs.includes("This Week") && (tabs.includes("Team & access") === (who === "admin")), tabs.join(" | "));
+      await page.waitForSelector(".ovplan, #main .muted", { timeout: 5000 });
+      if (who !== "member") {
+        const ov = await page.$$eval(".ovg h3", hs => hs.map(h => h.textContent));
+        check(`${who}: the overview is the campaign plan, in the five groups`, ov.join("|") === "Main News|Across London|Campaigning|Media", ov.join(" | "));
+        if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `lovelace-overview-${scheme}.png`) }); await page.emulateMedia({ colorScheme: "light" }); }
+        check(`${who}: the overview shows this week's entries and nothing else`, /Launch housing pledge/.test(await page.$eval("#main", m => m.innerText)) && !(await page.$(".card.ov")));
+      }
       for (const t of tabs) {
         await page.click(`#tabs button:text-is("${t}")`);
         await page.waitForTimeout(350);
@@ -406,17 +417,21 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       check(`${who}: volunteers are filed under Lib Dems`, vrows.length === 1 && /Alex Volunteer/.test(vrows[0]) && (vrows[0].match(/Lib Dems/g) || []).length === 2, vrows.join("|"));
       await page.click('#tabs button:text-is("Media")'); await page.waitForTimeout(350);
       check(`${who}: media lists news and social in one table`, /Sarah Olney on Heathrow/.test(await page.$eval("#main", m => m.innerText)) && /Out in Kingston/.test(await page.$eval("#main", m => m.innerText)));
-      await page.click('#main [data-fl="2"]');
+      check(`${who}: media has Overall Media and Lib Dem Media sections`, (await page.$$eval("#main h2", hs => hs.map(h => h.textContent))).join("|").startsWith("Overall Media|Lib Dem Media") && /Heathrow expansion debated/.test(await page.$eval("#m0", m => m.innerText)) && !/Heathrow expansion debated/.test(await page.$eval("#m1", m => m.innerText)));
+      await page.click('#m1 [data-fl="2"]');
       const mrows = await page.$$eval("#m1 tbody tr", rs => rs.map(r => r.innerText));
       check(`${who}: the Social media filter shows platform posts only`, mrows.length === 1 && /BlueSky/.test(mrows[0]) && /Out in Kingston/.test(mrows[0]), mrows.join("|"));
       await page.goto(BASE + "/lovelace/#coverage"); await page.waitForTimeout(600);
       check(`${who}: media has no content pipeline`, !/content pipeline/i.test(await page.$eval("#main", m => m.innerText)));
       check(`${who}: the old #coverage address opens Media`, (await page.$eval("#tabs button.on", b => b.textContent)) === "Media");
       if (who !== "member") {
-        await page.click('#tabs button:text-is("Campaign plan")'); await page.waitForTimeout(450);
+        await page.click('#tabs button:text-is("This Week")'); await page.waitForTimeout(450);
         const plan = await page.$eval("#main", m => m.innerText);
         check(`${who}: the plan shows a dated visit's details under Campaigning`, /Richmond Park/.test(plan) && /contact Pat 0701/.test(plan) && /taken by Louis/.test(plan), plan.slice(0, 200).replace(/\n/g, " "));
-        check(`${who}: the plan has the new sections, constituencies grouped`, /Main News \+ Solney Story/.test(plan) && /Constituency Activity/.test(plan) && /Media \(broadcast, print, digital, Substack\)/.test(plan) && /Campaigning \(campaign actions, visits\)/.test(plan) && !/Local Party Visits\n/.test(plan), plan.slice(0, 300).replace(/\n/g, " "));
+        if (process.env.SHOTS && who === "admin") await page.screenshot({ path: path.join(process.env.SHOTS, "lovelace-this-week.png"), fullPage: true });
+        const gh = await page.$$eval(".grp-h", hs => hs.map(h => h.textContent.replace(/\+ Add/, "").trim()));
+        check(`${who}: This Week has the five groups, constituencies grouped`, gh.join("|") === "Main News|Across London|Campaigning|Media" && /Constituency Activity/.test(plan) && /Local Party Activity/.test(plan) && /Parliamentary News/.test(plan) && /Media Activity/.test(plan) && /Action Days/.test(plan), gh.join("|"));
+        check(`${who}: Parliamentary News shows the latest coverage and links to Media`, /Heathrow expansion debated in the Commons/.test(plan) && /all coverage in Media/.test(plan));
         check(`${who}: a chair-level role can add to a constituency section`, await page.$$eval("details.cons [data-add]", bs => bs.length) === 2);
         check(`${who}: visit requests sit under the plan`, /Local party visit requests/.test(plan) && /1 without a date yet/.test(plan));
       }
@@ -450,7 +465,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.fill("#b1 [data-q]", ""); await page.click(".tf-bar [data-clear]"); await page.waitForTimeout(200);
         check(`${who}: Clear filters brings every row back`, (await page.$$("#b1 tbody tr:not(.tf-off)")).length === 2 && (await page.$$(".tf-bar")).length === 0);
         // conflict protection on plan entries (mock returns 0 rows updated)
-        await page.click('#tabs button:text-is("Campaign plan")'); await page.waitForTimeout(300);
+        await page.click('#tabs button:text-is("This Week")'); await page.waitForTimeout(300);
         await page.click("[data-e=p1]");
         await page.fill("#f_content", "Changed");
         await page.click("dialog button[value=ok]");
@@ -459,6 +474,8 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: edit conflict is reported`, /Someone else changed/.test(msg), msg.slice(0, 50));
         check(`${who}: conflict check sends updated_at`, log.some(l => l.includes("PATCH plan_entries") && l.includes("updated_at=eq.")), log.filter(l => l.startsWith("PATCH")).join(";"));
         await page.keyboard.press("Escape");
+      }
+      if (who === "admin") {
         await page.click('#tabs button:text-is("Team & access")'); await page.waitForTimeout(400);
         const team = await page.$eval("#main", m => m.innerText);
         check(`${who}: team page has access dates, last seen, activity`, /Access until/i.test(team) && /Last signed in/i.test(team) && /Recent activity/i.test(team));
@@ -475,6 +492,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       if (who === "admin") {
         await page.click('#tabs button[data-tab="health"]'); await page.waitForTimeout(200);
         check("admin: lucien health tab", /sources returning data/.test(await page.$eval("#healthpanel", e => e.innerText)));
+        await page.click('#tabs button[data-tab="team"]'); await page.waitForTimeout(500);
+        const lt = await page.$eval("#teampanel", e => e.innerText);
+        check("admin: LUCIEN has Team & access (people, levels, codes, activity)", /Team & access/.test(lt) && /reader@test\.invalid/.test(lt) && /What each level is/.test(lt) && /Access codes/.test(lt) && /Recent activity/.test(lt), lt.slice(0, 120).replace(/\n/g, " "));
         await page.click('#tabs button[data-tab="media"]'); await page.waitForTimeout(200);
         await page.reload(); await page.waitForTimeout(1000);
         check("admin: lucien remembers tab", await page.$eval('#tabs button.on', b => b.dataset.tab) === "media");

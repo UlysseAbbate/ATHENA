@@ -75,7 +75,7 @@ GitHub -> Settings -> Secrets and variables -> Actions: `SUPABASE_URL`, `SUPABAS
 
 ## Scheduled jobs (GitHub Actions)
 
-- `refresh-data.yml`: **8am, 10am, 12pm, 2pm, 4pm and 6pm London time, every day** (times in `lib/schedule.js`). It loads the What's On calendar
+- `refresh-data.yml`: **6am and 6pm London time, every day** (times in `lib/schedule.js`). It loads the What's On calendar
   (`ingest-whatson.yml`, from the What's On API), the Lords' business (`libby-ingest-business.yml`) and the Lords divisions (`ingest-votes.yml`), then `scripts/build-snapshots.mjs` renews the saved copies of the slow
   Parliament lookups (see "Saved copies" below). Can be run by hand from the Actions tab.
 - `ingest-policy.yml`: the Lib Dem policy library, weekly.

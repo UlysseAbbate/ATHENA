@@ -1,11 +1,9 @@
 # Builds and refreshes the Lib Dem policy library (conference motions and policy papers).
-# Weekly, plus by hand. Unchanged documents are skipped, so later runs are quick.
+# Part of "Refresh data" (6am and 6pm London time), plus by hand. Unchanged documents are skipped, so later runs are quick.
 name: Ingest Lib Dem policy
 
 on:
-  # Scheduled runs stay OFF until LIBBY's data has moved to the Athena database and its secrets are set here (docs/MASTER-PLAN.md, phase 6).
-  #  schedule:
-  #    - cron: '0 5 * * 1'   # Mondays 05:00 UTC
+  workflow_call:
   workflow_dispatch:
     inputs:
       refresh:

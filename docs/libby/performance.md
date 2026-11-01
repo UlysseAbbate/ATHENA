@@ -16,7 +16,7 @@ cache in `cached()` (`lib/util.js`), and that is weak for three reasons:
 
 ## How it works now
 
-`refresh-data.yml` runs at **8am, 10am, 12pm, 2pm, 4pm and 6pm London time**. It loads the What's On calendar and the Lords votes,
+`refresh-data.yml` runs at **6am and 6pm London time**. It loads the What's On calendar and the Lords votes,
 then `scripts/build-snapshots.mjs` renews the saved copies (`api_snapshots` table). Pages read a saved copy in one database call.
 "Refresh now" at the foot of every page redoes the lookups behind the page you are on, for everyone, at most once a minute per lookup.
 The rules are in the header of `lib/snapshots.js`.

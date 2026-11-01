@@ -1,5 +1,5 @@
 # Loads the UK Parliament What's On calendar into Supabase from the What's On API (scripts/libby/ingest_whatson.py).
-# It runs as the first step of "Refresh data" (refresh-data.yml: 8am, 10am, 12pm, 2pm, 4pm and 6pm London time),
+# It runs as the first step of "Refresh data" (refresh-data.yml: 6am and 6pm London time),
 # and can also be run by hand from the Actions tab.
 name: Ingest What's On calendar
 
