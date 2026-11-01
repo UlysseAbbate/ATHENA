@@ -107,14 +107,17 @@ ok(r.status === 403, 'switching a code off closes the door for everyone using it
 
 // ---- the beta test and the Developer site
 const beta = async (path, method = 'GET') => (await middleware(ctx(path, { token: 'tok-beta', method }))).status;
-ok(await beta('/api/libby/day/today') === 200 && await beta('/api/libby/bills') === 200 && await beta('/api/libby/future') === 200 && await beta('/api/libby/portfolios') === 200
-  && await beta('/api/libby/commons/day/today') === 200 && await beta('/api/libby/commons/bills') === 200 && await beta('/api/libby/status') === 200,
-  'a Beta tester can read what is behind Today, Business and Legislation, in both Houses');
-ok(await beta('/api/libby/room-bookings') === 200 && await beta('/api/libby/work-experience') === 200 && await beta('/api/libby/policy/search') === 200 && await beta('/api/libby/comms') === 200,
-  'and Lib Dems 150 (policy, the rooms, work experience)');
-r = await middleware(ctx('/api/libby/commons/day/today', { token: 'tok-peer' }));
-ok(r.status === 200, 'a Peer can read Honourable LIBBY (Commons) business');
-ok(await beta('/api/libby/data/votes') === 403 && await beta('/api/libby/data/lords') === 403, 'but not the Data page (it is under the Whips\u2019 page now)');
+ok(await beta('/api/libby/data/votes') === 200 && await beta('/api/libby/data/lords') === 200 && await beta('/api/libby/status') === 200 && await beta('/api/libby/ld-peers') === 200,
+  'a Beta tester can read what is behind the Data page');
+ok(await beta('/api/libby/day/today') === 403 && await beta('/api/libby/bills') === 403 && await beta('/api/libby/commons/day/today') === 403 && await beta('/api/libby/room-bookings') === 403,
+  'and, for now, nothing else');
+// FOR NOW every level except Admin and Developer is held to the Data page, whatever the level would otherwise allow
+const as = async (tok, path) => (await middleware(ctx(path, { token: tok }))).status;
+ok(await as('tok-peer', '/api/libby/data/votes') === 200 && await as('tok-peer', '/api/libby/day/today') === 403 && await as('tok-peer', '/api/libby/bills') === 403
+  && await as('tok-code', '/api/libby/data/votes') === 200 && await as('tok-code', '/api/libby/whip-availability') === 403 && await as('tok-code', '/api/libby/commons/day/today') === 403,
+  'a Peer and a Whip can read the Data page and nothing else');
+ok(await as('tok-admin', '/api/libby/day/today') === 200 && await as('tok-admin', '/api/libby/commons/day/today') === 200 && await as('tok-dev', '/api/libby/bills') === 200,
+  'Admin and Developer keep everything');
 ok(await beta('/api/libby/data/votes', 'POST') === 403 && await beta('/api/libby/room-bookings', 'POST') === 403 && await beta('/api/libby/work-experience', 'POST') === 403, 'a Beta tester cannot change anything');
 ok(await beta('/api/libby/people-roles') === 403 && await beta('/api/libby/whip-availability') === 403 && await beta('/api/libby/duty-whips') === 403 && await beta('/api/libby/advisers') === 403
   && await beta('/api/libby/groupings') === 403 && await beta('/api/libby/comments') === 403, 'nor anything of the Whips\u2019 or Advisers\u2019 pages, even though a Peer could read some of it');

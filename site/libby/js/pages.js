@@ -47,8 +47,19 @@ export const HOUSES = {
 };
 export const inHouse = (item, house = 'lords') => item.house === 'both' || (item.house || 'lords') === house;
 
-/** May a person at this level open this page, in this House? A beta tester may open only the pages marked `beta: true`; everyone else goes by level. */
-export const canOpenPage = (page, level, house = 'lords') => inHouse(page, house) && (level === BETA ? !!page.beta : atLeast(level, page.level));
+// FOR NOW every level except Admin and Developer opens only the Data page (and the home page that leads to it). The rest of LIBBY is built and waiting:
+// to open it up again, make LIVE_PAGES null (and LIVE_ROUTES with it). The server enforces the same list (functions/api/libby/_middleware.js).
+export const LIVE_PAGES = ['home', 'data'];
+export const LIVE_ROUTES = ['data/.*', 'status', 'ld-peers'];
+export const FULL_LEVELS = ['admin', 'developer'];
+/** True if this level is held to the live pages for now. */
+export const isRestricted = (level) => !!LIVE_PAGES && !FULL_LEVELS.includes(level);
+/** May a restricted level make this request? Reading what is behind the live pages only. */
+export const liveMay = (method, path) => ['GET', 'HEAD'].includes(String(method || 'GET').toUpperCase()) && LIVE_ROUTES.some((route) => new RegExp(`^/api/libby/(?:${route})$`).test(path));
+
+/** May a person at this level open this page, in this House? A beta tester may open only the pages marked `beta: true`; everyone else goes by level; restricted levels only the live pages. */
+export const canOpenPage = (page, level, house = 'lords') => inHouse(page, house) && (!isRestricted(level) || LIVE_PAGES.includes(page.id))
+  && (level === BETA ? !!page.beta : atLeast(level, page.level));
 
 /* ------------------------------------------------------------------ the menu */
 
@@ -59,13 +70,15 @@ export const MENU = [
   { id: 'business', label: 'Business', href: '#/business', level: 'peers', beta: true, house: 'both', title: 'Business', text: 'The coming weeks by calendar or by portfolio, and past business (votes, questions, committees, Hansard).' },
   { id: 'legislation', label: 'Legislation', href: '#/legislation', level: 'peers', beta: true, house: 'both', title: 'Legislation', text: 'Every live Bill in Parliament: where it is, the next stage, the documents for each stage and the amendments.' },
   { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, Comms, the Wallace Room, Room 391, work experience support and the guides.' },
+  // Data: the one page every level has for now (for Whips and above it also sits under the Whips' page, so this item is only for the restricted levels)
+  { id: 'data', label: 'Data', href: '#/data', level: 'peers', beta: true, liveOnly: true, house: 'both', title: 'Data', text: 'Voting analysis and the House of Lords Library data dashboards.' },
   { id: 'whips-office', label: 'Whips', href: '#/whips-office', level: 'whips', house: 'both', title: "Whips' page", text: 'Availability for whipping, and the voting analysis and Lords Library data.' },
   { id: 'advisers-office', label: 'Advisers', href: '#/advisers-office', level: 'staff', house: 'both', title: "Advisers' page", text: 'Bill advisers, groupings and grids, the bulletin and the duty rota, and the roles.' },
   { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, house: 'both', title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
 ];
 
 // What a beta tester sees in the menu: the items marked `beta: true`.
-export const BETA_MENU = MENU.filter((m) => m.beta);
+export const BETA_MENU = MENU.filter((m) => m.beta && !m.liveOnly);
 
 // Groups of subpages. Each group is shown as a hub page (cards) and as a row of buttons above each of its pages.
 export const GROUPS = {
@@ -147,9 +160,9 @@ export const PAGES = [
   { id: 'whips', match: /^\/whips(?:\/availability)?$/, view: 'whips-page.js', fn: 'renderWhips', level: 'whips',
     group: 'whips-office', tab: 'availability', tabLabel: 'Availability', href: '#/whips', house: 'both', card: 'Mark the days you would prefer to be duty whip, have no preference, or are not free.',
     api: [['whip-availability', { GET: 'whips', '*': 'whips' }], ['people-roles', { GET: 'whips', '*': BACKCHANNEL }]] },
-  { id: 'data', match: /^\/data(?:\/(votes|lords))?$/, view: 'data-page.js', fn: 'renderData', params: (m) => ({ sub: m[1] || '' }), level: 'whips',
+  { id: 'data', match: /^\/data(?:\/(votes|lords))?$/, view: 'data-page.js', fn: 'renderData', params: (m) => ({ sub: m[1] || '' }), level: 'peers', beta: true,
     group: 'whips-office', tab: 'data', tabLabel: 'Data', href: '#/data', house: 'both', card: 'Voting analysis and the House of Lords Library data dashboards.',
-    api: [['data/.*', { '*': 'whips' }]] },
+    api: [['data/.*', { '*': 'peers' }]], betaApi: ['data/.*'] },
 
   // The Advisers' page (Staff and above): the advisers' tools, and the roles
   { id: 'advisers-office', match: /^\/advisers-office$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'advisers-office' }), level: 'staff', nav: 'advisers-office', house: 'both' },
@@ -197,7 +210,7 @@ export const ADVISER_LINKS = [
 /* ------------------------------------------------------------------ helpers (used by the website, the server and the checker) */
 
 /** The menu items a person at this level sees, in this House. */
-export const menuFor = (level, house = 'lords') => (level === BETA ? BETA_MENU : MENU.filter((m) => atLeast(level, m.level))).filter((m) => inHouse(m, house));
+export const menuFor = (level, house = 'lords') => (isRestricted(level) ? MENU.filter((m) => m.liveOnly && (level === BETA ? m.beta : atLeast(level, m.level))) : MENU.filter((m) => !m.liveOnly && atLeast(level, m.level))).filter((m) => inHouse(m, house));
 
 /** The buttons (and hub cards) of a group that a person at this level may open, in this House. */
 export const tabsFor = (group, level, house = 'lords') => PAGES.filter((p) => p.group === group && p.tabLabel && canOpenPage(p, level, house))

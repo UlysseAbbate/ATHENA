@@ -162,6 +162,7 @@ Access page. Server routes need these Cloudflare Pages secrets: `SUPABASE_URL`, 
 
 **Three editions, one site.** The edition a person sees is their LIBBY level, set on the Access page:
 - **Live:** Peer, Whip, Spokesperson, Leader's office, Staff, Admin, as before.
+- **For now, every level except Admin and Developer sees only the Data page** (and the home page that leads to it); the server refuses everything else. The rest of LIBBY is built and waiting: `LIVE_PAGES` and `LIVE_ROUTES` in `site/libby/js/pages.js` are the one switch (set `LIVE_PAGES` to `null` to open it up again).
 - **Beta test:** the *Beta tester* level (the shared code). They see Today, Business, Legislation and Lib Dems 150, read-only (a page is added to the beta with `beta: true` and its read routes under `betaApi`); the menu, the pages and the server all enforce it. Everyone with a real level sees the pages up to it.
 - **Developer:** the *Developer* level, above Admin, which only the admin can give (you always have it). It adds the **Developer** page (a register of every page and who can open it) and any page marked `level: DEVELOPER` in `site/libby/js/pages.js`, for work in progress. Mark a page `beta: true` to show it to beta testers.
 
