@@ -56,9 +56,9 @@ export const canOpenPage = (page, level, house = 'lords') => inHouse(page, house
 // Today and Business have buttons at the top to switch between Honourable LIBBY (the Commons, green) and Noble LIBBY (the Lords, red).
 export const MENU = [
   { id: 'today', label: 'Today', href: '#/today', level: 'peers', beta: true, house: 'both', title: "Today's business", text: 'What is happening in the Commons or the Lords today: the order of business, Oral Questions and the committees.' },
-  { id: 'business', label: 'Business', href: '#/business', level: 'peers', beta: true, house: 'both', title: 'Business', text: 'The coming weeks by calendar or by portfolio, past business (votes, questions, committees, Hansard) and Comms.' },
+  { id: 'business', label: 'Business', href: '#/business', level: 'peers', beta: true, house: 'both', title: 'Business', text: 'The coming weeks by calendar or by portfolio, and past business (votes, questions, committees, Hansard).' },
   { id: 'legislation', label: 'Legislation', href: '#/legislation', level: 'peers', beta: true, house: 'both', title: 'Legislation', text: 'Every live Bill in Parliament: where it is, the next stage, the documents for each stage and the amendments.' },
-  { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, the Wallace Room, Room 391, work experience support and the guides.' },
+  { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, Comms, the Wallace Room, Room 391, work experience support and the guides.' },
   { id: 'whips-office', label: 'Whips', href: '#/whips-office', level: 'whips', house: 'both', title: "Whips' page", text: 'Availability for whipping, and the voting analysis and Lords Library data.' },
   { id: 'advisers-office', label: 'Advisers', href: '#/advisers-office', level: 'staff', house: 'both', title: "Advisers' page", text: 'Bill advisers, groupings and grids, the bulletin and the duty rota, and the roles.' },
   { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, house: 'both', title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
@@ -70,7 +70,7 @@ export const BETA_MENU = MENU.filter((m) => m.beta);
 // Groups of subpages. Each group is shown as a hub page (cards) and as a row of buttons above each of its pages.
 export const GROUPS = {
   business: { title: 'Business', intro: 'What Parliament will do, what it has done, and what the team has been saying.' },
-  lds150: { title: 'Lib Dems 150', intro: 'Policy, the rooms, work experience support and the guides.' },
+  lds150: { title: 'Lib Dems 150', intro: 'Policy, Comms, the rooms, work experience support and the guides.' },
   'whips-office': { title: 'Whips\u2019 page', intro: 'For Whips and above: availability for whipping, and the data.' },
   'advisers-office': { title: 'Advisers\u2019 page', intro: 'For Staff and Admin: the advisers\u2019 tools, and who has which role.' },
 };
@@ -126,10 +126,6 @@ export const PAGES = [
   { id: 'portfolio', match: /^\/portfolio\/([A-Za-z]+)$/, view: 'portfolio-page.js', fn: 'renderPortfolio', params: (m) => ({ code: m[1].toUpperCase() }), group: 'business', tab: 'future', beta: true, house: 'both', switch: true },
   { id: 'past', match: /^\/past(?:\/([a-z]+)(?:\/([a-z]+))?)?$/, view: 'past-page.js', fn: 'renderPast', params: (m) => ({ kind: m[1] || '', sub: m[2] || '' }),
     group: 'business', tab: 'past', tabLabel: 'Past', href: '#/past', beta: true, house: 'both', switch: true, card: 'Divisions, written questions and statements, committee work and Hansard.' },
-  { id: 'comms', match: /^\/comms$/, view: 'comms-page.js', fn: 'renderComms', group: 'business', tab: 'comms', tabLabel: 'Comms', href: '#/comms', beta: true, house: 'lords', switch: true,
-    card: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.',
-    api: [['comms', { GET: 'peers', '*': WHIPS_FEATURES }]] },
-
   // Lib Dems 150: the parts of the old LD Peers' Group page that are not for the Whips or the advisers
   { id: 'lds150', match: /^\/lib-dems-150$/, view: 'lds150-page.js', fn: 'renderLds150', nav: 'lds150', beta: true, house: 'both' },
   { id: 'policy', match: /^\/policy$/, view: 'policy-page.js', fn: 'renderPolicy', group: 'lds150', tab: 'policy', tabLabel: 'Policy', href: '#/policy', beta: true, house: 'both',
@@ -142,6 +138,9 @@ export const PAGES = [
   { id: 'work-experience', match: /^\/work-experience$/, view: 'work-experience-page.js', fn: 'renderWorkExperience', group: 'lds150', tab: 'work', tabLabel: 'Work Experience Support', href: '#/work-experience', beta: true, house: 'both',
     card: 'Ask for a Peer to host work experience students at a date and time, and see who can.',
     api: [['work-experience', { GET: 'peers', '*': 'peers' }]] },
+  { id: 'comms', match: /^\/comms$/, view: 'comms-page.js', fn: 'renderComms', group: 'lds150', tab: 'comms', tabLabel: 'Comms', href: '#/comms', beta: true, house: 'lords',
+    card: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.',
+    api: [['comms', { GET: 'peers', '*': WHIPS_FEATURES }]] },
 
   // The Whips' page (Whips and above): availability for whipping, and the data
   { id: 'whips-office', match: /^\/whips-office$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'whips-office' }), level: 'whips', nav: 'whips-office', house: 'both' },
