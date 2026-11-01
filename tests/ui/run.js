@@ -260,7 +260,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("admin: the foot has Developer version, Team & access and Sign out", /Developer version/.test(foot) && /Team & access/.test(foot) && /Sign out/.test(foot), foot.replace(/\n/g, " ").slice(0, 200));
           await page.goto(BASE + "/libby/#/business"); await page.waitForTimeout(600);
           const hub = await page.$eval("#app", b => b.innerText);
-          check("admin: LIBBY section pages load their files (Business hub)", !/couldn.t load/i.test(hub) && /Business/.test(hub), hub.slice(0, 100).replace(/\n/g, " "));
+          check("admin: LIBBY section pages load their files (Business hub: Future and Past, no Comms)", !/couldn.t load/i.test(hub) && /Business/.test(hub) && /Future/.test(hub) && /Past/.test(hub) && !/Comms/.test(hub), hub.slice(0, 100).replace(/\n/g, " "));
           // Today: buttons at the top switch between Honourable (Commons, green) and Noble (Lords, red)
           await page.goto(BASE + "/libby/#/today"); await page.waitForTimeout(800);
           const sw = await page.$$eval(".house-btn .house-btn-name", ns => ns.map(n => n.textContent));
@@ -306,7 +306,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           // Lib Dems 150
           await page.goto(BASE + "/libby/#/lib-dems-150"); await page.waitForTimeout(700);
           const ld = await page.$eval("#app", a => a.innerText);
-          check("Lib Dems 150: Policy, Wallace Room, Room 391 and Work Experience Support", ["Policy", "Wallace Room", "Room 391", "Work Experience Support"].every(t => ld.includes(t)), ld.slice(0, 200).replace(/\n/g, " "));
+          check("Lib Dems 150: Policy, Comms, Wallace Room, Room 391 and Work Experience Support (Comms is no longer under Business)", ["Policy", "Comms", "Wallace Room", "Room 391", "Work Experience Support"].every(t => ld.includes(t)), ld.slice(0, 200).replace(/\n/g, " "));
           const guides = await page.$$eval(".link-buttons li", ls => ls.map(l => ({ t: l.querySelector(".button").textContent.trim(), href: l.querySelector("a.button")?.getAttribute("href") || "", off: !!l.querySelector("button[disabled]") })));
           check("Lib Dems 150: the Organogram button links out; the other three guides say the link is to come", guides.length === 4 && guides[0].href.startsWith("https://libdemsparli.retool.com/embedded/public/c9c6ad33") && guides.slice(1).every(g => g.off), JSON.stringify(guides));
           await page.goto(BASE + "/libby/#/room-391"); await page.waitForTimeout(800);
