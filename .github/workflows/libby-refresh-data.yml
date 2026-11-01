@@ -1,4 +1,4 @@
-# Renews the website's saved copy of the Parliament data at 8am, 10am, 12pm, 2pm, 4pm and 6pm London time, every day.
+# Renews the website's saved copy of the Parliament data at 6am and 6pm London time, every day (the same two times as the Lovelace and Lucien collector).
 # Visitors then get the saved copy straight away instead of waiting for the Parliament APIs; the "Refresh now" button at the
 # foot of the site is the way to ask for fresh data in between.
 #
@@ -12,9 +12,9 @@
 name: Refresh data
 
 on:
-  # Scheduled runs stay OFF until LIBBY's data has moved to the Athena database and its secrets are set here (docs/MASTER-PLAN.md, phase 6).
-  #  schedule:
-  #    - cron: '7 7-18 * * *'
+  schedule:
+    # 06:07 and 17:07/18:07 UTC cover 6am and 6pm London in both summer and winter time; the first job skips the run that is not 6am or 6pm there.
+    - cron: '7 5,6,17,18 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -51,6 +51,12 @@ jobs:
     needs: window
     if: needs.window.outputs.go == 'true'
     uses: ./.github/workflows/libby-ingest-votes.yml
+    secrets: inherit
+
+  policy:
+    needs: window
+    if: needs.window.outputs.go == 'true'
+    uses: ./.github/workflows/libby-ingest-policy.yml
     secrets: inherit
 
   snapshots:

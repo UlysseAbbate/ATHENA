@@ -1,12 +1,9 @@
 # Loads the Lords' own Future Business and Order Paper into Supabase from the Lords Business API (scripts/libby/ingest_lordsbusiness.py).
-# Runs on weekday mornings and after lunch, and as part of "Refresh data"; can also be run by hand (Actions -> Run workflow).
+# Runs as part of "Refresh data" (6am and 6pm London time); can also be run by hand (Actions -> Run workflow).
 # (This replaces reading the Whips' Office website, which refuses automated requests.)
 name: Ingest Lords Business
 
 on:
-  schedule:
-    # Times are UTC. 06:30, 10:30 and 13:30 UTC = 07:30, 11:30, 14:30 London in summer time.
-    - cron: '30 6,10,13 * * 1-5'
   workflow_call:
   workflow_dispatch:
 

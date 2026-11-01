@@ -67,12 +67,12 @@ async function boot() {
 
 const TABS = [
   ["today", "Overview", () => true, renderToday],
-  ["plan", "Campaign plan", () => can("plan_full", "read") || can("plan_shared", "read"), renderPlan],
+  ["plan", "This Week", () => can("plan_full", "read") || can("plan_shared", "read"), renderPlan],
   ["budget", "Budget & governance", () => can("budget", "read"), renderBudget],
   ["people", "Volunteers & stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
   ["policies", "Policies", () => can("policies", "read"), () => crud(POLICIES)],
   ["media", "Media", () => can("coverage", "read") || can("social", "read"), renderMedia],
-  ["team", "Team & access", () => can("users", "read"), renderTeam]
+  ["team", "Team & access", () => S.admin, renderTeam]   // the administrator's alone, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
 const ALIAS = { visits: "plan", social: "media", coverage: "media", volunteers: "people", stakeholders: "people" };
@@ -164,11 +164,13 @@ async function crud(cfg, host = main, after) {
     <div class="row"><input class="grow" type="search" placeholder="Search…" data-q>${canAdd ? '<button class="btn primary" data-add>+ Add</button>' : ""}<button class="btn" data-csv title="Download what is shown as a spreadsheet">CSV</button></div>
     ${cfg.filters ? `<div class="row"><div class="seg">${cfg.filters.map((f, i) => `<button data-fl="${i}">${esc(f.label)}</button>`).join("")}</div></div>` : ""}
     ${cfg.beforeTable ? cfg.beforeTable : ""}<div class="tablewrap"><table></table></div><div data-foot></div>`;
-  const { data, error } = await sb.from(cfg.table).select(cfg.select || "*").order(cfg.order[0], { ascending: cfg.order[1] });
+  let qy = sb.from(cfg.table).select(cfg.select || "*");
+  if (cfg.where) qy = qy.match(cfg.where);   // a page can show only some of a table's rows (Media: Overall and Lib Dem)
+  const { data, error } = await qy.order(cfg.order[0], { ascending: cfg.order[1] });
   if (error) return showError(error);
   const cols = cfg.fields.filter(f => !f.hidden);
-  const srt = sortState[cfg.table] ||= { k: null, asc: true };
-  const fst = filterState[cfg.table] ||= { i: 0 };
+  const srt = sortState[cfg.key || cfg.table] ||= { k: null, asc: true };
+  const fst = filterState[cfg.key || cfg.table] ||= { i: 0 };
   let shown = data;
   const draw = () => {
     const q = $("[data-q]", host).value.toLowerCase();
@@ -195,6 +197,7 @@ async function crud(cfg, host = main, after) {
       title: row ? "Edit" : "Add", fields, values: row || {}, meta: edited(row),
       onSubmit: async vals => {
         if (cfg.owned && !row) vals.created_by = S.user.id;
+        if (cfg.where && !row) Object.assign(vals, cfg.where);
         if (cfg.transform) cfg.transform(vals);
         const e = row ? await guardedUpdate(cfg.table, row, vals) : (await sb.from(cfg.table).insert(vals)).error;
         if (!e || e.message === CONFLICT) reload();
@@ -217,19 +220,34 @@ async function crud(cfg, host = main, after) {
 
 /* ------------------------------------------------------------------ plan */
 const planState = { mode: "day", date: iso(new Date()) };
+// The plan's sections sit under five headings (plan_categories.grp). A heading with one section (Main News) is shown as that section.
+const PLAN_GROUPS = ["Main News", "Across London", "Campaigning", "Media", "Internal Actions"];
+const grpOf = c => c.grp || (c.constituency ? "Across London" : c.name);
+const subName = c => c.name.replace(/^Constituency Activity: /, "");
+const isConsSec = c => /^Constituency Activity: /.test(c.name);
+function planGroups(cats) {
+  const names = [...new Set([...PLAN_GROUPS, ...cats.map(grpOf)])];
+  return names.map(n => ({ name: n, cats: cats.filter(c => grpOf(c) === n) })).filter(g => g.cats.length);
+}
+// the Media subsections that show the latest coverage of their topic (the full coverage is on the Media page)
+const NEWS_TOPIC = { "Parliamentary News": "parliament", "GLA News": "gla", "Council News": "council" };
+const newsLines = (list, n = 3) => list.slice(0, n).map(c => { const u = safeUrl(c.url);
+  return `<div class="ovline news"><b>${esc(fmtShort(c.covered_on))}</b> ${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(c.headline)}</a>` : esc(c.headline)} <span class="muted">· ${esc(c.outlet)}</span></div>`; }).join("");
+
 async function renderPlan() {
   const { mode, date } = planState;
   const start = mode === "day" ? date : mondayOf(date), end = mode === "day" ? date : addDays(start, 6);
-  const canVisits = can("visits", "read");
-  const [cats, ents, vis, allVis] = await Promise.all([
+  const canVisits = can("visits", "read"), canNews = can("coverage", "read");
+  const [cats, ents, vis, allVis, news] = await Promise.all([
     sb.from("plan_categories").select("*").order("sort"),
     sb.from("plan_entries").select("*").gte("plan_date", start).lte("plan_date", end).order("updated_at"),
     canVisits ? sb.from("local_party_visits").select("*").gte("visit_date", start).lte("visit_date", end).order("visit_date") : Promise.resolve({ data: [] }),
-    canVisits ? sb.from("local_party_visits").select("id,visit_date") : Promise.resolve({ data: [] })
+    canVisits ? sb.from("local_party_visits").select("id,visit_date") : Promise.resolve({ data: [] }),
+    canNews ? sb.from("media_coverage").select("covered_on,outlet,headline,url,topic").not("topic", "is", null).order("covered_on", { ascending: false }).limit(60) : Promise.resolve({ data: [] })
   ]);
-  if (cats.error || ents.error || vis.error || allVis.error) return showError(cats.error || ents.error || vis.error || allVis.error);
-  // visit details (who asked, contact, who is actioning) sit under the plan's Campaigning section on the visit's date
-  const vcat = cats.data.find(c => c.name.startsWith("Campaigning"));
+  if (cats.error || ents.error || vis.error || allVis.error || news.error) return showError(cats.error || ents.error || vis.error || allVis.error || news.error);
+  // visit details (who asked, contact, who is actioning) sit under Local Party Activity on the visit's date
+  const vcat = cats.data.find(c => c.name === "Local Party Activity");
   const partyKey = v => String(v.local_party || "").toLowerCase().replace(/ and /g, " ").split(/\s+/)[0];
   const visitDetail = v => [v.request, v.contact_name && `contact ${v.contact_name}${v.contact_phone ? " " + v.contact_phone : ""}`, v.taken_by && `taken by ${v.taken_by}`,
     v.actioning && `actioning ${v.actioning}`, v.notes].filter(Boolean).join(" · ");
@@ -247,7 +265,7 @@ async function renderPlan() {
   $("[data-d]").onchange = e => { if (e.target.value) { planState.date = e.target.value; renderPlan(); } };
   const byKey = {}; ents.data.forEach(e => (byKey[e.category_id + "|" + e.plan_date] ||= []).push(e));
   const edit = (entry, cat, d) => openForm({
-    title: `${cat.name}: ${fmtShort(entry?.plan_date || d)}`, fields: [{ k: "content", label: "Entry", type: "textarea", req: true }, { k: "plan_date", label: "Date", type: "date", req: true }],
+    title: `${subName(cat)}: ${fmtShort(entry?.plan_date || d)}`, fields: [{ k: "content", label: "Entry", type: "textarea", req: true }, { k: "plan_date", label: "Date", type: "date", req: true }],
     values: entry || { plan_date: d },
     meta: edited(entry),
     onSubmit: async v => { const error = entry ? await guardedUpdate("plan_entries", entry, v)
@@ -261,21 +279,30 @@ async function renderPlan() {
     main.insertAdjacentHTML("beforeend", `<details class="card" id="vreq" style="margin-top:18px"><summary><b>Local party visit requests</b> <span class="muted">· ${allVis.data.length} on the sheet${undated ? `, ${undated} without a date yet` : ""}</span></summary><div id="vreqb"></div></details>`);
     $("#vreq").ontoggle = e => { if (e.target.open && !$("#vreqb").dataset.on) { $("#vreqb").dataset.on = 1; crud(VISITS, $("#vreqb"), renderPlan); } };
   }
+  const groups = planGroups(cats.data);
   if (mode === "day") {
-    const section = c => {
+    const addBtn = c => canCat(c) ? `<button class="btn sm" data-add="${c.id}">+ Add</button>` : "";
+    const entryHtml = c => (byKey[c.id + "|" + date] || []).map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>`).join("");
+    const section = (c, titled = true) => {
       const list = byKey[c.id + "|" + date] || [];
       const isV = vcat && c.id === vcat.id, vday = isV ? visitsOn(date) : [];
       const vline = (v, own) => `<div class="${own ? "entry" : "ovline muted"}"><span>${own ? "" : "↳ "}<b>${esc(v.local_party)}</b>${visitDetail(v) ? ": " + esc(visitDetail(v)) : ""}</span>${can("visits", "write") ? `<span class="acts"><button class="btn sm" data-v="${v.id}">Edit visit</button></span>` : ""}</div>`;
       const body = isV ? list.map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>` +
-          vday.filter(v => e.content.toLowerCase().includes(partyKey(v))).map(v => vline(v, false)).join("")).join("") + vday.filter(v => !matched(v, list)).map(v => vline(v, true)).join("") : null;
-      return `<div class="sec ${c.shared ? "shared" : ""}"><h3>${esc(c.name.replace(/^Constituency Activity: /, ""))} ${c.shared && !c.constituency && can("plan_full", "read") ? '<span class="pill">visible to all roles</span>' : ""} ${canCat(c) ? `<button class="btn sm" data-add="${c.id}">+ Add</button>` : ""}</h3>
-        ${(isV ? body : list.map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>`).join("")) || '<span class="muted">Nothing planned.</span>'}</div>`;
+          vday.filter(v => e.content.toLowerCase().includes(partyKey(v))).map(v => vline(v, false)).join("")).join("") + vday.filter(v => !matched(v, list)).map(v => vline(v, true)).join("") : entryHtml(c);
+      const topic = NEWS_TOPIC[c.name], latest = topic ? news.data.filter(n => n.topic === topic) : [];
+      const hl = topic && canNews ? `<div class="hl"><h4>Latest ${esc(subName(c).replace(/ News$/, ""))} news <a href="#media" data-go="media" class="muted">all coverage in Media ›</a></h4>${newsLines(latest) || '<span class="muted">Nothing logged yet.</span>'}</div>` : "";
+      return `<div class="sec ${c.shared ? "shared" : ""}">${titled ? `<h3>${esc(subName(c))} ${addBtn(c)}</h3>` : ""}${body || '<span class="muted">Nothing planned.</span>'}${hl}</div>`;
     };
-    // the constituency sections sit together under one heading, open when any of them has something on this day
-    const first = cats.data.findIndex(c => c.constituency), cons = cats.data.filter(c => c.constituency);
-    pv.innerHTML = cats.data.map((c, i) => !c.constituency ? section(c) : i !== first ? "" :
-      `<details class="card cons" ${cons.some(k => (byKey[k.id + "|" + date] || []).length) ? "open" : ""}><summary><b>Constituency Activity</b> <span class="muted">· ${cons.length} sections, one per GLA constituency</span></summary>${cons.map(section).join("")}</details>`).join("");
+    pv.innerHTML = groups.map(g => {
+      const single = g.cats.length === 1 && subName(g.cats[0]) === g.name;
+      // the constituency sections sit together in one fold, open when any of them has something on this day
+      const cons = g.cats.filter(isConsSec), consAt = g.cats.findIndex(isConsSec);
+      const inner = single ? section(g.cats[0], false) : g.cats.map((c, i) => !isConsSec(c) ? section(c) : i !== consAt ? "" :
+        `<details class="card cons" ${cons.some(k => (byKey[k.id + "|" + date] || []).length) ? "open" : ""}><summary><b>Constituency Activity</b> <span class="muted">· ${cons.length} sections, one per GLA constituency</span></summary>${cons.map(c => section(c)).join("")}</details>`).join("");
+      return `<section class="grp"><h2 class="grp-h">${esc(g.name)} ${single ? addBtn(g.cats[0]) : ""}</h2>${inner}</section>`;
+    }).join("");
     pv.onclick = e => {
+      const gm = e.target.closest("[data-go]"); if (gm) { e.preventDefault(); return go(gm.dataset.go); }
       const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]"), vb = e.target.closest("[data-v]");
       if (vb) return visitForm(vis.data.find(v => v.id === vb.dataset.v));
       if (a) edit(null, cats.data.find(c => c.id == a.dataset.add), date);
@@ -283,9 +310,11 @@ async function renderPlan() {
     };
   } else {
     const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
-    pv.innerHTML = `<div class="tablewrap"><table class="grid"><tr><th>Row</th>${days.map(d => `<th class="${d === today ? "today" : ""}"><a href="#" data-day="${d}">${esc(fmtShort(d))}</a></th>`).join("")}</tr>` +
-      cats.data.map(c => `<tr><td>${esc(c.name)}</td>${days.map(d => { const list = byKey[c.id + "|" + d] || [], extra = vcat && c.id === vcat.id ? visitsOn(d).filter(v => !matched(v, list)).map(v => `${v.local_party}${v.request ? ": " + v.request : ""}`) : [];
-        return `<td class="${d === today ? "today" : ""}">${[...list.map(e => esc(e.content)), ...extra.map(esc)].join("\n\n")}</td>`; }).join("")}</tr>`).join("") + "</table></div>";
+    const row = c => { const list0 = days.map(d => byKey[c.id + "|" + d] || []);
+      return `<tr><td>${esc(subName(c))}</td>${days.map((d, i) => { const list = list0[i], extra = vcat && c.id === vcat.id ? visitsOn(d).filter(v => !matched(v, list)).map(v => `${v.local_party}${v.request ? ": " + v.request : ""}`) : [];
+        return `<td class="${d === today ? "today" : ""}">${[...list.map(e => esc(e.content)), ...extra.map(esc)].join("\n\n")}</td>`; }).join("")}</tr>`; };
+    pv.innerHTML = `<div class="tablewrap"><table class="grid"><tr><th>Section</th>${days.map(d => `<th class="${d === today ? "today" : ""}"><a href="#" data-day="${d}">${esc(fmtShort(d))}</a></th>`).join("")}</tr>` +
+      groups.map(g => `<tr class="grprow"><td colspan="8">${esc(g.name)}</td></tr>` + g.cats.map(row).join("")).join("") + "</table></div>";
     pv.onclick = e => { const a = e.target.closest("[data-day]"); if (a) { e.preventDefault(); planState.mode = "day"; planState.date = a.dataset.day; renderPlan(); } };
   }
 }
@@ -306,14 +335,19 @@ const POLICIES = { table: "policies", title: "Policies", order: ["theme", true],
     T("interested_parties", "Interested parties", "textarea"), T("comms", "Comms", "textarea"), T("notes", "Notes", "textarea")] };
 const PLATFORMS = ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"];
 const isSocial = r => r.source === "social" || PLATFORMS.some(p => p.toLowerCase() === String(r.outlet).toLowerCase()) || /^(X|Twitter)\b/i.test(r.outlet);
-const MEDIA = { table: "media_coverage", title: "", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
-  note: "Sarah Olney in the news (any article that mentions her, found at 6am and 6pm) and what our tracked social accounts post. For a social post the outlet is the platform and the headline is the start of the caption.",
-  filters: [{ label: "All", test: () => true }, { label: "News", test: r => !isSocial(r) }, { label: "Social media", test: isSocial }],
-  fields: [T("covered_on", "Date", "date", { req: true }), T("outlet", "Outlet / platform", "text", { req: true, list: [...PLATFORMS, "BBC News", "The Guardian", "Evening Standard", "MyLondon"] }),
+const TOPICS = [["parliament", "Parliament"], ["gla", "GLA"], ["council", "Council"]];
+const MEDIA_FIELDS = [T("covered_on", "Date", "date", { req: true }), T("outlet", "Outlet / platform", "text", { req: true, list: [...PLATFORMS, "BBC News", "The Guardian", "Evening Standard", "MyLondon"] }),
     T("headline", "Headline / first line of the caption", "text", { req: true, render: r => {
       const u = safeUrl(r.url); return (u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(r.headline)}</a>` : esc(r.headline)) +
         (r.source === "auto" ? ' <span class="pill" title="Found automatically in the outlet\'s news feed or pages">auto</span>' : r.source === "social" ? ' <span class="pill" title="Found automatically on the account">auto</span>' : ""); } }),
-    T("url", "URL", "url", { hidden: true }), T("notes", "Notes", "textarea")] };
+    T("topic", "Topic (shown on This Week)", "select", { options: TOPICS, render: r => esc(Object.fromEntries(TOPICS)[r.topic] || "") }),
+    T("url", "URL", "url", { hidden: true }), T("notes", "Notes", "textarea")];
+const MEDIA = { table: "media_coverage", key: "media_libdem", where: { kind: "libdem" }, title: "Lib Dem Media", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
+  note: "Sarah Olney in the news (any article that mentions her, found at 6am and 6pm) and what our tracked social accounts post. For a social post the outlet is the platform and the headline is the start of the caption.",
+  filters: [{ label: "All", test: () => true }, { label: "News", test: r => !isSocial(r) }, { label: "Social media", test: isSocial }], fields: MEDIA_FIELDS };
+const MEDIA_ALL = { table: "media_coverage", key: "media_overall", where: { kind: "overall" }, title: "Overall Media", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
+  note: "Wider political news that matters to the campaign: Parliament, the GLA and the councils. Give a story a topic and the latest ones show under the matching section on This Week.",
+  fields: MEDIA_FIELDS };
 const BUDGET = { table: "budget_items", title: "Budget", order: ["created_at", true], canEdit: () => can("budget", "write"),
   fields: [T("item", "Item", "text", { req: true }), T("amount", "Amount (£)", "number"), T("category", "Category"), T("notes", "Notes", "textarea")],
   footer: rows => `<div class="total">Total: ${esc(gbp(rows.reduce((s, r) => s + Number(r.amount || 0), 0)))}</div>` };
@@ -348,7 +382,8 @@ async function renderPeople() {
 
 /* ------------------------------------------------------------------ media: news coverage and social posts, plus the tracked accounts */
 async function renderMedia() {
-  main.innerHTML = `<div id="m1"></div>${can("social", "read") ? '<details class="card" id="m2" style="margin-top:18px"><summary><b>Tracked social accounts</b> <span class="muted">· London Lib Dems, London Young Liberals, Sarah Olney MP, Hina Bokhari AM, City Hall Lib Dems</span></summary><div id="m2b"></div></details>' : ""}`;
+  main.innerHTML = `<div id="m0"></div><div id="m1" style="margin-top:26px"></div>${can("social", "read") ? '<details class="card" id="m2" style="margin-top:18px"><summary><b>Tracked social accounts</b> <span class="muted">· London Lib Dems, London Young Liberals, Sarah Olney MP, Hina Bokhari AM, City Hall Lib Dems</span></summary><div id="m2b"></div></details>' : ""}`;
+  await crud(MEDIA_ALL, $("#m0"), renderMedia);
   await crud(MEDIA, $("#m1"), renderMedia);
   if (!can("social", "read")) return;
   const open = (id, fn) => { const d = $(id); d.ontoggle = () => { if (d.open && !d.dataset.on) { d.dataset.on = 1; fn(); } }; };
@@ -416,34 +451,18 @@ async function renderTeam() {
   };
 }
 
-/* ------------------------------------------------------------------ overview: what matters now, for this person */
+/* ------------------------------------------------------------------ overview: the campaign plan, to read */
 async function renderToday() {
-  const today = iso(new Date()), week = addDays(today, 6), fortnight = addDays(today, 13);
-  const q = (ok, fn) => ok ? fn().then(r => r.error ? { error: r.error } : r) : Promise.resolve(null);
-  const [cats, ents, gov, cov] = await Promise.all([
-    q(can("plan_full", "read") || can("plan_shared", "read"), () => sb.from("plan_categories").select("*").order("sort")),
-    q(can("plan_full", "read") || can("plan_shared", "read"), () => sb.from("plan_entries").select("*").gte("plan_date", today).lte("plan_date", week).order("plan_date")),
-    q(can("budget", "read"), () => sb.from("governance_items").select("*").neq("status", "Done").lte("due_date", fortnight).order("due_date")),
-    q(can("coverage", "read"), () => sb.from("media_coverage").select("*").order("covered_on", { ascending: false }).limit(6))]);
-  const firstError = [cats, ents, gov, cov].find(r => r?.error);
-  if (firstError) return showError(firstError.error);
-  const card = (title, body, tab) => `<section class="card ov"><h3>${esc(title)}${tab ? ` <a href="#${tab}" data-go="${tab}" class="muted">open ›</a>` : ""}</h3>${body}</section>`;
-  const none = t => `<p class="muted">${esc(t)}</p>`;
-  const parts = [];
-  if (cats) {
-    const byDay = {}; ents.data.forEach(e => (byDay[e.plan_date] ||= []).push(e));
-    const name = Object.fromEntries(cats.data.map(c => [c.id, c.name]));
-    const days = Array.from({ length: 7 }, (_, i) => addDays(today, i)).filter(d => byDay[d]);
-    parts.push(card("Campaign plan: next 7 days", days.map(d => `<div class="ovday"><b>${esc(d === today ? "Today" : fmtShort(d))}</b>${byDay[d].map(e =>
-      `<div class="ovline"><span class="pill">${esc(name[e.category_id] || "")}</span> ${esc(e.content)}</div>`).join("")}</div>`).join("") || none("Nothing planned this week."), "plan"));
-  }
-  if (gov) {
-    parts.push(card("Governance due", gov.data.map(g => `<div class="ovline ${g.due_date < today ? "late" : ""}"><b>${esc(fmtShort(g.due_date))}</b> ${esc(g.title)} <span class="muted">· ${esc(g.area)} · ${esc(g.status)}${g.owner ? " · " + esc(g.owner) : ""}</span></div>`).join("") ||
-      none("Nothing due in the next fortnight."), "budget"));
-  }
-  if (cov) parts.push(card("Latest media", cov.data.map(c => { const u = safeUrl(c.url);
-    return `<div class="ovline"><b>${esc(fmtShort(c.covered_on))}</b> ${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(c.headline)}</a>` : esc(c.headline)} <span class="muted">· ${esc(c.outlet)}</span></div>`; }).join("") || none("Nothing logged yet."), "media"));
-  main.innerHTML = `<h2>${esc(fmtDay(today))}</h2><div class="ovgrid">${parts.join("") || card("Welcome", none("Pick a page above."))}</div>`;
+  const today = iso(new Date()), start = mondayOf(today), end = addDays(start, 6);
+  if (!(can("plan_full", "read") || can("plan_shared", "read"))) { main.innerHTML = `<h2>${esc(fmtDay(today))}</h2><p class="muted">The campaign plan is not open to your role yet.</p>`; return; }
+  const [cats, ents] = await Promise.all([sb.from("plan_categories").select("*").order("sort"), sb.from("plan_entries").select("*").gte("plan_date", start).lte("plan_date", end).order("plan_date")]);
+  if (cats.error || ents.error) return showError(cats.error || ents.error);
+  const by = {}; ents.data.forEach(e => (by[e.category_id] ||= []).push(e));
+  const groups = planGroups(cats.data).map(g => ({ ...g, subs: g.cats.filter(c => (by[c.id] || []).length) }));
+  const total = ents.data.length;
+  main.innerHTML = `<div class="ov-head"><div><p class="ov-kicker">Campaign plan</p><h2>${esc(fmtShort(start))} – ${esc(fmtShort(end))}</h2><p class="muted">${total ? `${total} item${total === 1 ? "" : "s"} planned this week.` : "Nothing planned yet this week."}</p></div>
+    <a class="btn primary" href="#plan" data-go="plan">Open This Week ›</a></div>
+    <div class="ovplan">${groups.map(g => `<section class="ovg"><h3>${esc(g.name)}</h3>${g.subs.length ? g.subs.map(c => `<div class="ovsub">${g.cats.length > 1 ? `<h4>${esc(subName(c))}</h4>` : ""}${by[c.id].map(e => `<div class="ovitem${e.plan_date === today ? " now" : ""}"><span class="ovdate">${esc(e.plan_date === today ? "Today" : fmtShort(e.plan_date))}</span><span>${esc(e.content)}</span></div>`).join("")}</div>`).join("") : '<p class="muted">Nothing planned.</p>'}</section>`).join("")}</div>`;
   main.onclick = e => { const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); go(g.dataset.go); } };
 }
 

@@ -223,7 +223,7 @@ select t.fails($$select public.libby_reset_sequences()$$, 'permission denied', '
 select t.as_super();
 
 -- campaign plan sections: constituencies are editable by local party chairs and above, the other sections as before
-select t.eq($$select count(*)::text from public.plan_categories where constituency$$, '15', 'the plan has a section for each of the 14 GLA constituencies and one for all');
+select t.eq($$select count(*)::text from public.plan_categories where constituency$$, '16', 'the plan has a section for each of the 14 GLA constituencies, one for all, and Local Party Activity');
 select t.as_super();
 insert into public.plan_categories (name, sort, shared) values ('Media (test)', 40, false);
 update public.profiles set role = 'member' where id = :MEM;

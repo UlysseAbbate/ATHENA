@@ -64,6 +64,7 @@ export const MENU = [
   { id: 'cbusiness', label: 'Business', href: '#/c/business', level: 'peers', house: 'commons', title: 'Business', text: 'Coming business, and past business: votes, written questions and statements, committees and Hansard.' },
   { id: 'c-policy', label: 'Policy', href: '#/c/policy', level: 'peers', house: 'commons', title: 'Policy', text: 'Search conference motions and policy papers, or browse them by portfolio.' },
   { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, house: 'both', title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
+  { id: 'team', label: 'Team & access', href: '#/team', level: DEVELOPER, house: 'both', title: 'Team & access', text: 'Who has LIBBY, at what level and until when, the access codes, and recent changes. Visible only to you.' },
 ];
 
 // What a beta tester sees in the menu and on the home page, in place of MENU.
@@ -142,6 +143,7 @@ export const PAGES = [
 
   // The Developer site: you only (the admin). Put work in progress here, with `level: DEVELOPER`, until it is ready to go live.
   { id: 'developer', match: /^\/developer$/, view: 'developer-page.js', fn: 'renderDeveloper', level: DEVELOPER, nav: 'developer', house: 'both' },
+  { id: 'team', match: /^\/team$/, view: 'team-page.js', fn: 'renderTeam', level: DEVELOPER, nav: 'team', house: 'both' },
 
   // Honourable LIBBY: the House of Commons, from the Commons APIs (What's On, Bills, Commons Votes, written questions and statements,
   // committees). The Lords Whips' Office pages (Comms, Whips, Wallace Room, Roles, Advisers) and the Lords voting analysis have no

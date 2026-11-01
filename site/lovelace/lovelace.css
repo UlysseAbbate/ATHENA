@@ -56,3 +56,14 @@ tr.ended td{opacity:.55}
 .ovstat{font-size:14px}.ovstat b{font:800 1.2rem var(--head)}
 button[disabled]{opacity:.6;cursor:progress}
 td.perm{white-space:nowrap}td.perm label{display:inline-flex;align-items:center;gap:3px;margin:0 10px 0 0;color:var(--ink);font-size:12px}
+.grp{margin:0 0 26px}.grp-h{display:flex;align-items:center;gap:10px;margin:26px 0 10px;padding-bottom:6px;border-bottom:3px solid var(--yellow);font:800 1.15rem var(--head)}
+.sec h4,.hl h4{font:800 .72rem var(--head);text-transform:uppercase;letter-spacing:.05em;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+.hl{margin-top:8px;padding:8px 10px;border-left:4px solid var(--yellow);background:var(--hi);border-radius:0 8px 8px 0}.hl h4 a{font-weight:600;text-transform:none;letter-spacing:0}
+tr.grprow td{position:static;background:var(--chip);font:800 .8rem var(--head);text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--yellow)}
+.ov-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:6px 0 16px}.ov-head h2{margin:0;font-size:1.6rem}.ov-head p{margin:2px 0}
+.ov-kicker{font:800 .72rem var(--head);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.ovplan{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.ovg{background:var(--card);border:1px solid var(--rule);border-top:5px solid var(--yellow);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px}
+.ovg h3{font-size:1.05rem;margin:0 0 8px}.ovsub{margin:0 0 10px}.ovsub h4{font:800 .72rem var(--head);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 3px}
+.ovitem{display:flex;gap:10px;padding:4px 0;border-bottom:1px solid var(--rule);font-size:14px;line-height:1.45;white-space:pre-wrap}.ovitem:last-child{border-bottom:0}
+.ovdate{flex:0 0 74px;font:800 .74rem var(--head);color:var(--muted);padding-top:2px}.ovitem.now .ovdate{color:var(--ink)}.ovitem.now{background:var(--yellow-pale);margin:0 -6px;padding:4px 6px;border-radius:6px}
