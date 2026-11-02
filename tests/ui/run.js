@@ -229,6 +229,8 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
               { kind: "legislation", category: "Legislation", title: "Health Bill - report stage", start: null, peers: [{ name: "Daisy Cooper", party: "Liberal Democrat", ld: true }], billId: 4124, link: { href: "#/c/bill/4124", label: "Open Bill page", internal: true }, eventUrl: "" }] },
               { name: "Westminster Hall", start: "09:30", items: [{ kind: "motion", category: "Westminster Hall debate", title: "Impact of extreme weather on train services", start: "14:30", peers: [{ name: "Josh Newbury", party: "Labour", ld: false }], eventUrl: "" }] }] });
           if (u.pathname.endsWith("/api/libby/commons/bills")) return j({ government: [{ id: 4124, title: "Health Bill", stage: "Report stage", stageHouse: "Commons", portfolios: ["HEA"], portfolioBy: "dept" }], privateMembers: [], other: [] });
+          if (u.pathname.endsWith("/api/libby/live")) return j({ date: "2026-11-03", chamber: { available: true, lines: [{ text: "Health Bill - report stage", style: "" }, { text: "Baroness Beta", style: "member" }] }, grandCommittee: { sittingToday: true, current: { title: "Test Bill - committee", start: "15:45" }, next: null } });
+          if (u.pathname.endsWith("/api/libby/commons/annunciator")) return j({ date: "2026-11-03", chamber: { available: true, lines: [{ text: "Oral questions: HM Treasury", style: "" }] }, secondary: { name: "Westminster Hall", sittingToday: true, current: null, next: { title: "Impact of extreme weather", start: "14:30" } } });
           if (u.pathname.endsWith("/api/libby/bill-next")) return j({ dates: {}, missing: [], failed: [] });
           if (u.pathname.endsWith("/api/libby/bills")) return j({ government: [{ id: 1, title: "Test Bill [HL]", stage: "Report stage", stageHouse: "Lords", portfolios: ["HOM"], portfolioBy: "dept" }], privateMembers: [], other: [] });
           if (u.pathname.endsWith("/api/libby/bill-extras")) return j({ advisers: { 1: { name: "Pat Adviser" } }, nextDates: {}, notes: [] });
@@ -268,25 +270,34 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/business"); await page.waitForTimeout(600);
           const hub = await page.$eval("#app", b => b.innerText);
           check("admin: LIBBY section pages load their files (Business hub: Future and Past, no Comms)", !/couldn.t load/i.test(hub) && /Business/.test(hub) && /Future/.test(hub) && /Past/.test(hub) && !/Comms/.test(hub), hub.slice(0, 100).replace(/\n/g, " "));
+          // the home page: compact section buttons, and an annunciator for each House
+          await page.goto(BASE + "/libby/#/"); await page.waitForTimeout(1200);
+          const hp = await page.$eval("#app", a => a.innerText);
+          const ann = await page.$$eval(".annunciator h2", hs => hs.map(h => h.textContent));
+          check("Home: an annunciator for the House of Lords and one for the House of Commons", ann.join("|") === "House of Lords|House of Commons" && /Health Bill - report stage/.test(hp) && /Oral questions: HM Treasury/.test(hp) && /Grand Committee/i.test(hp) && /Westminster Hall/i.test(hp), hp.slice(0, 200).replace(/\n/g, " "));
+          const rows = await page.$$eval(".index-compact .index-row", rs => rs.map(r => { const b = r.getBoundingClientRect(); return { top: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height), after: getComputedStyle(r, "::after").display }; }));
+          check("Home: the section buttons are small and several sit on one row, with no round arrow", rows.length >= 6 && rows.filter(r => r.top === rows[0].top).length >= 3 && rows[0].w < 400 && rows[0].h < 150 && rows.every(r => r.after === "none"), JSON.stringify(rows.slice(0, 4)));
+          if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `libby-home-${scheme}.png`), fullPage: true }); }
+          await page.emulateMedia({ colorScheme: "light" });
           // Today: buttons at the top switch between Honourable (Commons, green) and Noble (Lords, red)
           await page.goto(BASE + "/libby/#/today"); await page.waitForTimeout(800);
-          const sw = await page.$$eval(".house-btn .house-btn-name", ns => ns.map(n => n.textContent));
-          check("Today: Honourable and Noble buttons at the top", sw.join("|") === "Honourable|Noble", sw.join("|"));
-          check("Today: Noble (the Lords) is the default, in the Lords colour", (await page.getAttribute("html", "data-house")) === "lords" && (await page.$eval(".house-btn-lords", b => b.getAttribute("aria-pressed"))) === "true");
-          await page.click(".house-btn-commons"); await page.waitForTimeout(900);
+          const bar = await page.$eval(".house-bar", b => ({ text: b.innerText.replace(/\s+/g, " "), w: b.getBoundingClientRect().width, to: b.dataset.house }));
+          check("Today: one long button at the top, naming the House you are in and offering the other", (await page.$$(".house-bar")).length === 1 && /Noble LIBBY/.test(bar.text) && /Switch to Honourable LIBBY/.test(bar.text) && bar.to === "commons" && bar.w > 900, JSON.stringify(bar));
+          check("Today: Noble (the Lords) is the default, in the Lords colour", (await page.getAttribute("html", "data-house")) === "lords" && (await page.$eval(".house-bar", b => getComputedStyle(b).backgroundColor)) === "rgb(229, 86, 111)");
+          await page.click(".house-bar"); await page.waitForTimeout(900);
           const day = await page.$eval("#app", a => a.innerText);
           check("Today: Honourable shows the Commons day by section, Lib Dem MPs marked, in the Commons colour", (await page.getAttribute("html", "data-house")) === "commons" && /Chamber/.test(day) && /Westminster Hall/.test(day) && /HM Treasury/.test(day) && (await page.$$("#app mark.ld")).length === 1, day.slice(0, 120).replace(/\n/g, " "));
           if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `libby-commons-today-${scheme}.png`), fullPage: true }); }
           await page.emulateMedia({ colorScheme: "light" });
           check("Today: a Bill on the Commons day links to its Commons Bill page", (await page.$eval('#app a[href="#/c/bill/4124"]', a => a.textContent)) === "Health Bill - report stage");
-          const colours = await page.$$eval(".house-btn", bs => bs.map(b => getComputedStyle(b).backgroundColor));
-          check("Today: the pressed Honourable button is green", colours[0] === "rgb(61, 180, 131)", colours.join("|"));
-          await page.click(".house-btn-lords"); await page.waitForTimeout(700);
+          const colour = await page.$eval(".house-bar", b => ({ bg: getComputedStyle(b).backgroundColor, text: b.innerText.replace(/\s+/g, " "), to: b.dataset.house }));
+          check("Today: in the Commons the long button is green and offers Noble", colour.bg === "rgb(61, 180, 131)" && /Honourable LIBBY/.test(colour.text) && /Switch to Noble LIBBY/.test(colour.text) && colour.to === "lords", JSON.stringify(colour));
+          await page.click(".house-bar"); await page.waitForTimeout(700);
           check("Today: switching back to Noble shows the Lords day and the Lords colour", (await page.getAttribute("html", "data-house")) === "lords" && !/Westminster Hall/.test(await page.$eval("#app", a => a.innerText)));
           // Business: calendar and portfolio, for both Houses
           await page.goto(BASE + "/libby/#/future"); await page.waitForTimeout(800);
-          check("Business: the Lords calendar, with a By portfolio choice", (await page.$$("#app .cal-cell")).length > 0 && /By portfolio/.test(await page.$eval("#app", a => a.innerText)) && (await page.$$(".house-btn")).length === 2);
-          await page.click(".house-btn-commons"); await page.waitForTimeout(900);
+          check("Business: the Lords calendar, with a By portfolio choice", (await page.$$("#app .cal-cell")).length > 0 && /By portfolio/.test(await page.$eval("#app", a => a.innerText)) && (await page.$$(".house-bar")).length === 1);
+          await page.click(".house-bar"); await page.waitForTimeout(900);
           const cal = await page.$eval("#app", a => a.innerText);
           check("Business: the Commons calendar shows Oral Questions by department, and the legislation", /Oral Questions/.test(cal) && /HM Treasury/.test(cal) && /Legislation/.test(cal) && /Health Bill/.test(cal), cal.slice(0, 200).replace(/\n/g, " "));
           await page.goto(BASE + "/libby/#/future?view=portfolio"); await page.waitForTimeout(700);
@@ -294,7 +305,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/portfolio/HEA"); await page.waitForTimeout(800);
           const ph = await page.$eval("#app", a => a.innerText);
           check("Business: a Commons portfolio has primary legislation, Oral Questions and legislation", /Primary legislation/.test(ph) && /Oral Questions/.test(ph) && /Department of Health and Social Care/.test(ph) && /Health Bill/.test(ph), ph.slice(0, 160).replace(/\n/g, " "));
-          await page.click(".house-btn-lords"); await page.waitForTimeout(500);
+          await page.click(".house-bar"); await page.waitForTimeout(500);
           await page.goto(BASE + "/libby/#/portfolio/HOM"); await page.waitForTimeout(800);
           const opts = await page.$$eval("[data-category] option", os => os.map(o => o.textContent.replace(/ \(\d+\)/, "")));
           check("Business: primary legislation has a drop-down for Government and other legislation", opts.join("|") === "All primary legislation|Government legislation|Other legislation", opts.join("|"));

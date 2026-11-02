@@ -1,6 +1,6 @@
 import { api } from '../api.js';
 import { esc, fmtDate, todayIso } from '../ui.js';
-import { liveStrip } from '../live-panel.js';
+import { annunciators } from '../live-panel.js';
 import { currentLevel, hasLevel, currentHouse } from '../session.js';
 import { menuFor, isRestricted } from '../pages.js';
 import { bulletinHtml } from '../bulletin-box.js';
@@ -9,22 +9,22 @@ export async function renderHome(el) {
   el.innerHTML = `
     <header class="page-head home-head">
       <p class="dateline">${esc(fmtDate(todayIso()))}</p>
-      <h1>${currentHouse() === 'commons' ? 'Commons business, in one place' : 'Lords business, in one place'}</h1>
+      <h1>Parliamentary business, in one place</h1>
     </header>
     <div id="live"></div>
     <div id="bulletin"></div>
-    <nav class="index" aria-label="Sections">
+    <nav class="index index-compact" aria-label="Sections">
       ${menuFor(currentLevel(), currentHouse()).map((s) => `
-        <a class="index-row" href="${s.href}">
+        <a class="index-row" href="${s.href}" title="${esc(s.text)}">
           <span class="index-title"><span class="swipe">${esc(s.title)}</span></span>
           <span class="index-text">${esc(s.text)}</span>
           <span class="index-hint" id="hint-${s.id}"></span>
         </a>`).join('')}
     </nav>`;
 
-  if (currentHouse() !== 'lords' || isRestricted(currentLevel())) return;   // Honourable LIBBY gets just its sections: the live panels, bulletin and counts are the Lords'
+  if (isRestricted(currentLevel())) return;   // (for now the restricted levels have just the Data page)
 
-  liveStrip(el.querySelector('#live'), { compact: true });
+  annunciators(el.querySelector('#live'));
 
   // The Whips' Office Bulletin: between the live panels and the sections. It is left out if it cannot be read or is empty.
   api('bulletin').then((d) => {
