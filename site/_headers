@@ -10,7 +10,26 @@
   X-Robots-Tag: noindex, nofollow
   Cross-Origin-Opener-Policy: same-origin
 
+# The site's own scripts and styles are re-checked on every load, so a change shows up as soon as it is deployed (no stale copy in the browser).
+/access/*
+  Cache-Control: no-cache
+/admin/*
+  Cache-Control: no-cache
+/lovelace/*
+  Cache-Control: no-cache
+/lucien/*
+  Cache-Control: no-cache
+/shared/*.js
+  Cache-Control: no-cache
+/shared/*.css
+  Cache-Control: no-cache
+/home.js
+  Cache-Control: no-cache
+/athena.css
+  Cache-Control: no-cache
+
 /shared/vendor/*
+  ! Cache-Control
   Cache-Control: public, max-age=86400
 
 /shared/fonts/*
