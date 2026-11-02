@@ -39,3 +39,34 @@ export function liveStrip(el, { compact = false } = {}) {
     else if (!document.hidden) load();
   }, 60000);
 }
+
+/**
+ * The home page's annunciators: one for the House of Lords and one for the House of Commons, each showing what the Chamber is doing now
+ * (the Parliament annunciator feed) and the current / next item in Grand Committee or Westminster Hall (inferred from the schedule).
+ */
+export function annunciators(el) {
+  const panel = (id, title, cls) => `<section class="annunciator ${cls}" aria-labelledby="ann-${id}"><h2 id="ann-${id}"><span class="pulse" aria-hidden="true"></span>${title}</h2>
+    <div class="live-body" data-${id}-ch>\u2026</div><div class="live-second" data-${id}-2></div></section>`;
+  el.className = 'annunciators';
+  el.innerHTML = panel('lords', 'House of Lords', 'annunciator-lords') + panel('commons', 'House of Commons', 'annunciator-commons');
+  const second = (name, sitting, current, next) => {
+    if (!sitting) return `<p class="live-quiet">${name} is not sitting today.</p>`;
+    const row = (label, e) => (e ? `<p class="live-line"><span class="live-label">${label}${e.start ? ` \u00b7 ${esc(e.start.slice(0, 5))}` : ''}</span>${hl(e.title)}</p>` : '');
+    return `<p class="live-sub">${name}</p>` + ((row('Now', current) + row('Next', next)) || `<p class="live-quiet">${name} has finished for the day.</p>`);
+  };
+  let loadedAt = 0;
+  const load = () => Promise.all([api('live', { passive: true }).catch(() => null), api('commons/annunciator', { passive: true }).catch(() => null)]).then(([l, c]) => {
+    loadedAt = Date.now();
+    el.querySelector('[data-lords-ch]').innerHTML = l ? chamberHtml(l.chamber) : '<p class="live-quiet">Live feed unavailable.</p>';
+    el.querySelector('[data-lords-2]').innerHTML = l ? second('Grand Committee', l.grandCommittee.sittingToday, l.grandCommittee.current, l.grandCommittee.next) : '';
+    el.querySelector('[data-commons-ch]').innerHTML = c ? chamberHtml(c.chamber) : '<p class="live-quiet">Live feed unavailable.</p>';
+    el.querySelector('[data-commons-2]').innerHTML = c ? second(c.secondary.name, c.secondary.sittingToday, c.secondary.current, c.secondary.next) : '';
+  });
+  load();
+  const onVisible = () => { if (!document.hidden && Date.now() - loadedAt > 60000) load(); };
+  document.addEventListener('visibilitychange', onVisible);
+  const timer = setInterval(() => {
+    if (!document.body.contains(el)) { clearInterval(timer); document.removeEventListener('visibilitychange', onVisible); }
+    else if (!document.hidden) load();
+  }, 60000);
+}

@@ -902,18 +902,16 @@ button.ghost:hover { background: var(--bar-bg); color: var(--bar-fg); border-col
 .house-text { font-size: .95rem; line-height: 1.4; }
 .future-day { margin-bottom: 1.4rem; }
 
-/* ---- The House buttons at the top of Today and Business (Honourable LIBBY green, Noble LIBBY red) */
+/* ---- The long House button across the top of the page: it says which House you are in and takes you to the other (Honourable green, Noble red) */
 .houseswitch { max-width: 1120px; margin: 0 auto; padding: 1rem 1.25rem 0; }
 .houseswitch:empty { display: none; }
-.house-switch { display: flex; gap: .6rem; flex-wrap: wrap; }
-.house-btn { display: flex; flex-direction: column; align-items: flex-start; gap: .1rem; padding: .5rem 1.1rem; background: var(--card); color: var(--ink); border: 3px solid transparent; cursor: pointer; font-family: var(--head); text-align: left; }
-.house-btn-commons { border-color: var(--commons-light); }
-.house-btn-lords { border-color: var(--lords-light); }
-.house-btn-name { font-weight: 800; font-size: 1.05rem; }
-.house-btn-sub { font-weight: 600; font-size: .78rem; opacity: .85; }
-.house-btn-commons[aria-pressed="true"] { background: var(--commons-light); color: #111; }
-.house-btn-lords[aria-pressed="true"] { background: var(--lords-light); color: #111; }
-.house-btn:hover { box-shadow: var(--shadow); }
+.house-bar { display: flex; justify-content: space-between; align-items: center; gap: .4rem 1rem; flex-wrap: wrap; width: 100%; padding: .75rem 1.1rem; border: 0; cursor: pointer; font-family: var(--head); text-align: left; color: #111; }
+.house-bar-commons { background: var(--commons-light); }
+.house-bar-lords { background: var(--lords-light); }
+.house-bar-here strong { font-size: 1.15rem; font-weight: 800; }
+.house-bar-sub { font-weight: 600; font-size: .85rem; margin-left: .4rem; }
+.house-bar-go { font-weight: 800; font-size: .95rem; }
+.house-bar:hover, .house-bar:focus-visible { box-shadow: var(--shadow); text-decoration: underline; }
 .legend { display: inline-block; padding: .1rem .6rem; font-weight: 700; color: #111; margin-right: .5rem; }
 .legend-commons { background: var(--commons-light); }
 .legend-lords { background: var(--lords-light); }
@@ -932,3 +930,23 @@ td.leg-stage-lords { background: var(--lords-light); color: #111; font-weight: 7
 .foot-theme { margin: 0 0 .75rem; }
 .foot .ghost { color: var(--bar-text); border-color: var(--bar-text); background: transparent; }
 .foot .ghost:hover { background: var(--yellow); color: #111; border-color: var(--yellow); }
+
+/* ---- the home page: small, compact section buttons, several to a row */
+.index-compact { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .5rem; margin-top: 1rem; }
+.index-compact .index-row { display: block; border-width: 1px; border-radius: 10px; box-shadow: none; padding: .6rem .85rem; }
+.index-compact .index-row::after { display: none; }
+.index-compact .index-title { display: block; font-size: 1.05rem; text-transform: none; letter-spacing: 0; }
+.index-compact .index-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; font-size: .8rem; color: var(--muted); max-width: none; margin-top: .15rem; }
+.index-compact .index-hint { display: block; font-size: .78rem; min-height: 0; }
+.index-compact .index-hint:not(:empty)::before { display: none; }
+.index-compact .index-row:hover, .index-compact .index-row:focus-visible { transform: none; box-shadow: var(--shadow); }
+
+/* ---- the annunciators on the home page: the Lords and the Commons side by side */
+.annunciators { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0 1.25rem; }
+.annunciator { background: var(--card); border: 1px solid var(--rule); border-top: 6px solid var(--outline); padding: .8rem 1rem 1rem; }
+.annunciator-lords { border-top-color: var(--lords-light); }
+.annunciator-commons { border-top-color: var(--commons-light); }
+.annunciator h2 { font: 800 1.05rem var(--head); margin: 0 0 .5rem; display: flex; align-items: center; gap: .5rem; color: var(--ink); }
+.annunciator .live-second { margin-top: .6rem; padding-top: .5rem; border-top: 1px solid var(--rule); }
+.live-sub { margin: 0 0 .15rem; font: 800 .75rem var(--head); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+@media (max-width: 760px) { .annunciators { grid-template-columns: 1fr; } }

@@ -15,19 +15,20 @@ export function applyHouse(house) {
   if (members) members.textContent = HOUSES[house].members;
 }
 
-/** The buttons, as HTML. */
-export const houseSwitchHtml = () => `<div class="house-switch" role="group" aria-label="Which House">
-  ${['commons', 'lords'].map((h) => `<button type="button" class="house-btn house-btn-${h}" data-house="${h}"${currentHouse() === h ? ' aria-pressed="true"' : ' aria-pressed="false"'}>
-    <span class="house-btn-name">${HOUSES[h].name.replace(' LIBBY', '')}</span><span class="house-btn-sub">${HOUSES[h].house}</span></button>`).join('')}
-</div>`;
+/** The long button across the top of the page: it names the House you are in and takes you to the other one when you click it. */
+export const houseSwitchHtml = () => {
+  const here = currentHouse(), other = here === 'commons' ? 'lords' : 'commons';
+  return `<button type="button" class="house-bar house-bar-${here}" data-house="${other}" aria-label="You are in ${HOUSES[here].name}, the ${HOUSES[here].house}. Switch to ${HOUSES[other].name}, the ${HOUSES[other].house}.">
+    <span class="house-bar-here"><strong>${HOUSES[here].name}</strong> <span class="house-bar-sub">${HOUSES[here].house}</span></span>
+    <span class="house-bar-go">Switch to ${HOUSES[other].name} (${HOUSES[other].house}) <span aria-hidden="true">\u203a</span></span></button>`;
+};
 
-/** Draw the buttons into `box` (or empty it), and call `onChange` after a switch. */
+/** Draw the button into `box` (or empty it), and call `onChange` after a switch. */
 export function renderHouseSwitch(box, show, onChange) {
   if (!show) { box.innerHTML = ''; return; }
   box.innerHTML = houseSwitchHtml();
-  box.querySelectorAll('[data-house]').forEach((b) => b.addEventListener('click', () => {
-    if (b.dataset.house === currentHouse()) return;
-    applyHouse(b.dataset.house);
+  box.querySelector('[data-house]').addEventListener('click', (e) => {
+    applyHouse(e.currentTarget.dataset.house);
     onChange();
-  }));
+  });
 }
