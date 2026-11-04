@@ -38,5 +38,31 @@ const rising = risingFromWhatsOn([{ category: 'Estimated rising time', start: '2
 ok(rising.Chamber === '22:00' && Object.keys(rising).length === 1, 'the estimated rising time is read from the calendar');
 ok(!sectionsFromWhatsOn([{ section: 'Chamber', category: 'Estimated rising time', title: 'Estimated rising time', members: [], summary: '' }]).length, 'and is not shown as an item of business');
 
+// The Commons calendar: the What's On API's own Commons events become the Chamber and Westminster Hall, with Oral Questions and legislation
+import { eventsFromApi, liveEvents, WHATSON_CHUNK_DAYS } from '../../lib/libby/lordsbusiness.js';
+import { commonsSections } from '../../lib/libby/commons.js';
+const commonsApi = read('whatson-commons-api-2026-11-04.json');
+const commonsEvents = eventsFromApi(commonsApi, 'Commons');
+const commonsDay = commonsSections(commonsEvents.filter((e) => e.date === '2026-11-04' && (e.section === 'Chamber' || e.section === 'Westminster Hall')));
+const cItems = commonsDay.sections.flatMap((s) => s.items);
+ok(commonsDay.sections.map((s) => s.name).join('|') === 'Chamber|Westminster Hall', 'the Commons day has a Chamber and a Westminster Hall from the What\'s On API');
+ok(cItems.some((i) => i.kind === 'oq' && i.title === 'Wales') && cItems.some((i) => i.kind === 'legislation' && /Sporting Events Bill/.test(i.title)), 'with Oral Questions (by department) and legislation (by Bill)');
+
+// The API refuses a range of more than about a month (400), so a long range is asked for a fortnight at a time and put back together
+const asked = [];
+const realFetch = globalThis.fetch;
+globalThis.fetch = async (url) => {
+  const u = new URL(url);
+  const from = u.searchParams.get('queryParameters.startDate'), to = u.searchParams.get('queryParameters.endDate');
+  asked.push([from, to]);
+  const days = (Date.parse(to) - Date.parse(from)) / 864e5;
+  if (days > 31) return new Response('{"Message":"An error has occurred."}', { status: 400 });
+  return new Response(JSON.stringify(commonsApi.filter((e) => e.StartDate.slice(0, 10) >= from && e.StartDate.slice(0, 10) <= to)), { status: 200 });
+};
+const long = await liveEvents(null, '2026-11-04', '2026-12-15', 'Commons');
+globalThis.fetch = realFetch;
+ok(asked.length === 3 && asked.every(([f, t]) => (Date.parse(t) - Date.parse(f)) / 864e5 < WHATSON_CHUNK_DAYS) && asked[0][0] === '2026-11-04' && asked.at(-1)[1] === '2026-12-15', 'a six-week range is asked for in fortnights, covering every day');
+ok(long.length === commonsEvents.length && long.every((e, i) => e.title === commonsEvents[i].title), 'and the fortnights are put back together in order');
+
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll business checks passed.');
 process.exit(failed ? 1 : 0);
