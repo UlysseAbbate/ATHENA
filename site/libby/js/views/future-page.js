@@ -57,12 +57,17 @@ function commonsCalendarHtml(data) {
         const label = fmtDate(date, { day: 'numeric', month: 'short' });
         if (date < data.from || date > data.to) return '<div class="cal-cell is-out" role="cell"></div>';
         if (!day) return `<div class="cal-cell is-empty ${date === today ? 'is-today' : ''}" role="cell"><span class="cal-date">${esc(label)}</span><span class="small muted">Not sitting</span></div>`;
-        const oqs = itemsOf(day, 'oq'), bills = itemsOf(day, 'legislation');
+        const oqs = itemsOf(day, 'oq');
+        // Private Members' Bills are counted ("12 PMBs"), not listed one by one: a Friday can have dozens
+        const isPmb = (i) => /private member/i.test(i.category || '');
+        const pmbs = itemsOf(day, 'legislation').filter(isPmb).length;
+        const bills = itemsOf(day, 'legislation').filter((i) => !isPmb(i));
         return `<a class="cal-cell ${date === today ? 'is-today' : ''}" role="cell" href="#/c/day/${date}">
           <span class="cal-date">${esc(label)}</span>
           ${oqs.length ? `<span class="cal-label">Oral Questions</span><ul>${oqs.map((q) => `<li><span class="kind-dot kind-oq" title="${esc(KIND.oq || '')}"></span>${esc(q.title)}</li>`).join('')}</ul>` : ''}
           ${bills.length ? `<span class="cal-label">Legislation</span><ul>${bills.map((b) => `<li><span class="kind-dot kind-legislation"></span>${hl(b.title.length > 70 ? `${b.title.slice(0, 68)}\u2026` : b.title)}</li>`).join('')}</ul>` : ''}
-          ${!oqs.length && !bills.length ? '<span class="small muted">No Oral Questions or legislation listed</span>' : ''}
+          ${pmbs ? `<span class="cal-label">Private Members' Bills</span><ul><li><span class="kind-dot kind-legislation"></span>${pmbs} PMB${pmbs === 1 ? '' : 's'}</li></ul>` : ''}
+          ${!oqs.length && !bills.length && !pmbs ? '<span class="small muted">No Oral Questions or legislation listed</span>' : ''}
         </a>`;
       }).join('')}</div>`).join('')}
     </div>
