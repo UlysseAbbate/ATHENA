@@ -102,11 +102,11 @@ For when a group should get in with one basic password and no individual account
 
 ### 3.4 One look: LIBBY's, in light and dark
 
-- The design source is `site/shared/tokens.css` (every colour and the dark palette, in one place) with shared components in `site/shared/libby.css`; LIBBY's own `site/libby/styles.css` uses only those tokens. The look is LIBBY's *current* calm Focus style (yellow masthead with a hairline, black type, yellow highlighter on titles, hairline borders, soft shadows), not the older hard-shadow leaflet layer.
+- The design source is `site/shared/tokens.css` (every colour, the Open Sans font and the dark palette, in one place) with the shared design system in `site/shared/libby.css`, loaded by every program; LIBBY's own `site/libby/styles.css` holds only what is particular to LIBBY and uses only those tokens. The look is deliberately plain and minimal (white paper, near-black type, hairline rules, Democrat Orange #ff6400 used sparingly, in line with the brand guidelines), with the Liberal Democrat diamond as the one ornament: a small cut diamond (a third off the right) before titles, diamond bullets and markers. It no longer imitates a Focus leaflet.
 - **Dark mode is new design work for LIBBY**, which has none today. Athena's existing dark tokens are the starting point; the leaflet devices need dark equivalents (the yellow offset shadow, the black header bar and red rule, tinted flag colours).
 - Theme: follows the OS by default; a toggle in the header (Auto / Light / Dark) stores the choice in the browser. Applied by a tiny external `theme.js` loaded in `<head>` so there is no flash and no inline script (CSP stays strict).
 - Shared pieces, written once: masthead and program switcher, sign-in form, buttons, tables, forms, cards, badges, flag colours, toasts.
-- Libre Franklin is self-hosted so CSP can stay `font-src 'self'`.
+- Open Sans (the brand typeface) is self-hosted so CSP can stay `font-src 'self'`.
 - Every program's page uses the shared header: Athena name, a program switcher showing only programs you may open, your name, theme toggle, sign out.
 - Contrast is checked in both themes (WCAG AA) as part of the UI tests.
 

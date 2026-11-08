@@ -11,7 +11,7 @@ window.Theme = (() => {
     const dark = v === "dark" || (v === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
     let m = document.querySelector('meta[name="theme-color"]');
     if (!m) { m = document.createElement("meta"); m.name = "theme-color"; document.head.append(m); }
-    m.content = dark ? "#1D1B0E" : "#FDBB30";
+    m.content = dark ? "#0E1118" : "#FFFFFF";
     document.querySelectorAll("[data-theme-btn]").forEach(b => { b.textContent = "Theme: " + LABEL[v]; b.setAttribute("aria-label", "Colour theme: " + LABEL[v] + ". Press to change."); });
   }
   const toggleHtml = () => '<button type="button" class="ghost theme-btn" data-theme-btn></button>';

@@ -131,6 +131,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.route(SB + "/**", r => r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: "{}" }));
       await page.goto(BASE + "/"); await page.waitForSelector("#aue", { timeout: 5000 }).catch(() => {});
       check("signed out: home shows the sign-in form", (await page.$("#aue")) !== null && !(await page.$("#n a")));
+      if (process.env.SHOTS) { await page.goto(BASE + "/"); await page.waitForTimeout(600); await page.screenshot({ path: path.join(process.env.SHOTS, "signin.png") }); }
       await page.goto(BASE + "/mall/#team"); await page.waitForTimeout(500);
       check("old /mall/ address redirects to /lovelace/ and keeps the #team part", page.url() === BASE + "/lovelace/#team", page.url());
       await page.goto(BASE + "/ulysse/"); await page.waitForTimeout(500);
@@ -148,6 +149,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
 
       await page.goto(BASE + "/");
       await page.waitForTimeout(600);
+      if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `athena-home-${scheme}.png`), fullPage: true }); await page.emulateMedia({ colorScheme: "light" }); }
       const links = await page.$$eval("#n a b", bs => bs.map(b => b.textContent));
       check(`${who}: home shows LUCIEN to the admin and LUCIEN people only`, links.includes("LUCIEN") === (who === "admin" || who === "lmgr"), links.join(","));
       check(`${who}: home shows Access only to the admin and program managers`, links.includes("Access") === (who === "admin" || who === "lmgr" || who === "core"), links.join(","));
@@ -183,7 +185,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: a new code is shown, and kept in the table`, (await page.$eval("#newcode", e => e.textContent).catch(() => "")) === "abcd-1234-abcd-1234-abcd" && log.some(l => l.startsWith("RPC create_access_code") && l.includes("simple-pass-1")));
         if (await page.$("#codes")) {
           const kept = await page.$eval("#codes", t => t.innerText);
-          check(`${who}: the codes table shows each code (to copy), its level, end time and use`, /Peers2026-test/.test(kept) && (await page.$$("#codes [data-copy]")).length >= 1 && (await page.$$("#codes select[data-cl]")).length >= 1 && (await page.$$("#codes input[data-ce]")).length >= 1 && /Used/.test(kept), kept.slice(0, 120).replace(/\n/g, " "));
+          check(`${who}: the codes table shows each code (to copy), its level, end time and use`, /Peers2026-test/.test(kept) && (await page.$$("#codes [data-copy]")).length >= 1 && (await page.$$("#codes select[data-cl]")).length >= 1 && (await page.$$("#codes input[data-ce]")).length >= 1 && /used/i.test(kept), kept.slice(0, 120).replace(/\n/g, " "));
           await page.selectOption("#codes select[data-cl]", { index: 0 }); await page.waitForTimeout(400);
           check(`${who}: changing a code's level calls set_code_level`, log.some(l => l.startsWith("RPC set_code_level")), log.filter(l => l.startsWith("RPC")).slice(-4).join(";"));
         }
@@ -275,15 +277,15 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           const hp = await page.$eval("#app", a => a.innerText);
           const ann = await page.$$eval(".annunciator h2", hs => hs.map(h => h.textContent));
           check("Home: an annunciator for the House of Lords and one for the House of Commons", ann.join("|") === "House of Lords|House of Commons" && /Health Bill - report stage/.test(hp) && /Oral questions: HM Treasury/.test(hp) && /Grand Committee/i.test(hp) && /Westminster Hall/i.test(hp), hp.slice(0, 200).replace(/\n/g, " "));
-          const rows = await page.$$eval(".index-compact .index-row", rs => rs.map(r => { const b = r.getBoundingClientRect(); return { top: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height), after: getComputedStyle(r, "::after").display }; }));
-          check("Home: the section buttons are small and several sit on one row, with no round arrow", rows.length >= 6 && rows.filter(r => r.top === rows[0].top).length >= 3 && rows[0].w < 400 && rows[0].h < 150 && rows.every(r => r.after === "none"), JSON.stringify(rows.slice(0, 4)));
+          const rows = await page.$$eval(".index-compact .index-row", rs => rs.map(r => { const b = r.getBoundingClientRect(); return { top: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height), after: parseFloat(getComputedStyle(r, "::after").width) || 0 }; }));
+          check("Home: the section buttons are small and several sit on one row, with only a small diamond marker", rows.length >= 6 && rows.filter(r => r.top === rows[0].top).length >= 3 && rows[0].w < 400 && rows[0].h < 150 && rows.every(r => r.after < 14), JSON.stringify(rows.slice(0, 4)));
           if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `libby-home-${scheme}.png`), fullPage: true }); }
           await page.emulateMedia({ colorScheme: "light" });
           // Today: buttons at the top switch between Honourable (Commons, green) and Noble (Lords, red)
           await page.goto(BASE + "/libby/#/today"); await page.waitForTimeout(800);
           const bar = await page.$eval(".house-bar", b => ({ text: b.innerText.replace(/\s+/g, " "), w: b.getBoundingClientRect().width, to: b.dataset.house }));
           check("Today: one long button at the top, naming the House you are in and offering the other", (await page.$$(".house-bar")).length === 1 && /Noble LIBBY/.test(bar.text) && /Switch to Honourable LIBBY/.test(bar.text) && bar.to === "commons" && bar.w > 900, JSON.stringify(bar));
-          check("Today: Noble (the Lords) is the default, in the Lords colour", (await page.getAttribute("html", "data-house")) === "lords" && (await page.$eval(".house-bar", b => getComputedStyle(b).backgroundColor)) === "rgb(229, 86, 111)");
+          check("Today: Noble (the Lords) is the default, in the Lords colour", (await page.getAttribute("html", "data-house")) === "lords" && (await page.$eval(".house-bar", b => getComputedStyle(b).backgroundColor)) === "rgb(252, 228, 232)");
           await page.click(".house-bar"); await page.waitForTimeout(900);
           const day = await page.$eval("#app", a => a.innerText);
           check("Today: Honourable shows the Commons day by section, Lib Dem MPs marked, in the Commons colour", (await page.getAttribute("html", "data-house")) === "commons" && /Chamber/.test(day) && /Westminster Hall/.test(day) && /HM Treasury/.test(day) && (await page.$$("#app mark.ld")).length === 1, day.slice(0, 120).replace(/\n/g, " "));
@@ -291,7 +293,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.emulateMedia({ colorScheme: "light" });
           check("Today: a Bill on the Commons day links to its Commons Bill page", (await page.$eval('#app a[href="#/c/bill/4124"]', a => a.textContent)) === "Health Bill - report stage");
           const colour = await page.$eval(".house-bar", b => ({ bg: getComputedStyle(b).backgroundColor, text: b.innerText.replace(/\s+/g, " "), to: b.dataset.house }));
-          check("Today: in the Commons the long button is green and offers Noble", colour.bg === "rgb(61, 180, 131)" && /Honourable LIBBY/.test(colour.text) && /Switch to Noble LIBBY/.test(colour.text) && colour.to === "lords", JSON.stringify(colour));
+          check("Today: in the Commons the long button is green-tinted and offers Noble", colour.bg === "rgb(225, 244, 235)" && /Honourable LIBBY/.test(colour.text) && /Switch to Noble LIBBY/.test(colour.text) && colour.to === "lords", JSON.stringify(colour));
           await page.click(".house-bar"); await page.waitForTimeout(700);
           check("Today: switching back to Noble shows the Lords day and the Lords colour", (await page.getAttribute("html", "data-house")) === "lords" && !/Westminster Hall/.test(await page.$eval("#app", a => a.innerText)));
           // Business: calendar and portfolio, for both Houses
@@ -316,7 +318,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           const lh = await page.$$eval("#app thead th", hs => hs.map(h => h.dataset.tfName || h.textContent.trim()));
           check("Legislation: columns Bill, Portfolio, Current stage, Next Stage, Adviser", lh.join("|") === "Bill|Portfolio|Current stage|Next Stage|Adviser", lh.join("|"));
           const st = await page.$$eval("td.leg-stage", ts => ts.map(t => `${t.textContent.trim()}:${t.className.includes("leg-stage-commons") ? "commons" : "lords"}:${getComputedStyle(t).backgroundColor}`));
-          check("Legislation: Bills from both Houses, the current stage green in the Commons and red in the Lords", st.join("|") === "Report stage:commons:rgb(61, 180, 131)|Report stage:lords:rgb(229, 86, 111)" || (st.length === 2 && st.some(x => x.includes(":commons:")) && st.some(x => x.includes(":lords:"))), st.join("|"));
+          check("Legislation: Bills from both Houses, the current stage green in the Commons and red in the Lords", st.join("|") === "Report stage:commons:rgb(225, 244, 235)|Report stage:lords:rgb(252, 228, 232)" || (st.length === 2 && st.some(x => x.includes(":commons:")) && st.some(x => x.includes(":lords:"))), st.join("|"));
           const widths = await page.$$eval(".leg-table:first-of-type thead th", hs => hs.map(h => Math.round(h.getBoundingClientRect().width)));
           check("Legislation: the Bill and Next Stage columns are the narrower ones", widths.length === 5 && widths[3] <= 150 && widths[0] < widths[2] + 60, widths.join("|"));
           if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `libby-legislation-${scheme}.png`), fullPage: true }); }
@@ -329,8 +331,11 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("Lib Dems 150: the Organogram button links out; the other three guides say the link is to come", guides.length === 4 && guides[0].href.startsWith("https://libdemsparli.retool.com/embedded/public/c9c6ad33") && guides.slice(1).every(g => g.off), JSON.stringify(guides));
           await page.goto(BASE + "/libby/#/room-391"); await page.waitForTimeout(800);
           check("Lib Dems 150: Room 391 is a booking calendar like the Wallace Room", /Room 391/.test(await page.$eval("#app", a => a.innerText)) && (await page.$("#room-cal")) !== null && !/Wallace/.test(await page.$eval("#app h1", a => a.textContent)));
+          if (process.env.SHOTS) { await page.screenshot({ path: path.join(process.env.SHOTS, "libby-room-391.png"), fullPage: true }); }
           await page.goto(BASE + "/libby/#/work-experience"); await page.waitForTimeout(800);
           const we = await page.$eval("#app", a => a.innerText);
+          if (process.env.SHOTS) { await page.screenshot({ path: path.join(process.env.SHOTS, "libby-work-experience.png"), fullPage: true }); }
+
           check("Lib Dems 150: Work Experience Support shows a calendar, the request, and who can host", /Work Experience Support/.test(we) && /Rae Office/.test(we) && /Baroness Beta can host/.test(we) && (await page.$("[data-new]")) !== null, we.slice(0, 160).replace(/\n/g, " "));
           // the Whips' page and the Advisers' page
           await page.goto(BASE + "/libby/#/whips-office"); await page.waitForTimeout(600);
@@ -396,6 +401,8 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           if (process.env.SHOTS) for (const [view, name] of [["months", "data-months"], ["divisions", "data-divisions"]]) { await page.goto(BASE + "/libby/#/data/votes?view=" + view); await page.waitForTimeout(900); await page.screenshot({ path: path.join(process.env.SHOTS, name + ".png"), fullPage: true }); }
           await page.setViewportSize({ width: 1280, height: 720 });
           lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(600);
+          await page.goto(BASE + "/libby/#/bill/1"); await page.waitForTimeout(1200);
+          if (process.env.SHOTS) { await page.screenshot({ path: path.join(process.env.SHOTS, "libby-bill-stages.png"), fullPage: true }); }
           await page.goto(BASE + "/libby/#/bill/1?tab=amendments"); await page.waitForTimeout(1500);
           const heads = await page.$$eval(".am-table thead th", hs => hs.map(h => h.textContent.trim()));
           check("amendments: one table, columns Signed peers / # / Location / Explanatory statement / buttons", heads.slice(0, 4).join("|") === "Signed peers|#|Location|Member\u2019s explanatory statement" && heads.length === 5, heads.join("|"));
@@ -452,7 +459,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       check(`${who}: dark theme is remembered`, (await page.getAttribute("html", "data-theme")) === "dark");
       await page.evaluate(() => localStorage.removeItem("athena_theme"));
       await page.emulateMedia({ colorScheme: "dark" }); await page.reload(); await page.waitForTimeout(300);
-      check(`${who}: Auto follows a dark device`, (await page.getAttribute("html", "data-theme")) === null && (await bg()) === "rgb(20, 20, 20)", await bg());
+      check(`${who}: Auto follows a dark device`, (await page.getAttribute("html", "data-theme")) === null && (await bg()) === "rgb(14, 17, 24)", await bg());
       await page.emulateMedia({ colorScheme: "light" });
 
       await page.goto(BASE + "/lovelace/");
@@ -553,6 +560,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
 
       await page.goto(BASE + "/lucien/");
       await page.waitForTimeout(1200);
+      if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `lucien-${scheme}.png`), fullPage: true }); await page.emulateMedia({ colorScheme: "light" }); }
       const ul = await page.$eval("body", b => b.innerText);
       check(`${who}: lucien access`, who === "admin" ? /Everything/.test(ul) && /items? shown|item/.test(ul) : /Not found/.test(ul), ul.slice(0, 40).replace(/\n/g, " "));
       if (who === "admin") {
@@ -573,6 +581,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
 
       await page.goto(BASE + "/admin/");
       await page.waitForTimeout(1000);
+      if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `admin-${scheme}.png`), fullPage: true }); await page.emulateMedia({ colorScheme: "light" }); }
       const ad = await page.$eval("body", b => b.innerText);
       check(`${who}: admin page`, who === "admin" ? /Collector healthy/i.test(ad) && /Recent activity/i.test(ad) : /Not found/.test(ad), ad.slice(0, 50).replace(/\n/g, " "));
 
