@@ -7,7 +7,7 @@ window.AuthUI = (() => {
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const css = `.au{max-width:26rem;margin:6vh auto;padding:0 1.25rem;font:400 16px/1.5 var(--body,system-ui,sans-serif);color:inherit}
     .au h2{display:flex;align-items:center;gap:.4rem;font:800 clamp(1.7rem,6vw,2.2rem)/1.15 var(--head,system-ui,sans-serif);letter-spacing:-.045em;margin:0 0 .4rem}
-    .au h2::before{content:'';width:.3em;height:.5em;background:var(--accent,#FF6400);clip-path:var(--diamond-cut,polygon(0 50%,74.6% 0,100% 17%,100% 83%,74.6% 100%));flex:none}
+    .au h2::before{content:'';width:.5em;height:.5em;background:var(--accent,#FF6400);clip-path:var(--diamond,polygon(50% 0,100% 50%,50% 100%,0 50%));flex:none}
     .au .seg{display:flex;gap:1.2rem;margin:1.2rem 0 .8rem;border-bottom:1px solid var(--rule,#E7E9EE)}
     .au .seg button{border:0;border-bottom:2px solid transparent;background:none;color:var(--muted,#5B6270);padding:.35rem 0;margin-bottom:-1px;font:600 .92rem var(--head,system-ui,sans-serif);cursor:pointer}
     .au .seg button:hover{color:var(--ink,#11141C)}

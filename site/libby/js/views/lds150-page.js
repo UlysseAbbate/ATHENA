@@ -13,9 +13,9 @@ export async function renderLds150(el) {
         <span class="index-text">${esc(t.card || '')}</span></a>`).join('')}
     </nav>
     <section><h2 class="h2-rule">Guides</h2>
-      <ul class="plain link-buttons">${LD150_LINKS.map(([label, url, text]) => `<li>${url
+      <ul class="link-buttons button-grid">${LD150_LINKS.map(([label, url, text]) => `<li>${url
         ? `<a class="button" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`
-        : `<button type="button" class="button" disabled aria-disabled="true">${esc(label)}</button> <span class="small muted">Link to come.</span>`}
-        <span class="small muted">${esc(text)}</span></li>`).join('')}</ul>
+        : `<button type="button" class="button" disabled aria-disabled="true">${esc(label)}</button>`}
+        <p>${esc(text)}${url ? '' : ' Link to come.'}</p></li>`).join('')}</ul>
     </section>`;
 }

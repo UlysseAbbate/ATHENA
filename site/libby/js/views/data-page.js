@@ -11,7 +11,7 @@ const crumbs = [['#/data', 'Data']];
 
 /** A row of buttons, one per type of data; the current one is marked. */
 function buttonRow(items, current, hrefFor) {
-  return `<nav class="data-buttons" aria-label="Choose the data to show">${items.map(([key, label]) =>
+  return `<nav class="data-buttons button-grid" aria-label="Choose the data to show">${items.map(([key, label]) =>
     `<a class="button ${key === current ? '' : 'button-quiet'}" href="${esc(hrefFor(key))}" ${key === current ? 'aria-current="true"' : ''}>${esc(label)}</a>`).join('')}</nav>`;
 }
 
@@ -155,7 +155,7 @@ function monthChart(box, d) {
   const shown = new Set(CHART_SERIES.filter((x) => x[3]).map((x) => x[0]));
   let cumulative = false;
   box.insertAdjacentHTML('beforeend', `<section class="data-chart" aria-label="Month by month graph">
-    <h3 class="h2-rule">Month by month graph</h3>
+    <h2 class="h2-rule">Month by month graph</h2>
     <div class="data-chart-mode" role="radiogroup" aria-label="How to plot the lines">
       <label><input type="radio" name="chart-mode" value="month" checked> Each month</label>
       <label><input type="radio" name="chart-mode" value="total"> Cumulative (running total)</label>

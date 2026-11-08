@@ -49,7 +49,18 @@ The full schema is in `supabase/migrations/` and the ingest function in `supabas
 
 ## Design
 
-One plain look for every program. `site/shared/tokens.css` is the only place colours and fonts are chosen (light, and a dark palette that follows the device or the Theme button in the foot); `site/shared/libby.css` is the shared design system (masthead, buttons, tabs, tables, forms, the foot) and each program adds only its own layout. White paper, near-black type in **Open Sans** (the brand typeface, self-hosted), hairline rules, and **Democrat Orange** (#ff6400, from the brand guidelines) used sparingly: the line across the top, the page you are on, buttons when pointed at. The Liberal Democrat **diamond** is the one ornament: a small cut diamond (a third off the right) before titles, diamond bullets and markers, a diamond for the read button. Colours that are not from the palette are not allowed in LIBBY's stylesheet (`node tests/libby-css.js`), and `node tests/contrast.js` checks the palette's contrast in both themes.
+One look for every program, so people can move between them without relearning anything. `site/shared/tokens.css` is the only place colours and fonts are chosen (light, and a dark palette that follows the device or the Theme button in the foot); `site/shared/libby.css` is the shared design system and each program adds only its own layout. **Open Sans** (the brand typeface, self-hosted) and **Democrat Orange** (#ff6400) with the Liberal Democrat **diamond**, always whole, as the one ornament.
+
+The same components everywhere:
+- **Header:** a band of colour (orange; green in Honourable LIBBY, red in Noble LIBBY) with the program's name and menu in dark type.
+- **Page title:** a tinted band across the page, with the title and a diamond. LOVELACE and LUCIEN show the name of the tab you are on in the same band.
+- **Sections:** a tinted bar with a diamond. **Every section heading is a drop-down** (`h2.h2-rule`; `site/shared/dropdowns.js` wraps the heading and what follows it, so a page only writes the heading). Sub-headings (`h3.h3-section`) are drop-downs too, with a smaller diamond; any other drop-down gets the same diamond marker.
+- **Tables:** one format, a box with a tinted title row in small capitals and hairline rows, the same padding in every program.
+- **Boxes:** white with a hairline, always the full width of the page.
+- **Buttons:** orange; a row of simple buttons is a `.button-grid`, several boxes across the page. Section tiles on the home pages are the same grid.
+- **Foot:** a tinted band with the Theme button and the program's links.
+
+`node tests/libby-css.js` stops LIBBY's stylesheet choosing its own colours, and `node tests/contrast.js` checks the palette's contrast in both themes.
 
 ## Tables
 

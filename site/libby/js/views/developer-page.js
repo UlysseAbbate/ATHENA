@@ -13,7 +13,7 @@ export async function renderDeveloper(el) {
   }).join('');
   el.innerHTML = `${pageHeader('Developer', 'Only you can see this page. It lists every page, who can open it, and how to put new work in front of the beta testers.')}
     <section>
-      <h2>The editions</h2>
+      <h2 class="h2-rule">The editions</h2>
       <div class="table-wrap"><table class="grid">
         <thead><tr><th scope="col">Edition</th><th scope="col">Who</th><th scope="col">What they see</th></tr></thead>
         <tbody>
@@ -23,13 +23,13 @@ export async function renderDeveloper(el) {
         </tbody></table></div>
     </section>
     <section>
-      <h2>Every page</h2>
+      <h2 class="h2-rule">Every page</h2>
       <div class="table-wrap"><table class="grid">
         <thead><tr><th scope="col">Page</th><th scope="col">Address</th><th scope="col">Who can open it</th><th scope="col">In the beta</th></tr></thead>
         <tbody>${rows}</tbody></table></div>
     </section>
     <section>
-      <h2>Moving a page between editions</h2>
+      <h2 class="h2-rule">Moving a page between editions</h2>
       <ul>
         <li><b>Keep it to yourself while you build it:</b> give its entry in <code>site/libby/js/pages.js</code> <code>level: DEVELOPER</code>.</li>
         <li><b>Put it in the beta:</b> add <code>beta: true</code> to its entry (and, if it reads from routes that are not listed under its <code>api</code>, list them under <code>betaApi</code>). It is read-only for beta testers.</li>

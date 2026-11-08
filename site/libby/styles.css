@@ -20,8 +20,6 @@
 /* ------------------------------------------------------------ day */
 .day-nav { display: flex; gap: 1.25rem; font: 700 .92rem var(--head); margin: -.5rem 0 .75rem; }
 .chamber { margin-top: 1.75rem; }
-.chamber-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; border-bottom: 1px solid var(--rule); padding-bottom: .3rem; }
-.chamber-head h2 { font: 800 1.4rem var(--head); margin: 0; }
 .chamber-head p { margin: 0; }
 .items { list-style: none; margin: 0; padding: 0; }
 .item { border-bottom: 1px solid var(--rule); padding: .8rem 0; }
@@ -156,7 +154,7 @@ a.cal-cell:hover { border-color: var(--outline); color: var(--ink); }
 .all-table td:first-child { min-width: 11rem; }
 .all-table td.place { white-space: nowrap; }
 /* ---- Draft amendments */
-.draft-form { display: grid; gap: .8rem; max-width: 52rem; }
+.draft-form { display: grid; gap: .8rem; }
 .draft-form .row { display: flex; flex-wrap: wrap; gap: .75rem; }
 .draft { background: var(--card); border: 1px solid var(--rule); padding: .8rem 1.1rem; margin: 0 0 1rem; font-size: .95rem; }
 .draft-title { font: 700 .95rem Arial, sans-serif; margin: 0 0 .5rem; background: var(--mark); display: inline; padding: 0 .15em; }
@@ -191,7 +189,7 @@ a.cal-cell:hover { border-color: var(--outline); color: var(--ink); }
 .comms-update form { display: grid; gap: .6rem; margin-top: .6rem; }
 .comms-update .field textarea { font: 1rem var(--body); padding: .55rem .65rem; border: 2px solid var(--rule-strong, var(--rule)); background: var(--card); width: 100%; resize: vertical; }
 /* ---- Bulletin editor (was inside bulletin-editor.js) ---- */
-.bul-card { background: var(--card); border: 1px solid var(--rule); border-left: 2px solid var(--accent); padding: .9rem 1.1rem 1rem; margin: 0 0 1rem; max-width: 52rem; display: grid; gap: .7rem; }
+.bul-card { background: var(--card); border: 1px solid var(--rule); border-left: 2px solid var(--accent); padding: .9rem 1.1rem 1rem; margin: 0 0 1rem; display: grid; gap: .7rem; }
 .bul-card textarea { font: 1rem var(--body); padding: .55rem .65rem; border: 1px solid var(--rule-strong); background: var(--card); color: var(--ink); width: 100%; resize: vertical; }
 .bul-card textarea:focus { border-color: var(--outline); outline: none; }
 .bul-actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
@@ -199,8 +197,6 @@ a.cal-cell:hover { border-color: var(--outline); color: var(--ink); }
 .bul-new { color: var(--muted); font-size: .85rem; }
 /* ---- Data page (was inside data.js) ---- */
 /* The Data page (Voting Data and Lords Data). Loaded by public/js/views/data.js. */
-.data-buttons { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.2rem 0 1.4rem; }
-.data-buttons .button { font-size: .9rem; padding: .45rem .85rem; }
 .data-range { align-items: flex-end; }
 .data-presets { display: flex; flex-wrap: wrap; gap: .3rem .8rem; align-items: center; flex-basis: 100%; }
 .data-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: .8rem; margin: 1rem 0 1.2rem; }
@@ -212,8 +208,6 @@ a.cal-cell:hover { border-color: var(--outline); color: var(--ink); }
 .data-yes { color: var(--ink); font-weight: 700; }
 .data-total th, .data-total td { font-weight: 700; border-top: 1px solid var(--rule); }
 .data-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.data-buttons { gap: .7rem; }
-.data-buttons .button { margin: 0; }
 .data-table-sum th[scope="row"] { font-weight: 400; }
 .data-table-sum td.num { text-align: right; width: 8rem; }
 .data-group th { background: var(--card); font: 800 .95rem var(--head); color: var(--ink); border-top: 1px solid var(--rule); }
@@ -253,17 +247,11 @@ a.cal-cell:hover { border-color: var(--outline); color: var(--ink); }
 .avail-item .avail-dot { margin-top: .1rem; }
 .avail-bulk { display: flex; flex-wrap: wrap; gap: .5rem .7rem; align-items: center; margin: 0 0 1.2rem; font-size: .9rem; }
 .avail-bulk .button { margin: 0; padding: .3rem .8rem; font-size: .85rem; }
-.hymn-form { display: grid; gap: .8rem; max-width: 46rem; background: var(--card); border: 1px solid var(--rule); padding: 1rem 1.2rem; margin: 0 0 1.6rem; }
+.hymn-form { display: grid; gap: .8rem; background: var(--card); border: 1px solid var(--rule); padding: 1rem 1.2rem; margin: 0 0 1.6rem; }
 .hymn-form .row { display: flex; flex-wrap: wrap; gap: .75rem; }
 .hymn-group h3 { font: 800 1.15rem var(--head); color: var(--ink); margin: 1.4rem 0 .2rem; }
 .hymn-meta { font-size: .85rem; color: var(--muted); }
 /* ---- Advisers page (was inside advisers.js) ---- */
-.adv-section { margin: 1.6rem 0 0; }
-.adv-section h2 { font: 800 1.3rem var(--head); border-bottom: 1px solid var(--rule); padding-bottom: .3rem; margin: 0 0 .9rem; }
-.adv-list { list-style: none; padding: 0; margin: 0; display: grid; gap: .9rem; }
-.adv-list li { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; align-items: baseline; }
-.adv-list .button { margin: 0; flex: 0 0 auto; min-width: 15rem; text-align: center; }
-.adv-list p { margin: 0; flex: 1 1 18rem; color: var(--muted); }
 /* ---- Whips' Office Bulletin (was inside bulletin.js) ---- */
 .bulletin { background: var(--card); border: 1px solid var(--rule); border-top: 4px solid var(--orange); padding: 1rem 1.3rem 1.1rem; margin: 1.6rem 0 1.8rem; }
 .bulletin > h2 { font: 800 1.25rem var(--head); margin: 0 0 .7rem; color: var(--ink); }
@@ -288,7 +276,7 @@ a.cal-cell:hover { border-color: var(--outline); color: var(--ink); }
 .room-weekends { display: inline-flex; align-items: center; gap: .45rem; font-size: .92rem; cursor: pointer; }
 .room-who { display: flex; flex-wrap: wrap; gap: .8rem; align-items: flex-end; margin: .4rem 0 .6rem; }
 .room-who .button { margin: 0; }
-.room-form, .room-detail { background: var(--card); border: 1px solid var(--rule); border-left: 2px solid var(--accent); padding: .9rem 1.2rem 1rem; margin: .6rem 0 1.2rem; max-width: 56rem; display: grid; gap: .7rem; }
+.room-form, .room-detail { background: var(--card); border: 1px solid var(--rule); border-left: 2px solid var(--accent); padding: .9rem 1.2rem 1rem; margin: .6rem 0 1.2rem; display: grid; gap: .7rem; }
 .room-form .row { display: flex; flex-wrap: wrap; gap: .75rem; }
 .room-form .button, .room-detail .button { margin: 0; }
 .room-form h2, .room-detail h2 { margin: 0; }
@@ -369,7 +357,7 @@ button.room-free:hover, button.room-free:focus-visible { background: var(--sky);
 /* stakeholders */
 .stake-add { margin: 0 0 1.5rem; }
 .stake-add > summary { cursor: pointer; }
-.stake-form { display: grid; gap: .8rem; max-width: 52rem; margin-top: .6rem; }
+.stake-form { display: grid; gap: .8rem; margin-top: .6rem; }
 .stake-form .row { display: flex; flex-wrap: wrap; gap: .75rem; }
 .stake-form .row .field { flex: 1 1 14rem; }
 .stakes { list-style: none; padding: 0; margin: 0; display: grid; gap: .8rem; }
@@ -382,13 +370,8 @@ button.room-free:hover, button.room-free:focus-visible { background: var(--sky);
 .stake-briefing p { white-space: pre-wrap; margin: .4rem 0 0; }
 /* ------------------------------------------------------------ Roles page: a compact two-column table */
 .roles-tools { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; margin-bottom: .5rem; }
-.roles-wrap { max-width: 34rem; }
-.roles-table { font-size: .85rem; }
-.roles-table th, .roles-table td { padding: .12rem .5rem; line-height: 1.25; }
-.roles-table tbody tr:nth-child(even) { background: var(--hi); }
 .roles-table select, .roles-add input { font: .85rem var(--body); padding: .1rem .25rem; border: 1px solid var(--rule-strong); background: var(--card); color: var(--ink); max-width: 100%; }
 .roles-add input { width: 100%; padding: .2rem .4rem; }
-.roles-table tfoot td { border-top: 1px solid var(--rule); padding-top: .3rem; padding-bottom: .3rem; }
 .roles-added { font: 700 .68rem var(--head); color: var(--muted); border: 1px solid var(--rule-strong); padding: 0 .3rem; }
 /* ------------------------------------------------------------ Today page: duty Whips, estimated times, speakers, Staff panel */
 .duty-box { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .6rem; margin: .25rem 0 1rem; padding: .55rem .9rem; background: var(--card); border: 1px solid var(--rule); border-left: 2px solid var(--accent); }
@@ -429,8 +412,6 @@ button.est:hover, button.est[aria-expanded="true"] { background: var(--btn-bg); 
 .sitting-times input[type="time"] { font: .9rem var(--body); padding: .15rem .3rem; border: 1px solid var(--rule-strong); }
 .rules { margin-top: .6rem; }
 .rules > summary { cursor: pointer; font-weight: 700; }
-.rules-table { font-size: .85rem; max-width: 52rem; }
-.rules-table th, .rules-table td { padding: .15rem .5rem; }
 .rules-table input { font: .85rem var(--body); width: 4.5rem; padding: .1rem .3rem; border: 1px solid var(--rule-strong); }
 .rule-src { font: 700 .68rem var(--head); padding: 0 .3rem; border: 1px solid var(--rule-strong); margin-right: .3rem; }
 .rule-companion { color: var(--green); border-color: var(--green); }
@@ -442,7 +423,7 @@ button.est:hover, button.est[aria-expanded="true"] { background: var(--btn-bg); 
   .kind-cell { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: .5rem; }
 }
 /* the gate: Beta test and Developer */
-.gate { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; margin: 1.2rem 0; max-width: 46rem; }
+.gate { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; margin: 1.2rem 0; }
 .gate-card { background: var(--card); border: 1px solid var(--rule-strong); padding: 1rem 1.2rem; }
 .gate-card h2 { margin: 0 0 .3rem; font: 800 1.25rem var(--head); }
 .gate-card .field { margin-bottom: .6rem; }
@@ -478,7 +459,6 @@ td.leg-stage-lords { background: var(--lords-tint); box-shadow: inset 3px 0 0 va
 .cal-label { display: block; margin-top: .25rem; font: 800 .68rem var(--head); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .we-card { margin: 0 0 1rem; padding: .75rem 1rem; background: var(--card); border: 1px solid var(--rule); border-left: 2px solid var(--accent); }
 .we-card h3 { margin: 0 0 .25rem; font: 800 1rem var(--head); }
-.link-buttons li { margin: .5rem 0; }
 .foot-theme { margin: 0 0 .75rem; }
 
 /* ============================================================ LIBBY components in the shared plain look */
@@ -487,7 +467,6 @@ td.leg-stage-lords { background: var(--lords-tint); box-shadow: inset 3px 0 0 va
 .live-panel, .annunciator, .stake, .slotd, .duty-box, .summary-box, .comment-list li, .draft, .bul-card, .room-form, .room-detail, .room-scroll, .list-admin, .list-preview,
 .comms-card, .data-stat, .slot, .we-card, .gate-card, .portfolio-list a, .result, .hymn-form, .est-edit, .oq-body { border-radius: var(--radius); }
 .live-panel, .annunciator, .comms-card, .data-stat { background: var(--card); border: 1px solid var(--rule); padding: .9rem 1.1rem; }
-.live-panel h2, .annunciator h2 { display: flex; align-items: center; gap: .55rem; margin: 0 0 .5rem; font: 800 1rem var(--head); letter-spacing: -.02em; }
 .pulse { width: .6rem; height: .6rem; border-radius: 0; clip-path: var(--diamond); background: var(--accent); animation: pulse 2s ease-in-out infinite; }
 .live-label { color: var(--accent-ink); }
 
@@ -500,9 +479,6 @@ td.leg-stage-lords { background: var(--lords-tint); box-shadow: inset 3px 0 0 va
 @media (max-width: 760px) { .annunciators { grid-template-columns: 1fr; } }
 
 /* a day's business */
-.chamber-head { border-bottom: 1px solid var(--rule-strong); padding-bottom: .4rem; }
-.chamber-head h2 { display: flex; align-items: center; gap: .5rem; font: 800 1.3rem var(--head); letter-spacing: -.035em; }
-.chamber-head h2::before { content: ''; width: .28em; height: .46em; background: var(--house); clip-path: var(--diamond-cut); flex: none; }
 .kind { text-transform: uppercase; letter-spacing: .06em; font: 700 .7rem/1.3 var(--head); color: var(--muted); }
 .item-oq .kind, .item-pnq .kind { color: var(--accent-ink); }
 .item-title { font-weight: 600; }
@@ -574,3 +550,48 @@ a.cal-cell:hover { border-color: var(--accent); background: var(--accent-tint); 
 /* dropdown markers: a small diamond, grey when closed and orange when open */
 .tree-root > summary::before, .stage-d > summary::before, .slotd > summary::before, .peer-d > summary::before, .tree-group > summary::before { content: ''; display: inline-block; flex: none; align-self: center; width: .5em; height: .5em; background: var(--rule-strong); clip-path: var(--diamond); }
 .tree-root[open] > summary::before, .stage-d[open] > summary::before, .slotd[open] > summary::before, .peer-d[open] > summary::before, .tree-group[open] > summary::before { content: ''; background: var(--accent); }
+
+
+/* ============================================================ harmonised: the same boxes, headings, tables and buttons as every other program */
+
+/* every box: white, a hairline in the page's colour, rounded, the full width */
+.live-panel, .annunciator, .stake, .slotd, .slot, .duty-box, .summary-box, .comment-list li, .draft, .bul-card, .room-form, .room-detail, .room-scroll, .list-admin, .list-preview,
+.comms-card, .data-stat, .we-card, .gate-card, .result, .hymn-form, .est-edit, .oq-body, .record, .speakers-list, .stake-briefing { background: var(--card); border: 1px solid var(--band-line); border-radius: var(--radius); }
+.stake, .slotd, .we-card, .room-form, .room-detail, .bul-card, .list-admin, .est-edit, .oq-body { border-left: 1px solid var(--band-line); }
+.slotd.is-found { border-left-color: var(--accent); }
+.gate, .draft-form, .stake-form, .hymn-form, .room-form, .room-detail, .bul-card { max-width: none; }
+.roles-wrap, .rules-table { width: 100%; }
+
+/* a section of a day's business (the Chamber, Westminster Hall, the committees): a tinted bar, the same as every section heading */
+.chamber { margin-top: 1.7rem; }
+.chamber-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; padding: .55rem .9rem; background: var(--band); border: 1px solid var(--band-line); border-radius: var(--radius); }
+.chamber-head h2 { display: flex; align-items: center; gap: .65rem; margin: 0; font: 800 1.15rem/1.2 var(--head); letter-spacing: -.035em; }
+.chamber-head h2::before { content: ''; width: .6em; height: .6em; background: var(--accent); clip-path: var(--diamond); flex: none; }
+.chamber-head p { margin: 0; }
+
+/* the Lords and Commons annunciators on the home page: a coloured title bar over the box */
+.annunciator, .live-panel { padding: 0; overflow: hidden; }
+.annunciator h2, .live-panel h2 { display: flex; align-items: center; gap: .6rem; margin: 0 0 .7rem; padding: .6rem 1rem; font: 800 1rem var(--head); letter-spacing: -.02em; background: var(--band); border-bottom: 1px solid var(--band-line); }
+.annunciator-lords h2 { background: var(--lords-tint); border-bottom-color: var(--lords-line); }
+.annunciator-commons h2 { background: var(--commons-tint); border-bottom-color: var(--commons-line); }
+.annunciator-lords, .annunciator-commons { border-top: 1px solid var(--band-line); }
+.annunciator > :not(h2), .live-panel > :not(h2) { margin-left: 1rem; margin-right: 1rem; }
+.annunciator .live-second { margin-bottom: 1rem; }
+.live-panel .live-body { margin-bottom: 1rem; }
+.pulse { width: .7rem; height: .7rem; }
+
+/* the calendar: tinted day names, white day boxes */
+.cal-headrow div { background: var(--band); color: var(--ink); padding: .35rem .6rem; border-radius: 6px; font: 700 .72rem var(--head); text-transform: uppercase; letter-spacing: .06em; }
+.cal-cell { background: var(--card); border: 1px solid var(--band-line); }
+.room-month-head { background: var(--band); color: var(--ink); padding: .3rem .5rem; border-radius: 6px; }
+.room-month-cell { border: 1px solid var(--band-line); }
+
+/* tiles and boxes that are links: tinted, orange edge when pointed at */
+.portfolio-list a { background: var(--band); border: 1px solid var(--band-line); }
+.portfolio-list a:hover { background: var(--card); border-color: var(--accent); }
+.toggle { border-color: var(--band-line); }
+.duty-box, .bulletin { background: var(--band); border: 1px solid var(--band-line); border-left: 3px solid var(--accent); }
+.p-code { background: var(--band); border: 1px solid var(--band-line); }
+
+.subnav:empty { display: none; }
+.chamber > details.dd { margin-top: 0; }
