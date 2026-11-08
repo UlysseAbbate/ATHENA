@@ -225,6 +225,7 @@ function renderHealth() {
 function render(keepControls) {
   const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", other = health || team;
   saveView();
+  { const b = document.querySelector(`#tabs button[data-tab="${tab}"]`); $("pt").querySelector("h1").textContent = tab === "team" ? "Team & access" : (b ? b.textContent : "Everything"); }
   $("healthpanel").hidden = !health; $("teampanel").hidden = !team; $("list").hidden = other; $("controls").hidden = other; $("overview").hidden = other || poll;
   $("pollpanel").hidden = !poll; document.querySelector(".listhead").hidden = other;
   if (team) return TeamPage.render($("teampanel"), { program: "lucien", name: "LUCIEN" });

@@ -89,6 +89,7 @@ async function go(id, quiet) {
   S.tab = id; S.loadedAt = Date.now();
   if (location.hash.slice(1) !== id) history.replaceState(null, "", "#" + id);
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === id));
+  { const t = TABS.find(x => x[0] === id), pt = $("#pt"); if (t && pt) { pt.hidden = false; $("h1", pt).textContent = t[1]; } }
   main.onclick = main.onchange = null;   // handlers belong to the page being left
   if (!quiet) main.innerHTML = '<p class="muted">Loading…</p>';
   const t = TABS.find(x => x[0] === id);
@@ -161,7 +162,7 @@ async function crud(cfg, host = main, after) {
   const canAdd = cfg.canAdd ? cfg.canAdd() : cfg.canEdit();
   const canEdit = cfg.canEdit();
   const reload = after || (() => crud(cfg, host, after));
-  host.innerHTML = `${cfg.title ? `<h2>${esc(cfg.title)}</h2>` : ""}${cfg.note ? `<p class="muted">${esc(cfg.note)}</p>` : ""}
+  host.innerHTML = `${cfg.title ? `<h2 class="h2-rule">${esc(cfg.title)}</h2>` : ""}${cfg.note ? `<p class="muted">${esc(cfg.note)}</p>` : ""}
     <div class="row"><input class="grow" type="search" placeholder="Search…" data-q>${canAdd ? '<button class="btn primary" data-add>+ Add</button>' : ""}<button class="btn" data-csv title="Download what is shown as a spreadsheet">CSV</button></div>
     ${cfg.filters ? `<div class="row"><div class="seg">${cfg.filters.map((f, i) => `<button data-fl="${i}">${esc(f.label)}</button>`).join("")}</div></div>` : ""}
     ${cfg.beforeTable ? cfg.beforeTable : ""}<div class="tablewrap"><table></table></div><div data-foot></div>`;
@@ -292,7 +293,7 @@ async function renderPlan() {
           vday.filter(v => e.content.toLowerCase().includes(partyKey(v))).map(v => vline(v, false)).join("")).join("") + vday.filter(v => !matched(v, list)).map(v => vline(v, true)).join("") : entryHtml(c);
       const topic = NEWS_TOPIC[c.name], latest = topic ? news.data.filter(n => n.topic === topic) : [];
       const hl = topic && canNews ? `<div class="hl"><h4>Latest ${esc(subName(c).replace(/ News$/, ""))} news <a href="#media" data-go="media" class="muted">all coverage in Media ›</a></h4>${newsLines(latest) || '<span class="muted">Nothing logged yet.</span>'}</div>` : "";
-      return `<div class="sec ${c.shared ? "shared" : ""}">${titled ? `<h3>${esc(subName(c))} ${addBtn(c)}</h3>` : ""}${body || '<span class="muted">Nothing planned.</span>'}${hl}</div>`;
+      return `<div class="sec ${c.shared ? "shared" : ""}">${titled ? `<h3 class="h3-section">${esc(subName(c))} ${addBtn(c)}</h3>` : ""}${body || '<span class="muted">Nothing planned.</span>'}${hl}</div>`;
     };
     pv.innerHTML = groups.map(g => {
       const single = g.cats.length === 1 && subName(g.cats[0]) === g.name;
@@ -300,7 +301,7 @@ async function renderPlan() {
       const cons = g.cats.filter(isConsSec), consAt = g.cats.findIndex(isConsSec);
       const inner = single ? section(g.cats[0], false) : g.cats.map((c, i) => !isConsSec(c) ? section(c) : i !== consAt ? "" :
         `<details class="card cons" ${cons.some(k => (byKey[k.id + "|" + date] || []).length) ? "open" : ""}><summary><b>Constituency Activity</b> <span class="muted">· ${cons.length} sections, one per GLA constituency</span></summary>${cons.map(c => section(c)).join("")}</details>`).join("");
-      return `<section class="grp"><h2 class="grp-h">${esc(g.name)} ${single ? addBtn(g.cats[0]) : ""}</h2>${inner}</section>`;
+      return `<section class="grp"><h2 class="h2-rule">${esc(g.name)} ${single ? addBtn(g.cats[0]) : ""}</h2>${inner}</section>`;
     }).join("");
     pv.onclick = e => {
       const gm = e.target.closest("[data-go]"); if (gm) { e.preventDefault(); return go(gm.dataset.go); }
@@ -427,7 +428,7 @@ async function renderTeam() {
   const today = iso(new Date());
   const pending = profs.filter(p => !p.role).length;
   const ended = p => p.access_until && p.access_until < today;
-  main.innerHTML = `<h2>People ${pending ? `<span class="pill" style="color:var(--red)">${pending} awaiting a role</span>` : ""}</h2>
+  main.innerHTML = `<h2 class="h2-rule">People ${pending ? `<span class="pill" style="color:var(--red)">${pending} awaiting a role</span>` : ""}</h2>
     <p class="muted">Roles and end dates are given on the <a href="../access/#lovelace">Access page</a>, as for LUCIEN and LIBBY. This list shows who has what.</p>
     <div class="tablewrap"><table><thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Access until</th><th>Last signed in</th></tr></thead><tbody>${profs.map(p => {
       const lock = true;   // read-only here: the Access page gives roles
@@ -435,12 +436,12 @@ async function renderTeam() {
         `<select data-u="${p.id}"><option value="">(no access)</option>${Object.entries(ROLES).map(([k, l]) => `<option value="${k}" ${p.role === k ? "selected" : ""}>${l}</option>`).join("")}</select>` : esc(ROLES[p.role] || "none")}</td>
         <td>${!lock ? `<input type="date" data-until="${p.id}" value="${esc(p.access_until || "")}" style="width:auto">` : esc(p.access_until ? fmtShort(p.access_until) : "no end date")}${ended(p) ? ' <span class="pill">ended</span>' : ""}</td>
         <td class="muted">${esc(last[p.id] ? Athena.ago(last[p.id]) : "never")}</td></tr>`; }).join("")}</tbody></table></div>
-    <h2>What each role can do</h2><p class="muted">R = read, W = write. The core team's own "Team &amp; access" rights are locked so nobody can be locked out, and only the admin can open LUCIEN to a role.</p>
+    <h2 class="h2-rule">What each role can do</h2><p class="muted">R = read, W = write. The core team's own "Team &amp; access" rights are locked so nobody can be locked out, and only the admin can open LUCIEN to a role.</p>
     <div class="tablewrap"><table><thead><tr><th>Area</th>${Object.values(ROLES).map(l => `<th>${l}</th>`).join("")}</tr></thead><tbody>${Object.entries(RESOURCES).map(([res, label]) =>
       `<tr><td>${esc(label)}</td>${Object.keys(ROLES).map(role => { const p = perms.find(x => x.role === role && x.resource === res) || {};
         const locked = !canPerm || (role === "core_team" && (res === "users" || res === "permissions")) || (res === "ulysse" && !S.admin);
         return `<td class="perm">${(READ_ONLY.has(res) ? ["read"] : ["read", "write"]).map(a => `<label><input type="checkbox" data-p="${role}|${res}|${a}" ${p["can_" + a] ? "checked" : ""} ${locked ? "disabled" : ""}> ${a === "read" ? "R" : "W"}</label>`).join("")}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div>
-    ${log.data ? `<h2>Recent activity</h2><p class="muted">Who changed what (values are not stored here). Last 60 changes.</p>
+    ${log.data ? `<h2 class="h2-rule">Recent activity</h2><p class="muted">Who changed what (values are not stored here). Last 60 changes.</p>
     <div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>${log.data.map(l => `<tr><td>${esc(new Date(l.at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" }))}</td>
       <td>${esc(l.user_email || "automatic")}</td><td>${esc(l.action)} · ${esc(TABLE_LABEL[l.table_name] || l.table_name)}${l.label ? ` · <i>${esc(l.label)}</i>` : ""}${l.changed?.length ? ` <span class="muted">(${esc(l.changed.join(", "))})</span>` : ""}</td></tr>`).join("") || '<tr><td colspan="3" class="muted">No changes yet.</td></tr>'}</tbody></table></div>` : ""}`;
   main.onchange = async e => {

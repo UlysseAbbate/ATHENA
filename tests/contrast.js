@@ -26,7 +26,9 @@ const PAIRS = [
   ["orange", "paper", 4.5, "amber text"], ["orange", "card", 4.5, "amber text on a card"], ["green", "paper", 4.5, "green text"], ["red", "paper", 4.5, "red text"], ["ink", "sky", 4.5, "text on a pale blue panel"],
   ["ink", "orange-tint", 4.5, "text on an amber tint"], ["ink", "green-tint", 4.5, "text on a green tint"], ["ink", "red-tint", 4.5, "text on a red tint"],
   ["c-committee", "paper", 4.5, "committee colour"], ["c-thinktank", "paper", 4.5, "think tank colour"], ["c-media", "paper", 4.5, "media colour"], ["c-polling", "paper", 4.5, "polling colour"],
-  ["black", "commons-light", 4.5, "text on the Commons green"], ["black", "lords-light", 4.5, "text on the Lords red"],
+  ["black", "commons-light", 4.5, "text on the Commons green (the header)"], ["black", "lords-light", 4.5, "text on the Lords red (the header)"],
+  ["ink", "commons-tint", 4.5, "text on the Commons green band"], ["ink", "lords-tint", 4.5, "text on the Lords red band"], ["muted", "commons-tint", 4.5, "muted text on the Commons band"], ["muted", "lords-tint", 4.5, "muted text on the Lords band"],
+  ["muted", "accent-tint", 4.5, "muted text on the orange band"], ["accent-ink", "commons-tint", 4.5, "orange text on the Commons band"], ["accent-ink", "lords-tint", 4.5, "orange text on the Lords band"],
 ];
 let failed = 0;
 if (D.paper === L.paper || A.paper === L.paper) { console.log("FAIL  dark palette was not found in tokens.css"); process.exit(1); }

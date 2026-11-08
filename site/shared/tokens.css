@@ -10,47 +10,48 @@
 
 :root{
   color-scheme:light;
-  --accent:#FF6400;--accent-ink:#B93C00;--accent-tint:#FFF1E7;--accent-line:#FFDAC1;--navy:#072F5F;--magenta:#FF0075;--brand-green:#4F9161;
+  --accent:#FF6400;--accent-ink:#A93600;--accent-tint:#FFE9D9;--accent-line:#FFC49B;--navy:#072F5F;--magenta:#FF0075;--brand-green:#4F9161;
   --yellow:var(--accent);--yellow-deep:var(--accent-ink);--yellow-pale:var(--accent-tint);--black:#11141C;--red:#C8102E;--green:#2E7D32;--focus:#0B63CE;
   --paper:#FFFFFF;--card:#FFFFFF;--ink:#11141C;--muted:#5B6270;--rule:#E7E9EE;--rule-strong:#C8CCD4;--chip:#F5F6F8;--hi:#FAFAFB;
   --outline:#C8CCD4;--pop-colour:var(--accent);--bar-bg:#F5F6F8;--bar-fg:#11141C;--bar-text:#11141C;
-  --btn-bg:#11141C;--btn-fg:#FFFFFF;--btn-hover-bg:#FF6400;--btn-hover-fg:#11141C;
+  --btn-bg:#FF6400;--btn-fg:#11141C;--btn-hover-bg:#A93600;--btn-hover-fg:#FFFFFF;
   --shadow:0 1px 2px rgba(17,20,28,.05);--shadow-hover:0 2px 10px rgba(17,20,28,.09);
-  --masthead-line:#E7E9EE;--hover-tint:rgba(17,20,28,.05);--masthead-bg:#FFFFFF;--masthead-fg:#11141C;--masthead-rule:var(--accent);
-  --err-bg:#FDECEE;--err:#B3141C;--ok-bg:#E7F4EA;--warn-bg:#FFF1E7;
-  --c-committee:#1F4E79;--c-thinktank:#2E7D32;--c-media:#B93C00;--c-polling:#7B3FA0;
-  --on-fill:#FFFFFF;--orange:#B93C00;--orange-rule:#FF6400;--orange-tint:#FFF1E7;--green-tint:#E7F4EA;--red-tint:#FDECEE;--mark:#FFDAC1;--sky:#EEF2F8;--sky-line:#CBD5E6;
+  --masthead-line:transparent;--hover-tint:rgba(17,20,28,.06);--masthead-bg:var(--accent);--masthead-fg:#11141C;--masthead-rule:var(--accent);--band:var(--accent-tint);--band-line:var(--accent-line);
+  --err-bg:#FDECEE;--err:#B3141C;--ok-bg:#E7F4EA;--warn-bg:#FFE9D9;
+  --c-committee:#1F4E79;--c-thinktank:#2E7D32;--c-media:#A93600;--c-polling:#7B3FA0;
+  --on-fill:#FFFFFF;--orange:#A93600;--orange-rule:#FF6400;--orange-tint:#FFE9D9;--green-tint:#E7F4EA;--red-tint:#FDECEE;--mark:#FFDAC1;--sky:#EEF2F8;--sky-line:#CBD5E6;
   --head:'Open Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;--body:'Open Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
   --radius:8px;--measure:70ch;
   /* LIBBY's two Houses: Honourable LIBBY (the Commons) is green, Noble LIBBY (the Lords) red. Only a thin line, the House button and the stage cells use them. */
-  --commons:#006E46;--lords:#B50938;--house-fg:#FFFFFF;--commons-light:#3DB483;--lords-light:#E5566F;--commons-tint:#E1F4EB;--lords-tint:#FCE4E8;--house:var(--accent);
-  /* the diamond: the Liberal Democrat diamond, whole and cut (a third taken off the right) */
-  --diamond:polygon(50% 0,100% 50%,50% 100%,0 50%);--diamond-cut:polygon(0 50%,74.6% 0,100% 17%,100% 83%,74.6% 100%);
+  --commons:#006E46;--lords:#B50938;--house-fg:#FFFFFF;--commons-light:#3DB483;--lords-light:#E5566F;--commons-tint:#D5EFE3;--lords-tint:#FADBE0;--commons-line:#9FD8BF;--lords-line:#F0AEB9;--house:var(--accent);
+  /* the diamond: the Liberal Democrat diamond, always whole */
+  --diamond:polygon(50% 0,100% 50%,50% 100%,0 50%);
 }
-:root[data-house="commons"]{--house:var(--commons-light)}
-:root[data-house="lords"]{--house:var(--lords-light)}
 /* the dark palette, written once and applied two ways (device preference, or an explicit choice) */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   color-scheme:dark;
-  --accent:#FF6400;--accent-ink:#FF8A3D;--accent-tint:#2A1A10;--accent-line:#5A2E12;--navy:#7FA8DE;--magenta:#FF4D9A;--brand-green:#6DB683;
+  --accent:#FF6400;--accent-ink:#FF8A3D;--accent-tint:#2E1B10;--accent-line:#6B3514;--navy:#7FA8DE;--magenta:#FF4D9A;--brand-green:#6DB683;
   --yellow:var(--accent);--yellow-deep:var(--accent-ink);--yellow-pale:var(--accent-tint);--red:#FF6B7A;--green:#5FBF68;--focus:#6EA8E0;
   --paper:#0E1118;--card:#151A24;--ink:#F1F3F7;--muted:#A4ACBA;--rule:#242B38;--rule-strong:#3A4354;--chip:#1B2130;--hi:#121722;
   --outline:#3A4354;--pop-colour:var(--accent);--bar-bg:#1B2130;--bar-fg:#F1F3F7;--bar-text:#F1F3F7;
   --btn-bg:#FF6400;--btn-fg:#11141C;--btn-hover-bg:#FF8A3D;--btn-hover-fg:#11141C;
   --shadow:0 1px 2px rgba(0,0,0,.35);--shadow-hover:0 2px 10px rgba(0,0,0,.45);
-  --masthead-line:#242B38;--hover-tint:rgba(241,243,247,.07);--masthead-bg:#0E1118;--masthead-fg:#F1F3F7;--masthead-rule:var(--accent);
-  --err-bg:#3A1620;--err:#FF9AA5;--ok-bg:#16301F;--warn-bg:#2A1A10;
+  --masthead-line:transparent;--hover-tint:rgba(17,20,28,.08);--masthead-bg:var(--accent);--masthead-fg:#11141C;--masthead-rule:var(--accent);--band:var(--accent-tint);--band-line:var(--accent-line);
+  --err-bg:#3A1620;--err:#FF9AA5;--ok-bg:#16301F;--warn-bg:#2E1B10;
   --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#FF8A3D;--c-polling:#B98AD6;
-  --on-fill:#11141C;--orange:#FF8A3D;--orange-rule:#FF6400;--orange-tint:#2A1A10;--green-tint:#16301F;--red-tint:#3A1620;--mark:#5A2E12;--sky:#18202F;--sky-line:#34425C;--commons-tint:#12332A;--lords-tint:#3D1822;}}
+  --on-fill:#11141C;--orange:#FF8A3D;--orange-rule:#FF6400;--orange-tint:#2E1B10;--green-tint:#16301F;--red-tint:#3A1620;--mark:#5A2E12;--sky:#18202F;--sky-line:#34425C;--commons-tint:#122B22;--lords-tint:#2E1A22;--commons-line:#1F5A47;--lords-line:#5E2D3B;}}
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --accent:#FF6400;--accent-ink:#FF8A3D;--accent-tint:#2A1A10;--accent-line:#5A2E12;--navy:#7FA8DE;--magenta:#FF4D9A;--brand-green:#6DB683;
+  --accent:#FF6400;--accent-ink:#FF8A3D;--accent-tint:#2E1B10;--accent-line:#6B3514;--navy:#7FA8DE;--magenta:#FF4D9A;--brand-green:#6DB683;
   --yellow:var(--accent);--yellow-deep:var(--accent-ink);--yellow-pale:var(--accent-tint);--red:#FF6B7A;--green:#5FBF68;--focus:#6EA8E0;
   --paper:#0E1118;--card:#151A24;--ink:#F1F3F7;--muted:#A4ACBA;--rule:#242B38;--rule-strong:#3A4354;--chip:#1B2130;--hi:#121722;
   --outline:#3A4354;--pop-colour:var(--accent);--bar-bg:#1B2130;--bar-fg:#F1F3F7;--bar-text:#F1F3F7;
   --btn-bg:#FF6400;--btn-fg:#11141C;--btn-hover-bg:#FF8A3D;--btn-hover-fg:#11141C;
   --shadow:0 1px 2px rgba(0,0,0,.35);--shadow-hover:0 2px 10px rgba(0,0,0,.45);
-  --masthead-line:#242B38;--hover-tint:rgba(241,243,247,.07);--masthead-bg:#0E1118;--masthead-fg:#F1F3F7;--masthead-rule:var(--accent);
-  --err-bg:#3A1620;--err:#FF9AA5;--ok-bg:#16301F;--warn-bg:#2A1A10;
+  --masthead-line:transparent;--hover-tint:rgba(17,20,28,.08);--masthead-bg:var(--accent);--masthead-fg:#11141C;--masthead-rule:var(--accent);--band:var(--accent-tint);--band-line:var(--accent-line);
+  --err-bg:#3A1620;--err:#FF9AA5;--ok-bg:#16301F;--warn-bg:#2E1B10;
   --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#FF8A3D;--c-polling:#B98AD6;
-  --on-fill:#11141C;--orange:#FF8A3D;--orange-rule:#FF6400;--orange-tint:#2A1A10;--green-tint:#16301F;--red-tint:#3A1620;--mark:#5A2E12;--sky:#18202F;--sky-line:#34425C;--commons-tint:#12332A;--lords-tint:#3D1822;}
+  --on-fill:#11141C;--orange:#FF8A3D;--orange-rule:#FF6400;--orange-tint:#2E1B10;--green-tint:#16301F;--red-tint:#3A1620;--mark:#5A2E12;--sky:#18202F;--sky-line:#34425C;--commons-tint:#122B22;--lords-tint:#2E1A22;--commons-line:#1F5A47;--lords-line:#5E2D3B;}
+/* the House colours: Honourable LIBBY (the Commons) green, Noble LIBBY (the Lords) red. They colour the header, the bands and the diamonds. After the dark palettes so they apply in both themes. */
+:root[data-house="commons"]{--house:var(--commons-light);--masthead-bg:var(--commons-light);--band:var(--commons-tint);--band-line:var(--commons-line)}
+:root[data-house="lords"]{--house:var(--lords-light);--masthead-bg:var(--lords-light);--band:var(--lords-tint);--band-line:var(--lords-line)}
