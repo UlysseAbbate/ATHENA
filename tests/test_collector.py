@@ -343,3 +343,21 @@ def test_sources_yml_has_no_duplicate_keys():
     Strict.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, construct)
     for name in ("sources.yml", "taxonomy.yml"):
         yaml.load((Path(__file__).resolve().parent.parent / "config" / name).read_text(), Strict)
+
+
+def test_update_is_due_since_the_last_6am_or_6pm():
+    from datetime import datetime, timezone
+    utc = lambda *a: datetime(*a, tzinfo=timezone.utc)  # noqa: E731
+    # winter (London = UTC): a run that GitHub started at 14:06 is due if nothing was collected since 06:00
+    assert U.last_slot_start(utc(2026, 11, 9, 14, 6)) == utc(2026, 11, 9, 6)
+    assert U.update_is_due("2026-11-08T18:03:00+00:00", utc(2026, 11, 9, 14, 6)) is True
+    assert U.update_is_due("2026-11-09T06:40:00+00:00", utc(2026, 11, 9, 14, 6)) is False
+    # after 6pm it is the evening slot, before 6am still the previous evening's
+    assert U.last_slot_start(utc(2026, 11, 8, 21, 15)) == utc(2026, 11, 8, 18)
+    assert U.last_slot_start(utc(2026, 11, 9, 5, 59)) == utc(2026, 11, 8, 18)
+    # summer (London = UTC+1): 6am is 05:00 UTC, 6pm is 17:00 UTC
+    assert U.last_slot_start(utc(2026, 7, 10, 14, 0)) == utc(2026, 7, 10, 5)
+    assert U.last_slot_start(utc(2026, 7, 10, 3, 0)) == utc(2026, 7, 9, 17)
+    # nothing stored, or an unreadable time: due
+    assert U.update_is_due(None, utc(2026, 11, 9, 14, 6)) is True
+    assert U.update_is_due("not a date", utc(2026, 11, 9, 14, 6)) is True

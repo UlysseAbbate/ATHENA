@@ -6,15 +6,15 @@
 #   2. scripts/build-snapshots.mjs then renews the saved copies: Bills, peers, committees, every Bill's stages, today and the
 #      coming week, the Future calendar, every portfolio, the Past business first pages, the Voting Data and the Lords Library list.
 #
-# The times are in lib/libby/schedule.js, the one place to change them. GitHub's timer only knows UTC and London moves between
-# UTC and UTC+1, so this wakes every hour and the first job asks scripts/refresh-window.mjs whether it is an update time.
-# (GitHub often starts a timed run a few minutes late; any time within the update hour counts.)
+# The times are in lib/libby/schedule.js, the one place to change them. GitHub starts scheduled runs HOURS late and sometimes drops one, so asking
+# "is it 6am now?" skipped most runs. Instead this wakes six times a day and the first job (scripts/libby/refresh-window.mjs) asks "has the data been
+# renewed since the last 6am or 6pm London?": if not, the update runs, however late the wake-up was; if it has, the run does nothing.
 name: Refresh data
 
 on:
   schedule:
-    # 06:07 and 17:07/18:07 UTC cover 6am and 6pm London in both summer and winter time; the first job skips the run that is not 6am or 6pm there.
-    - cron: '7 5,6,17,18 * * *'
+    # Six wake-ups a day, around 6am and 6pm London in summer and winter time. The first one after each 6am or 6pm that finds the data not yet renewed does the update.
+    - cron: '7 5,6,7,17,18,19 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -33,6 +33,9 @@ jobs:
         with:
           node-version: '22'
       - id: window
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/libby/refresh-window.mjs ${{ github.event_name == 'workflow_dispatch' && '--force' || '' }} >> "$GITHUB_OUTPUT"
 
   whatson:
