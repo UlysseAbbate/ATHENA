@@ -300,7 +300,7 @@ async function renderPlan() {
       // the constituency sections sit together in one fold, open when any of them has something on this day
       const cons = g.cats.filter(isConsSec), consAt = g.cats.findIndex(isConsSec);
       const inner = single ? section(g.cats[0], false) : g.cats.map((c, i) => !isConsSec(c) ? section(c) : i !== consAt ? "" :
-        `<details class="card cons" ${cons.some(k => (byKey[k.id + "|" + date] || []).length) ? "open" : ""}><summary><b>Constituency Activity</b> <span class="muted">· ${cons.length} sections, one per GLA constituency</span></summary>${cons.map(c => section(c)).join("")}</details>`).join("");
+        `<details class="card cons"><summary><b>Constituency Activity</b> <span class="muted">· ${cons.length} sections, one per GLA constituency</span></summary>${cons.map(c => section(c)).join("")}</details>`).join("");
       return `<section class="grp"><h2 class="h2-rule">${esc(g.name)} ${single ? addBtn(g.cats[0]) : ""}</h2>${inner}</section>`;
     }).join("");
     pv.onclick = e => {

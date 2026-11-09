@@ -440,13 +440,6 @@ button.est:hover, button.est[aria-expanded="true"] { background: var(--btn-bg); 
 .data-table tr.data-group > :first-child, .data-table tr.data-total > :first-child { background-color: var(--card); }
 .future-day { margin-bottom: 1.4rem; }
 /* ---- The long House button across the top of the page: it says which House you are in and takes you to the other (Honourable green, Noble red) */
-.houseswitch { max-width: 1120px; margin: 0 auto; padding: 1rem 1.25rem 0; }
-.houseswitch:empty { display: none; }
-.house-bar { display: flex; justify-content: space-between; align-items: center; gap: .4rem 1rem; flex-wrap: wrap; width: 100%; padding: .75rem 1.1rem; border: 0; cursor: pointer; font-family: var(--head); text-align: left; color: #111; }
-.house-bar-here strong { font-size: 1.15rem; font-weight: 800; }
-.house-bar-sub { font-weight: 600; font-size: .85rem; margin-left: .4rem; }
-.house-bar-go { font-weight: 800; font-size: .95rem; }
-.house-bar:hover, .house-bar:focus-visible { box-shadow: var(--shadow); text-decoration: underline; }
 .legend { display: inline-block; padding: .1rem .6rem; font-weight: 600; font-size: .85rem; color: var(--ink); margin-right: .5rem; border-left: 3px solid; }
 .legend-commons { background: var(--commons-tint); border-left-color: var(--commons-light); }
 .legend-lords { background: var(--lords-tint); border-left-color: var(--lords-light); }
@@ -455,7 +448,7 @@ button.est:hover, button.est[aria-expanded="true"] { background: var(--btn-bg); 
 .leg-table .col-next { width: 7.5rem; white-space: nowrap; }
 td.leg-stage-commons { background: var(--commons-tint); box-shadow: inset 3px 0 0 var(--commons-light); font-weight: 600; }
 td.leg-stage-lords { background: var(--lords-tint); box-shadow: inset 3px 0 0 var(--lords-light); font-weight: 600; }
-/* ---- Calendar labels (Oral Questions / Legislation inside a Commons day) and the Work Experience cards */
+/* ---- Calendar labels (Oral Questions / Legislation inside a Commons day) and the guide buttons */
 .cal-label { display: block; margin-top: .25rem; font: 800 .68rem var(--head); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .we-card { margin: 0 0 1rem; padding: .75rem 1rem; background: var(--card); border: 1px solid var(--rule); border-left: 2px solid var(--accent); }
 .we-card h3 { margin: 0 0 .25rem; font: 800 1rem var(--head); }
@@ -537,13 +530,7 @@ a.cal-cell:hover { border-color: var(--accent); background: var(--accent-tint); 
 .flag-filter[aria-pressed="true"], .roles-added { border-color: var(--accent); }
 .flag-filter[aria-pressed="true"] { background: var(--accent-tint); color: var(--ink); }
 
-/* the long House button: a tint of the House colour with a bar down the left; it names the House you are in and takes you to the other */
-.house-bar { color: var(--ink); border-radius: 6px; border-left: 4px solid; }
-.house-bar-commons { background: var(--commons-tint); border-left-color: var(--commons-light); }
-.house-bar-lords { background: var(--lords-tint); border-left-color: var(--lords-light); }
-.house-bar-go { color: var(--ink); }
-.house-bar:hover, .house-bar:focus-visible { text-decoration: none; box-shadow: none; }
-.house-bar:hover .house-bar-go { text-decoration: underline; }
+
 
 /* Legislation: stage cells are green in the Commons and red in the Lords */
 
@@ -595,3 +582,40 @@ a.cal-cell:hover { border-color: var(--accent); background: var(--accent-tint); 
 
 .subnav:empty { display: none; }
 .chamber > details.dd { margin-top: 0; }
+
+/* the House button: small, top right, the other House's colour (red on a Commons page, green on a Lords page); it sits in the tinted band */
+.houseswitch { margin: 0; padding: .6rem max(1.25rem, calc((100vw - 1120px) / 2 + 1.25rem)) 0; background: var(--band); text-align: right; }
+.houseswitch:empty { display: none; }
+.house-switch-btn { font: 700 .8rem var(--head); color: #111; border: 0; border-radius: 6px; padding: .3rem .8rem; cursor: pointer; }
+.house-switch-to-commons { background: var(--commons-light); }
+.house-switch-to-lords { background: var(--lords-light); }
+.house-switch-btn:hover, .house-switch-btn:focus-visible { filter: brightness(.92); }
+.houseswitch:not(:empty) + main .page-head { padding-top: .6rem; }
+
+/* a Bill's team at the top of its page: the adviser and the Bill lead in each House (green for the Commons, red for the Lords) */
+.bill-team { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin: 1rem 0; }
+.bill-team-house { background: var(--card); border: 1px solid var(--band-line); border-radius: var(--radius); overflow: hidden; padding-bottom: .7rem; }
+.team-title { margin: 0; padding: .5rem .9rem; font: 800 1rem var(--head); letter-spacing: -.02em; border-bottom: 1px solid var(--band-line); }
+.bill-team-commons { border-color: var(--commons-line); }
+.bill-team-commons .team-title { background: var(--commons-tint); border-bottom-color: var(--commons-line); }
+.bill-team-lords { border-color: var(--lords-line); }
+.bill-team-lords .team-title { background: var(--lords-tint); border-bottom-color: var(--lords-line); }
+.bill-team dl { margin: .6rem .9rem 0; display: grid; gap: .45rem; }
+.bill-team dl > div { display: grid; grid-template-columns: 6rem 1fr; gap: .5rem; }
+.bill-team dt { font: 700 .72rem var(--head); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-top: .2rem; }
+.bill-team dd { margin: 0; }
+@media (max-width: 700px) { .bill-team { grid-template-columns: 1fr; } }
+
+/* Ask a Parliamentarian */
+.ask-bar { display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; align-items: flex-end; margin: .4rem 0 .8rem; }
+.ask-bar .toggle { margin-bottom: 0; }
+.ask-bar .check { padding-bottom: .4rem; }
+.ask-form { background: var(--card); border: 1px solid var(--band-line); border-radius: var(--radius); padding: .2rem 1.2rem 1rem; margin: .6rem 0 1.2rem; display: grid; gap: .6rem; }
+.ask-form .row, .ask-offer { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; }
+.ask-card { background: var(--card); border: 1px solid var(--band-line); border-radius: var(--radius); padding: .8rem 1.1rem 1rem; margin: 0 0 .8rem; }
+.ask-card header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .9rem; }
+.ask-card h3 { margin: 0; font: 800 1.05rem var(--head); letter-spacing: -.02em; }
+.ask-by { margin-left: auto; font-size: .88rem; }
+.ask-by.is-late { color: var(--err); }
+.ask-details { margin: .3rem 0; white-space: pre-wrap; }
+.ask-offer { margin-top: .6rem; padding-top: .6rem; border-top: 1px solid var(--rule); }

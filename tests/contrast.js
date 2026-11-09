@@ -37,5 +37,18 @@ for (const [name, set] of [["light", L], ["dark", D]]) for (const [f, b, min, wh
   if (r < min) { failed++; console.log(`FAIL  ${name}: ${what} (${f} ${set[f]} on ${b} ${set[b]}) = ${r.toFixed(2)}, needs ${min}`); }
 }
 for (const k of new Set([...Object.keys(D), ...Object.keys(A)])) if (D[k] !== A[k]) { failed++; console.log(`FAIL  dark palette differs between data-theme and device preference: --${k} ${D[k]} vs ${A[k]}`); }
-console.log(failed ? `\n${failed} problem(s)` : `contrast ok: ${PAIRS.length} pairs x 2 themes, dark palettes identical`);
+// a page that has a House (green for the Commons, red for the Lords) takes the House colours for the header, the bands, the diamonds and the buttons, in both themes
+const HOUSE_PAIRS = [["masthead-fg", "masthead-bg", 4.5, "header text"], ["btn-fg", "btn-bg", 4.5, "button"], ["btn-hover-fg", "btn-hover-bg", 4.5, "button hovered"], ["black", "accent", 4.5, "dark text on the House colour"],
+  ["accent-ink", "paper", 4.5, "House-coloured text"], ["accent-ink", "card", 4.5, "House-coloured text on a card"], ["accent-ink", "accent-tint", 4.5, "House-coloured text on its band"], ["ink", "accent-tint", 4.5, "text on the band"], ["muted", "accent-tint", 4.5, "muted text on the band"]];
+for (const house of ["commons", "lords"]) {
+  const block = tokens(css.match(new RegExp(`:root\\[data-house="${house}"\\]\\{[^}]*\\}`))[0]);
+  for (const [name, base] of [["light", L], ["dark", D]]) {
+    const set = resolve({ ...(name === "light" ? light : dark), ...block });
+    for (const [f, b, min, what] of HOUSE_PAIRS) {
+      const r = ratio(set[f], set[b]);
+      if (r < min) { failed++; console.log(`FAIL  ${house} page, ${name}: ${what} (${f} ${set[f]} on ${b} ${set[b]}) = ${r.toFixed(2)}, needs ${min}`); }
+    }
+  }
+}
+console.log(failed ? `\n${failed} problem(s)` : `contrast ok: ${PAIRS.length} pairs x 2 themes, ${HOUSE_PAIRS.length} x 2 Houses x 2 themes, dark palettes identical`);
 process.exit(failed ? 1 : 0);
