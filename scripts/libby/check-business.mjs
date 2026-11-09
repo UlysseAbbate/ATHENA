@@ -38,6 +38,13 @@ const rising = risingFromWhatsOn([{ category: 'Estimated rising time', start: '2
 ok(rising.Chamber === '22:00' && Object.keys(rising).length === 1, 'the estimated rising time is read from the calendar');
 ok(!sectionsFromWhatsOn([{ section: 'Chamber', category: 'Estimated rising time', title: 'Estimated rising time', members: [], summary: '' }]).length, 'and is not shown as an item of business');
 
+// The scheduled updates: GitHub starts timed runs hours late, so an update is due if nothing was renewed since the last 6am or 6pm London (not "if it is 6am now")
+import { lastSlotStart, updateIsDue } from '../../lib/libby/schedule.js';
+const slot = (iso) => lastSlotStart(new Date(iso)).toISOString();
+ok(slot('2026-11-09T14:06:00Z') === '2026-11-09T06:00:00.000Z' && slot('2026-11-08T21:15:00Z') === '2026-11-08T18:00:00.000Z' && slot('2026-11-09T05:59:00Z') === '2026-11-08T18:00:00.000Z', 'in winter the slots start at 06:00 and 18:00 UTC');
+ok(slot('2026-07-10T14:00:00Z') === '2026-07-10T05:00:00.000Z' && slot('2026-07-10T03:00:00Z') === '2026-07-09T17:00:00.000Z', 'in summer they start at 05:00 and 17:00 UTC (6am and 6pm London)');
+ok(updateIsDue('2026-11-08T18:03:00Z', new Date('2026-11-09T14:06:00Z')) && !updateIsDue('2026-11-09T06:40:00Z', new Date('2026-11-09T14:06:00Z')) && updateIsDue(null), 'a run started late is due when nothing was renewed since the slot began, and skips when something was');
+
 // The Commons calendar: the What's On API's own Commons events become the Chamber and Westminster Hall, with Oral Questions and legislation
 import { eventsFromApi, liveEvents, WHATSON_CHUNK_DAYS } from '../../lib/libby/lordsbusiness.js';
 import { commonsSections } from '../../lib/libby/commons.js';

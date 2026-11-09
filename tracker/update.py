@@ -1323,11 +1323,43 @@ def write(name: str, body: dict) -> None:
     (DATA / f"{name}.json").write_text(json.dumps(body, separators=(",", ":")))
 
 
+UPDATE_HOURS = (6, 18)   # London time: the data is renewed at 6am and 6pm (the same two times as LIBBY's refresh, lib/libby/schedule.js)
+
+
+def last_slot_start(now: datetime) -> datetime:
+    """The start of the update slot we are in: the most recent 6am or 6pm London at or before `now`, in UTC."""
+    local = now.astimezone(LONDON)
+    slots = [datetime(d.year, d.month, d.day, h, tzinfo=LONDON) for d in (local, local - timedelta(days=1)) for h in UPDATE_HOURS]
+    return max(t for t in slots if t <= now).astimezone(timezone.utc)
+
+
+def update_is_due(last_updated: str | None, now: datetime | None = None) -> bool:
+    """True if nothing has been collected since the current slot began. GitHub starts timed runs hours late and sometimes drops one, so the question is
+    not "is it 6am?" but "has it been updated since the last 6am or 6pm?". A missing or unreadable time counts as never."""
+    now = now or datetime.now(timezone.utc)
+    try:
+        last = dtparse.parse(last_updated)
+    except (TypeError, ValueError, OverflowError):
+        return True
+    if last.tzinfo is None:
+        last = last.replace(tzinfo=timezone.utc)
+    return last < last_slot_start(now)
+
+
 def main() -> int:
     DATA.mkdir(parents=True, exist_ok=True)
     global ENRICH
     only = set(sys.argv[1:])  # e.g. `update.py media polling`
     sync_state()
+    if os.environ.get("ONLY_IF_DUE") and not only:   # a timed run (the workflow sets this) does nothing if the data was already renewed for this slot
+        try:
+            last = json.loads((DATA / "feed.json").read_text()).get("updated")
+        except (OSError, ValueError):
+            last = None
+        if not update_is_due(last):
+            print(f"already updated for this slot (last update {last}): nothing to do")
+            return 0
+        print(f"update due (last update {last}): collecting")
     if "reclassify" in only:      # re-apply taxonomy to stored items without collecting
         ENRICH = False
         feed = merge([])

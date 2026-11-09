@@ -2,9 +2,9 @@ name: Update tracker
 
 on:
   schedule:
-    # 6am and 6pm London time. GitHub's timer only knows UTC and London moves between UTC and UTC+1, so it wakes at both
-    # possible times and the first step skips the run unless it is really 6am or 6pm in London.
-    - cron: "23 5,6,17,18 * * *"
+    # Six wake-ups a day, around 6am and 6pm London in summer and winter time. GitHub starts scheduled runs hours late and sometimes drops one, so the
+    # collector itself (tracker/update.py) checks whether the data has been renewed since the last 6am or 6pm London, and does nothing if it has.
+    - cron: "7 5,6,7,17,18,19 * * *"
   workflow_dispatch:
 
 # Read-only: the collector keeps its state in the private database (through the ingest function), not in the repo.
@@ -20,23 +20,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Is it 6am or 6pm in London?
-        id: when
-        run: |
-          h=$(TZ=Europe/London date +%H)
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$h" = "06" ] || [ "$h" = "18" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "go=false" >> "$GITHUB_OUTPUT"; echo "London hour is $h: not an update time, skipping"; fi
       - uses: actions/checkout@v5
-        if: steps.when.outputs.go == 'true'
       - uses: actions/setup-python@v6
-        if: steps.when.outputs.go == 'true'
         with:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
-        if: steps.when.outputs.go == 'true'
       - name: Collect and upload
-        if: steps.when.outputs.go == 'true'
         run: python tracker/update.py
         env:
           INGEST_URL: https://fbsoibmtvapmxdlfdgxc.supabase.co/functions/v1/ulysse-ingest
           INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
+          ONLY_IF_DUE: ${{ github.event_name == 'schedule' && '1' || '' }}   # a timed run skips itself if the data was already renewed since 6am / 6pm
