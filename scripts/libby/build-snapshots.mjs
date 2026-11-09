@@ -12,7 +12,7 @@ import { londonToday, addDays } from '../../lib/libby/util.js';
 import { SAVED_DAYS_AHEAD, SAVED_FUTURE_LENGTHS } from '../../lib/libby/schedule.js';
 import { writeSnapshot } from '../../lib/libby/snapshots.js';
 import { PORTFOLIOS } from '../../lib/libby/portfolios.js';
-import { activeLordsBills, billTypes, ldPeers, departments, allCommittees, recentLordsReports, billStagesMany, billPortfolios } from '../../lib/libby/parliament.js';
+import { activeLordsBills, activeBills, billTypes, ldPeers, departments, allCommittees, recentLordsReports, billStagesMany, billPortfolios } from '../../lib/libby/parliament.js';
 import { onRequestGet as dayRoute } from '../../functions/api/libby/day/[date].js';
 import { onRequestGet as futureRoute } from '../../functions/api/libby/future.js';
 import { onRequestGet as portfolioRoute } from '../../functions/api/libby/portfolios/[code].js';
@@ -68,11 +68,12 @@ async function route(handler, path, params) {
 /* ---- the shared lookups */
 await step('bill types', () => billTypes(context()));
 await step('Bills in the Lords', () => activeLordsBills(context()));
+await step('Bills in the Commons', () => activeBills(context(), 'Commons'));
 await step('Lib Dem peers', () => ldPeers(context()));
 await step('departments', () => departments(context()));
 await step('Bill portfolios', async () => {
   const tags = await billPortfolios(context());
-  const bills = await activeLordsBills({ env });
+  const bills = [...await activeLordsBills({ env }), ...await activeBills({ env }, 'Commons')];
   const byDefault = bills.filter((b) => tags[b.id]?.by === 'default').map((b) => b.title);
   const untagged = bills.filter((b) => !tags[b.id]?.codes?.length).map((b) => b.title);
   console.log(`        ${bills.length} Bills tagged; ${byDefault.length} placed by default (add them to lib/portfolio-overrides.js): ${byDefault.join('; ') || 'none'}`);

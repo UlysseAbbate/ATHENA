@@ -130,7 +130,7 @@ function commonsStageBlock(s, docs, today) {
 }
 
 const groupBlock = (name, rows) => (rows.length ? `
-  <details class="tree-group" open><summary>${esc(name)} <span class="count">${rows.length}</span></summary>
+  <details class="tree-group"><summary>${esc(name)} <span class="count">${rows.length}</span></summary>
     <ol class="stages">${rows.join('')}</ol></details>` : '');
 
 function stagesHtml(b) {
@@ -410,6 +410,13 @@ export async function renderBill(el, { id, house }, query = {}) {
     <p class="bill-meta small">Current stage: <strong>${esc(b.currentStage)}</strong> \u00B7 Started in the ${esc(b.originatingHouse)} \u00B7
       ${extLink(b.url, 'Bill page on bills.parliament.uk')}</p>
     ${b.sponsors.length ? `<p class="small">Sponsors: ${b.sponsors.map((s) => `${peer(s.name, s.ld)}${s.department ? ` <span class="muted">(${esc(s.department)})</span>` : ''}`).join('; ')}</p>` : ''}
+    <p class="small" data-next-stage>Next stage: <span class="muted">checking…</span></p>
+    <div class="bill-team" aria-label="Who is looking after this Bill">
+      ${['commons', 'lords'].map((h) => `<section class="bill-team-house bill-team-${h}" aria-labelledby="team-${h}">
+        <h3 id="team-${h}" class="team-title">${h === 'commons' ? 'Commons' : 'Lords'}</h3>
+        <dl><div><dt>Adviser</dt><dd data-team="${h}-adviser"><span class="muted">…</span></dd></div><div><dt>Bill lead</dt><dd data-team="${h}-lead"><span class="muted">…</span></dd></div></dl>
+      </section>`).join('')}
+    </div>
     ${b.summary ? `<details class="summary-box"><summary>Summary</summary><p>${esc(stripTags(b.summary))}</p></details>` : ''}
 
     <div class="sections" role="tablist" aria-label="Sections of this Bill">${sections.map((x) => `<button type="button" role="tab" id="sec-btn-${x.key}" aria-controls="sec-${x.key}" aria-selected="false" data-sec="${x.key}">${esc(x.label)}${x.count ? ` <span class="count">${x.count}</span>` : ''}</button>`).join('')}</div>
@@ -420,6 +427,18 @@ export async function renderBill(el, { id, house }, query = {}) {
       <div id="ams" role="tabpanel"></div>
     </section>
     ${sections.some((x) => x.key === 'stakeholders') ? '<section id="sec-stakeholders" role="tabpanel" aria-labelledby="sec-btn-stakeholders" hidden></section>' : ''}`;
+
+  // The Bill's team (who is the adviser and the Bill lead in each House) and its next stage: both are on this page, not on the Legislation list.
+  api(`bill-team?bill=${id}`).then((t) => {
+    for (const h of ['commons', 'lords']) {
+      el.querySelector(`[data-team="${h}-adviser"]`).innerHTML = t[h].adviser ? esc(t[h].adviser) : '<span class="muted">Not named yet</span>';
+      el.querySelector(`[data-team="${h}-lead"]`).innerHTML = t[h].lead ? hl(t[h].lead) : '<span class="muted">Not named yet</span>';
+    }
+  }).catch(() => el.querySelectorAll('[data-team]').forEach((d) => { d.innerHTML = '<span class="muted">Unavailable</span>'; }));
+  api(`bill-next?ids=${id}`).then((d) => {
+    const n = (d.dates || {})[id];
+    el.querySelector('[data-next-stage]').innerHTML = n && n.date ? `Next stage: <strong>${esc(fmtShort(n.date))}</strong>${n.stage ? ` · ${esc(n.stage)}${n.house ? ` (${esc(n.house)})` : ''}` : ''}` : 'Next stage: <span class="muted">not yet scheduled</span>';
+  }).catch(() => { const p = el.querySelector('[data-next-stage]'); if (p) p.innerHTML = 'Next stage: <span class="muted">unavailable</span>'; });
 
   const panel = el.querySelector('#ams');
   const cache = new Map();

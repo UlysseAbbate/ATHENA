@@ -118,7 +118,7 @@ ok(await as('tok-peer', '/api/libby/data/votes') === 200 && await as('tok-peer',
   'a Peer and a Whip can read the Data page and nothing else');
 ok(await as('tok-admin', '/api/libby/day/today') === 200 && await as('tok-admin', '/api/libby/commons/day/today') === 200 && await as('tok-dev', '/api/libby/bills') === 200,
   'Admin and Developer keep everything');
-ok(await beta('/api/libby/data/votes', 'POST') === 403 && await beta('/api/libby/room-bookings', 'POST') === 403 && await beta('/api/libby/work-experience', 'POST') === 403, 'a Beta tester cannot change anything');
+ok(await beta('/api/libby/data/votes', 'POST') === 403 && await beta('/api/libby/room-bookings', 'POST') === 403 && await beta('/api/libby/ask-parliamentarian', 'POST') === 403, 'a Beta tester cannot change anything');
 ok(await beta('/api/libby/people-roles') === 403 && await beta('/api/libby/whip-availability') === 403 && await beta('/api/libby/duty-whips') === 403 && await beta('/api/libby/advisers') === 403
   && await beta('/api/libby/groupings') === 403 && await beta('/api/libby/comments') === 403, 'nor anything of the Whips\u2019 or Advisers\u2019 pages, even though a Peer could read some of it');
 r = await me(ctx('/api/libby/me', { token: 'tok-beta' }));

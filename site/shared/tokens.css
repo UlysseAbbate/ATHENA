@@ -23,7 +23,7 @@
   --head:'Open Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;--body:'Open Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
   --radius:8px;--measure:70ch;
   /* LIBBY's two Houses: Honourable LIBBY (the Commons) is green, Noble LIBBY (the Lords) red. Only a thin line, the House button and the stage cells use them. */
-  --commons:#006E46;--lords:#B50938;--house-fg:#FFFFFF;--commons-light:#3DB483;--lords-light:#E5566F;--commons-tint:#D5EFE3;--lords-tint:#FADBE0;--commons-line:#9FD8BF;--lords-line:#F0AEB9;--house:var(--accent);
+  --commons:#006E46;--lords:#B50938;--house-fg:#FFFFFF;--commons-light:#3DB483;--lords-light:#E5566F;--commons-ink:#0B6B49;--lords-ink:#A8082F;--commons-tint:#D5EFE3;--lords-tint:#FADBE0;--commons-line:#9FD8BF;--lords-line:#F0AEB9;--house:var(--accent);
   /* the diamond: the Liberal Democrat diamond, always whole */
   --diamond:polygon(50% 0,100% 50%,50% 100%,0 50%);
 }
@@ -39,7 +39,7 @@
   --masthead-line:transparent;--hover-tint:rgba(17,20,28,.08);--masthead-bg:var(--accent);--masthead-fg:#11141C;--masthead-rule:var(--accent);--band:var(--accent-tint);--band-line:var(--accent-line);
   --err-bg:#3A1620;--err:#FF9AA5;--ok-bg:#16301F;--warn-bg:#2E1B10;
   --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#FF8A3D;--c-polling:#B98AD6;
-  --on-fill:#11141C;--orange:#FF8A3D;--orange-rule:#FF6400;--orange-tint:#2E1B10;--green-tint:#16301F;--red-tint:#3A1620;--mark:#5A2E12;--sky:#18202F;--sky-line:#34425C;--commons-tint:#122B22;--lords-tint:#2E1A22;--commons-line:#1F5A47;--lords-line:#5E2D3B;}}
+  --on-fill:#11141C;--orange:#FF8A3D;--orange-rule:#FF6400;--orange-tint:#2E1B10;--green-tint:#16301F;--red-tint:#3A1620;--mark:#5A2E12;--sky:#18202F;--sky-line:#34425C;--commons-ink:#6FD6AA;--lords-ink:#FF9AAD;--commons-tint:#122B22;--lords-tint:#2E1A22;--commons-line:#1F5A47;--lords-line:#5E2D3B;}}
 :root[data-theme="dark"]{
   color-scheme:dark;
   --accent:#FF6400;--accent-ink:#FF8A3D;--accent-tint:#2E1B10;--accent-line:#6B3514;--navy:#7FA8DE;--magenta:#FF4D9A;--brand-green:#6DB683;
@@ -51,7 +51,8 @@
   --masthead-line:transparent;--hover-tint:rgba(17,20,28,.08);--masthead-bg:var(--accent);--masthead-fg:#11141C;--masthead-rule:var(--accent);--band:var(--accent-tint);--band-line:var(--accent-line);
   --err-bg:#3A1620;--err:#FF9AA5;--ok-bg:#16301F;--warn-bg:#2E1B10;
   --c-committee:#6EA8E0;--c-thinktank:#5FBF68;--c-media:#FF8A3D;--c-polling:#B98AD6;
-  --on-fill:#11141C;--orange:#FF8A3D;--orange-rule:#FF6400;--orange-tint:#2E1B10;--green-tint:#16301F;--red-tint:#3A1620;--mark:#5A2E12;--sky:#18202F;--sky-line:#34425C;--commons-tint:#122B22;--lords-tint:#2E1A22;--commons-line:#1F5A47;--lords-line:#5E2D3B;}
-/* the House colours: Honourable LIBBY (the Commons) green, Noble LIBBY (the Lords) red. They colour the header, the bands and the diamonds. After the dark palettes so they apply in both themes. */
-:root[data-house="commons"]{--house:var(--commons-light);--masthead-bg:var(--commons-light);--band:var(--commons-tint);--band-line:var(--commons-line)}
-:root[data-house="lords"]{--house:var(--lords-light);--masthead-bg:var(--lords-light);--band:var(--lords-tint);--band-line:var(--lords-line)}
+  --on-fill:#11141C;--orange:#FF8A3D;--orange-rule:#FF6400;--orange-tint:#2E1B10;--green-tint:#16301F;--red-tint:#3A1620;--mark:#5A2E12;--sky:#18202F;--sky-line:#34425C;--commons-ink:#6FD6AA;--lords-ink:#FF9AAD;--commons-tint:#122B22;--lords-tint:#2E1A22;--commons-line:#1F5A47;--lords-line:#5E2D3B;}
+/* the House colours: on Honourable LIBBY (the Commons) and Noble LIBBY (the Lords) pages the WHOLE page takes the House colour: green for the Commons, red for the Lords
+   (header, bands, diamonds, buttons). Only Today and Business have a House; every other page is orange. After the dark palettes so they apply in both themes. */
+:root[data-house="commons"]{--house:var(--commons-light);--accent:var(--commons-light);--accent-ink:var(--commons-ink);--accent-tint:var(--commons-tint);--accent-line:var(--commons-line);--btn-bg:var(--commons-light);--btn-hover-bg:var(--commons-ink);--masthead-bg:var(--commons-light);--band:var(--commons-tint);--band-line:var(--commons-line)}
+:root[data-house="lords"]{--house:var(--lords-light);--accent:var(--lords-light);--accent-ink:var(--lords-ink);--accent-tint:var(--lords-tint);--accent-line:var(--lords-line);--btn-bg:var(--lords-light);--btn-hover-bg:var(--lords-ink);--masthead-bg:var(--lords-light);--band:var(--lords-tint);--band-line:var(--lords-line)}

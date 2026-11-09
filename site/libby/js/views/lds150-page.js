@@ -1,5 +1,5 @@
 // Lib Dems 150: a card for each part of the old LD Peers' Group page that is not for the Whips or the advisers (Policy, the Wallace Room, Room 391,
-// Work Experience Support), and buttons for the guides. A guide whose link is not known yet says so. The pages and links are listed in pages.js.
+// Ask a Parliamentarian), and buttons for the guides. A guide whose link is not known yet says so. The pages and links are listed in pages.js.
 import { esc, pageHeader } from '../ui.js';
 import { currentLevel, currentHouse } from '../session.js';
 import { GROUPS, LD150_LINKS, tabsFor } from '../pages.js';

@@ -8,7 +8,7 @@ import { todayIso, errorBox } from './ui.js';
 import { setLevel, hasLevel, currentLevel, currentHouse } from './session.js';
 import { PAGES, MENU, HOUSES, menuFor, tabsFor, placeOf, canOpenPage, inHouse, GROUPS } from './pages.js';
 import { chosenEdition, chooseEdition, renderGate } from './gate.js';
-import { applyHouse, savedHouse, renderHouseSwitch } from './house-switch.js';
+import { applyHouse, savedHouse, renderHouseSwitch, setMembers } from './house-switch.js';
 
 const app = document.getElementById('app');
 let renderToken = 0;
@@ -54,7 +54,14 @@ function drawHouseSwitch(show) {
   renderHouseSwitch(box, show, () => { buildMenu(); route(); });
 }
 
+/** The two rows between the header and the page, created once and in this order: the subpage tabs, then the House button. */
+function slots() {
+  if (!document.getElementById('subnav')) { const b = document.createElement('div'); b.id = 'subnav'; b.className = 'subnav'; app.insertAdjacentElement('beforebegin', b); }
+  if (!document.getElementById('houseswitch')) { const b = document.createElement('div'); b.id = 'houseswitch'; b.className = 'houseswitch'; app.insertAdjacentElement('beforebegin', b); }
+}
+
 async function route() {
+  slots();
   const raw = location.hash.replace(/^#/, '') || '/';
   const [path, qs = ''] = raw.split('?');
   const query = Object.fromEntries(new URLSearchParams(qs));
@@ -74,7 +81,11 @@ async function route() {
     if (a.hasAttribute('aria-current')) a.setAttribute('aria-current', 'page');
   });
 
-  drawHouseSwitch(!!(page && page.switch));
+  // Only Today and Business (and the pages under them) have a House: there the whole page is green (Commons) or red (Lords). Every other page is orange.
+  const ofOneHouse = !!(page && page.switch);
+  if (ofOneHouse) document.documentElement.dataset.house = currentHouse(); else delete document.documentElement.dataset.house;
+  setMembers(ofOneHouse);
+  drawHouseSwitch(ofOneHouse);
 
   if (!page) {
     renderSubnav('', '');

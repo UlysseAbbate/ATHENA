@@ -1,6 +1,5 @@
-// The adviser editor: a simple sheet where each Bill has a box for its adviser(s).
-// Typing a name and leaving the box (or pressing Enter) saves it, and it then shows in the
-// Adviser column on the Legislation page. Administrators only (see lib/access.js).
+// The adviser editor: a sheet where each live Bill, in either House, has four boxes: the Commons adviser, the Commons Bill lead, the Lords adviser and the Lords
+// Bill lead. Typing a name and leaving the box (or pressing Enter) saves it, and it then shows at the top of the Bill's own page. Staff and Admin only (see lib/access.js).
 import { api } from '../api.js';
 import { esc, loading, errorBox, empty, pageHeader, debounce, fmtDate } from '../ui.js';
 import { authFieldsHtml, readAuth, rememberAuth, reopenPasscode, savedPasscode } from '../session.js';
@@ -14,33 +13,53 @@ const store = {
   del: (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
 
-function table(bills, advisers) {
+// the four boxes: the field the API saves, and the field of the saved team it is read from
+const FIELDS = [
+  ['commonsAdviser', 'Commons adviser', 'commonsAdviser'],
+  ['commonsLead', 'Commons Bill lead', 'commonsLead'],
+  ['adviser', 'Lords adviser', 'name'],
+  ['lordsLead', 'Lords Bill lead', 'lordsLead'],
+];
+
+function table(bills, team) {
   if (!bills.length) return empty('No Bills in this group.');
   return `<div class="table-wrap"><table class="grid">
-    <thead><tr><th scope="col">Bill</th><th scope="col">Current stage</th><th scope="col">Adviser</th><th scope="col">Status</th></tr></thead>
+    <thead><tr><th scope="col">Bill</th><th scope="col">Current stage</th>${FIELDS.map(([, label]) => `<th scope="col">${label}</th>`).join('')}<th scope="col">Status</th></tr></thead>
     <tbody>${bills.map((b) => `
       <tr data-row data-title="${esc(b.title.toLowerCase())}">
-        <th scope="row"><a href="#/bill/${b.id}">${esc(b.title)}</a></th>
+        <th scope="row"><a href="${b.house === 'Commons' ? '#/c/bill/' : '#/bill/'}${b.id}">${esc(b.title)}</a></th>
         <td>${esc(b.stage)}</td>
-        <td><label class="field"><span class="sr-only">Adviser for ${esc(b.title)}</span>
-          <input type="text" maxlength="200" data-bill="${b.id}" data-saved="${esc(advisers[b.id]?.name || '')}" value="${esc(advisers[b.id]?.name || '')}" placeholder="Type a name" autocomplete="off" disabled></label></td>
+        ${FIELDS.map(([field, label, key]) => `<td><label class="field"><span class="sr-only">${label} for ${esc(b.title)}</span>
+          <input type="text" maxlength="200" data-bill="${b.id}" data-field="${field}" data-saved="${esc(team[b.id]?.[key] || '')}" value="${esc(team[b.id]?.[key] || '')}" placeholder="Type a name" autocomplete="off" disabled></label></td>`).join('')}
         <td class="small" data-status="${b.id}" aria-live="polite"></td>
       </tr>`).join('')}</tbody></table></div>`;
 }
 
+/** Every live Bill in Parliament (the Lords' list and the Commons' list), in the three groups. */
+async function allBills() {
+  const [lords, commons] = await Promise.all([api('bills'), api('commons/bills')]);
+  const out = { government: [], privateMembers: [], other: [] };
+  const seen = new Set();
+  for (const [house, d] of [['Lords', lords], ['Commons', commons]]) for (const k of Object.keys(out)) for (const bill of d[k] || []) {
+    if (!seen.has(bill.id)) { seen.add(bill.id); out[k].push({ ...bill, house }); }
+  }
+  for (const k of Object.keys(out)) out[k].sort((a, b) => a.title.localeCompare(b.title));
+  return out;
+}
+
 async function renderAdvisers(el) {
-  el.innerHTML = `${pageHeader('Adviser editor',
-    'Give each Bill an adviser. Names you save here appear in the Adviser column on the Legislation page.',
+  el.innerHTML = `${pageHeader('Bill advisers and leads',
+    'Name the adviser and the Bill lead for each live Bill, in the Commons and in the Lords. They appear at the top of the Bill’s own page.',
     [['#/legislation', 'Legislation']])}
     <div id="editor">${loading('Loading Bills')}</div>`;
   const box = el.querySelector('#editor');
 
   let bills; let extras;
   try {
-    [bills, extras] = await Promise.all([api('bills'), api('bill-extras').catch(() => ({ advisers: {}, notes: [] }))]);
+    [bills, extras] = await Promise.all([allBills(), api('bill-extras').catch(() => ({ advisers: {}, notes: [] }))]);
   } catch (err) { box.innerHTML = errorBox(err); return; }
 
-  const advisers = extras.advisers || {};
+  const team = extras.advisers || {};
   box.innerHTML = `
     <div class="search">
       <label class="field field-narrow"><span>Your name (so we know who changed what)</span><input type="text" name="editor" maxlength="80" autocomplete="name"></label>
@@ -48,18 +67,17 @@ async function renderAdvisers(el) {
     <p class="small" data-lockmsg aria-live="polite">Type a name in a Bill's box and press Enter, or click out of the box, to save.</p>
     ${(extras.notes || []).map((n) => `<p class="small muted">${esc(n)}</p>`).join('')}
     <label class="field"><span>Filter Bills by name</span><input type="search" data-filter placeholder="e.g. railways"></label>
-    <section><h2 class="h2-rule">Government Bills <span class="count">${bills.government.length}</span></h2>${table(bills.government, advisers)}</section>
-    <section><h2 class="h2-rule">Private Members' Bills <span class="count">${bills.privateMembers.length}</span></h2>${table(bills.privateMembers, advisers)}</section>
-    ${bills.other.length ? `<section><h2 class="h2-rule">Other Bills <span class="count">${bills.other.length}</span></h2>${table(bills.other, advisers)}</section>` : ''}`;
+    <section><h2 class="h2-rule">Government Bills <span class="count">${bills.government.length}</span></h2>${table(bills.government, team)}</section>
+    <section><h2 class="h2-rule">Private Members' Bills <span class="count">${bills.privateMembers.length}</span></h2>${table(bills.privateMembers, team)}</section>
+    ${bills.other.length ? `<section><h2 class="h2-rule">Other Bills <span class="count">${bills.other.length}</span></h2>${table(bills.other, team)}</section>` : ''}`;
 
   const editorInput = box.querySelector('input[name="editor"]');
-  const lockMsg = box.querySelector('[data-lockmsg]');
   const passcode = savedPasscode();
   box.querySelectorAll('input[data-bill]').forEach((i) => { i.disabled = false; });
   editorInput.value = store.get('adviserEditor');
   editorInput.addEventListener('change', () => store.set('adviserEditor', editorInput.value.trim()));
 
-  // Save one row as soon as its box changes.
+  // Save one box as soon as it changes.
   box.addEventListener('change', async (e) => {
     const input = e.target.closest('input[data-bill]');
     if (!input || input.disabled) return;
@@ -70,10 +88,10 @@ async function renderAdvisers(el) {
     try {
       const res = await api('advisers', {
         method: 'POST',
-        body: JSON.stringify({ passcode, billId: Number(input.dataset.bill), adviser: value, editor: editorInput.value.trim() }),
+        body: JSON.stringify({ passcode, billId: Number(input.dataset.bill), [input.dataset.field]: value, editor: editorInput.value.trim() }),
       });
-      input.value = res.adviser;
-      input.dataset.saved = res.adviser;
+      input.value = res[input.dataset.field];
+      input.dataset.saved = res[input.dataset.field];
       status.textContent = 'Saved ✓';
     } catch (err) {
       status.textContent = `Not saved: ${err.message}`;

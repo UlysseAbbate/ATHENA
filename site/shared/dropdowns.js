@@ -1,6 +1,6 @@
 /* Drop-downs: every section heading (h2.h2-rule) and sub-heading (h3.h3-section) on every page opens and closes, in the same way.
  * The heading becomes the summary of a <details> and everything after it, up to the next heading of its kind, goes inside. Pages just write
- * the headings; this runs after each page draws (a MutationObserver), so no page needs to know about it. Sections start open.
+ * the headings; this runs after each page draws (a MutationObserver), so no page needs to know about it. Every drop-down starts CLOSED.
  * (A day's business sections in LIBBY, .chamber-head, work the same way.) Headings are left alone inside a dialog, a panel that sets data-flat, or when they are already in a summary. */
 (() => {
   const H2 = "h2.h2-rule, .chamber-head", H3 = "h3.h3-section";
@@ -10,7 +10,7 @@
     h.dataset.dd = "1";
     const det = document.createElement("details");
     det.className = kind === 2 ? "dd" : "dd-sub";
-    det.open = true;
+    det.open = window.ATHENA_DROPDOWNS_OPEN === true;   // closed to start with; the browser tests set this to read whole pages
     const sum = document.createElement("summary");
     const body = document.createElement("div");
     body.className = "dd-body";

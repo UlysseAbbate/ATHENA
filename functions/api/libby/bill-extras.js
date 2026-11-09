@@ -110,11 +110,11 @@ export async function onRequestGet(ctx) {
     } else {
       try {
         const rows = await withTimeout(
-          sbSelect(env, 'bill_advisers', 'select=bill_id,advisers,updated_by,updated_at'),
+          sbSelect(env, 'bill_advisers', 'select=bill_id,advisers,lords_lead,commons_adviser,commons_lead,updated_by,updated_at'),
           SOURCE_TIMEOUT_MS,
           'Advisers table'
         );
-        for (const r of rows) if (r.advisers) advisers[r.bill_id] = { name: r.advisers, by: r.updated_by || '', at: r.updated_at || '' };
+        for (const r of rows) if (r.advisers || r.lords_lead || r.commons_adviser || r.commons_lead) advisers[r.bill_id] = { name: r.advisers || '', lordsLead: r.lords_lead || '', commonsAdviser: r.commons_adviser || '', commonsLead: r.commons_lead || '', by: r.updated_by || '', at: r.updated_at || '' };
       } catch (err) {
         notes.push(`Advisers could not be read (has the bill_advisers table been created in Supabase?): ${err.message}`);
       }
