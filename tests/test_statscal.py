@@ -172,7 +172,7 @@ def test_run_isolates_a_failing_source(monkeypatch):
     def boom(now, cfg):
         raise RuntimeError("down")
     monkeypatch.setitem(S.FETCHERS, "ons", ("ons_api", boom))
-    for k in ("govuk", "london_datastore", "police_uk"):
+    for k in ("govuk", "london_datastore", "police_uk", "gla_meetings"):
         monkeypatch.setitem(S.FETCHERS, k, (S.FETCHERS[k][0], lambda now, cfg: []))
     prev = {"releases": [rec("a", "2026-11-20")], "changes": []}
     body, health = S.run(prev, NOW, CFG)
@@ -198,3 +198,49 @@ def test_retry_honours_retry_after(monkeypatch):
     monkeypatch.setattr(S._session, "get", lambda *a, **k: calls.append(1) or seq.pop(0))
     monkeypatch.setattr(S, "_sleep", sleeps.append)
     assert S.get_json("http://x") == {"ok": 1} and 7 in sleeps
+
+
+MONTH_PAGE = """<ul class="mgCalendarMonthEventList" >
+<li>10.00 am <a id='M8000'  class="mgCalendarCellTxt"   href="ieListDocuments.aspx?CId=173&amp;MId=8000"  title="Meeting&#32;of&#32;Transport&#32;Committee,&#32;03&#47;11&#47;2026&#32;10.00&#32;am&#32;"><span  class="mgHide" >Meeting of&nbsp;</span>Transport Committee</a></li>
+<li>2.00 pm <a id='M8001'  class="mgCalendarCellTxt"   href="ieListDocuments.aspx?CId=1&amp;MId=8001"  title="Meeting&#32;of&#32;Audit&#32;Panel,&#32;14&#47;07&#47;2027&#32;2.00&#32;pm&#32;(Cancelled)">Audit Panel</a></li></ul>"""
+DOC_PAGE = """<div  class="mgLinks" ><ul  class="mgActionList" >
+<li><a  href="documents/g8000/Agenda frontsheet Tuesday 03-Nov-2026.pdf?T=0"   title="x">Agenda frontsheet <span class="mgFileSize">PDF 80 KB</span></a></li>
+<li><a  href="documents/g8000/Agenda frontsheet Tuesday.doc?T=0&amp;CT=2">Agenda frontsheet (doc)</a></li></ul></div>
+<table class="mgItemTable"><tr><td  class="mgItemNumberCell" ><p  class="mgAiTitleTxt" ><a name="AI1"></a>1.</p></td>
+<td >	<p  class="mgAiTitleTxt" >Apologies for Absence</p></td></tr>
+<tr><td  class="mgItemNumberCell" ><p  class="mgAiTitleTxt" ><a name="AI3"></a>3.</p></td>
+<td ><p  class="mgAiTitleTxt" ><a  class="mgAiTitleLnk" href="documents/s1/QC3 minutes.pdf" title="x">Minutes <span class="mgFileSize">PDF 77 KB</span></a></p></td></tr></table>"""
+
+
+def test_modern_gov_month_and_documents_pages_are_read():
+    base = "https://www.london.gov.uk/about-us/londonassembly/meetings"
+    ev = S.parse_moderngov_month(MONTH_PAGE, base)
+    assert [e["name"] for e in ev] == ["Transport Committee", "Audit Panel"]
+    assert ev[0]["when"].isoformat() == "2026-11-03T10:00:00+00:00" and ev[0]["url"].endswith("ieListDocuments.aspx?CId=173&MId=8000") and not ev[0]["cancelled"]
+    assert ev[1]["when"].isoformat() == "2027-07-14T14:00:00+01:00" and ev[1]["cancelled"]
+    items, links = S.parse_moderngov_documents(DOC_PAGE, base + "/ieListDocuments.aspx")
+    assert items == ["1. Apologies for Absence", "3. Minutes"]
+    assert [l["label"] for l in links] == ["Agenda frontsheet", "Minutes"] and " " not in links[0]["url"]
+
+
+def test_meetings_become_calendar_entries_with_agenda_and_links(monkeypatch):
+    pages = {"month": MONTH_PAGE, "doc": DOC_PAGE}
+    monkeypatch.setattr(S, "robots_allows", lambda url: True)
+    monkeypatch.setattr(S, "get_text", lambda url: pages["doc"] if "ieListDocuments" in url else pages["month"])
+    cfg = {**CFG, "meetings": [{"name": "London Assembly", "publisher": "London Assembly", "base": "https://www.london.gov.uk/about-us/londonassembly/meetings"}]}
+    got = {r["title"] + r["date"]: r for r in S.fetch_moderngov(datetime(2026, 11, 9, tzinfo=timezone.utc), cfg)}
+    tc = next(r for r in got.values() if r["title"] == "Transport Committee")
+    assert tc["category"] == "meeting" and tc["kind"] == "published" and tc["tier"] == "london" and tc["summary"].startswith("Agenda: 1. Apologies")
+    assert tc["links"] and tc["datetime"].startswith("2026-11-03T10:00")
+    audit = next(r for r in got.values() if r["title"] == "Audit Panel")
+    assert audit["kind"] == "cancelled" and audit["cancelled"]
+
+
+def test_pages_are_only_read_where_robots_txt_allows(monkeypatch):
+    class R:
+        def __init__(self, text, code=200):
+            self.text, self.status_code = text, code
+    monkeypatch.setattr(S, "_robots", {})
+    monkeypatch.setattr(S._session, "get", lambda url, **k: R("User-agent: *\nDisallow: /\n") if "closed" in url else R("User-agent: *\nDisallow: /search\n"))
+    assert not S.robots_allows("https://closed.example/mgCalendarMonthView.aspx")
+    assert S.robots_allows("https://open.example/mgCalendarMonthView.aspx") and not S.robots_allows("https://open.example/search")
