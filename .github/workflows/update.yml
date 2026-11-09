@@ -1,10 +1,8 @@
 name: Update tracker
 
+# Run by "Run everything" (run-all.yml) at 6am and 6pm London time, or by hand. It skips itself if the data was already renewed since the last 6am / 6pm.
 on:
-  schedule:
-    # Six wake-ups a day, around 6am and 6pm London in summer and winter time. GitHub starts scheduled runs hours late and sometimes drops one, so the
-    # collector itself (tracker/update.py) checks whether the data has been renewed since the last 6am or 6pm London, and does nothing if it has.
-    - cron: "7 5,6,7,17,18,19 * * *"
+  workflow_call:
   workflow_dispatch:
 
 # Read-only: the collector keeps its state in the private database (through the ingest function), not in the repo.

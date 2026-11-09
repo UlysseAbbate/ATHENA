@@ -12,9 +12,7 @@
 name: Refresh data
 
 on:
-  schedule:
-    # Six wake-ups a day, around 6am and 6pm London in summer and winter time. The first one after each 6am or 6pm that finds the data not yet renewed does the update.
-    - cron: '7 5,6,7,17,18,19 * * *'
+  workflow_call:   # from "Run everything" (run-all.yml), which wakes it at 6am and 6pm London time
   workflow_dispatch:
 
 concurrency:

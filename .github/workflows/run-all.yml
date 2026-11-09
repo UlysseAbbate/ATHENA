@@ -1,0 +1,30 @@
+# The one timer for every action on the site. It runs at 6am and 6pm London time, every day, and starts them all:
+#   - Update tracker   (LOVELACE and LUCIEN collectors; update.yml)
+#   - Refresh data     (LIBBY: What's On, Lords business, votes, policy, saved copies; libby-refresh-data.yml)
+# The "Refresh all data" button at the foot of every page starts this same workflow by hand (functions/api/refresh-all.js).
+# A new action joins by being added as a job below.
+#
+# GitHub starts scheduled runs hours late and sometimes drops one, so this wakes six times a day. Each action asks for itself
+# "has my data been renewed since the last 6am or 6pm London?" and does nothing if it has. A run started by hand always runs everything.
+# The times themselves are in lib/libby/schedule.js.
+name: Run everything
+
+on:
+  schedule:
+    - cron: '7 5,6,7,17,18,19 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: run-all
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  tracker:
+    uses: ./.github/workflows/update.yml
+    secrets: inherit
+  libby:
+    uses: ./.github/workflows/libby-refresh-data.yml
+    secrets: inherit
