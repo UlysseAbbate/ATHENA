@@ -215,9 +215,10 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           if (u.pathname.endsWith("/me")) return who === "admin" && lvl !== "none" ? j({ level: lvl, name: { admin: "Admin", beta: "Beta tester", developer: "Developer", staff: "Staff" }[lvl], email: USERS.admin.email }) : j({ error: "You have not been given access to LIBBY.", noAccess: true, email: USERS.core.email }, 403);
           if (u.pathname.endsWith("/status")) return j({ updated: null, lastRun: null, next: { hour: 8, tomorrow: false }, hours: [8] });
           if (u.pathname.endsWith("/api/libby/bills/1")) return j({ id: 1, title: "Test Bill [HL]", longTitle: "A Bill to test", originatingHouse: "Lords", currentStage: "Report stage", url: "https://bills.parliament.uk/bills/1", sponsors: [], summary: "",
-            commonsStages: [], lordsStages: [{ id: 9, description: "Report stage", takesAmendments: true, status: "in progress", billStageId: 50, dates: [], forthcoming: [], docs: [], documents: [], otherDocs: [], slots: [] }], commonsDocs: [], otherDocs: [], unassignedForthcoming: [] });
+            commonsStages: [{ id: 8, description: "Report stage", takesAmendments: true, status: "in progress", billStageId: 60, dates: [], forthcoming: [], docs: [], documents: [], otherDocs: [], slots: [] }], lordsStages: [{ id: 9, description: "Report stage", takesAmendments: true, status: "in progress", billStageId: 50, dates: [], forthcoming: [], docs: [], documents: [], otherDocs: [], slots: [] }], commonsDocs: [], otherDocs: [], unassignedForthcoming: [] });
           if (u.pathname.endsWith("/api/libby/bills/1/amendments")) {
             const sp = (n, ld, lead) => ({ name: n, lead: !!lead, ld });
+            if (u.searchParams.get("stage") === "60") return j({ billId: 1, billStageId: 60, total: 1, ours: [], supported: [], all: [{ id: 201, number: "5", place: "Clause 1, page 1, line 3", summary: "A Commons amendment", sponsors: [sp("Daisy Cooper", true, true)], lead: "Daisy Cooper", leadIsLD: true, ldSigned: true }] });
             return j({ billId: 1, billStageId: 50, total: 3, ours: [], supported: [], all: [
               { id: 101, number: "12", place: "Clause 3, page 2, line 14", summary: "Leave out subsection (2)", sponsors: [sp("Lord Alpha", true, true), sp("Baroness Beta", true)], lead: "Lord Alpha", leadIsLD: true, ldSigned: true },
               { id: 102, number: "13", place: "Clause 4, page 3, line 1", summary: "Insert a review", sponsors: [sp("Lord Gamma", false, true), sp("Baroness Beta", true)], lead: "Lord Gamma", leadIsLD: false, ldSigned: true },
@@ -417,6 +418,11 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/bill/1?tab=amendments"); await page.waitForTimeout(1500);
           const heads = await page.$$eval(".am-table thead th", hs => hs.map(h => h.textContent.trim()));
           check("amendments: one table, columns Signed peers / # / Location / Explanatory statement / buttons", heads.slice(0, 4).join("|") === "Signed peers|#|Location|Member\u2019s explanatory statement" && heads.length === 5, heads.join("|"));
+          check("amendments: a button switches between Lords and Commons amendments", (await page.$$eval("[data-amhouse]", bs => bs.map(b => b.textContent.trim()))).join("|") === "Lords amendments|Commons amendments");
+          await page.click('[data-amhouse="commons"]'); await page.waitForTimeout(800);
+          check("amendments: the Commons button shows the Commons amendments", (await page.$$("tr.am-row")).length === 1 && /Daisy Cooper/.test(await page.$eval("tr.am-row", t => t.textContent)));
+          await page.click('[data-amhouse="lords"]'); await page.waitForTimeout(800);
+          check("amendments: and back to the Lords amendments", (await page.$$("tr.am-row")).length === 3);
           check("amendments: the old Lib Dem / signed lists are gone", (await page.$$eval("#ams h3", h => h.map(x => x.textContent))).every(t => !/Lib Dem amendments|other amendments we have signed/i.test(t)) && (await page.$$(".am-table tbody tr.am-row")).length === 3);
           check("amendments: each signed peer is on its own line", (await page.$$eval("tr.am-row:first-child .am-peer", ps => ps.map(p => p.textContent.trim()))).join("|") === "Lord Alpha|Baroness Beta");
           if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(200); await page.screenshot({ path: path.join(process.env.SHOTS, `amendments-${scheme}.png`), fullPage: true }); }

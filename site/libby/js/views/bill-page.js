@@ -387,15 +387,23 @@ export async function renderBill(el, { id, house }, query = {}) {
   let b;
   try { b = await api(`bills/${id}`); } catch (err) { el.innerHTML = errorBox(err); return; }
 
-  const stageOf = (re) => (commons ? b.commonsStages : b.lordsStages).find((s) => s.takesAmendments && re.test(s.description));
-  const committee = stageOf(/committee/i);
-  const report = stageOf(/report/i);
+  // The Amendments section shows one House's amendments at a time, with a button to switch (it starts on the House whose page this is).
+  let amCommons = commons;
+  let committee, report, tabs;
   const usable = (s) => !!s && s.status !== 'not yet scheduled';
-  const tabs = [
-    { key: 'committee', label: 'Committee', stage: committee },
-    { key: 'report', label: 'Report', stage: report },
-    { key: 'draft', label: 'Draft amendments' },
-  ].filter((t) => t.key !== 'draft' || (can('whips') && !commons));
+  const setAmHouse = (c) => {
+    amCommons = c;
+    const stageOf = (re) => (c ? b.commonsStages : b.lordsStages).find((s) => s.takesAmendments && re.test(s.description));
+    committee = stageOf(/committee/i);
+    report = stageOf(/report/i);
+    tabs = [
+      { key: 'committee', label: 'Committee', stage: committee },
+      { key: 'report', label: 'Report', stage: report },
+      { key: 'draft', label: 'Draft amendments' },
+    ].filter((t) => t.key !== 'draft' || (can('whips') && !c));
+  };
+  setAmHouse(commons);
+  const tabsHtml = () => tabs.map((t) => `<button type="button" role="tab" aria-selected="false" data-tab="${t.key}">${esc(t.label)}</button>`).join('');
 
   // The three sections, one button each. Stakeholders are for the Whips' Office team and above.
   const stageCount = b.commonsStages.length + b.lordsStages.length;
@@ -423,7 +431,11 @@ export async function renderBill(el, { id, house }, query = {}) {
 
     <section id="sec-stages" role="tabpanel" aria-labelledby="sec-btn-stages" hidden>${stagesHtml(b)}</section>
     <section id="sec-amendments" role="tabpanel" aria-labelledby="sec-btn-amendments" hidden>
-      <div class="tabs" role="tablist" aria-label="Amendments">${tabs.map((t) => `<button type="button" role="tab" aria-selected="false" data-tab="${t.key}">${esc(t.label)}</button>`).join('')}</div>
+      <div class="toggle am-house" role="group" aria-label="Whose amendments">
+        <button type="button" data-amhouse="lords" aria-pressed="${!commons}" ${!commons ? 'aria-current="true"' : ''}>Lords amendments</button>
+        <button type="button" data-amhouse="commons" aria-pressed="${commons}" ${commons ? 'aria-current="true"' : ''}>Commons amendments</button>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Amendments" id="am-tabs">${tabsHtml()}</div>
       <div id="ams" role="tabpanel"></div>
     </section>
     ${sections.some((x) => x.key === 'stakeholders') ? '<section id="sec-stakeholders" role="tabpanel" aria-labelledby="sec-btn-stakeholders" hidden></section>' : ''}`;
@@ -443,17 +455,19 @@ export async function renderBill(el, { id, house }, query = {}) {
   const panel = el.querySelector('#ams');
   const cache = new Map();
   const loadStage = (stageId) => {
-    if (!cache.has(stageId)) {
+    const house = amCommons ? 'commons' : 'lords';
+    const key = `${house}:${stageId}`;
+    if (!cache.has(key)) {
       const none = Promise.resolve({ comments: {} });
       const p = Promise.all([
-        api(`bills/${id}/amendments?stage=${stageId}${commons ? '&house=commons' : ''}`),
+        api(`bills/${id}/amendments?stage=${stageId}${amCommons ? '&house=commons' : ''}`),
         (can('whips') ? api(`comments?bill=${id}&stage=${stageId}`) : none).then((r) => ({ comments: r.comments || {} })).catch((err) => ({ comments: {}, error: err.message })),
         (hasLevel('whips') ? api(`amendment-flags?bill=${id}&stage=${stageId}`) : Promise.resolve({ flags: {} })).then((r) => ({ flags: r.flags || {} })).catch((err) => ({ flags: {}, error: err.message })),
       ]).then(([d, c, f]) => ({ d, comments: c.comments, commentsError: c.error, flags: f.flags, flagsError: f.error }));
-      p.catch(() => cache.delete(stageId));
-      cache.set(stageId, p);
+      p.catch(() => cache.delete(key));
+      cache.set(key, p);
     }
-    return cache.get(stageId);
+    return cache.get(key);
   };
 
   // Whips' Office documents: one entry per saved sitting day, with Word downloads.
@@ -530,7 +544,18 @@ export async function renderBill(el, { id, house }, query = {}) {
     } catch (err) { if (mine === token) panel.innerHTML = errorBox(err); }
   };
 
-  el.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => show(t.dataset.tab)));
+  const wireTabs = () => el.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => show(t.dataset.tab)));
+  const firstTab = () => (usable(report) ? 'report' : usable(committee) ? 'committee' : (can('whips') && !amCommons ? 'draft' : 'committee'));
+  wireTabs();
+  el.querySelectorAll('[data-amhouse]').forEach((btn) => btn.addEventListener('click', () => {
+    const c = btn.dataset.amhouse === 'commons';
+    if (c === amCommons) return;
+    setAmHouse(c);
+    el.querySelectorAll('[data-amhouse]').forEach((x) => { const on = x === btn; x.setAttribute('aria-pressed', String(on)); if (on) x.setAttribute('aria-current', 'true'); else x.removeAttribute('aria-current'); });
+    el.querySelector('#am-tabs').innerHTML = tabsHtml();
+    wireTabs();
+    show(firstTab());
+  }));
 
   // Each section is drawn the first time it is opened. The one showing is kept in the address (?tab=) so it can be shared.
   const opened = new Set();
@@ -540,7 +565,7 @@ export async function renderBill(el, { id, house }, query = {}) {
     try { history.replaceState(null, '', `${base}/bill/${id}${key === 'stages' ? '' : `?tab=${key}`}`); } catch { /* the address is a convenience */ }
     if (opened.has(key)) return;
     opened.add(key);
-    if (key === 'amendments') show(usable(report) ? 'report' : usable(committee) ? 'committee' : (can('whips') && !commons ? 'draft' : 'committee'));
+    if (key === 'amendments') show(firstTab());
     if (key === 'stakeholders') renderStakeholders(el.querySelector('#sec-stakeholders'), { billId: id });
   };
   el.querySelectorAll('[data-sec]').forEach((btn) => btn.addEventListener('click', () => openSection(btn.dataset.sec)));

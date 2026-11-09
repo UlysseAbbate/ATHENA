@@ -186,6 +186,7 @@ async function showFreshness(justRefreshed) {
     ? 'Parliament data ' + (justRefreshed ? 'refreshed just now' : 'last updated ' + whenText(st.updated)) + (next ? ' &middot; next automatic update ' + next : '')
     : 'Parliament data is being looked up live (no saved copy yet)')
     + ' &middot; <button type="button" class="linkish" id="refresh-now">Refresh now</button>'
+    + (window.RefreshAll ? ' &middot; ' + window.RefreshAll.html : '')
     + (failed ? ' <span class="muted">(' + failed + ' lookup' + (failed === 1 ? '' : 's') + ' failed on the last update, so some older data may be shown)</span>' : '');
   document.getElementById('refresh-now').addEventListener('click', refreshNow);
 }

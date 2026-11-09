@@ -523,9 +523,9 @@ a.cal-cell:hover { border-color: var(--accent); background: var(--accent-tint); 
 
 /* the two-way switch (By calendar / By portfolio, Week / Month) */
 .toggle { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: 6px; overflow: hidden; margin-bottom: 1.25rem; }
-.toggle a { font: 600 .88rem var(--head); padding: .4rem 1rem; text-decoration: none; color: var(--ink); }
-.toggle a:hover { background: var(--accent-tint); color: var(--ink); }
-.toggle a[aria-current] { background: var(--btn-bg); color: var(--btn-fg); }
+.toggle a, .toggle button { font: 600 .88rem var(--head); padding: .4rem 1rem; text-decoration: none; color: var(--ink); background: none; border: 0; cursor: pointer; }
+.toggle a:hover, .toggle button:hover { background: var(--accent-tint); color: var(--ink); }
+.toggle a[aria-current], .toggle button[aria-current] { background: var(--btn-bg); color: var(--btn-fg); }
 .flag-filter { border-radius: 99px; }
 .flag-filter[aria-pressed="true"], .roles-added { border-color: var(--accent); }
 .flag-filter[aria-pressed="true"] { background: var(--accent-tint); color: var(--ink); }
