@@ -1,5 +1,4 @@
 {
- "es_cluster": "A",
  "results": [
   {
    "_id": "/government/statistics/announcements/british-film-high-end-television-programmes-animation-television-programmes-childrens-television-programmes-and-video-games-certification-year-en--4",
@@ -7,8 +6,8 @@
    "document_type": "edition",
    "elasticsearch_type": "edition",
    "es_score": null,
-   "format": "statistics_announcement",
    "index": "govuk",
+   "link": "/government/statistics/announcements/british-film-high-end-television-programmes-animation-television-programmes-childrens-television-programmes-and-video-games-certification-year-en--4",
    "organisations": [
     {
      "acronym": "BFI",
@@ -41,8 +40,8 @@
    "document_type": "edition",
    "elasticsearch_type": "edition",
    "es_score": null,
-   "format": "statistics_announcement",
    "index": "govuk",
+   "link": "/government/statistics/announcements/research-update-on-population-estimates-by-country-of-birth-for-england-and-wales-2026",
    "organisations": [
     {
      "acronym": "ONS",
@@ -76,8 +75,8 @@
    "document_type": "edition",
    "elasticsearch_type": "edition",
    "es_score": null,
-   "format": "statistics_announcement",
    "index": "govuk",
+   "link": "/government/statistics/announcements/admin-based-household-estimates-by-size-for-local-authorities-in-england-and-wales-2021",
    "organisations": [
     {
      "acronym": "ONS",
@@ -106,8 +105,5 @@
    "title": "Admin-based household estimates by size for local authorities in England and Wales: 2021"
   }
  ],
- "start": 0,
- "suggested_autocomplete": [],
- "suggested_queries": [],
  "total": 1821
 }

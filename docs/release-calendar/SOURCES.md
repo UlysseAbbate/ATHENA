@@ -56,8 +56,11 @@ ONS and GOV.UK content is under the Open Government Licence v3.0. Police API dat
 - **London Datastore**: `landingPage`, `title`, `modified`, `issued`, `publisher.name`/maintainer, `theme`.
 - **police.uk**: `crime-last-updated.date`, `crimes-street-dates[].date`.
 
-## Decisions I need from you (see the report)
+## Decisions taken
 
-1. **Where it lives.** The brief assumes a standalone GitHub Pages repo. You asked for a LIBBY page, so I propose: the Python fetchers run in a GitHub Action (a new job in "Run everything", at 6am and 6pm) and write the results to the Supabase `api_snapshots` table (as the other LIBBY data does); the page reads them through a `/api/libby/…` route. Committing JSON to `data/` and serving it from the repo remains possible but does not fit the access system (the page would be public).
-2. **Package name**: the brief says `python -m calendar.run`, but a package called `calendar` shadows Python's standard library `calendar`, which breaks other libraries. I'll call it `releasecal`.
-3. **Cadence**: the brief says twice daily around 10:43 and 16:43 UTC; the site's updates run at 6am and 6pm. I'll use the 6am/6pm run unless you want the brief's times (ONS publishes at 07:00 and 09:30, so a 6pm run misses same-day items until the next morning).
+1. **Where it lives**: LUCIEN, as its own tab ("Stats calendar", beside Polling). The collector is `tracker/statscal.py`, run by `tracker/update.py` with the other LUCIEN collectors, so it follows the same 6am / 6pm schedule ("Run everything" and the Refresh all data button). Results are stored in the private database as `ulysse_data` name `statscal`, so only people with LUCIEN access can see them.
+2. **Package name**: `statscal` (not `calendar`, which would shadow Python's own module).
+3. **Schedule**: 6am and 6pm, the same as every other action.
+4. **Not built, by design**: no standalone GitHub Pages site, no committed `data/` JSON, no public `calendar.ics` or RSS feed (the page would be public). The calendar download (.ics) is made in the browser from the stored data. Dependencies stay minimal (`requests`, `pyyaml`, `python-dateutil`), so no pydantic.
+5. **Sources left out**: Ofgem and the Office for Statistics Regulation have no GOV.UK statistics announcements; the TfL schedule is behind a bot block, so TfL, the Met and MOPAC go in `config/statscal_manual.yml`.
+6. **Estimates**: only when our own history shows a regular rhythm (at least three updates, gaps within 40% of the median). London Datastore datasets and police.uk start with no estimate and gain one as history builds up; they are always shown as "Estimated" and kept out of the main calendar file.

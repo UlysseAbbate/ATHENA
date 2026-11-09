@@ -10,7 +10,16 @@ const SB = "https://fbsoibmtvapmxdlfdgxc.supabase.co";
 const ROOT = path.resolve(__dirname, "../..");
 const today = new Date(), iso = d => d.toISOString().slice(0, 10), plus = n => iso(new Date(Date.now() + n * 864e5));
 const feedFile = path.join(ROOT, "data/ulysse/feed.json");
-const FEED = fs.existsSync(feedFile) ? JSON.parse(fs.readFileSync(feedFile)) : { updated: new Date().toISOString(), items: [] };
+const _rel = (id, title, publisher, tier, kind, date, extra = {}) => ({ id, title, publisher, tier, kind, date, datetime: null, date_precision: "day", date_status: "confirmed", previous_dates: [], cancelled: kind === "cancelled", summary: "", url: "https://www.gov.uk/x/" + id, first_seen: "2026-01-01T00:00:00+00:00", ...extra });
+const STATSCAL = { updated: new Date().toISOString(), changes: [{ at: new Date().toISOString(), type: "date_changed", id: "r2", title: "Moved release", publisher: "Office for National Statistics", tier: "ons", date: plus(9), old_date: plus(3), new_date: plus(9), url: "https://www.ons.gov.uk/x" }],
+  sources: [{ source: "ons", ok: true, count: 3 }, { source: "govuk", ok: false, count: 0, stale: true, error: "HTTP 503" }],
+  releases: [_rel("r1", "Labour market overview", "Office for National Statistics", "ons", "upcoming", plus(2), { datetime: plus(2) + "T09:30:00+00:00" }),
+    _rel("r2", "Moved release", "Office for National Statistics", "ons", "upcoming", plus(9), { date_status: "provisional", previous_dates: [{ date: plus(3), change_notice: "Postponed", changed_at: null }] }),
+    _rel("r3", "Monthly crime figures", "Home Office", "national", "upcoming", plus(5), { date_precision: "month", date_status: "provisional" }),
+    _rel("r4", "Hospital admissions", "NHS England", "alb", "published", plus(-1)),
+    _rel("r5", "Cancelled thing", "Department for Transport", "national", "cancelled", plus(4)),
+    _rel("r6", "Police.uk data (next, estimated)", "data.police.uk (all forces)", "london", "upcoming", plus(12), { date_status: "estimated" })] };
+const FEED =fs.existsSync(feedFile) ? JSON.parse(fs.readFileSync(feedFile)) : { updated: new Date().toISOString(), items: [] };
 FEED.updated = new Date().toISOString();
 
 const USERS = {
@@ -59,7 +68,7 @@ const TABLES = {
   social_accounts: ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"].map((p, i) => ({ id: "sa" + i, organisation: "Sarah Olney", platform: p, handle: i ? null : "@sarah", url: null, updated_at: ts })),
   social_posts: [],
   audit_log: [{ id: 1, at: ts, user_email: "core@test.invalid", table_name: "plan_entries", label: "Launch housing pledge", action: "update", changed: ["content"] }],
-  ulysse_data: [{ name: "feed", body: FEED, updated_at: new Date().toISOString() }, { name: "polls", body: { rows: [] } }, { name: "health", body: { sources: [{ group: "media", name: "BBC News", ok: true, items: 3 }, { group: "thinktanks", name: "IFS", ok: false, items: 0, error: "site refuses bots" }] } }],
+  ulysse_data: [{ name: "statscal", body: STATSCAL, updated_at: new Date().toISOString() }, { name: "feed", body: FEED, updated_at: new Date().toISOString() }, { name: "polls", body: { rows: [] } }, { name: "health", body: { sources: [{ group: "media", name: "BBC News", ok: true, items: 3 }, { group: "thinktanks", name: "IFS", ok: false, items: 0, error: "site refuses bots" }] } }],
   ulysse_read: [],
   program_levels: LEVELS,
   access_grants: [],
@@ -591,8 +600,23 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       if (who === "admin") {
         await page.click('#tabs button[data-tab="health"]'); await page.waitForTimeout(200);
         check("admin: lucien health tab", /sources returning data/.test(await page.$eval("#healthpanel", e => e.innerText)));
+        await page.click('#tabs button[data-tab="statscal"]'); await page.waitForTimeout(300);
+        const sc = await page.$eval("#statspanel", e => e.innerText);
+        check("stats calendar: the agenda lists releases by day with a time, and says when it was refreshed", /Labour market overview/.test(sc) && /09:30/.test(sc) && /Last refreshed/.test(sc), sc.slice(0, 160).replace(/\n/g, " "));
+        check("stats calendar: confirmed, provisional, estimated and cancelled each have a badge", /Confirmed/i.test(sc) && /Estimated/i.test(sc) && /Cancelled/i.test(sc) && /Provisional/i.test(sc));
+        check("stats calendar: a moved release shows Changed and its old date", /Changed/i.test(sc) && /was /.test(sc));
+        check("stats calendar: a month-only date is in a 'date to be confirmed' strip, not on a day", /date to be confirmed/.test(sc) && await page.$$eval(".sc-tbc .sc-item", is => is.some(i => /Monthly crime figures/.test(i.textContent))));
+        check("stats calendar: Recently changed and Just published panels", /Recently changed/.test(sc) && /moved .* → /.test(sc) && /Just published/.test(sc) && /Hospital admissions/.test(sc));
+        check("stats calendar: a source that failed shows a warning", /could not be refreshed: govuk/.test(sc));
+        await page.selectOption("#sc-tier", "ons"); await page.waitForTimeout(200);
+        check("stats calendar: the body filter narrows the list and goes in the address", (await page.$$(".sc-item")).length === 2 && /tier=ons/.test(page.url()), page.url());
+        await page.click("#sc-reset"); await page.click('[data-sc-view="month"]'); await page.waitForTimeout(200);
+        check("stats calendar: the month view is a grid with the releases on their days", (await page.$$(".sc-cell")).length >= 28 && (await page.$$(".sc-chip")).length >= 3);
+        const ics = await page.evaluate(() => StatsCal.icsText(false));
+        check("stats calendar: the calendar file has confirmed and provisional all-day events, no estimates, no cancelled", /BEGIN:VCALENDAR/.test(ics) && /DTSTART;VALUE=DATE:\d{8}/.test(ics) && /Labour market overview/.test(ics) && !/Police\.uk data/.test(ics) && !/Cancelled thing/.test(ics) && !/Monthly crime/.test(ics));
+        check("stats calendar: with estimates the file includes them, marked", /\(est\.\) Police\.uk data/.test(await page.evaluate(() => StatsCal.icsText(true))));
         await page.click('#shell-foot [data-foot="team"]'); await page.waitForTimeout(500);
-        const lt = await page.$eval("#teampanel", e => e.innerText);
+        const lt =await page.$eval("#teampanel", e => e.innerText);
         check("admin: LUCIEN has Team & access (people, levels, codes, activity)", /Team & access/.test(lt) && /reader@test\.invalid/.test(lt) && /What each level is/.test(lt) && /Access codes/.test(lt) && /Recent activity/.test(lt), lt.slice(0, 120).replace(/\n/g, " "));
         await page.click('#tabs button[data-tab="media"]'); await page.waitForTimeout(200);
         await page.reload(); await page.waitForTimeout(1000);

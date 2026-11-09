@@ -10,7 +10,7 @@ const SECTION = { committee: ["Select committee", "var(--c-committee)"], thinkta
 const NEW_HOURS = 48, PAGE = 150;
 const TZ = "Europe/London";
 const SAVED = "ulysse.view.v1";
-const state = { tab: "all", items: [], polls: [], health: [], read: new Set(), shown: PAGE, pollRange: "all", hidden: new Set(),
+const state = { tab: "all", items: [], polls: [], health: [], statscal: null, read: new Set(), shown: PAGE, pollRange: "all", hidden: new Set(),
   f: { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", onlyNew: false, sinceLast: false } };
 
 function saveView() { try { localStorage.setItem(SAVED, JSON.stringify({ tab: state.tab, f: state.f, pollRange: state.pollRange })); } catch (e) { /* private mode */ } }
@@ -223,11 +223,13 @@ function renderHealth() {
 
 /* ---------------------------------------------------------------- render + events */
 function render(keepControls) {
-  const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", other = health || team;
+  const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", stats = tab === "statscal", other = health || team || stats;
   saveView();
   { const b = document.querySelector(`#tabs button[data-tab="${tab}"]`); $("pt").querySelector("h1").textContent = tab === "team" ? "Team & access" : (b ? b.textContent : "Everything"); }
   $("healthpanel").hidden = !health; $("teampanel").hidden = !team; $("list").hidden = other; $("controls").hidden = other; $("overview").hidden = other || poll;
-  $("pollpanel").hidden = !poll; document.querySelector(".listhead").hidden = other;
+  $("pollpanel").hidden = !poll; document.querySelector(".listhead").hidden = other; $("statspanel").hidden = !stats;
+  if (!stats && location.hash.startsWith("#stats")) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* ignore */ } }
+  if (stats) return StatsCal.render($("statspanel"), state.statscal);
   if (team) return TeamPage.render($("teampanel"), { program: "lucien", name: "LUCIEN" });
   if (health) return renderHealth();
   if (!keepControls) renderControls();
@@ -272,7 +274,8 @@ function signIn() { AuthUI.render(sb, document.body, { title: "LUCIEN" }); }
   state.uid = acc.session.user.id;
   // Team & access: the administrator's alone, as on LOVELACE and LIBBY
   if (acc.admin) Shell.footLink("team", "Team & access", () => { state.tab = "team"; document.querySelectorAll("#tabs button").forEach(x => x.classList.remove("on")); state.shown = PAGE; render(); window.scrollTo(0, 0); });
-  const [feed, polls, health, read] = await Promise.all([load("feed"), load("polls"), load("health"), loadRead()]);
+  const [feed, polls, health, read, statscal] = await Promise.all([load("feed"), load("polls"), load("health"), loadRead(), load("statscal")]);
+  state.statscal = statscal;
   state.items = (feed?.items || []).filter(i => i.title); state.polls = polls?.rows || []; state.health = health?.sources || []; state.read = read;
   state.items.forEach(i => (i.geo || []).forEach(g => { if (/^(Europe|United States|Russia|Middle East|China|Africa|Global)/.test(g)) GEO_META[g] = "International"; }));
   const staleH = feed ? (Date.now() - new Date(feed.updated)) / 36e5 : Infinity;
@@ -288,5 +291,7 @@ function signIn() { AuthUI.render(sb, document.body, { title: "LUCIEN" }); }
     localStorage.setItem("ulysse.lastVisit", new Date().toISOString());
   } catch (e) { state.baseline = null; }
   document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x.dataset.tab === state.tab));
-  bind(); render();
+  if (StatsCal.fromHash()) state.tab = "statscal";   // a shared link to the Stats calendar opens it with its filters
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x.dataset.tab === state.tab));
+  bind(); StatsCal.bind(); render();
 })();

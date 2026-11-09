@@ -1287,7 +1287,7 @@ def sync_state() -> None:
     if not ingest_configured():
         print("INGEST_URL / INGEST_TOKEN not set: using the local data/ulysse/ files")
         return
-    for name in ("feed", "polls", "health"):
+    for name in ("feed", "polls", "health", "statscal"):
         js = _ingest({"action": "get", "name": name})
         if js.get("body") is not None:
             (DATA / f"{name}.json").write_text(json.dumps(js["body"]))
@@ -1301,7 +1301,7 @@ def upload(coverage: list[dict] | None = None) -> bool:
         print("INGEST_URL / INGEST_TOKEN not set: data written locally only, not uploaded")
         return True
     ok = True
-    for name in ("feed", "polls", "health"):
+    for name in ("feed", "polls", "health", "statscal"):
         f = DATA / f"{name}.json"
         if not f.exists():
             continue
@@ -1366,7 +1366,7 @@ def main() -> int:
         write("feed", {"updated": NOW.isoformat(), "items": feed})
         print(f"{len(feed)} items re-classified")
         return 0 if upload() else 1
-    groups = {"committees", "thinktanks", "media", "polling"}
+    groups = {"committees", "thinktanks", "media", "polling", "statscal"}
     run = lambda k: not only or k in only  # noqa: E731
     items: list[dict] = []
     coverage: list[dict] = []
@@ -1386,6 +1386,16 @@ def main() -> int:
         poll_items, pollsters = collect_polling()
         items += poll_items
         write("polls", {"updated": NOW.isoformat(), "rows": [], "pollsters": pollsters})
+    if run("statscal"):   # the Stats calendar (tracker/statscal.py): its sources fail one by one without stopping anything else
+        import statscal
+        try:
+            prev = json.loads((DATA / "statscal.json").read_text())
+        except (OSError, ValueError):
+            prev = None
+        body, got_health = statscal.run(prev)
+        write("statscal", body)
+        health.extend(got_health)
+        print(f"stats calendar: {len(body['releases'])} releases, {sum(s['ok'] for s in body['sources'])}/{len(body['sources'])} sources ok")
     feed = merge(items)
     write("feed", {"updated": NOW.isoformat(), "items": feed})
     if only:   # a partial run keeps the other groups' last known health
