@@ -1,0 +1,113 @@
+{
+ "es_cluster": "A",
+ "results": [
+  {
+   "_id": "/government/statistics/announcements/british-film-high-end-television-programmes-animation-television-programmes-childrens-television-programmes-and-video-games-certification-year-en--4",
+   "display_type": "Official Statistics",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "format": "statistics_announcement",
+   "index": "govuk",
+   "organisations": [
+    {
+     "acronym": "BFI",
+     "analytics_identifier": "PB189",
+     "child_organisations": [],
+     "content_id": "0bf06d87-d3a8-47c2-b823-e180d933a58c",
+     "link": "/government/organisations/british-film-institute",
+     "logo_formatted_title": "British Film Institute",
+     "organisation_brand": "department-for-culture-media-sport",
+     "organisation_crest": "no-identity",
+     "organisation_state": "exempt",
+     "organisation_type": "executive_ndpb",
+     "parent_organisations": [
+      "department-for-digital-culture-media-and-sport"
+     ],
+     "public_timestamp": "2026-08-20T14:15:27Z",
+     "slug": "british-film-institute",
+     "superseded_organisations": [],
+     "superseding_organisations": [],
+     "title": "British Film Institute"
+    }
+   ],
+   "release_timestamp": "2026-11-10T09:30:00.000+00:00",
+   "statistics_announcement_state": "confirmed",
+   "title": "British film, high-end television programmes, animation television programmes, children’s television programmes and video games certification, year ending September 2026"
+  },
+  {
+   "_id": "/government/statistics/announcements/research-update-on-population-estimates-by-country-of-birth-for-england-and-wales-2026",
+   "display_type": "Official Statistics",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "format": "statistics_announcement",
+   "index": "govuk",
+   "organisations": [
+    {
+     "acronym": "ONS",
+     "analytics_identifier": "D303",
+     "child_organisations": [
+      "government-data-quality-hub"
+     ],
+     "content_id": "5da4ab94-39b2-40cf-99ae-1af4f6b4206d",
+     "link": "/government/organisations/office-for-national-statistics",
+     "logo_formatted_title": "Office for National Statistics",
+     "organisation_crest": "no-identity",
+     "organisation_state": "exempt",
+     "organisation_type": "other",
+     "parent_organisations": [
+      "uk-statistics-authority"
+     ],
+     "public_timestamp": "2023-01-30T13:16:20Z",
+     "slug": "office-for-national-statistics",
+     "superseded_organisations": [],
+     "superseding_organisations": [],
+     "title": "Office for National Statistics"
+    }
+   ],
+   "release_timestamp": "2026-11-10T09:30:00.000+00:00",
+   "statistics_announcement_state": "confirmed",
+   "title": "Research update on population estimates by country of birth for England and Wales: 2026"
+  },
+  {
+   "_id": "/government/statistics/announcements/admin-based-household-estimates-by-size-for-local-authorities-in-england-and-wales-2021",
+   "display_type": "Official Statistics",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "format": "statistics_announcement",
+   "index": "govuk",
+   "organisations": [
+    {
+     "acronym": "ONS",
+     "analytics_identifier": "D303",
+     "child_organisations": [
+      "government-data-quality-hub"
+     ],
+     "content_id": "5da4ab94-39b2-40cf-99ae-1af4f6b4206d",
+     "link": "/government/organisations/office-for-national-statistics",
+     "logo_formatted_title": "Office for National Statistics",
+     "organisation_crest": "no-identity",
+     "organisation_state": "exempt",
+     "organisation_type": "other",
+     "parent_organisations": [
+      "uk-statistics-authority"
+     ],
+     "public_timestamp": "2023-01-30T13:16:20Z",
+     "slug": "office-for-national-statistics",
+     "superseded_organisations": [],
+     "superseding_organisations": [],
+     "title": "Office for National Statistics"
+    }
+   ],
+   "release_timestamp": "2026-11-10T09:30:00.000+00:00",
+   "statistics_announcement_state": "confirmed",
+   "title": "Admin-based household estimates by size for local authorities in England and Wales: 2021"
+  }
+ ],
+ "start": 0,
+ "suggested_autocomplete": [],
+ "suggested_queries": [],
+ "total": 1821
+}

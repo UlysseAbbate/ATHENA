@@ -1,0 +1,43 @@
+{
+ "aggregates": {},
+ "es_cluster": "A",
+ "results": [
+  {
+   "_id": "/government/statistics/announcements/renewable-transport-fuel-obligation-rtfo-statistics-2026-fourth-provisional-release",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "index": "govuk",
+   "link": "/government/statistics/announcements/renewable-transport-fuel-obligation-rtfo-statistics-2026-fourth-provisional-release",
+   "release_timestamp": "2027-05-31T23:59:59.000+01:00",
+   "statistics_announcement_state": "cancelled",
+   "title": "Renewable Transport Fuel Obligation (RTFO) statistics 2026: Fourth provisional release"
+  },
+  {
+   "_id": "/government/statistics/announcements/sustainable-aviation-fuel-saf-mandate-statistics-2026-fourth-provisional-release",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "index": "govuk",
+   "link": "/government/statistics/announcements/sustainable-aviation-fuel-saf-mandate-statistics-2026-fourth-provisional-release",
+   "release_timestamp": "2027-05-31T23:59:59.000+01:00",
+   "statistics_announcement_state": "cancelled",
+   "title": "Sustainable Aviation Fuel (SAF) Mandate statistics 2026: Fourth provisional release"
+  },
+  {
+   "_id": "/government/statistics/announcements/renewable-transport-fuel-obligation-rtfo-statistics-2026-third-provisional-release",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "index": "govuk",
+   "link": "/government/statistics/announcements/renewable-transport-fuel-obligation-rtfo-statistics-2026-third-provisional-release",
+   "release_timestamp": "2027-02-28T23:59:59.000+00:00",
+   "statistics_announcement_state": "cancelled",
+   "title": "Renewable Transport Fuel Obligation (RTFO) statistics 2026: Third provisional release"
+  }
+ ],
+ "start": 0,
+ "suggested_autocomplete": [],
+ "suggested_queries": [],
+ "total": 1086
+}

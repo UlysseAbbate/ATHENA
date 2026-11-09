@@ -1,0 +1,48 @@
+{
+ "breakdown": {
+  "cancelled": 2,
+  "confirmed": 336,
+  "provisional": 65,
+  "published": 93,
+  "total": 2
+ },
+ "releases": [
+  {
+   "date_changes": null,
+   "description": {
+    "cancelled": true,
+    "census": false,
+    "finalised": false,
+    "postponed": false,
+    "published": false,
+    "release_date": "2026-10-29T09:30:00.000Z",
+    "summary": "Victimisation and negative behaviours of children aged 10 to 15 years living in a household with an adult who reported experiencing domestic abuse, substance misuse and mental ill-health (the so-called \"toxic trio\" factors) based on findings from the Crime Survey for England and Wales (CSEW).",
+    "title": "Childhood vulnerability to victimisation in England and Wales: combined years ending March 2023 to March 2025"
+   },
+   "highlight": {
+    "summary": "Victimisation and negative behaviours of children aged 10 to 15 years living in a household with an adult who reported experiencing domestic abuse, substance misuse and mental ill-health (the so-called \"toxic trio\" factors) based on findings from the Crime Survey for England and Wales (CSEW).",
+    "title": "Childhood vulnerability to victimisation in England and Wales: combined years ending March 2023 to March 2025"
+   },
+   "uri": "/releases/childhoodvulnerabilitytovictimisationinenglandandwalescombinedyearsendingmarch2023tomarch2025"
+  },
+  {
+   "date_changes": null,
+   "description": {
+    "cancelled": true,
+    "census": false,
+    "finalised": true,
+    "postponed": false,
+    "published": false,
+    "release_date": "2026-11-18T09:30:00.000Z",
+    "summary": "The Business Register and Employment Survey (BRES) is the official source of employee and employment estimates by detailed geography and industry, for regions and some local authorities.",
+    "title": "Business Register and Employment Survey (BRES): provisional results 2025 and revised results 2024 for Great Britain"
+   },
+   "highlight": {
+    "summary": "The Business Register and Employment Survey (BRES) is the official source of employee and employment estimates by detailed geography and industry, for regions and some local authorities.",
+    "title": "Business Register and Employment Survey (BRES): provisional results 2025 and revised results 2024 for Great Britain"
+   },
+   "uri": "/releases/businessregisterandemploymentsurveybresprovisionalresults2025revisedresults2024"
+  }
+ ],
+ "took": 7
+}

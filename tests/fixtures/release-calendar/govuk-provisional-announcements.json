@@ -1,0 +1,32 @@
+{
+ "aggregates": {},
+ "es_cluster": "A",
+ "results": [
+  {
+   "_id": "/government/statistics/announcements/national-wheelchair-data-collection-quarterly-publication-q2-202627",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "index": "govuk",
+   "link": "/government/statistics/announcements/national-wheelchair-data-collection-quarterly-publication-q2-202627",
+   "release_timestamp": "2026-11-12T09:30:00.000+00:00",
+   "statistics_announcement_state": "provisional",
+   "title": "National Wheelchair Data Collection Quarterly Publication Q2 2026/27"
+  },
+  {
+   "_id": "/government/statistics/announcements/nhs-continuing-healthcare-and-nhs-funded-nursing-care-for-q2-202627",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "index": "govuk",
+   "link": "/government/statistics/announcements/nhs-continuing-healthcare-and-nhs-funded-nursing-care-for-q2-202627",
+   "release_timestamp": "2026-11-12T09:30:00.000+00:00",
+   "statistics_announcement_state": "provisional",
+   "title": "NHS Continuing Healthcare and NHS-funded Nursing Care for Q2 2026/27"
+  }
+ ],
+ "start": 0,
+ "suggested_autocomplete": [],
+ "suggested_queries": [],
+ "total": 896
+}

@@ -1,0 +1,63 @@
+{
+ "base_path": "/government/statistics/announcements/non-quota-uptake-by-uk-vessels-in-eu-waters-march-2024",
+ "details": {
+  "display_date": "19 April 0020 9:30am",
+  "document_type_label": "Official Statistics",
+  "format_sub_type": "official",
+  "release_timestamp": "0020-04-19T09:30:00.000-00:01",
+  "state": "confirmed"
+ },
+ "document_type": "official_statistics_announcement",
+ "first_published_at": "2023-12-07T10:34:43+00:00",
+ "links": {
+  "available_translations": [
+   {
+    "api_path": "/api/content/government/statistics/announcements/non-quota-uptake-by-uk-vessels-in-eu-waters-march-2024",
+    "api_url": "https://www.gov.uk/api/content/government/statistics/announcements/non-quota-uptake-by-uk-vessels-in-eu-waters-march-2024",
+    "base_path": "/government/statistics/announcements/non-quota-uptake-by-uk-vessels-in-eu-waters-march-2024",
+    "content_id": "573be7ff-e075-470a-944d-78b96339a56b",
+    "document_type": "official_statistics_announcement",
+    "links": {},
+    "locale": "en",
+    "public_updated_at": "2023-12-07T10:34:43Z",
+    "schema_name": "statistics_announcement",
+    "title": "Non-Quota uptake by UK vessels in EU waters March 2024",
+    "web_url": "https://www.gov.uk/government/statistics/announcements/non-quota-uptake-by-uk-vessels-in-eu-waters-march-2024",
+    "withdrawn": false
+   }
+  ],
+  "organisations": [
+   {
+    "analytics_identifier": "PB57",
+    "api_path": "/api/content/government/organisations/marine-management-organisation",
+    "api_url": "https://www.gov.uk/api/content/government/organisations/marine-management-organisation",
+    "base_path": "/government/organisations/marine-management-organisation",
+    "content_id": "8d56bb52-2f79-4b6d-9fc6-6d7dcc4f7586",
+    "details": {
+     "acronym": "MMO",
+     "brand": "department-for-environment-food-rural-affairs",
+     "default_news_image": null,
+     "logo": {
+      "crest": "single-identity",
+      "formatted_title": "Marine <br/>Management <br/>Organisation"
+     },
+     "organisation_govuk_status": {
+      "status": "live",
+      "updated_at": null,
+      "url": null
+     }
+    },
+    "document_type": "organisation",
+    "links": {},
+    "locale": "en",
+    "schema_name": "organisation",
+    "title": "Marine Management Organisation",
+    "web_url": "https://www.gov.uk/government/organisations/marine-management-organisation",
+    "withdrawn": false
+   }
+  ]
+ },
+ "public_updated_at": "2023-12-07T10:34:43+00:00",
+ "schema_name": "statistics_announcement",
+ "title": "Non-Quota uptake by UK vessels in EU waters March 2024"
+}

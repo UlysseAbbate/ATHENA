@@ -1,0 +1,50 @@
+{
+ "releases": [
+  {
+   "date_changes": [
+    {
+     "change_notice": "This release has been postponed to accommodate necessary system changes, including the implementation of geography updates and revisions to deflation methodologies, thereby ensuring a high standard of quality assurance.",
+     "previous_date": "2026-08-27T08:30:00.000Z"
+    },
+    {
+     "change_notice": "We are postponing the Regional and subregional labour productivity, UK: 2024 release, due to be published on 5 November 2026. This will allow additional time to complete a seasonal adjustment review of the new headline whole-economy productivity measures. As these measures feed directly into the regional and subregional estimates, the postponement will ensure consistency across our productivity outputs. This release will now be published on 24 November 2026.",
+     "previous_date": "2026-11-05T09:30:00.000Z"
+    }
+   ],
+   "description": {
+    "cancelled": false,
+    "census": false,
+    "finalised": true,
+    "postponed": true,
+    "published": false,
+    "release_date": "2026-11-24T09:30:00.000Z",
+    "summary": "Regional and subregional output per hour worked and output per job performance levels. These are official statistics in development.",
+    "title": "Regional and subregional labour productivity, UK: 2024"
+   },
+   "highlight": {
+    "summary": "Regional and subregional output per hour worked and output per job performance levels. These are official statistics in development.",
+    "title": "Regional and subregional labour productivity, UK: 2024"
+   },
+   "uri": "/releases/regionalandsubregionallabourproductivityuk2024"
+  },
+  {
+   "date_changes": null,
+   "description": {
+    "cancelled": false,
+    "census": false,
+    "finalised": false,
+    "postponed": false,
+    "provisional_date": "23 July 2027 7:00am",
+    "published": false,
+    "release_date": "2027-07-23T06:00:00.000Z",
+    "summary": "A first estimate of retail sales in volume and value terms, seasonally and non-seasonally adjusted",
+    "title": "Retail Sales; Great Britain: June 2027"
+   },
+   "highlight": {
+    "summary": "A first estimate of retail sales in volume and value terms, seasonally and non-seasonally adjusted",
+    "title": "Retail Sales; Great Britain: June 2027"
+   },
+   "uri": "/releases/retailsalesgreatbritainjune2027"
+  }
+ ]
+}

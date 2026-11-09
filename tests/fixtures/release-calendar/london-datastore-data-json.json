@@ -1,0 +1,2025 @@
+{
+ "@context": "https://project-open-data.cio.gov/v1.1/schema/catalog.jsonld",
+ "@id": "https://data.london.gov.uk/data.json",
+ "@type": "dcat:Catalog",
+ "conformsTo": "https://project-open-data.cio.gov/v1.1/schema",
+ "dataset": [
+  {
+   "@type": "dcat:Dataset",
+   "accessLevel": "public",
+   "contactPoint": {
+    "@type": "vcard:Contact",
+    "fn": "GLA Planning Support",
+    "hasEmail": "mailto:planningsupport@london.gov.uk"
+   },
+   "description": "Documents from the public hearing for the planning applications 25/02562/FUL (Kingston) and 25/P2859 (Merton) for the redevelopment of the cross-borough Motspur Park Gasholder Site. More information can be found on the on the Motspur Park Gasholder Site public hearing web page.",
+   "distribution": [
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "Motspur Park S106 (Completed).pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "S106 Motspur Park (Completed).pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "GLA_2026_0208_Kingston_Decision Notice_06_11_2026_FINAL ISSUE.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "GLA_2026_0209_Merton_Decision Notice_06_11_2026_FINAL ISSUE.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "Section 106 - Motspur Park - Engrossment version - 25 September 2026.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "GLA_2026_0208_Kingston_DRAFT_Decision Notice_Update_14_09_26.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "GLA_2026_0209_Merton_DRAFT_Decision Notice_Update_14_09_26.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "Motspur Park Update Report July 2026 - decision to be recorded - 14 September 2026 - Final.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "Motspur Park Gasholder Hearing Agenda 21 July.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "25P2859 Merton Committee Report.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "Motspur Park Gasholders Site Hearing Report Addendum.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "HSE Advice letter Motspur Park 09 July 2026.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "GLA 2026_0208-S3 & 2026_0209_S3 Motspur Park Gasholders Site_Stage 3 report (1).pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "Combined S106 - Motspur Park - publication version 13.07.2026 4125-4546-2379 v.1 4147-8200-9451.1.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "GLA_2026_0208_S3_Motspur Park Gasholders Site_Kingston_DRAFT_Decision Notice_14 07 2026_V2.pdf"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "GLA_2026_0209_S3_Motspur Park Gasholders Site_Merton_DRAFT_Decision Notice_14 07 2026 V2.pdf"
+    }
+   ],
+   "identifier": "emr0p",
+   "issued": "2026-07-13T12:11:32.804Z",
+   "keyword": [],
+   "landingPage": "https://data.london.gov.uk/dataset/motspur-park-gasholders-site-hearing-documents-emr0p",
+   "license": null,
+   "modified": "2026-11-06T14:25:46.794Z",
+   "publisher": {
+    "@type": "org:Organization",
+    "name": "(none)"
+   },
+   "theme": [
+    "Planning"
+   ],
+   "title": "Motspur Park Gasholders Site Hearing Documents"
+  },
+  {
+   "@type": "dcat:Dataset",
+   "accessLevel": "public",
+   "contactPoint": {
+    "@type": "vcard:Contact",
+    "fn": "MPS",
+    "hasEmail": "mailto:DataOfficeMailbox-.TechnicalDevelopmentTeamMailbox@met.police.uk"
+   },
+   "description": "This data counts the number of crimes at three different geographic levels of London (borough, ward, LSOA) per month, according to crime type. Data is available in two files for each level of geography - the most up to date data covering the last available 24 months only and one covering all historic full calendar years. In March 2019, the Metropolitan Police Service started to provide offences grouped by the updated Home Office crime classifications . This currently only covers the most recent 24 months of data, but historic data using the previous categories is available separately back to January 2008. Below is a list of the crime types covered under the new HO categories (*not available at LSOA level): Major Category: Minor Category Arson and Criminal Damage - Arson / Criminal Damage Burglary: Burglary - Business and Community / Burglary - Residential* Drug Offences: Drug Trafficking / Possession of Drugs Miscellaneous Crimes Against Society: Absconding from Lawful Custody / Bail Offences / Bigamy / Concealing an Infant Death Close to Birth / Dangerous Driving / Disclosure, Obstruction, False or Misleading State / Exploitation of Prostitution / Forgery or Use of Drug Prescription / Fraud or Forgery Associated with Driver Records / Going Equipped for Stealing / Handling Stolen Goods / Making, Supplying or Possessing Articles for use i / Obscene Publications / Offender Management Act / Other Forgery / Other Notifiable Offences / Perjury / Perverting Course of Justice / Possession of False Documents / Profitting From or Concealing Proceeds of Crime / Soliciting for Prostitution / Threat or Possession With Intent to Commit Crimina / Wildlife Crime Possession of Weapons: Other Firearm Offences / Possession of Firearm with Intent / Possession of Firearms Offences / Possession of Other Weapon / Possession of Article with Blade or Point Public Order Offences: Other Offences Against the State, or Public Order / Public Fear Alarm or Distress / Racially or Religiously Aggravated Public Fear / Violent Disorder Robbery: Robbery of Business Property / Robbery of Personal Property Sexual Offences*: Rape, Other Sexual Offences Theft: Bicycle Theft / Other Theft / Shoplifting / Theft from Person Vehicle Offences: Aggravated Vehicle Taking / Interfering with a Motor Vehicle / Theft from a Motor Vehicle / Theft or Taking of a Motor Vehicle Violence Against the Person: Homicide / Violence with Injury / Violence without Injury To note: Fraud data was transferred from individual police forces to National Action Fraud in March 2013 *Prior to April 2017, police recorded burglary offence categories were split such that dwellings (domestic burglary) and buildings other than dwellings (non-domestic burglary) were separately identifiable, where: domestic burglary covers residential premises, including attached buildings such as garages non-domestic burglary covers non-residential premises, including businesses and public buildings, as well as non-attached buildings within the grounds of a dwelling, such as sheds and detached garages From April 2017 onwards a new classification of police recorded burglary was introduced, dividing offences into two categories of “residential” and “business and community”. “Residential” burglary includes all buildings or parts of buildings that are within the boundary of, or form a part of, a dwelling and includes the dwelling itself, vacant dwellings, sheds, garages, outhouses, summer houses and any other structure that meets the definition of a building. It also includes other premises used for residential purposes such as houseboats, residential care homes and hostels. “Business and community” burglary includes all buildings or parts of buildings that are used solely and exclusively for business purposes or are otherwise entirely outside the classification of residential burglary. **As per data protection laws, Sexual Offences are not provided at the LSOA level. NB Data uploaded to this area after February 2024 is sourced from the CONNECT system. Some measures\\details previously provided may not be available in total or in part. Please take care when comparing data-sets posted after February 2024 with those posted prior. Please note that there is a level of detail that cannot be translated between legacy system and CONNECT system therefore some values may appear as Unknown.",
+   "distribution": [
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "Business Crime Borough Level.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime (Historical).csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS LSOA Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Borough Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "Due to changes to ward code boundaries, this historic dataset has been split into data available only at the old boundaries and more recent data available at the new boundaries.",
+     "title": "MPS Ward Level Crime.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "Due to changes to ward code boundaries, this historic dataset has been split into data available only at the old boundaries and more recent data available at the new boundaries.",
+     "title": "MPS Ward Level Crime.csv"
+    }
+   ],
+   "identifier": "exy3m",
+   "issued": "2017-11-06T14:59:35.000Z",
+   "keyword": [
+    "crime-data",
+    "safestats"
+   ],
+   "landingPage": "https://data.london.gov.uk/dataset/mps-recorded-crime-geographic-breakdown-exy3m",
+   "license": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/2/",
+   "modified": "2026-11-06T12:00:39.697Z",
+   "publisher": {
+    "@type": "org:Organization",
+    "name": "Metropolitan Police Service"
+   },
+   "theme": [
+    "Crime and Community Safety"
+   ],
+   "title": "MPS Recorded Crime: Geographic Breakdown"
+  },
+  {
+   "@type": "dcat:Dataset",
+   "accessLevel": "public",
+   "contactPoint": {
+    "@type": "vcard:Contact",
+    "fn": "MPS",
+    "hasEmail": "mailto:DataOfficeMailbox-.TechnicalDevelopmentTeamMailbox@met.police.uk"
+   },
+   "description": "The data used in the MPS Crime Dashboard is available here MPS Crime Dashboard | Metropolitan Police, along with the related data definitions. Please note that datasets are updated monthly by the 6th of the month. Data runs until the end of the month prior. ****13 October 2026: Dataset published on 08 Oct (with data covering period to end September 2026) have been removed due to some records being incorrectly assigned to 'Heathrow' instead of 'Aviation Policing'. Corrected datasets were republished 13 Oct. ****October 2025: MPS crime classifications have been updated to align with the Home Office classifications. This has impacted the crime groupings for Burglary and Violence Against the Person. Burglary Classification Changes Domestic Burglary offences recorded since April 2023 are now categorised as either Residential Burglary of a Home or Residential Burglary of an Unconnected Building. This reflects changes made by the Home Office in April 2023 to better represent victim impact and police response. For Burglary offences recorded prior to April 2023 the categorisation of Domestic Burglary still applies. Violence Against the Person Changes The Violence Without Injury subgroup has been split, with some offences previously shown as Violence Without Injury now classified as Stalking and Harassment. Violence With Injury offences now include Death or Serious Injury Caused by Illegal Driving. ***April 2025: The Metropolitan Police Service reviewed their recording of offences where a knife or sharp instrument has been used from April 2024 onwards. This has shown over counting for some crime types and under counting for others. These records have been corrected which has resulted in a small overall increase in crimes that have been enabled by the use or threat of a knife or sharp instrument and a small reduction in offences resulting in an injury. Data may therefore not match earlier publications. Previous years’ data has not been revised therefore corrected data is not directly comparable with previous years. The offences which are included within the Knife or sharp instrument collection are specified by the Home Office. They include robbery, homicide, assault, sexual offences and threats to kill where a knife or sharp instrument has been used to threaten or to cause injury .*** ***June 2024: The MPS monthly crime data-sets are now being extracted and compiled from the new CONNECT system within the MPS; these data-sets will have prefix M1045 added to the file name.*** The Metropolitan Police Service (MPS) has introduced CONNECT, a new crime recording system that consolidates several previous systems into one integrated platform. This change aims to streamline processes and enhance efficiency across the board. At the end of February 2024 the MPS started using CONNECT to record crime and investigation data. There is a difference in how Hate Crime and Domestic Abuse are recorded on CONNECT compared with the legacy crime recording system of CRIS and for this reason, Hate Crime and Domestic Abuse figures pre an post March are not comparable. BCU and Borough data in CONNECT are determined by the geographic location of the incident, rather than the borough managing the case, as was the case with legacy systems. This new approach has been retroactively applied to legacy data to provide consistent and comparable analysis. NB The datasets include breakdowns by two geography types: 'Borough' and 'Safer Neighbourhood Team (SNT)', as indicated in the 'Area Type' column. Double counting may result if you do not account for this is when using the datasets. Total Notifiable Offence (TNO) data follows the Home Office counting rules for recorded crime (https://www.gov.uk/government/publications/counting-rules-for-recorded-crime ). NB This data-set includes “Other Accepted Crime”, which are non-notifiable crimes and must be excluded if calculating a TNO total. The “Other Crime” offence data follows the Home Office counting rules but have been grouped by specific features (e.g. Knife Crime): please see dashboard for definitions. NB \"Hate Crime\" totals do NOT include records that are flagged solely as 'domestic abuse'. Measures include Offences, Positive Outcomes, and the Positive Outcome Rate (total number of positive outcomes divided by the total number of offences in a given period). Knife Crime Offences {date-set produced from September 2025} From September 2025, all Knife Crime data will align with the Home Office NDQIS process for checking knife crime data quality. From that point, new ‘Knife Crime’ data sets will be refreshed and uploaded on/by the 18th of the month. All data is broken down by financial year for each crime type.",
+   "distribution": [
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "Updated 13/10/2026",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "Updated 13/10/2026",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "updated 27/07",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_KnifeCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData_202408.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData_202408.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "updated 08/07/2024",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData_202407.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "updated 08/07/2024",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData_202407.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "Updated 21/06/2024",
+     "title": "M1045_MonthlyCrimeDashboard_TNOCrimeData_202406.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "Updated 21/06/2024",
+     "title": "M1045_MonthlyCrimeDashboard_OtherCrimeData_202406.xlsx"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS_MonthlyCrimeDashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_OtherCrimeData.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData_Offences.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData_Offences_OutOfDateGeography.csv"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "MPS Monthly Crime Dashboard_TNOCrimeData_SanctionDetections.csv"
+    }
+   ],
+   "identifier": "e5n6w",
+   "issued": "2021-03-25T18:01:23.000Z",
+   "keyword": [],
+   "landingPage": "https://data.london.gov.uk/dataset/mps-monthly-crime-dashboard-data-e5n6w",
+   "license": null,
+   "modified": "2026-11-06T11:30:09.843Z",
+   "publisher": {
+    "@type": "org:Organization",
+    "name": "Metropolitan Police Service"
+   },
+   "theme": [
+    "Crime and Community Safety"
+   ],
+   "title": "MPS Monthly Crime Dashboard Data"
+  },
+  {
+   "@type": "dcat:Dataset",
+   "accessLevel": "public",
+   "contactPoint": {
+    "@type": "vcard:Contact",
+    "fn": "Greater London Authority",
+    "hasEmail": "mailto:datastore@london.gov.uk"
+   },
+   "description": "This table shows working age population that has a disability and Employment, unemployment, economic activity and inactivity rates by disability (includes Equalities Act Core disabled, DDA & work-limiting disabled) The definition of ‘disability’ under the Equality Act 2010 shows a person has a disability if: - they have a physical or mental impairment - the impairment has a substantial and long-term adverse effect on their ability to perform normal day-to-day activities For the purposes of the Act, these words have the following meanings: - 'substantial' means more than minor or trivial - 'long-term' means that the effect of the impairment has lasted or is likely to last for at least twelve months (there are special rules covering recurring or fluctuating conditions) - 'normal day-to-day activities' include everyday things like eating, washing, walking and going shopping There are additional provisions relating to people with progressive conditions. People with HIV, cancer or multiple sclerosis are protected by the Act from the point of diagnosis. People with some visual impairments are automatically deemed to be disabled. 18/03/2015 Data has been reweighted in line with the latest ONS estimates. 2013 data is not available for disability measures from this survey. Due to changes in the health questions on the Annual Population Survey there is quite a large discontinuity in the estimates from the Apr 2012 to Mar 2013 period onwards. These became available again from the Apr 2013 to March 2014 period as new variables. 95% confidence interval of percent figure (+/-).",
+   "distribution": [
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "employment-disability-borough.xls"
+    }
+   ],
+   "identifier": "2yjl7",
+   "issued": "2013-04-29T11:20:32.000Z",
+   "keyword": [
+    "disability",
+    "unemployment",
+    "economic-inactivity",
+    "employment",
+    "employment-status",
+    "gender",
+    "economic-activity",
+    "borough-economic"
+   ],
+   "landingPage": "https://data.london.gov.uk/dataset/employment-rates-by-disability-2yjl7",
+   "license": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/2/",
+   "modified": "2026-11-04T15:13:25.932Z",
+   "publisher": {
+    "@type": "org:Organization",
+    "name": "Office for National Statistics"
+   },
+   "theme": [
+    "Employment and Skills"
+   ],
+   "title": "Employment Rates by Disability"
+  },
+  {
+   "@type": "dcat:Dataset",
+   "accessLevel": "public",
+   "contactPoint": {
+    "@type": "vcard:Contact",
+    "fn": "Greater London Authority",
+    "hasEmail": "mailto:datastore@london.gov.uk"
+   },
+   "description": "Tables show numbers and proportions of households that are classified as working, mixed or workless for all years between 2004 and 2018. Households include at least one person aged 16 to 64. '*' = Sample size too small to provide an estimate. Data comes from the Annual Population Survey (APS). Years are calender years, January-December. See more on the NOMIS website. Download APS households by combined economic activity status.",
+   "distribution": [
+    {
+     "@type": "dcat:Distribution",
+     "description": "",
+     "title": "workless-households-borough.xls"
+    }
+   ],
+   "identifier": "2w9p8",
+   "issued": "2013-11-04T11:05:48.000Z",
+   "keyword": [
+    "employment",
+    "poverty",
+    "borough-economic"
+   ],
+   "landingPage": "https://data.london.gov.uk/dataset/workless-households-borough-2w9p8",
+   "license": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/2/",
+   "modified": "2026-11-04T14:17:37.639Z",
+   "publisher": {
+    "@type": "org:Organization",
+    "name": "Office for National Statistics"
+   },
+   "theme": [
+    "Employment and Skills"
+   ],
+   "title": "Workless Households, Borough"
+  }
+ ],
+ "describedBy": "https://project-open-data.cio.gov/v1.1/schema/catalog.json"
+}
