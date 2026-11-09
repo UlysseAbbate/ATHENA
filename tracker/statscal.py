@@ -10,11 +10,14 @@ Dates are never invented: a source with no forward date gives published items, p
 from __future__ import annotations
 
 import hashlib
+import html as htmllib
 import re
 import statistics
 import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from urllib import robotparser
+from urllib.parse import quote, urljoin, urlparse
 from zoneinfo import ZoneInfo
 
 import requests
@@ -60,6 +63,46 @@ def get_json(url: str, params=None):
     raise RuntimeError(f"{url}: {last}")
 
 
+def get_text(url: str) -> str:
+    """Like get_json for HTML pages (same retries and politeness)."""
+    last = None
+    for attempt in range(4):
+        try:
+            r = _session.get(url, timeout=TIMEOUT, headers={"Accept": "text/html"})
+            if r.status_code in (429, 500, 502, 503, 504):
+                wait = r.headers.get("Retry-After", "")
+                _sleep(min(int(wait), 60) if wait.isdigit() else 2 ** (attempt + 1))
+                last = RuntimeError(f"HTTP {r.status_code}")
+                continue
+            r.raise_for_status()
+            _sleep(0.3)
+            return r.text
+        except requests.RequestException as e:
+            last = e
+            _sleep(2 ** (attempt + 1))
+    raise RuntimeError(f"{url}: {last}")
+
+
+_robots: dict = {}
+
+
+def robots_allows(url: str) -> bool:
+    """Pages are only read where the site's robots.txt allows bots. An unreadable robots.txt counts as not allowed."""
+    host = urlparse(url)
+    root = f"{host.scheme}://{host.netloc}"
+    if root not in _robots:
+        rp = robotparser.RobotFileParser()
+        try:
+            r = _session.get(root + "/robots.txt", timeout=TIMEOUT)
+            if r.status_code == 200:
+                rp.parse(r.text.splitlines())
+            _robots[root] = rp if r.status_code == 200 else None
+        except requests.RequestException:
+            _robots[root] = None
+    rp = _robots[root]
+    return bool(rp and rp.can_fetch(UA, url))
+
+
 # ------------------------------------------------------------------ dates
 def london(dt: datetime) -> datetime:
     return dt.astimezone(LONDON)
@@ -90,7 +133,7 @@ def make_id(*parts) -> str:
 
 
 def release(**kw) -> dict:
-    base = {"summary": "", "datetime": None, "date_precision": "day", "date_status": "confirmed", "previous_dates": [],
+    base = {"category": "release", "summary": "", "datetime": None, "date_precision": "day", "date_status": "confirmed", "previous_dates": [],
             "cancelled": False, "cancellation_notice": "", "official_status": None, "url": "", "links": []}
     base.update(kw)
     return base
@@ -278,6 +321,98 @@ def fetch_police(now: datetime, cfg: dict) -> list[dict]:
                     url="https://data.police.uk/data/")]
 
 
+# ------------------------------------------------------------------ modern.gov meeting calendars (GLA / London Assembly)
+EVENT_RE = re.compile(r"<li>\s*([^<]*?)\s*<a id='M(\d+)'[^>]*?href=\"([^\"]+)\"[^>]*?title=\"([^\"]+)\"(.*?)</li>", re.S)
+TITLE_RE = re.compile(r"^(?:Meeting of\s+)?(.*?),\s*(\d{2})/(\d{2})/(\d{4})\s+(\d{1,2})[.:](\d{2})\s*(am|pm)?", re.I)
+
+
+def tag_text(s: str) -> str:
+    text = re.sub(r"\s+", " ", htmllib.unescape(re.sub(r"<[^>]+>", " ", s))).strip()
+    return re.sub(r"\s+(PDF|DOCX?|XLSX?)\s+\d+(\.\d+)?\s*[KMG]B$", "", text)   # the file-size note modern.gov puts after a link
+
+
+def parse_moderngov_month(page: str, base: str) -> list[dict]:
+    """Meetings in one month view: committee, London start time, link to the meeting's documents page, cancelled or not."""
+    out = []
+    for _time, mid, href, title, rest in EVENT_RE.findall(page):
+        m = TITLE_RE.match(htmllib.unescape(title).strip())
+        if not m:
+            continue
+        name, dd, mm, yyyy, hh, mi, ap = m.groups()
+        hour = int(hh) % 12 + (12 if (ap or "").lower() == "pm" else 0) if ap else int(hh)
+        when = datetime(int(yyyy), int(mm), int(dd), hour, int(mi), tzinfo=LONDON)
+        out.append({"mid": mid, "name": name.strip(), "when": when, "url": urljoin(base + "/", htmllib.unescape(href)),
+                    "cancelled": bool(re.search(r"cancel|postpone", htmllib.unescape(title) + tag_text(rest), re.I))})
+    return out
+
+
+def parse_moderngov_documents(page: str, url: str) -> tuple[list[str], list[dict]]:
+    """The numbered agenda items and the main documents (agenda frontsheet, reports pack, minutes) of one meeting."""
+    items = []
+    for num, title in re.findall(r'<td\s+class="mgItemNumberCell"[^>]*>(.*?)</td>\s*<td[^>]*>\s*<p\s+class="mgAiTitleTxt"[^>]*>(.*?)</p>', page, re.S):
+        t = tag_text(title)
+        if t:
+            items.append(f"{tag_text(num)} {t}".strip())
+    links = []
+    box = re.search(r'<div\s+class="mgLinks"[^>]*>(.*?)</div>', page, re.S)
+    for href, label in re.findall(r'<li>\s*<a\s+href="([^"]+)"[^>]*>(.*?)</a>', box.group(1) if box else "", re.S):
+        h = htmllib.unescape(href)
+        if re.search(r"\.pdf(\?|$)", h, re.I):
+            links.append({"label": re.sub(r"\s*(PDF|pdf).*$", "", tag_text(label)).strip() or "Document", "url": quote(urljoin(url, h), safe="/:?=&%~")})
+    for href, label in re.findall(r'<a\s+class="mgAiTitleLnk"\s+href="([^"]+)"[^>]*>(.*?)</a>', page, re.S):
+        if re.search(r"minutes", tag_text(label), re.I) and re.search(r"\.pdf(\?|$)", href, re.I):
+            links.append({"label": "Minutes", "url": quote(urljoin(url, htmllib.unescape(href)), safe="/:?=&%~")})
+    return items, links
+
+
+def fetch_moderngov(now: datetime, cfg: dict) -> list[dict]:
+    """Meetings of the London Assembly and its committees from the GLA's own democratic-services calendar (modern.gov), with each
+    meeting's agenda items and documents for the meetings near today. Months: one back to three ahead."""
+    today = london(now).date()
+    out, failures = [], []
+    for body in cfg.get("meetings", []):
+        base = body["base"].rstrip("/")
+        if not robots_allows(base + "/mgCalendarMonthView.aspx") or not robots_allows(base + "/ieListDocuments.aspx"):
+            failures.append(f"{body['name']}: robots.txt does not allow automated reading, skipped")
+            continue
+        months = []
+        y, m = today.year, today.month
+        for k in range(-1, 4):
+            yy, mm = divmod(y * 12 + m - 1 + k, 12)
+            months.append((yy, mm + 1))
+        seen = {}
+        for yy, mm in months:
+            try:
+                page = get_text(f"{base}/mgCalendarMonthView.aspx?M={mm}&DD={yy}&CID=0&OT=&C=-1&MD=-1&Z=0")
+            except RuntimeError as e:
+                failures.append(f"{body['name']} {yy}-{mm:02d}: {e}")
+                continue
+            for ev in parse_moderngov_month(page, base):
+                seen[ev["mid"]] = ev
+        lo, hi = today - timedelta(days=14), today + timedelta(days=cfg["windows"].get("meeting_documents_days", 45))
+        for mid, ev in sorted(seen.items()):
+            d = ev["when"].date()
+            items, links = [], []
+            if lo <= d <= hi and not ev["cancelled"]:
+                try:
+                    items, links = parse_moderngov_documents(get_text(ev["url"]), ev["url"])
+                except RuntimeError as e:
+                    failures.append(f"{body['name']} meeting {mid}: {e}")
+            published = d < today
+            summary = ("Agenda: " + "; ".join(items[:10]) + ("; …" if len(items) > 10 else "")) if items else (
+                "Agenda not yet published." if lo <= d <= hi and not ev["cancelled"] and d >= today else "")
+            out.append(release(
+                id=f"meeting:{make_id(body['base'], mid)}", category="meeting", title=ev["name"], summary=summary[:600], publisher=body["publisher"],
+                publisher_slug=re.sub(r"[^a-z0-9]+", "-", body["publisher"].lower()).strip("-"), tier="london", source_system="gla_meetings",
+                kind="cancelled" if ev["cancelled"] else ("published" if published else "upcoming"), date=d.isoformat(), datetime=ev["when"].isoformat(),
+                cancelled=ev["cancelled"], links=links[:4], url=ev["url"]))
+    if failures and not out:
+        raise RuntimeError("; ".join(failures[:3]))
+    if failures:
+        raise PartialFailure(out, failures)
+    return out
+
+
 # ------------------------------------------------------------------ manual file
 def fetch_manual(now: datetime, cfg: dict) -> list[dict]:
     path = ROOT / "config" / "statscal_manual.yml"
@@ -308,7 +443,7 @@ def fetch_manual(now: datetime, cfg: dict) -> list[dict]:
 
 
 FETCHERS = {"ons": ("ons_api", fetch_ons), "govuk": ("govuk_search", fetch_govuk), "london_datastore": ("london_datastore", fetch_london),
-            "police_uk": ("police_uk", fetch_police), "manual": ("manual", fetch_manual)}
+            "police_uk": ("police_uk", fetch_police), "gla_meetings": ("gla_meetings", fetch_moderngov), "manual": ("manual", fetch_manual)}
 
 
 # ------------------------------------------------------------------ estimates

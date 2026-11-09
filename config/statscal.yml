@@ -7,12 +7,14 @@ sources:
   govuk:          { on: true }
   london_datastore: { on: true }
   police_uk:      { on: true }
+  gla_meetings:   { on: true }   # London Assembly and committee meetings with agendas (the GLA's modern.gov calendar)
   manual:         { on: true }
   # critical: a failure here is reported as a failed source in Source health (the run itself never stops for one source)
 
 windows:
   published_days: 14      # "just published" looks back this far
   keep_published_days: 45 # published items stay on the page this long
+  meeting_documents_days: 45 # agendas are read for meetings from 14 days ago to this many days ahead
   keep_other_days: 14     # upcoming / cancelled items stay this long after their date
   changes_days: 90        # the change log is kept this long
 
@@ -61,3 +63,8 @@ govuk:
 london:
   maintainer_publishers: { MPS: Metropolitan Police Service, MOPAC: Mayor's Office for Policing and Crime, GLA: Greater London Authority, TfL: Transport for London }
   default_publisher: Greater London Authority
+
+# Meeting calendars run on modern.gov, read only where the site's robots.txt allows bots.
+# (TfL's board and committee meetings are on board.tfl.gov.uk, whose robots.txt forbids bots, so they are not read.)
+meetings:
+  - { name: London Assembly, publisher: London Assembly, base: "https://www.london.gov.uk/about-us/londonassembly/meetings" }

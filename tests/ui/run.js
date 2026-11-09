@@ -18,7 +18,9 @@ const STATSCAL = { updated: new Date().toISOString(), changes: [{ at: new Date()
     _rel("r3", "Monthly crime figures", "Home Office", "national", "upcoming", plus(5), { date_precision: "month", date_status: "provisional" }),
     _rel("r4", "Hospital admissions", "NHS England", "alb", "published", plus(-1)),
     _rel("r5", "Cancelled thing", "Department for Transport", "national", "cancelled", plus(4)),
-    _rel("r6", "Police.uk data (next, estimated)", "data.police.uk (all forces)", "london", "upcoming", plus(12), { date_status: "estimated" })] };
+    _rel("r6", "Police.uk data (next, estimated)", "data.police.uk (all forces)", "london", "upcoming", plus(12), { date_status: "estimated" }),
+    _rel("m1", "Transport Committee", "London Assembly", "london", "upcoming", plus(2), { category: "meeting", datetime: plus(2) + "T10:00:00+00:00", summary: "Agenda: 1. Apologies for Absence; 2. Declarations of Interests; 3. Bus services", links: [{ label: "Agenda frontsheet", url: "https://www.london.gov.uk/a.pdf" }, { label: "Agenda reports pack", url: "https://www.london.gov.uk/b.pdf" }] }),
+    _rel("m2", "Police and Crime Committee", "London Assembly", "london", "published", plus(-2), { category: "meeting", datetime: plus(-2) + "T14:00:00+00:00" })] };
 const FEED =fs.existsSync(feedFile) ? JSON.parse(fs.readFileSync(feedFile)) : { updated: new Date().toISOString(), items: [] };
 FEED.updated = new Date().toISOString();
 
@@ -601,7 +603,16 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.click('#tabs button[data-tab="health"]'); await page.waitForTimeout(200);
         check("admin: lucien health tab", /sources returning data/.test(await page.$eval("#healthpanel", e => e.innerText)));
         await page.click('#tabs button[data-tab="statscal"]'); await page.waitForTimeout(300);
+        check("stats calendar: it opens as a calendar (a month grid with weekday headings)", (await page.$$(".sc-grid .sc-dow")).length === 7 && (await page.$$(".sc-cell")).length >= 28);
+        await page.click('[data-sc-day="' + plus(2) + '"]'); await page.waitForTimeout(200);
+        const dayp = await page.$eval(".sc-daypanel", e => e.innerText);
+        check("stats calendar: picking a day shows its releases and meetings, with the meeting's agenda and documents", /Labour market overview/.test(dayp) && /Transport Committee/.test(dayp) && /Agenda frontsheet/.test(dayp) && (await page.$$eval(".sc-daypanel .sc-agenda li", ls => ls.map(l => l.textContent)).then(a => a.join("|"))) === "Apologies for Absence|Declarations of Interests|Bus services", dayp.slice(0, 120).replace(/\n/g, " "));
+        await page.click('[data-sc-view="agenda"]'); await page.waitForTimeout(200);
         const sc = await page.$eval("#statspanel", e => e.innerText);
+        check("stats calendar: a meeting that has happened says Held, not Published", /Held/i.test(sc) && /Police and Crime Committee/.test(sc));
+        await page.selectOption("#sc-cat", "meeting"); await page.waitForTimeout(200);
+        check("stats calendar: the Meetings filter shows only meetings", (await page.$$(".sc-item")).length === 2 && /cat=meeting/.test(page.url()), page.url());
+        await page.selectOption("#sc-cat", ""); await page.waitForTimeout(200);
         check("stats calendar: the agenda lists releases by day with a time, and says when it was refreshed", /Labour market overview/.test(sc) && /09:30/.test(sc) && /Last refreshed/.test(sc), sc.slice(0, 160).replace(/\n/g, " "));
         check("stats calendar: confirmed, provisional, estimated and cancelled each have a badge", /Confirmed/i.test(sc) && /Estimated/i.test(sc) && /Cancelled/i.test(sc) && /Provisional/i.test(sc));
         check("stats calendar: a moved release shows Changed and its old date", /Changed/i.test(sc) && /was /.test(sc));

@@ -7,7 +7,8 @@ const StatsCal = (() => {
   const TIERS = { national: "Government department", alb: "Agency or regulator", ons: "ONS", london: "London" };
   const KINDS = { upcoming: "Upcoming", published: "Published", cancelled: "Cancelled" };
   const RANGES = { "7": ["Next 7 days", -1, 7], "30": ["Next 30 days + last 7", -7, 30], "90": ["Next 90 days + last 7", -7, 90], all: ["All stored", -9999, 9999] };
-  const DEFAULTS = { view: "agenda", tier: "", publisher: "", kind: "", range: "30", q: "", month: "", day: "" };
+  const CATS = { release: "Data releases", meeting: "Meetings" };
+  const DEFAULTS = { view: "month", tier: "", cat: "", publisher: "", kind: "", range: "30", q: "", month: "", day: "" };
   const f = { ...DEFAULTS };
   let body = null, host = null;
 
@@ -39,6 +40,7 @@ const StatsCal = (() => {
   const releases = () => (body && body.releases) || [];
   function matches(r, { range = true } = {}) {
     if (f.tier && r.tier !== f.tier) return false;
+    if (f.cat && (r.category || "release") !== f.cat) return false;
     if (f.kind && r.kind !== f.kind) return false;
     if (f.publisher && !r.publisher.toLowerCase().includes(f.publisher.toLowerCase())) return false;
     if (f.q) { const q = f.q.toLowerCase(); if (!(r.title + " " + r.publisher + " " + (r.summary || "")).toLowerCase().includes(q)) return false; }
@@ -56,6 +58,7 @@ const StatsCal = (() => {
   function badges(r) {
     const b = [];
     if (r.kind === "cancelled" || r.cancelled) b.push('<span class="sc-b sc-cancelled">Cancelled</span>');
+    else if (r.category === "meeting") b.push(`<span class="sc-b sc-meeting">${r.kind === "published" ? "Held" : "Meeting"}</span>`);
     else if (r.kind === "published") b.push('<span class="sc-b sc-published">Published</span>');
     else b.push(`<span class="sc-b sc-${esc(r.date_status)}">${esc(r.date_status[0].toUpperCase() + r.date_status.slice(1))}</span>`);
     const moved = (r.previous_dates || []).filter(p => p.date !== r.date).slice(-1)[0];
@@ -71,7 +74,8 @@ const StatsCal = (() => {
       <div class="sc-time">${esc(time)}</div>
       <div>${title}
         <div class="meta"><span class="src">${esc(r.publisher)}</span><span>${esc(TIERS[r.tier] || "")}</span>${r.official_status ? `<span>${esc(r.official_status)}</span>` : ""}</div>
-        ${r.summary ? `<p class="summary">${esc(r.summary)}</p>` : ""}</div>
+        ${r.category === "meeting" && r.summary ? `<details class="sc-agenda"><summary>${/^Agenda:/.test(r.summary) ? "Agenda" : esc(r.summary)}</summary>${/^Agenda:/.test(r.summary) ? `<ol>${r.summary.replace(/^Agenda:\s*/, "").split("; ").map(x => `<li>${esc(x.replace(/^\d+\.\s*/, ""))}</li>`).join("")}</ol>` : ""}</details>` : r.summary ? `<p class="summary">${esc(r.summary)}</p>` : ""}
+        ${(r.links || []).length ? `<p class="small sc-links">${r.links.map(l => Athena.safeUrl(l.url) ? `<a href="${esc(Athena.safeUrl(l.url))}" target="_blank" rel="noopener noreferrer">${esc(l.label)}</a>` : "").filter(Boolean).join(" · ")}</p>` : ""}</div>
       <div class="sc-badges">${badges(r)}</div></article>`;
   }
 
@@ -93,20 +97,25 @@ const StatsCal = (() => {
     return html || '<div class="empty">Nothing matches. Try widening the date range or clearing a filter.</div>';
   }
   function monthGrid(rows) {
-    const t = todayIso(), m = f.month || t.slice(0, 7);
+    const t = todayIso(), m = f.month || (f.day ? f.day.slice(0, 7) : t.slice(0, 7));
     const first = new Date(m + "-01T12:00:00Z"), lead = (first.getUTCDay() + 6) % 7;
     const days = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate();
     const by = {}; rows.filter(r => r.date_precision === "day" && r.date.slice(0, 7) === m).forEach(r => (by[r.date] ||= []).push(r));
+    for (const k in by) by[k].sort((x, y) => (x.datetime || "").localeCompare(y.datetime || "") || x.title.localeCompare(y.title));
     const tbc = rows.filter(r => r.date_precision !== "day" && r.date.slice(0, 7) === m);
     const prev = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
     const next = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 1)).toISOString().slice(0, 7);
+    const sel = f.day && f.day.slice(0, 7) === m ? f.day : (t.slice(0, 7) === m ? t : "");
+    const chip = r => `<span class="sc-chip sc-k-${esc(r.kind)} ${r.category === "meeting" ? "sc-meeting" : ""} ${r.date_status === "estimated" ? "sc-est" : ""}" title="${esc(r.publisher + ": " + r.title)}">${r.category === "meeting" && r.datetime ? esc(fmtTime(r.datetime)) + " " : ""}${esc(r.title)}</span>`;
     let cells = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => `<div class="sc-dow">${d}</div>`).join("") + '<div class="sc-cell sc-blank"></div>'.repeat(lead);
     for (let d = 1; d <= days; d++) {
       const k = `${m}-${String(d).padStart(2, "0")}`, list = by[k] || [];
-      cells += `<div class="sc-cell ${k === t ? "sc-today" : ""}"><b>${d}</b>${list.slice(0, 3).map(r => `<span class="sc-chip sc-k-${esc(r.kind)} ${r.date_status === "estimated" ? "sc-est" : ""}" title="${esc(r.publisher + ": " + r.title)}">${esc(r.title)}</span>`).join("")}${list.length > 3 ? `<button type="button" class="linkish small" data-sc-day="${k}">+${list.length - 3} more</button>` : list.length ? `<button type="button" class="linkish small" data-sc-day="${k}">Open</button>` : ""}</div>`;
+      cells += `<button type="button" class="sc-cell ${k === t ? "sc-today" : ""} ${k === sel ? "sc-sel" : ""}" data-sc-day="${k}" aria-label="${esc(fmtDay(k))}: ${list.length} item${list.length === 1 ? "" : "s"}" aria-pressed="${k === sel}"><b>${d}</b>${list.slice(0, 3).map(chip).join("")}${list.length > 3 ? `<span class="sc-more">+${list.length - 3} more</span>` : ""}</button>`;
     }
+    const dayList = sel ? (by[sel] || []) : [];
     return `<div class="sc-monthbar"><button type="button" class="ghost" data-sc-month="${prev}">&larr; ${esc(fmtMonth(prev))}</button><strong>${esc(fmtMonth(m))}</strong><button type="button" class="ghost" data-sc-month="${next}">${esc(fmtMonth(next))} &rarr;</button></div>
       <div class="sc-grid">${cells}</div>
+      ${sel ? `<section class="sc-daypanel" aria-live="polite"><h3>${esc(fmtDay(sel))}${sel === t ? " · today" : ""} <span class="count">${dayList.length}</span></h3>${dayList.map(item).join("") || '<p class="muted small">Nothing on this day.</p>'}</section>` : '<p class="muted small">Pick a day to see its releases and meetings.</p>'}
       ${tbc.length ? `<section class="sc-tbc"><h3>${esc(fmtMonth(m))}: date to be confirmed <span class="count">${tbc.length}</span></h3>${tbc.map(item).join("")}</section>` : ""}`;
   }
 
@@ -118,7 +127,10 @@ const StatsCal = (() => {
     const ev = releases().filter(r => r.kind === "upcoming" && !r.cancelled && r.date_precision === "day" && (r.date_status !== "estimated" || withEstimates)).map(r => {
       const d = r.date.replace(/-/g, ""), e = addDays(r.date, 1).replace(/-/g, "");
       const desc = [r.publisher, r.datetime ? "Due " + fmtTime(r.datetime) + " (London time)" : "", r.date_status === "estimated" ? "ESTIMATED date: not announced" : r.date_status === "provisional" ? "Provisional date" : "Confirmed date", r.url].filter(Boolean).join(" · ");
-      return ["BEGIN:VEVENT", `UID:${r.id.replace(/[^A-Za-z0-9:._/-]/g, "")}@athena-statscal`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${e}`,
+      const utc = x => new Date(x).toISOString().replace(/[-:]|\.\d{3}/g, "");
+      const timed = r.category === "meeting" && r.datetime;   // meetings have a start time: give the true instant (UTC), so summer time cannot move it
+      return ["BEGIN:VEVENT", `UID:${r.id.replace(/[^A-Za-z0-9:._/-]/g, "")}@athena-statscal`, `DTSTAMP:${stamp}`,
+        timed ? `DTSTART:${utc(r.datetime)}` : `DTSTART;VALUE=DATE:${d}`, timed ? `DTEND:${utc(new Date(new Date(r.datetime).getTime() + 2 * 36e5))}` : `DTEND;VALUE=DATE:${e}`,
         `SUMMARY:${icsEsc((r.date_status === "estimated" ? "(est.) " : "") + r.title)}`, `DESCRIPTION:${icsEsc(desc)}`, r.url ? `URL:${r.url}` : "", "END:VEVENT"].filter(Boolean).map(fold).join("\r\n");
     });
     return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Athena//Stats calendar//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:Stats calendar${withEstimates ? " (with estimates)" : ""}`, ...ev, "END:VCALENDAR"].join("\r\n") + "\r\n";
@@ -149,34 +161,35 @@ const StatsCal = (() => {
         <div class="panel"><div class="panel-head"><h2>Just published</h2><span class="muted">last 7 days</span></div>${justOut.length ? `<ul class="plain">${justOut.map(r => `<li>${link(r, esc(r.title))}<br><span class="small muted">${esc(r.publisher)} · ${esc(fmtShort(r.date))}</span></li>`).join("")}</ul>` : '<p class="muted small">Nothing published in the last 7 days.</p>'}</div>
       </div>
       <section class="controls" aria-label="Filters">
-        <div class="toggle sc-viewtoggle" role="group" aria-label="View"><button type="button" data-sc-view="agenda" ${f.view === "agenda" ? 'aria-current="true"' : ""}>Agenda</button><button type="button" data-sc-view="month" ${f.view === "month" ? 'aria-current="true"' : ""}>Month</button></div>
+        <div class="toggle sc-viewtoggle" role="group" aria-label="View"><button type="button" data-sc-view="month" ${f.view === "month" ? 'aria-current="true"' : ""}>Calendar</button><button type="button" data-sc-view="agenda" ${f.view === "agenda" ? 'aria-current="true"' : ""}>List</button></div>
         <input id="sc-q" type="search" placeholder="Search releases…" aria-label="Search releases" value="${esc(f.q)}">
+        <select id="sc-cat" aria-label="Releases or meetings"><option value="">Releases and meetings</option>${Object.entries(CATS).map(([k, v]) => `<option value="${k}" ${f.cat === k ? "selected" : ""}>${v}</option>`).join("")}</select>
         <select id="sc-tier" aria-label="Kind of body"><option value="">All bodies</option>${Object.entries(TIERS).map(([k, v]) => `<option value="${k}" ${f.tier === k ? "selected" : ""}>${esc(v)}</option>`).join("")}</select>
         <input id="sc-pub" list="sc-pubs" placeholder="Publisher…" aria-label="Publisher" value="${esc(f.publisher)}"><datalist id="sc-pubs">${publishers.map(p => `<option value="${esc(p)}">`).join("")}</datalist>
         <select id="sc-kind" aria-label="Upcoming, published or cancelled"><option value="">Upcoming, published, cancelled</option>${Object.entries(KINDS).map(([k, v]) => `<option value="${k}" ${f.kind === k ? "selected" : ""}>${v}</option>`).join("")}</select>
         <select id="sc-range" aria-label="Date range" ${f.view === "month" ? "disabled" : ""}>${Object.entries(RANGES).map(([k, v]) => `<option value="${k}" ${f.range === k ? "selected" : ""}>${v[0]}</option>`).join("")}</select>
         <button type="button" class="ghost" id="sc-reset">Reset</button>
       </section>
-      <div class="listhead"><span class="muted">${f.view === "month" ? "" : `${rows.length} release${rows.length === 1 ? "" : "s"}`}${f.day ? ` on ${esc(fmtShort(f.day))} <button type="button" class="linkish small" data-sc-day="">show all days</button>` : ""}</span>
+      <div class="listhead"><span class="muted">${f.view === "month" ? "" : `${rows.length} release${rows.length === 1 ? "" : "s"}`}${f.day && f.view === "agenda" ? ` on ${esc(fmtShort(f.day))} <button type="button" class="linkish small" data-sc-day="">show all days</button>` : ""}</span>
         <span><button type="button" class="ghost" data-sc-ics="0" title="Confirmed and provisional dates only">Download calendar (.ics)</button> <button type="button" class="ghost" data-sc-ics="1" title="Includes estimated dates, marked as such">with estimates</button></span></div>
-      <div class="sc-legend small muted"><span class="sc-b sc-confirmed">Confirmed</span> <span class="sc-b sc-provisional">Provisional</span> <span class="sc-b sc-estimated">Estimated</span> (worked out from past updates, never announced) <span class="sc-b sc-cancelled">Cancelled</span> <span class="sc-b sc-changed">Changed</span></div>
+      <div class="sc-legend small muted"><span class="sc-b sc-confirmed">Confirmed</span> <span class="sc-b sc-provisional">Provisional</span> <span class="sc-b sc-estimated">Estimated</span> (worked out from past updates, never announced) <span class="sc-b sc-cancelled">Cancelled</span> <span class="sc-b sc-changed">Changed</span> <span class="sc-b sc-meeting">Meeting</span></div>
       <div class="list sc-list">${f.view === "month" ? monthGrid(all.filter(r => matches(r, { range: false }))) : agenda(rows)}</div>
-      <p class="small muted">Sources: ONS release calendar, GOV.UK statistics announcements, London Datastore, data.police.uk, and a hand-kept list for TfL, the Met and MOPAC. Contains public sector information licensed under the Open Government Licence v3.0. This page links to each release and does not copy it.</p>`;
+      <p class="small muted">Sources: ONS release calendar, GOV.UK statistics announcements, London Datastore, data.police.uk, the London Assembly's meeting calendar (GLA modern.gov), and a hand-kept list for anything else. Contains public sector information licensed under the Open Government Licence v3.0. This page links to each release and does not copy it.</p>`;
   }
 
   function bind(rerender) {
     const redo = () => { render(host, body); rerender && rerender(); };
     document.body.addEventListener("click", e => {
       if (!host || host.hidden) return;
-      const v = e.target.closest("[data-sc-view]"); if (v) { f.view = v.dataset.scView; f.day = ""; return redo(); }
+      const v = e.target.closest("[data-sc-view]"); if (v) { f.view = v.dataset.scView; if (f.view === "agenda") f.day = ""; return redo(); }
       const m = e.target.closest("[data-sc-month]"); if (m) { f.month = m.dataset.scMonth; return redo(); }
-      const d = e.target.closest("[data-sc-day]"); if (d) { f.day = d.dataset.scDay; f.view = "agenda"; f.range = f.day ? "all" : DEFAULTS.range; return redo(); }
+      const d = e.target.closest("[data-sc-day]"); if (d) { f.day = d.dataset.scDay; if (f.view !== "month") f.range = f.day ? "all" : DEFAULTS.range; return redo(); }
       const i = e.target.closest("[data-sc-ics]"); if (i) return download(i.dataset.scIcs === "1");
       if (e.target.closest("#sc-reset")) { Object.assign(f, DEFAULTS); return redo(); }
     });
     document.body.addEventListener("change", e => {
       if (!host || host.hidden) return;
-      const map = { "sc-tier": "tier", "sc-kind": "kind", "sc-range": "range", "sc-pub": "publisher" };
+      const map = { "sc-cat": "cat", "sc-tier": "tier", "sc-kind": "kind", "sc-range": "range", "sc-pub": "publisher" };
       if (map[e.target.id]) { f[map[e.target.id]] = e.target.value; f.day = ""; redo(); }
     });
     let t;
