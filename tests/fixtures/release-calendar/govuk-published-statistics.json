@@ -1,0 +1,79 @@
+{
+ "aggregates": {},
+ "es_cluster": "A",
+ "results": [
+  {
+   "_id": "/government/statistics/vmd-published-standards-2026-to-2027-monitoring-performance",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "index": "govuk",
+   "link": "/government/statistics/vmd-published-standards-2026-to-2027-monitoring-performance",
+   "organisations": [
+    {
+     "acronym": "VMD",
+     "analytics_identifier": "EA60",
+     "child_organisations": [],
+     "content_id": "da332ae4-d021-4800-aa53-826058a46923",
+     "link": "/government/organisations/veterinary-medicines-directorate",
+     "logo_formatted_title": "Veterinary <br/>Medicines <br/>Directorate",
+     "organisation_brand": "department-for-environment-food-rural-affairs",
+     "organisation_crest": "single-identity",
+     "organisation_state": "live",
+     "organisation_type": "executive_agency",
+     "parent_organisations": [
+      "department-for-environment-food-rural-affairs"
+     ],
+     "public_timestamp": "2024-01-29T12:59:43Z",
+     "slug": "veterinary-medicines-directorate",
+     "superseded_organisations": [],
+     "superseding_organisations": [],
+     "title": "Veterinary Medicines Directorate"
+    }
+   ],
+   "public_timestamp": "2026-11-09T17:15:01Z",
+   "title": "VMD Published Standards 2026 to 2027: Monitoring performance"
+  },
+  {
+   "_id": "/government/statistics/community-services-statistics-august-2026",
+   "document_type": "edition",
+   "elasticsearch_type": "edition",
+   "es_score": null,
+   "index": "govuk",
+   "link": "/government/statistics/community-services-statistics-august-2026",
+   "organisations": [
+    {
+     "acronym": "",
+     "analytics_identifier": "PB481",
+     "child_organisations": [],
+     "content_id": "f07b4bb8-8af6-42da-a161-3d90027e980c",
+     "link": "/government/organisations/nhs-england",
+     "logo_formatted_title": "NHS England",
+     "organisation_brand": "department-of-health-social-care",
+     "organisation_crest": "no-identity",
+     "organisation_state": "exempt",
+     "organisation_type": "executive_ndpb",
+     "parent_organisations": [
+      "department-of-health-and-social-care"
+     ],
+     "public_timestamp": "2024-01-26T13:59:12Z",
+     "slug": "nhs-england",
+     "superseded_organisations": [
+      "national-information-board",
+      "nhs-improvement",
+      "nhs-digital",
+      "health-education-england"
+     ],
+     "superseding_organisations": [],
+     "title": "NHS England"
+    }
+   ],
+   "public_timestamp": "2026-11-09T10:30:17Z",
+   "title": "Community Services Statistics, August 2026"
+  }
+ ],
+ "start": 0,
+ "suggested_autocomplete": [],
+ "suggested_queries": [],
+ "total": 23428
+}

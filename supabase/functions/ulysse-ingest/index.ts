@@ -5,7 +5,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   {action: "get", name}              read one back (the collector's memory of first-seen times between runs)
 //   {action: "coverage", rows: [...]}  add new Sarah Olney coverage and social posts to Lovelace's Media page (existing URLs are left untouched)
 //   {action: "social_accounts"}        the tracked social accounts that have a handle set, for the collector to follow
-const ALLOWED = new Set(["feed", "polls", "health"]);
+const ALLOWED = new Set(["feed", "polls", "health", "statscal"]);
 const MAX_BYTES = 5_000_000;
 const MAX_COVERAGE = 600;
 

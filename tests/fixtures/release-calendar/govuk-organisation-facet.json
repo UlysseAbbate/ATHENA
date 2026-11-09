@@ -1,0 +1,3637 @@
+{
+ "organisations": [
+  {
+   "documents": 909,
+   "value": {
+    "acronym": "ONS",
+    "analytics_identifier": "D303",
+    "child_organisations": [
+     "government-data-quality-hub"
+    ],
+    "content_id": "5da4ab94-39b2-40cf-99ae-1af4f6b4206d",
+    "link": "/government/organisations/office-for-national-statistics",
+    "logo_formatted_title": "Office for National Statistics",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "uk-statistics-authority"
+    ],
+    "public_timestamp": "2023-01-30T13:16:20Z",
+    "slug": "office-for-national-statistics",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Office for National Statistics"
+   }
+  },
+  {
+   "documents": 524,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "PB481",
+    "child_organisations": [],
+    "content_id": "f07b4bb8-8af6-42da-a161-3d90027e980c",
+    "link": "/government/organisations/nhs-england",
+    "logo_formatted_title": "NHS England",
+    "organisation_brand": "department-of-health-social-care",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-of-health-and-social-care"
+    ],
+    "public_timestamp": "2024-01-26T13:59:12Z",
+    "slug": "nhs-england",
+    "superseded_organisations": [
+     "national-information-board",
+     "nhs-improvement",
+     "nhs-digital",
+     "health-education-england"
+    ],
+    "superseding_organisations": [],
+    "title": "NHS England"
+   }
+  },
+  {
+   "documents": 494,
+   "value": {
+    "acronym": "Defra",
+    "analytics_identifier": "D7",
+    "child_organisations": [
+     "animal-health-and-veterinary-laboratories-agency",
+     "centre-for-environment-fisheries-and-aquaculture-science",
+     "the-food-and-environment-research-agency",
+     "rural-payments-agency",
+     "veterinary-medicines-directorate",
+     "marine-management-organisation",
+     "consumer-council-for-water",
+     "environment-agency",
+     "joint-nature-conservation-committee",
+     "natural-england",
+     "agriculture-and-horticulture-development-board",
+     "seafish",
+     "advisory-committee-on-releases-to-the-environment",
+     "science-advisory-council",
+     "covent-garden-market-authority",
+     "broads-authority",
+     "dartmoor-national-park-authority",
+     "exmoor-national-park-authority",
+     "lake-district-national-park-authority",
+     "new-forest-national-park-authority",
+     "north-york-moors-national-park",
+     "agricultural-wages-committee-x13",
+     "plant-varieties-and-seeds-tribunal",
+     "the-water-services-regulation-authority",
+     "national-forest-company",
+     "advisory-committee-on-pesticides",
+     "agricultural-dwelling-house-advisory-committees-x16",
+     "veterinary-products-committee",
+     "board-of-trustees-of-the-royal-botanic-gardens-kew",
+     "northumberland-national-park-authority",
+     "forestry-commission",
+     "peak-district-national-park",
+     "south-downs-national-park-authority",
+     "yorkshire-dales-national-park-authority",
+     "uk-co-ordinating-body",
+     "rural-development-programme-for-england-network",
+     "animal-and-plant-health-agency",
+     "veterinary-residues-committee",
+     "flood-and-coastal-erosion-risk-management-research-and-development-programme",
+     "office-for-environmental-protection",
+     "british-wool",
+     "flood-re",
+     "independent-agricultural-appeals-panel",
+     "groceries-code-adjudicator",
+     "the-drinking-water-inspectorate"
+    ],
+    "content_id": "de4e9dc6-cca4-43af-a594-682023b84d6c",
+    "link": "/government/organisations/department-for-environment-food-rural-affairs",
+    "logo_formatted_title": "Department<br/>for Environment,<br/>Food &amp; Rural Affairs",
+    "organisation_brand": "department-for-environment-food-rural-affairs",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-08-03T16:02:01Z",
+    "slug": "department-for-environment-food-rural-affairs",
+    "superseded_organisations": [
+     "department-of-the-environment-transport-and-the-regions"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for Environment, Food & Rural Affairs"
+   }
+  },
+  {
+   "documents": 482,
+   "value": {
+    "acronym": "NISRA",
+    "analytics_identifier": "EA701",
+    "child_organisations": [],
+    "content_id": "93a0b041-ecb9-45d2-9135-37aee4b79573",
+    "link": "/government/organisations/northern-ireland-statistics-and-research-agency",
+    "logo_formatted_title": "Northern Ireland <br/>Statistics and Research Agency",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-of-finance-northern-ireland"
+    ],
+    "public_timestamp": "2024-11-20T14:54:45Z",
+    "slug": "northern-ireland-statistics-and-research-agency",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Northern Ireland Statistics and Research Agency"
+   }
+  },
+  {
+   "documents": 470,
+   "value": {
+    "acronym": "HMRC",
+    "analytics_identifier": "D25",
+    "child_organisations": [
+     "valuation-office-agency",
+     "the-adjudicator-s-office",
+     "district-valuer-services-dvs"
+    ],
+    "content_id": "6667cce2-e809-4e21-ae09-cb0bdc1ddda3",
+    "link": "/government/organisations/hm-revenue-customs",
+    "logo_formatted_title": "HM Revenue<br/>&amp; Customs",
+    "organisation_brand": "hm-revenue-customs",
+    "organisation_crest": "hmrc",
+    "organisation_state": "live",
+    "organisation_type": "non_ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2025-10-06T08:10:25Z",
+    "slug": "hm-revenue-customs",
+    "superseded_organisations": [
+     "department-of-inland-revenue",
+     "valuation-office-agency"
+    ],
+    "superseding_organisations": [],
+    "title": "HM Revenue & Customs"
+   }
+  },
+  {
+   "documents": 304,
+   "value": {
+    "acronym": "Ofcom",
+    "analytics_identifier": "OT385",
+    "child_organisations": [],
+    "content_id": "956ecc87-b889-4c41-ac39-ba6a6ba48e97",
+    "link": "/government/organisations/ofcom",
+    "logo_formatted_title": "Ofcom",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "public_timestamp": "2026-09-09T13:52:51Z",
+    "slug": "ofcom",
+    "superseded_organisations": [
+     "phone-paid-services-authority"
+    ],
+    "superseding_organisations": [],
+    "title": "Ofcom"
+   }
+  },
+  {
+   "documents": 255,
+   "value": {
+    "acronym": "MMO",
+    "analytics_identifier": "PB57",
+    "child_organisations": [],
+    "content_id": "8d56bb52-2f79-4b6d-9fc6-6d7dcc4f7586",
+    "link": "/government/organisations/marine-management-organisation",
+    "logo_formatted_title": "Marine <br/>Management <br/>Organisation",
+    "organisation_brand": "department-for-environment-food-rural-affairs",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-environment-food-rural-affairs"
+    ],
+    "public_timestamp": "2025-01-14T13:02:45Z",
+    "slug": "marine-management-organisation",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Marine Management Organisation"
+   }
+  },
+  {
+   "documents": 249,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "D4",
+    "child_organisations": [
+     "homes-and-communities-agency",
+     "audit-commission",
+     "london-thames-gateway-development-corporation",
+     "the-west-northamptonshire-development-corporation"
+    ],
+    "closed_at": "2021-09-20T00:00:00.000+01:00",
+    "content_id": "2e7868a8-38f5-4ff6-b62f-9a15d1c22d28",
+    "link": "/government/organisations/ministry-of-housing-communities-and-local-government-2018-2021",
+    "logo_formatted_title": "Ministry of Housing,<br/>Communities &amp;<br/>Local Government (2018 to 2021)",
+    "organisation_brand": "department-for-communities-and-local-government",
+    "organisation_closed_state": "changed_name",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2024-09-11T09:09:59Z",
+    "slug": "ministry-of-housing-communities-and-local-government-2018-2021",
+    "superseded_organisations": [
+     "department-of-the-environment-transport-and-the-regions"
+    ],
+    "superseding_organisations": [
+     "department-for-levelling-up-housing-and-communities"
+    ],
+    "title": "Ministry of Housing, Communities & Local Government (2018 to 2021)"
+   }
+  },
+  {
+   "documents": 237,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "D5",
+    "child_organisations": [
+     "english-heritage",
+     "olympic-delivery-authority",
+     "heritage-lottery-fund",
+     "big-lottery-fund",
+     "office-for-civil-society"
+    ],
+    "closed_at": "2023-02-07T00:00:00.000+00:00",
+    "content_id": "fd62c5a4-714d-47fe-a612-595d1739251c",
+    "link": "/government/organisations/department-for-digital-culture-media-sport",
+    "logo_formatted_title": "Department for<br/>Digital, Culture,<br/>Media &amp; Sport<br/>(2017 to 2023)",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_closed_state": "split",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-07-22T07:25:38Z",
+    "slug": "department-for-digital-culture-media-sport",
+    "superseded_organisations": [
+     "department-of-national-heritage",
+     "office-for-civil-society"
+    ],
+    "superseding_organisations": [
+     "department-for-science-innovation-and-technology",
+     "department-for-culture-media-and-sport"
+    ],
+    "title": "Department for Digital, Culture, Media & Sport (2017 to 2023)"
+   }
+  },
+  {
+   "documents": 216,
+   "value": {
+    "acronym": "UKHSA",
+    "analytics_identifier": "EA1328",
+    "child_organisations": [
+     "the-centre-for-climate-health-security",
+     "health-equity-in-health-protection-initiative",
+     "radiation-protection-sciences"
+    ],
+    "content_id": "80091cd8-7a8f-41ef-8faf-8af91fce4fdb",
+    "link": "/government/organisations/uk-health-security-agency",
+    "logo_formatted_title": "UK Health<br/>Security<br/>Agency",
+    "organisation_brand": "department-of-health-social-care",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-of-health-and-social-care"
+    ],
+    "public_timestamp": "2026-10-19T10:54:04Z",
+    "slug": "uk-health-security-agency",
+    "superseded_organisations": [
+     "public-health-england"
+    ],
+    "superseding_organisations": [],
+    "title": "UK Health Security Agency"
+   }
+  },
+  {
+   "documents": 214,
+   "value": {
+    "acronym": "The Scottish Government",
+    "analytics_identifier": "DA1020",
+    "child_organisations": [
+     "uk-co-ordinating-body",
+     "animal-and-plant-health-agency",
+     "uk-national-screening-committee"
+    ],
+    "content_id": "f4eaf4ab-3bf0-4c6e-b35c-852eaaa695d9",
+    "link": "/government/organisations/the-scottish-government",
+    "logo_formatted_title": "Scottish <br/>Government",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "devolved_administration",
+    "parent_organisations": [],
+    "public_timestamp": "2025-02-13T16:28:56Z",
+    "slug": "the-scottish-government",
+    "superseded_organisations": [
+     "creative-scotland",
+     "information-services-division-scotland",
+     "national-records-of-scotland",
+     "national-museums-of-scotland",
+     "scottish-law-commission",
+     "scottish-sports-council",
+     "scottish-office"
+    ],
+    "superseding_organisations": [],
+    "title": "The Scottish Government"
+   }
+  },
+  {
+   "documents": 209,
+   "value": {
+    "acronym": "MOJ",
+    "analytics_identifier": "D18",
+    "child_organisations": [
+     "national-offender-management-service",
+     "office-of-the-public-guardian",
+     "hm-courts-and-tribunals-service",
+     "civil-justice-council",
+     "law-commission",
+     "the-sentencing-council-for-england-and-wales",
+     "victim-s-advisory-panel",
+     "criminal-injuries-compensation-authority",
+     "judicial-appointments-commission",
+     "legal-services-commission",
+     "parole-board",
+     "youth-justice-board-for-england-and-wales",
+     "criminal-cases-review-commission",
+     "hm-inspectorate-of-prisons",
+     "hm-inspectorate-of-probation",
+     "victims-commissioner",
+     "prisons-and-probation-ombudsman",
+     "official-solicitor-and-public-trustee",
+     "the-legal-ombudsman",
+     "legal-services-board",
+     "judicial-appointments-and-conduct-ombudsman",
+     "administrative-justice-and-tribunals-council",
+     "advisory-committees-on-justices-of-the-peace",
+     "civil-procedure-rules-committee",
+     "family-justice-council",
+     "family-procedure-rule-committee",
+     "independent-advisory-panel-on-deaths-in-custody",
+     "independent-monitoring-boards-of-prisons-immigration-removal-centres-and-short-term-holding-rooms",
+     "prison-services-pay-review-body",
+     "tribunal-procedure-committee",
+     "advisory-panel-on-public-sector-information",
+     "criminal-procedure-rule-committee",
+     "legal-aid-agency",
+     "her-majestys-magistrates-courts-service-inspectorate",
+     "jeffrey-review",
+     "children-and-family-court-advisory-and-support-service",
+     "judicial-office",
+     "insolvency-rules-committee",
+     "hm-prison-and-probation-service",
+     "academy-for-social-justice",
+     "gov-facility-services-limited",
+     "independent-monitoring-authority-for-the-citizens-rights-agreements",
+     "online-procedure-rule-committee",
+     "independent-advisory-panel-on-deaths-in-detention"
+    ],
+    "content_id": "dcc907d6-433c-42df-9ffb-d9c68be5dc4d",
+    "link": "/government/organisations/ministry-of-justice",
+    "logo_formatted_title": "Ministry<br/>of Justice",
+    "organisation_brand": "ministry-of-justice",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-07-31T09:12:00Z",
+    "slug": "ministry-of-justice",
+    "superseded_organisations": [
+     "department-for-constitutional-affairs",
+     "department-of-constitutional-affairs"
+    ],
+    "superseding_organisations": [],
+    "title": "Ministry of Justice"
+   }
+  },
+  {
+   "documents": 207,
+   "value": {
+    "acronym": "DfE",
+    "analytics_identifier": "D6",
+    "child_organisations": [
+     "education-funding-agency",
+     "standards-and-testing-agency",
+     "ofqual",
+     "ofsted",
+     "office-of-the-children-s-commissioner",
+     "school-teachers-review-body",
+     "social-mobility-and-child-poverty-commission",
+     "national-college-for-teaching-and-leadership",
+     "national-college-for-school-leadership",
+     "schools-commissioners-group",
+     "skills-funding-agency",
+     "higher-education-funding-council-for-england",
+     "office-for-fair-access",
+     "student-loans-company",
+     "uk-commission-for-employment-and-skills",
+     "education-and-skills-funding-agency",
+     "institute-for-apprenticeships",
+     "located",
+     "office-for-students",
+     "teaching-regulation-agency",
+     "independent-review-mechanism",
+     "uk-council-for-internet-safety",
+     "further-education-commissioner",
+     "institute-for-apprenticeships-and-technical-education",
+     "child-safeguarding-practice-review-panel",
+     "regional-schools-commissioners",
+     "social-work-england",
+     "regional-department-for-education-dfe-directors",
+     "office-of-the-schools-adjudicator",
+     "oak-national-academy"
+    ],
+    "content_id": "ebd15ade-73b2-4eaf-b1c3-43034a42eb37",
+    "link": "/government/organisations/department-for-education",
+    "logo_formatted_title": "Department <br/>for Education",
+    "organisation_brand": "department-for-education",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-04-14T11:23:39Z",
+    "slug": "department-for-education",
+    "superseded_organisations": [
+     "department-for-children-schools-and-families",
+     "national-college-for-teaching-and-leadership",
+     "education-and-skills-funding-agency",
+     "institute-for-apprenticeships-and-technical-education",
+     "located"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for Education"
+   }
+  },
+  {
+   "documents": 155,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "EA32",
+    "child_organisations": [],
+    "content_id": "c8406408-8376-45e0-95b4-7e74cef2c260",
+    "link": "/government/organisations/insolvency-service",
+    "logo_formatted_title": "The Insolvency <br/>Service",
+    "organisation_brand": "department-for-business-trade",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-for-business-innovation-science-and-trade"
+    ],
+    "public_timestamp": "2026-10-14T10:48:29Z",
+    "slug": "insolvency-service",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "The Insolvency Service"
+   }
+  },
+  {
+   "documents": 152,
+   "value": {
+    "acronym": "MHCLG",
+    "analytics_identifier": "D1419",
+    "child_organisations": [
+     "land-registry",
+     "planning-inspectorate",
+     "queen-elizabeth-ii-conference-centre",
+     "ebbsfleet-development-corporation",
+     "homes-england",
+     "housing-ombudsman",
+     "leasehold-advisory-service",
+     "regulator-of-social-housing",
+     "valuation-tribunal-service-for-england-valuation-tribunal-service",
+     "boundary-commission-for-england",
+     "boundary-commission-for-wales",
+     "valuation-tribunal-for-england",
+     "architects-registration-board",
+     "local-government-ombudsman",
+     "uk-holocaust-memorial-foundation",
+     "office-for-place",
+     "office-for-local-government",
+     "windrush-commemoration-committee",
+     "land-registration-rule-committee",
+     "building-control-independent-panel",
+     "cambridge-growth-company",
+     "building-safety-regulator",
+     "local-audit-office",
+     "office-for-equality-and-opportunity",
+     "women-and-equalities-unit",
+     "race-equality-unit",
+     "disability-unit",
+     "social-mobility-commission",
+     "greater-cambridge-development-corporation"
+    ],
+    "content_id": "1390d07f-12b3-4f55-9dd5-fec5fd9e3649",
+    "link": "/government/organisations/ministry-of-housing-communities-local-government",
+    "logo_formatted_title": "Ministry of Housing,<br/>Communities &amp; <br/>Local Government",
+    "organisation_brand": "ministry-of-housing-communities-local-government",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-05-21T14:34:38Z",
+    "slug": "ministry-of-housing-communities-local-government",
+    "superseded_organisations": [
+     "department-for-levelling-up-housing-and-communities",
+     "office-for-place"
+    ],
+    "superseding_organisations": [],
+    "title": "Ministry of Housing, Communities and Local Government"
+   }
+  },
+  {
+   "documents": 146,
+   "value": {
+    "acronym": "MOD",
+    "analytics_identifier": "D17",
+    "child_organisations": [
+     "defence-science-and-technology-laboratory",
+     "defence-support-group",
+     "service-children-s-education",
+     "service-personnel-and-veterans-agency",
+     "uk-hydrographic-office",
+     "royal-naval-museum",
+     "national-army-museum",
+     "royal-air-force-museum",
+     "royal-marines-museum",
+     "fleet-air-arm-museum",
+     "advisory-committee-on-conscientious-objectors",
+     "central-advisory-committee-on-pensions-and-compensation",
+     "defence-nuclear-safety-committee",
+     "defence-scientific-advisory-council",
+     "national-employer-advisory-board",
+     "nuclear-research-advisory-council",
+     "oil-and-pipelines-agency",
+     "science-advisory-committee-on-the-medical-implications-of-less-lethal-weapons",
+     "veterans-advisory-and-pensions-committees-x13",
+     "service-complaints-commissioner",
+     "defence-academy",
+     "service-prosecuting-authority",
+     "defence-press-and-broadcasting-advisory-committee",
+     "royal-navy-submarine-museum",
+     "defence-sixth-form-college",
+     "review-board-for-government-contracts",
+     "advisory-group-on-military-medicine",
+     "armed-forces-pay-review-body",
+     "defence-equipment-and-support",
+     "defence-infrastructure-organisation",
+     "joint-forces-command",
+     "kings-harbour-master",
+     "independent-medical-expert-group",
+     "reserve-forces-and-cadets-associations",
+     "military-aviation-authority",
+     "veterans-uk",
+     "single-source-regulations-office",
+     "united-kingdom-reserve-forces-association",
+     "defence-and-security-media-advisory-committee",
+     "service-complaints-ombudsman",
+     "defence-safety-authority",
+     "central-advisory-committee-on-compensation",
+     "defence-nuclear-organisation",
+     "jhub-defence-innovation",
+     "defence-and-security-accelerator",
+     "strategic-command",
+     "armed-forces-covenant-fund-trust",
+     "submarine-delivery-agency",
+     "atomic-weapons-establishment",
+     "national-cyber-force",
+     "sheffield-forgemasters-international-ltd",
+     "national-space-operations-centre",
+     "office-for-veterans-affairs",
+     "awe-nuclear-security-technologies",
+     "cyber-and-specialist-operations-command",
+     "uk-defence-innovation",
+     "nuclear-research-advisory-committee",
+     "defence-nuclear-enterprise",
+     "armed-forces-commissioner",
+     "joint-maritime-security-centre",
+     "national-armaments"
+    ],
+    "content_id": "d994e55c-48c9-4795-b872-58d8ec98af12",
+    "link": "/government/organisations/ministry-of-defence",
+    "logo_formatted_title": "Ministry<br/>of Defence",
+    "organisation_brand": "ministry-of-defence",
+    "organisation_crest": "mod",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2025-09-10T13:29:24Z",
+    "slug": "ministry-of-defence",
+    "superseded_organisations": [
+     "service-children-s-education"
+    ],
+    "superseding_organisations": [],
+    "title": "Ministry of Defence"
+   }
+  },
+  {
+   "documents": 145,
+   "value": {
+    "acronym": "DWP",
+    "analytics_identifier": "D10",
+    "child_organisations": [
+     "equality-2025",
+     "industrial-injuries-advisory-council",
+     "social-security-advisory-committee",
+     "health-and-safety-executive",
+     "the-pensions-advisory-service",
+     "the-pensions-regulator",
+     "pension-protection-fund-ombudsman",
+     "pensions-ombudsman",
+     "national-employment-savings-trust",
+     "remploy-ltd",
+     "pension-protection-fund",
+     "independent-living-fund",
+     "independent-case-examiner",
+     "office-for-disability-issues",
+     "social-mobility-and-child-poverty-commission",
+     "disabled-peoples-employment-corporation",
+     "bpdts-ltd",
+     "remploy-pension-scheme-trustees-ltd",
+     "single-financial-guidance-body",
+     "skills-england",
+     "construction-industry-training-board",
+     "engineering-construction-industry-training-board"
+    ],
+    "content_id": "b548a09f-8b35-4104-89f4-f1a40bf3136d",
+    "link": "/government/organisations/department-for-work-pensions",
+    "logo_formatted_title": "Department<br/>for Work &amp; <br/>Pensions",
+    "organisation_brand": "department-for-work-pensions",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-05-20T09:02:43Z",
+    "slug": "department-for-work-pensions",
+    "superseded_organisations": [
+     "department-of-social-security",
+     "pension-service",
+     "pension-disability-and-carers-service",
+     "disability-and-carers-service",
+     "bpdts-ltd"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for Work and Pensions"
+   }
+  },
+  {
+   "documents": 139,
+   "value": {
+    "acronym": "Home Office",
+    "analytics_identifier": "D16",
+    "child_organisations": [
+     "hm-passport-office",
+     "uk-border-agency",
+     "office-of-the-immigration-services-commissioner",
+     "security-industry-authority",
+     "serious-organised-crime-agency",
+     "national-fraud-authority",
+     "advisory-council-on-the-misuse-of-drugs",
+     "police-advisory-board-for-england-and-wales",
+     "technical-advisory-board",
+     "migration-advisory-committee",
+     "national-dna-database-ethics-group",
+     "police-arbitration-tribunal",
+     "police-discipline-appeals-tribunal",
+     "hm-inspectorate-of-constabulary",
+     "the-security-service-mi5",
+     "independent-police-complaint-commission",
+     "office-of-surveillance-commissioners",
+     "police-negotiating-board",
+     "disclosure-and-barring-service",
+     "independent-reviewer-of-terrorism-legislation",
+     "intelligence-services-commissioner",
+     "interception-of-communications-commissioner",
+     "border-force",
+     "animals-in-science-committee",
+     "surveillance-camera-commissioner",
+     "forensic-science-regulator",
+     "uk-visas-and-immigration",
+     "national-crime-agency-remuneration-review-body",
+     "biometrics-commissioner",
+     "gangmasters-licensing-authority",
+     "immigration-enforcement",
+     "national-counter-terrorism-security-office",
+     "investigatory-powers-tribunal",
+     "police-remuneration-review-body",
+     "independent-family-returns-panel",
+     "independent-anti-slavery-commissioner",
+     "chief-fire-and-rescue-adviser-unit",
+     "biometrics-and-forensics-ethics-group",
+     "independent-chief-inspector-of-borders-and-immigration",
+     "gangmasters-and-labour-abuse-authority",
+     "college-of-policing",
+     "hm-inspectorate-of-constabulary-and-fire-rescue-services",
+     "independent-office-for-police-conduct",
+     "commission-for-countering-extremism",
+     "investigatory-powers-commissioners-office",
+     "uk-council-for-internet-safety",
+     "office-for-communications-data-authorisations",
+     "the-adjudicator-s-office",
+     "biometrics-and-surveillance-camera-commissioner",
+     "accelerated-capability-environment",
+     "office-for-the-independent-examiner-of-complaints",
+     "immigration-advice-authority",
+     "border-security-command",
+     "science-and-technology-ethics-advisory-committee",
+     "office-of-the-independent-prevent-commissioner",
+     "labour-market-evidence-group",
+     "office-of-the-windrush-commissioner",
+     "joint-maritime-security-centre"
+    ],
+    "content_id": "06056197-bc69-4147-aa28-070bca132178",
+    "link": "/government/organisations/home-office",
+    "logo_formatted_title": "Home Office",
+    "organisation_brand": "home-office",
+    "organisation_crest": "ho",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2024-07-23T12:54:13Z",
+    "slug": "home-office",
+    "superseded_organisations": [
+     "police-arbitration-tribunal",
+     "police-discipline-appeals-tribunal"
+    ],
+    "superseding_organisations": [],
+    "title": "Home Office"
+   }
+  },
+  {
+   "documents": 137,
+   "value": {
+    "acronym": "DLUHC",
+    "analytics_identifier": "D1342",
+    "child_organisations": [
+     "building-regulations-advisory-committee"
+    ],
+    "content_id": "c45c316a-a4f5-42c7-b94d-d7f1821be18e",
+    "link": "/government/organisations/department-for-levelling-up-housing-and-communities",
+    "logo_formatted_title": "Department for Levelling Up,<br/>Housing &amp; Communities",
+    "organisation_brand": "department-for-levelling-up-housing-and-communities",
+    "organisation_closed_state": "changed_name",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "other",
+    "parent_organisations": [],
+    "public_timestamp": "2024-08-16T15:31:05Z",
+    "slug": "department-for-levelling-up-housing-and-communities",
+    "superseded_organisations": [
+     "ministry-of-housing-communities-and-local-government-2018-2021"
+    ],
+    "superseding_organisations": [
+     "ministry-of-housing-communities-local-government"
+    ],
+    "title": "Department for Levelling Up, Housing and Communities "
+   }
+  },
+  {
+   "documents": 134,
+   "value": {
+    "acronym": "VE",
+    "analytics_identifier": "PB376",
+    "child_organisations": [],
+    "content_id": "8ac8728f-ae2e-4e4b-ac38-819bbf55269e",
+    "link": "/government/organisations/visitengland",
+    "logo_formatted_title": "VisitEngland",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "public_timestamp": "2026-08-20T14:31:23Z",
+    "slug": "visitengland",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "VisitEngland"
+   }
+  },
+  {
+   "documents": 131,
+   "value": {
+    "acronym": "DfT",
+    "analytics_identifier": "D9",
+    "child_organisations": [
+     "driver-and-vehicle-licensing-agency",
+     "highways-agency",
+     "maritime-and-coastguard-agency",
+     "vehicle-and-operator-services-agency",
+     "vehicle-certification-agency",
+     "disabled-persons-transport-advisory-committee",
+     "air-accidents-investigation-branch",
+     "rail-accident-investigation-branch",
+     "office-of-rail-regulation",
+     "driving-standards-agency",
+     "directly-operated-railways-limited",
+     "high-speed-two-limited",
+     "british-transport-police-authority",
+     "trinity-house",
+     "northern-lighthouse-board",
+     "passenger-focus",
+     "railway-heritage-committee",
+     "brb-residuary-ltd",
+     "trust-ports",
+     "civil-aviation-authority",
+     "marine-accident-investigation-branch",
+     "london-and-continental-railways-ltd",
+     "airports-commission",
+     "traffic-commissioners",
+     "office-for-low-emission-vehicles",
+     "driver-and-vehicle-standards-agency",
+     "office-of-rail-and-road",
+     "transport-focus",
+     "highways-england",
+     "centre-for-connected-and-autonomous-vehicles",
+     "east-west-railway-company",
+     "network-rail",
+     "dft-olr-holdings-limited",
+     "independent-commission-on-civil-aviation-noise",
+     "crossrail-international",
+     "office-for-zero-emission-vehicles",
+     "national-highways",
+     "active-travel-england",
+     "dft-operator-limited",
+     "platform4",
+     "joint-maritime-security-centre",
+     "euston-delivery-company"
+    ],
+    "content_id": "4c717efc-f47b-478e-a76d-ce1ae0af1946",
+    "link": "/government/organisations/department-for-transport",
+    "logo_formatted_title": "Department<br/>for Transport",
+    "organisation_brand": "department-for-transport",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2025-11-27T13:58:13Z",
+    "slug": "department-for-transport",
+    "superseded_organisations": [
+     "department-of-the-environment-transport-and-the-regions"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for Transport"
+   }
+  },
+  {
+   "documents": 131,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "PB1202",
+    "child_organisations": [],
+    "closed_at": "2023-02-01T00:00:00.000+00:00",
+    "content_id": "57167442-dc92-49bf-a897-8a1969031c52",
+    "link": "/government/organisations/nhs-digital",
+    "logo_formatted_title": "NHS<br/>Digital",
+    "organisation_closed_state": "merged",
+    "organisation_crest": "no-identity",
+    "organisation_state": "closed",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-of-health-and-social-care"
+    ],
+    "public_timestamp": "2024-03-07T10:19:49Z",
+    "slug": "nhs-digital",
+    "superseded_organisations": [
+     "health-and-social-care-information-centre"
+    ],
+    "superseding_organisations": [
+     "nhs-england"
+    ],
+    "title": "NHS Digital"
+   }
+  },
+  {
+   "documents": 130,
+   "value": {
+    "acronym": "PHE",
+    "analytics_identifier": "EA480",
+    "child_organisations": [],
+    "closed_at": "2021-10-01T00:00:00.000+01:00",
+    "content_id": "1343f283-19e9-4fbb-86b1-58c7549d874b",
+    "link": "/government/organisations/public-health-england",
+    "logo_formatted_title": "Public Health <br/>England",
+    "organisation_brand": "department-of-health-social-care",
+    "organisation_closed_state": "split",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-of-health-and-social-care"
+    ],
+    "public_timestamp": "2023-04-21T10:38:54Z",
+    "slug": "public-health-england",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "uk-health-security-agency",
+     "office-for-health-improvement-and-disparities"
+    ],
+    "title": "Public Health England"
+   }
+  },
+  {
+   "documents": 123,
+   "value": {
+    "acronym": "DESNZ",
+    "analytics_identifier": "D1380",
+    "child_organisations": [
+     "nuclear-decommissioning-authority",
+     "offshore-petroleum-regulator-for-environment-and-decommissioning",
+     "ofgem",
+     "civil-nuclear-police-authority",
+     "the-coal-authority",
+     "committee-on-climate-change",
+     "salix-finance-ltd",
+     "great-british-nuclear",
+     "north-sea-transition-authority",
+     "uk-atomic-energy-authority",
+     "national-nuclear-laboratory",
+     "low-carbon-contracts-company",
+     "electricity-settlements-company",
+     "office-for-zero-emission-vehicles",
+     "great-british-energy",
+     "national-energy-system-operator",
+     "mining-remediation-authority",
+     "great-british-energy-nuclear",
+     "united-kingdom-national-nuclear-laboratory",
+     "office-for-nuclear-regulation"
+    ],
+    "content_id": "6315817c-ef11-4905-bb4d-b6dca8e9052c",
+    "link": "/government/organisations/department-for-energy-security-and-net-zero",
+    "logo_formatted_title": "Department for<br/>Energy Security<br/>&amp; Net Zero",
+    "organisation_brand": "department-for-energy-security-net-zero",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-09-16T11:39:53Z",
+    "slug": "department-for-energy-security-and-net-zero",
+    "superseded_organisations": [
+     "department-for-business-energy-and-industrial-strategy"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for Energy Security and Net Zero"
+   }
+  },
+  {
+   "documents": 119,
+   "value": {
+    "acronym": "DoH (NI)",
+    "analytics_identifier": "OT1175",
+    "child_organisations": [
+     "public-health-agency-northern-ireland",
+     "uk-national-screening-committee",
+     "northern-ireland-cancer-registry",
+     "hsc-business-services-organisation-northern-ireland"
+    ],
+    "content_id": "a8636bd4-4e86-47af-987a-b672d4e6fa31",
+    "link": "/government/organisations/department-of-health-northern-ireland",
+    "logo_formatted_title": "Department of Health (Northern Ireland)",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:35:12Z",
+    "slug": "department-of-health-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Department of Health (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 104,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "D1383",
+    "child_organisations": [
+     "national-citizen-service"
+    ],
+    "closed_at": "2026-07-20T00:00:00.000+01:00",
+    "content_id": "ae9ef2e1-9de0-4ff8-b560-e6ac28a6205c",
+    "link": "/government/organisations/department-for-culture-media-and-sport",
+    "logo_formatted_title": "Department <br/>for Culture,<br/>Media &amp; Sport",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_closed_state": "replaced",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-09-16T15:11:02Z",
+    "slug": "department-for-culture-media-and-sport",
+    "superseded_organisations": [
+     "department-for-digital-culture-media-sport"
+    ],
+    "superseding_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "title": "Department for Culture, Media and Sport"
+   }
+  },
+  {
+   "documents": 89,
+   "value": {
+    "acronym": "BFI",
+    "analytics_identifier": "PB189",
+    "child_organisations": [],
+    "content_id": "0bf06d87-d3a8-47c2-b823-e180d933a58c",
+    "link": "/government/organisations/british-film-institute",
+    "logo_formatted_title": "British Film Institute",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "public_timestamp": "2026-08-20T14:15:27Z",
+    "slug": "british-film-institute",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "British Film Institute"
+   }
+  },
+  {
+   "documents": 87,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "PB169",
+    "child_organisations": [],
+    "content_id": "4a76efdd-cf13-4eee-ad61-e13c3e6bf45e",
+    "link": "/government/organisations/gambling-commission",
+    "logo_formatted_title": "Gambling Commission",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "public_timestamp": "2026-08-20T14:18:07Z",
+    "slug": "gambling-commission",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Gambling Commission"
+   }
+  },
+  {
+   "documents": 86,
+   "value": {
+    "acronym": "IPO",
+    "analytics_identifier": "EA34",
+    "child_organisations": [
+     "company-names-tribunal"
+    ],
+    "content_id": "5d6f9583-991f-413d-ae83-be7274e5eae4",
+    "link": "/government/organisations/intellectual-property-office",
+    "logo_formatted_title": "Intellectual<br/>Property <br/>Office",
+    "organisation_brand": "department-for-energy-security-net-zero",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-for-business-innovation-science-and-trade"
+    ],
+    "public_timestamp": "2026-10-14T10:14:29Z",
+    "slug": "intellectual-property-office",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Intellectual Property Office"
+   }
+  },
+  {
+   "documents": 81,
+   "value": {
+    "acronym": "ORR",
+    "analytics_identifier": "D1117",
+    "child_organisations": [],
+    "content_id": "a183f1ed-c0ab-45bb-af9a-77e531520ef7",
+    "link": "/government/organisations/office-of-rail-and-road",
+    "logo_formatted_title": "Office of<br/>Rail and Road",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/69f3310b161a319cff4fbb55/logo-orr.png",
+    "organisation_crest": "custom",
+    "organisation_state": "exempt",
+    "organisation_type": "non_ministerial_department",
+    "parent_organisations": [
+     "department-for-transport"
+    ],
+    "public_timestamp": "2026-04-30T10:38:03Z",
+    "slug": "office-of-rail-and-road",
+    "superseded_organisations": [
+     "office-of-rail-regulation"
+    ],
+    "superseding_organisations": [],
+    "title": "Office of Rail and Road"
+   }
+  },
+  {
+   "documents": 65,
+   "value": {
+    "acronym": "DAERA (NI)",
+    "analytics_identifier": "OT1178",
+    "child_organisations": [
+     "livestock-and-meat-commission-for-northern-ireland",
+     "agri-food-and-biosciences-institute"
+    ],
+    "content_id": "965a76d9-53f6-433d-8f3a-5802f8c7f31c",
+    "link": "/government/organisations/department-of-agriculture-environment-and-rural-affairs-northern-ireland",
+    "logo_formatted_title": "Department of Agriculture, Environment and Rural Affairs (Northern Ireland)",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:35:04Z",
+    "slug": "department-of-agriculture-environment-and-rural-affairs-northern-ireland",
+    "superseded_organisations": [
+     "department-of-culture-arts-and-leisure"
+    ],
+    "superseding_organisations": [],
+    "title": "Department of Agriculture, Environment and Rural Affairs (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 64,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "D2",
+    "child_organisations": [
+     "the-committee-on-standards-in-public-life",
+     "the-office-of-the-leader-of-the-house-of-commons",
+     "advisory-committee-on-business-appointments",
+     "house-of-lords-appointments-commission",
+     "privy-council-office",
+     "civil-service-commission",
+     "security-vetting-appeals-panel",
+     "review-body-on-senior-salaries",
+     "office-of-the-leader-of-the-house-of-lords",
+     "national-security",
+     "efficiency-and-reform-group",
+     "office-of-the-parliamentary-counsel",
+     "commissioner-for-public-appointments",
+     "mckay-commission",
+     "prime-ministers-office-10-downing-street",
+     "deputy-prime-ministers-office",
+     "government-estates-management",
+     "open-public-services",
+     "crown-commercial-service",
+     "civil-service",
+     "social-mobility-and-child-poverty-commission",
+     "office-of-the-registrar-of-consultant-lobbyists",
+     "third-party-campaigning-review",
+     "government-commercial-function",
+     "cabinet-office-board",
+     "infrastructure-and-projects-authority",
+     "race-disparity-unit",
+     "government-property-agency",
+     "civil-service-fast-track-apprenticeship",
+     "equality-and-human-rights-commission",
+     "civil-service-group",
+     "conflict-stability-and-security-fund",
+     "government-equalities-office",
+     "uk-statistics-authority",
+     "national-leadership-centre",
+     "civil-service-hr",
+     "united-kingdom-security-vetting",
+     "government-property-function",
+     "commission-on-race-and-ethnic-disparities",
+     "government-skills-and-curriculum-unit",
+     "the-equality-hub",
+     "modernisation-and-reform",
+     "leadership-college-for-government",
+     "independent-adviser-on-ministers-interests",
+     "corporate-officers-of-the-house-of-commons",
+     "corporate-officers-of-the-house-of-lords",
+     "uk-commission-on-covid-commemoration",
+     "public-sector-fraud-authority",
+     "government-people-group",
+     "incubator-for-automation-and-innovation",
+     "civil-service-government-operational-research-service",
+     "uk-integrated-security-fund",
+     "evaluation-task-force",
+     "government-skills",
+     "uk-resilience-academy",
+     "national-infrastructure-and-service-transformation-authority",
+     "ethics-and-integrity-commission",
+     "government-people-function",
+     "the-infected-blood-memorial-committee",
+     "government-commercial-agency",
+     "ai-security-institute",
+     "national-school-of-government-and-public-services"
+    ],
+    "content_id": "96ae61d6-c2a1-48cb-8e67-da9d105ae381",
+    "link": "/government/organisations/cabinet-office",
+    "logo_formatted_title": "Cabinet Office",
+    "organisation_brand": "cabinet-office",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-07-20T19:56:05Z",
+    "slug": "cabinet-office",
+    "superseded_organisations": [
+     "national-school-of-government",
+     "department-for-science-innovation-and-technology"
+    ],
+    "superseding_organisations": [],
+    "title": "Cabinet Office"
+   }
+  },
+  {
+   "documents": 59,
+   "value": {
+    "acronym": "HSCIC",
+    "analytics_identifier": "OT538",
+    "child_organisations": [],
+    "closed_at": "2016-08-01T00:00:00.000+01:00",
+    "content_id": "dad552a3-bb63-4825-a3ec-f06c4409bda4",
+    "link": "/government/organisations/health-and-social-care-information-centre",
+    "logo_formatted_title": "Health and <br/>Social Care <br/>Information Centre",
+    "organisation_brand": "department-of-health-social-care",
+    "organisation_closed_state": "changed_name",
+    "organisation_crest": "no-identity",
+    "organisation_state": "closed",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-of-health-and-social-care"
+    ],
+    "public_timestamp": "2021-04-15T09:01:12Z",
+    "slug": "health-and-social-care-information-centre",
+    "superseded_organisations": [
+     "professional-standards-authority-for-health-and-social-care"
+    ],
+    "superseding_organisations": [
+     "nhs-digital"
+    ],
+    "title": "Health and Social Care Information Centre"
+   }
+  },
+  {
+   "documents": 56,
+   "value": {
+    "acronym": "Companies House",
+    "analytics_identifier": "EA26",
+    "child_organisations": [],
+    "content_id": "c36bd301-d0c5-4492-86ad-ee7843b8383b",
+    "link": "/government/organisations/companies-house",
+    "logo_formatted_title": "Companies House",
+    "organisation_brand": "department-for-business-trade",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-for-business-innovation-science-and-trade"
+    ],
+    "public_timestamp": "2026-10-14T10:50:50Z",
+    "slug": "companies-house",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Companies House"
+   }
+  },
+  {
+   "documents": 56,
+   "value": {
+    "acronym": "SLC",
+    "analytics_identifier": "PB27",
+    "child_organisations": [],
+    "content_id": "9a9111aa-1db8-4025-8dd2-e08ec3175e72",
+    "link": "/government/organisations/student-loans-company",
+    "logo_formatted_title": "Student Loans Company",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/61ee8aca8fa8f5058d5a7772/SLC_Logo.png",
+    "organisation_brand": "department-for-education",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-education"
+    ],
+    "public_timestamp": "2023-06-23T09:03:05Z",
+    "slug": "student-loans-company",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Student Loans Company"
+   }
+  },
+  {
+   "documents": 55,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "DA1019",
+    "child_organisations": [
+     "uk-co-ordinating-body",
+     "natural-resources-wales",
+     "careers-wales",
+     "animal-and-plant-health-agency",
+     "uk-national-screening-committee",
+     "arts-council-of-wales",
+     "sports-council-for-wales",
+     "flood-and-coastal-erosion-risk-management-research-and-development-programme"
+    ],
+    "content_id": "cb0a039c-a89d-4143-8277-67e18c16c6bf",
+    "link": "/government/organisations/welsh-government",
+    "logo_formatted_title": "Welsh<br/>Government",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/6814c1213c3bba3526f03b67/welsh-government-300x285.png",
+    "organisation_crest": "custom",
+    "organisation_state": "exempt",
+    "organisation_type": "devolved_administration",
+    "parent_organisations": [],
+    "public_timestamp": "2025-05-02T12:57:05Z",
+    "slug": "welsh-government",
+    "superseded_organisations": [
+     "public-health-wales",
+     "arts-council-of-wales",
+     "further-and-higher-education-funding-councils-for-wales",
+     "hybu-cig-cymru-meat-promotion-wales",
+     "sports-council-for-wales",
+     "estyn",
+     "careers-wales",
+     "natural-resources-wales",
+     "nhs-wales-informatics-service",
+     "welsh-language-commissioner"
+    ],
+    "superseding_organisations": [],
+    "title": "Welsh Government"
+   }
+  },
+  {
+   "documents": 53,
+   "value": {
+    "acronym": "DSIT",
+    "analytics_identifier": "D1381",
+    "child_organisations": [
+     "office-for-artificial-intelligence",
+     "centre-for-data-ethics-and-innovation",
+     "geospatial-commission",
+     "phone-paid-services-authority",
+     "ai-safety-institute",
+     "regulatory-horizons-council",
+     "central-digital-and-data-office",
+     "incubator-for-artificial-intelligence",
+     "government-cyber-profession"
+    ],
+    "closed_at": "2026-11-02T00:00:00.000+00:00",
+    "content_id": "c352c234-8083-47ec-8a4b-0edd45c31263",
+    "link": "/government/organisations/department-for-science-innovation-and-technology",
+    "logo_formatted_title": "Department for<br/>Science, Innovation<br/>&amp; Technology",
+    "organisation_brand": "department-for-science-innovation-technology",
+    "organisation_closed_state": "split",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-11-02T13:53:52Z",
+    "slug": "department-for-science-innovation-and-technology",
+    "superseded_organisations": [
+     "department-for-digital-culture-media-sport",
+     "department-for-business-energy-and-industrial-strategy",
+     "centre-for-data-ethics-and-innovation",
+     "office-for-artificial-intelligence",
+     "building-digital-uk"
+    ],
+    "superseding_organisations": [
+     "cabinet-office",
+     "department-for-business-innovation-science-and-trade",
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "title": "Department for Science, Innovation and Technology"
+   }
+  },
+  {
+   "documents": 52,
+   "value": {
+    "acronym": "BIS",
+    "analytics_identifier": "D3",
+    "child_organisations": [
+     "national-measurement-office",
+     "technology-strategy-board",
+     "capital-for-enterprise-ltd",
+     "office-of-fair-trading",
+     "competition-commission",
+     "consumer-focus",
+     "the-shareholder-executive",
+     "better-regulation-delivery-office",
+     "ukti-education",
+     "higher-education-statistical-agency",
+     "national-measurement-and-regulation-office"
+    ],
+    "closed_at": "2016-07-15T00:00:00.000+01:00",
+    "content_id": "569a9ee5-c195-4b7f-b9dc-edc17a09113f",
+    "link": "/government/organisations/department-for-business-innovation-skills",
+    "logo_formatted_title": "Department <br/>for Business<br/>Innovation &amp; Skills",
+    "organisation_brand": "department-for-business-innovation-skills",
+    "organisation_closed_state": "replaced",
+    "organisation_crest": "bis",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2021-04-15T08:58:37Z",
+    "slug": "department-for-business-innovation-skills",
+    "superseded_organisations": [
+     "department-for-innovation-universities-and-skills",
+     "department-for-business-enterprise-and-regulatory-reform"
+    ],
+    "superseding_organisations": [
+     "department-for-business-energy-and-industrial-strategy"
+    ],
+    "title": "Department for Business, Innovation & Skills"
+   }
+  },
+  {
+   "documents": 50,
+   "value": {
+    "acronym": "VB",
+    "analytics_identifier": "PB186",
+    "child_organisations": [],
+    "content_id": "7f34c9c5-4e1f-4688-9731-3b44ddd3ede2",
+    "link": "/government/organisations/visitbritain",
+    "logo_formatted_title": "VisitBritain",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "public_timestamp": "2026-08-20T14:30:44Z",
+    "slug": "visitbritain",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "VisitBritain"
+   }
+  },
+  {
+   "documents": 45,
+   "value": {
+    "acronym": "VOA",
+    "analytics_identifier": "EA87",
+    "child_organisations": [
+     "the-adjudicator-s-office"
+    ],
+    "closed_at": "2026-04-01T00:00:00.000+01:00",
+    "content_id": "ae98edb5-87b4-4a69-a31a-e0e5298f949d",
+    "link": "/government/organisations/valuation-office-agency",
+    "logo_formatted_title": "Valuation Office Agency",
+    "organisation_brand": "hm-revenue-customs",
+    "organisation_closed_state": "merged",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "hm-revenue-customs"
+    ],
+    "public_timestamp": "2026-03-31T18:30:51Z",
+    "slug": "valuation-office-agency",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "hm-revenue-customs"
+    ],
+    "title": "Valuation Office Agency"
+   }
+  },
+  {
+   "documents": 43,
+   "value": {
+    "acronym": "DBT",
+    "analytics_identifier": "D1382",
+    "child_organisations": [
+     "uk-national-contact-point",
+     "employment-agency-standards-inspectorate",
+     "office-of-manpower-economics"
+    ],
+    "closed_at": "2026-11-09T00:00:00.000+00:00",
+    "content_id": "aa750cdf-7925-429d-a2b3-0d9fa47d2c48",
+    "link": "/government/organisations/department-for-business-and-trade",
+    "logo_formatted_title": "Department for<br/>Business &amp; Trade",
+    "organisation_brand": "department-for-business-trade",
+    "organisation_closed_state": "replaced",
+    "organisation_crest": "dbt",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-11-09T13:28:07Z",
+    "slug": "department-for-business-and-trade",
+    "superseded_organisations": [
+     "department-for-international-trade",
+     "department-for-business-energy-and-industrial-strategy"
+    ],
+    "superseding_organisations": [
+     "department-for-business-innovation-science-and-trade"
+    ],
+    "title": "Department for Business and Trade"
+   }
+  },
+  {
+   "documents": 43,
+   "value": {
+    "acronym": "DHSC",
+    "analytics_identifier": "D12",
+    "child_organisations": [
+     "medicines-and-healthcare-products-regulatory-agency",
+     "care-quality-commission",
+     "human-fertilisation-and-embryology-authority",
+     "human-tissue-authority",
+     "monitor",
+     "national-institute-for-clinical-excellence",
+     "public-health-england",
+     "health-research-authority",
+     "nhs-trust-development-authority",
+     "nhs-blood-and-transplant",
+     "nhs-england",
+     "nhs-litigation-authority",
+     "advisory-committee-on-clinical-excellence-awards",
+     "administration-of-radioactive-substances-advisory-committee",
+     "british-pharmacopoeia",
+     "commission-on-human-medicines",
+     "committee-on-mutagenicity-of-chemicals-in-food-consumer-products-and-the-environment",
+     "independent-reconfiguration-panel",
+     "review-body-on-doctors-and-dentists-remuneration",
+     "nhs-pay-review-body",
+     "investigation-into-the-role-of-jimmy-savile-at-broadmoor-hospital",
+     "health-and-social-care-information-centre",
+     "health-education-england",
+     "office-for-life-sciences",
+     "morecambe-bay-investigation",
+     "national-information-board",
+     "accelerated-access-review",
+     "national-data-guardian",
+     "porton-biopharma-limited",
+     "nhs-improvement",
+     "nhs-digital",
+     "nhs-counter-fraud-authority",
+     "nhs-resolution",
+     "uk-national-screening-committee",
+     "uk-health-security-agency",
+     "office-for-health-improvement-and-disparities",
+     "advisory-committee-on-clinical-impact-awards",
+     "nhs-business-services-authority",
+     "health-services-safety-investigations-body"
+    ],
+    "content_id": "7cd6bf12-bbe9-4118-8523-f927b0442156",
+    "link": "/government/organisations/department-of-health-and-social-care",
+    "logo_formatted_title": "Department<br/>of Health &amp;<br/>Social Care",
+    "organisation_brand": "department-of-health-social-care",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2023-08-03T07:33:01Z",
+    "slug": "department-of-health-and-social-care",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Department of Health and Social Care"
+   }
+  },
+  {
+   "documents": 43,
+   "value": {
+    "acronym": "OHID",
+    "analytics_identifier": "OT1341",
+    "child_organisations": [],
+    "content_id": "e85f9a3f-451d-4a3e-9b63-17b13149269f",
+    "link": "/government/organisations/office-for-health-improvement-and-disparities",
+    "logo_formatted_title": "Office for Health<br/>Improvement <br/>&amp; Disparities",
+    "organisation_brand": "department-of-health-social-care",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "department-of-health-and-social-care"
+    ],
+    "public_timestamp": "2024-05-07T09:27:29Z",
+    "slug": "office-for-health-improvement-and-disparities",
+    "superseded_organisations": [
+     "public-health-england"
+    ],
+    "superseding_organisations": [],
+    "title": "Office for Health Improvement and Disparities"
+   }
+  },
+  {
+   "documents": 42,
+   "value": {
+    "acronym": "Ofsted",
+    "analytics_identifier": "D106",
+    "child_organisations": [],
+    "content_id": "ad5f6169-ac7b-4382-9eb6-e58af71a2f00",
+    "link": "/government/organisations/ofsted",
+    "logo_formatted_title": "Ofsted",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/6aaa91cd44ec1aa417346b58/ofsted-colour-logo-large-govuk.jpg",
+    "organisation_brand": "department-for-education",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "non_ministerial_department",
+    "parent_organisations": [
+     "department-for-education"
+    ],
+    "public_timestamp": "2026-09-16T12:55:41Z",
+    "slug": "ofsted",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Ofsted"
+   }
+  },
+  {
+   "documents": 40,
+   "value": {
+    "acronym": "HMT",
+    "analytics_identifier": "D15",
+    "child_organisations": [
+     "uk-debt-management-office",
+     "uk-financial-investments-limited",
+     "office-for-budget-responsibility",
+     "royal-mint",
+     "nsandi",
+     "royal-mint-advisory-committee",
+     "the-crown-estate",
+     "infrastructure-uk",
+     "government-internal-audit-agency",
+     "financial-conduct-authority",
+     "payment-systems-regulator",
+     "national-infrastructure-commission",
+     "financial-services-trade-and-investment-board",
+     "uk-government-investments",
+     "office-of-financial-sanctions-implementation",
+     "infrastructure-and-projects-authority",
+     "government-actuarys-department",
+     "uk-asset-resolution-limited",
+     "government-finance-function",
+     "reclaim-fund-ltd",
+     "public-sector-fraud-authority",
+     "office-of-tax-simplification",
+     "uk-infrastructure-bank",
+     "government-debt-management-function",
+     "evaluation-task-force",
+     "national-infrastructure-and-service-transformation-authority",
+     "national-wealth-fund"
+    ],
+    "content_id": "1994e0e4-bd19-4966-bbd7-f293d6e90a6b",
+    "link": "/government/organisations/hm-treasury",
+    "logo_formatted_title": "HM Treasury",
+    "organisation_brand": "hm-treasury",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-10-28T15:09:46Z",
+    "slug": "hm-treasury",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "HM Treasury"
+   }
+  },
+  {
+   "documents": 38,
+   "value": {
+    "acronym": "DfC (NI)",
+    "analytics_identifier": "OT1173",
+    "child_organisations": [
+     "northern-ireland-housing-executive",
+     "arts-council-of-northern-ireland",
+     "sports-council-for-northern-ireland"
+    ],
+    "content_id": "50767bd3-cbbe-47df-bc5e-ddd0140e4b04",
+    "link": "/government/organisations/department-for-communities-northern-ireland",
+    "logo_formatted_title": "Department for Communities <br/>(Northern Ireland)",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:31:35Z",
+    "slug": "department-for-communities-northern-ireland",
+    "superseded_organisations": [
+     "department-of-culture-arts-and-leisure",
+     "department-for-social-development"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for Communities (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 38,
+   "value": {
+    "acronym": "DoF (NI)",
+    "analytics_identifier": "OT1177",
+    "child_organisations": [
+     "northern-ireland-statistics-and-research-agency"
+    ],
+    "content_id": "79308085-77ad-4473-8863-73cae379ba36",
+    "link": "/government/organisations/department-of-finance-northern-ireland",
+    "logo_formatted_title": "Department of Finance (Northern Ireland)",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:35:10Z",
+    "slug": "department-of-finance-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Department of Finance (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 37,
+   "value": {
+    "acronym": "DfE (NI)",
+    "analytics_identifier": "OT1174",
+    "child_organisations": [
+     "labour-relations-agency",
+     "invest-northern-ireland"
+    ],
+    "content_id": "5c817b46-039f-4c4a-ac63-b28c1c2feb59",
+    "link": "/government/organisations/department-for-the-economy-northern-ireland",
+    "logo_formatted_title": "Department for <br/>the Economy<br/>(Northern Ireland)",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:34:59Z",
+    "slug": "department-for-the-economy-northern-ireland",
+    "superseded_organisations": [
+     "department-of-enterprise-trade-and-investment"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for the Economy (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 35,
+   "value": {
+    "acronym": "PSNI",
+    "analytics_identifier": "OT657",
+    "child_organisations": [],
+    "content_id": "bc9a5403-9ee4-40a4-8d14-cc7a24202d68",
+    "link": "/government/organisations/police-service-of-northern-ireland",
+    "logo_formatted_title": "Police Service of Northern Ireland",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-of-justice-northern-ireland"
+    ],
+    "public_timestamp": "2021-04-15T09:01:45Z",
+    "slug": "police-service-of-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Police Service of Northern Ireland"
+   }
+  },
+  {
+   "documents": 32,
+   "value": {
+    "acronym": "HESA",
+    "analytics_identifier": "OT1088",
+    "child_organisations": [],
+    "content_id": "60de9b00-a982-4449-a995-f2353e86fb95",
+    "link": "/government/organisations/higher-education-statistical-agency",
+    "logo_formatted_title": "Higher Education<br/>Statistics Agency",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "department-for-business-innovation-skills"
+    ],
+    "public_timestamp": "2021-04-15T09:03:50Z",
+    "slug": "higher-education-statistical-agency",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Higher Education Statistics Agency"
+   }
+  },
+  {
+   "documents": 31,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "PB165",
+    "child_organisations": [],
+    "content_id": "16438d29-2b3f-4200-a3e6-e71b609e84f7",
+    "link": "/government/organisations/arts-council-england",
+    "logo_formatted_title": "Arts Council England",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "public_timestamp": "2026-08-20T14:14:53Z",
+    "slug": "arts-council-england",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Arts Council England"
+   }
+  },
+  {
+   "documents": 30,
+   "value": {
+    "acronym": "RSH",
+    "analytics_identifier": "PB1218",
+    "child_organisations": [],
+    "content_id": "0e8892fa-d676-43c4-9f51-9674e1830892",
+    "link": "/government/organisations/regulator-of-social-housing",
+    "logo_formatted_title": "Regulator of <br/>Social Housing",
+    "organisation_brand": "ministry-of-housing-communities-local-government",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "ministry-of-housing-communities-local-government"
+    ],
+    "public_timestamp": "2026-06-04T12:55:23Z",
+    "slug": "regulator-of-social-housing",
+    "superseded_organisations": [
+     "homes-and-communities-agency"
+    ],
+    "superseding_organisations": [],
+    "title": "Regulator of Social Housing"
+   }
+  },
+  {
+   "documents": 27,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "D746",
+    "child_organisations": [],
+    "content_id": "3638384a-ae3c-4849-990f-2da23df96833",
+    "link": "/government/organisations/department-of-health-social-services-and-public-safety",
+    "logo_formatted_title": "Department of Health, Social Services and Public Safety",
+    "organisation_closed_state": "devolved",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2021-04-15T09:02:12Z",
+    "slug": "department-of-health-social-services-and-public-safety",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Department of Health, Social Services and Public Safety"
+   }
+  },
+  {
+   "documents": 26,
+   "value": {
+    "acronym": "DfI (NI)",
+    "analytics_identifier": "OT1176",
+    "child_organisations": [],
+    "content_id": "a70fef9b-3a1e-475b-990b-fcf95cbca9b4",
+    "link": "/government/organisations/department-for-infrastructure-northern-ireland",
+    "logo_formatted_title": "Department for Infrastructure <br/>(Northern Ireland)",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:32:56Z",
+    "slug": "department-for-infrastructure-northern-ireland",
+    "superseded_organisations": [
+     "department-of-culture-arts-and-leisure",
+     "department-for-regional-development"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for Infrastructure (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 26,
+   "value": {
+    "acronym": "HMPPS",
+    "analytics_identifier": "EA1213",
+    "child_organisations": [
+     "hm-prison-service",
+     "probation-service",
+     "youth-custody-service"
+    ],
+    "content_id": "37a2a3c3-ccd7-46b0-8b81-199a746a2768",
+    "link": "/government/organisations/hm-prison-and-probation-service",
+    "logo_formatted_title": "HM Prison &amp; Probation Service",
+    "organisation_brand": "ministry-of-justice",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "ministry-of-justice"
+    ],
+    "public_timestamp": "2025-12-22T09:15:19Z",
+    "slug": "hm-prison-and-probation-service",
+    "superseded_organisations": [
+     "national-offender-management-service"
+    ],
+    "superseding_organisations": [],
+    "title": "HM Prison and Probation Service"
+   }
+  },
+  {
+   "documents": 25,
+   "value": {
+    "acronym": "BIST",
+    "analytics_identifier": "D1480",
+    "child_organisations": [
+     "regulatory-policy-committee",
+     "british-steel-limited",
+     "advanced-research-and-invention-agency",
+     "export-control-joint-unit",
+     "british-technology-investments-ltd",
+     "office-for-investment",
+     "copyright-tribunal",
+     "office-for-product-safety-and-standards",
+     "office-for-responsible-business-conduct",
+     "office-for-the-pay-review-bodies",
+     "government-chemist",
+     "office-of-trade-sanctions-implementation",
+     "government-office-for-technology-transfer",
+     "uk-defence-and-security-exports",
+     "intellectual-property-office",
+     "met-office",
+     "uk-space-agency",
+     "uk-shared-business-services-ltd",
+     "national-physical-laboratory",
+     "uk-research-and-innovation",
+     "office-for-life-sciences",
+     "uk-council-for-internet-safety",
+     "research-collaboration-advice-team",
+     "regulatory-innovation-office",
+     "ordnance-survey",
+     "british-hallmarking-council",
+     "competition-and-markets-authority",
+     "insolvency-service",
+     "financial-reporting-council",
+     "low-pay-commission",
+     "companies-house",
+     "post-office",
+     "acas",
+     "office-of-the-regulator-of-community-interest-companies",
+     "small-business-commissioner",
+     "central-arbitration-committee",
+     "british-business-bank",
+     "pubs-code-adjudicator",
+     "fair-work-agency",
+     "competition-appeal-tribunal",
+     "trade-remedies-authority",
+     "competition-service",
+     "certification-officer",
+     "government-office-for-science"
+    ],
+    "content_id": "d62ba2be-4ae5-4a9c-ac19-7c1dd197deea",
+    "link": "/government/organisations/department-for-business-innovation-science-and-trade",
+    "logo_formatted_title": "Department for<br/>Business, Innovation,<br/>Science and Trade",
+    "organisation_brand": "department-for-business-innovation-science-trade",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-08-20T15:54:23Z",
+    "slug": "department-for-business-innovation-science-and-trade",
+    "superseded_organisations": [
+     "department-for-science-innovation-and-technology"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for Business, Innovation, Science and Trade"
+   }
+  },
+  {
+   "documents": 25,
+   "value": {
+    "acronym": "DCMS",
+    "analytics_identifier": "D1481",
+    "child_organisations": [
+     "the-queen-elizabeth-memorial-committee",
+     "arts-council-england",
+     "charity-commission",
+     "the-national-archives",
+     "british-film-institute",
+     "british-library",
+     "british-museum",
+     "gambling-commission",
+     "historic-england",
+     "horniman-museum",
+     "horserace-betting-levy-board",
+     "imperial-war-museum",
+     "independent-football-regulator",
+     "geffrye-museum",
+     "national-gallery",
+     "national-heritage-memorial-fund",
+     "the-national-lottery-community-fund",
+     "national-museums-liverpool",
+     "national-portrait-gallery",
+     "natural-history-museum",
+     "royal-armouries-museum",
+     "royal-museums-greenwich",
+     "science-museum-group",
+     "sir-john-soane-s-museum",
+     "sport-england",
+     "sports-grounds-safety-authority",
+     "tate",
+     "uk-anti-doping",
+     "uk-sport",
+     "victoria-and-albert-museum",
+     "visitbritain",
+     "visitengland",
+     "wallace-collection",
+     "the-advisory-council-on-national-records-and-archives",
+     "the-reviewing-committee-on-the-export-of-works-of-art-and-objects-of-cultural-interest",
+     "the-theatres-trust",
+     "treasure-valuation-committee",
+     "bbc",
+     "channel-4",
+     "historic-royal-palaces",
+     "royal-parks",
+     "churches-conservation-trust",
+     "s4c",
+     "ofcom",
+     "information-commissioner-s-office",
+     "building-digital-uk",
+     "government-digital-service",
+     "office-for-digital-identities-and-attributes",
+     "the-queen-elizabeth-memorial-programme",
+     "information-commission"
+    ],
+    "content_id": "04efa5ed-5a59-40e2-be02-fbf105c94794",
+    "link": "/government/organisations/department-for-digital-culture-media-and-sport",
+    "logo_formatted_title": "Department for<br/>Digital, Culture,<br/>Media &amp; Sport",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-09-22T10:12:03Z",
+    "slug": "department-for-digital-culture-media-and-sport",
+    "superseded_organisations": [
+     "department-for-culture-media-and-sport",
+     "department-for-science-innovation-and-technology"
+    ],
+    "superseding_organisations": [],
+    "title": "Department for Digital, Culture, Media and Sport"
+   }
+  },
+  {
+   "documents": 24,
+   "value": {
+    "acronym": "HM Land Registry",
+    "analytics_identifier": "D69",
+    "child_organisations": [],
+    "content_id": "5c54ae52-341b-499e-a6dd-67f04633b8cf",
+    "link": "/government/organisations/land-registry",
+    "logo_formatted_title": "HM Land Registry",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/59fa00e440f0b62eeb2ec8df/HMLR_logo.png",
+    "organisation_brand": "ministry-of-housing-communities-local-government",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "non_ministerial_department",
+    "parent_organisations": [
+     "ministry-of-housing-communities-local-government"
+    ],
+    "public_timestamp": "2026-09-08T13:59:43Z",
+    "slug": "land-registry",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "HM Land Registry"
+   }
+  },
+  {
+   "documents": 23,
+   "value": {
+    "acronym": "SE",
+    "analytics_identifier": "PB190",
+    "child_organisations": [],
+    "content_id": "7d365379-2e0e-4b45-a8e6-3de68d8dbbf0",
+    "link": "/government/organisations/sport-england",
+    "logo_formatted_title": "Sport England",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "public_timestamp": "2026-08-20T14:27:45Z",
+    "slug": "sport-england",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Sport England"
+   }
+  },
+  {
+   "documents": 22,
+   "value": {
+    "acronym": "Ofqual",
+    "analytics_identifier": "D109",
+    "child_organisations": [],
+    "content_id": "83f6e93f-bb2c-46ab-9b02-394f972b7030",
+    "link": "/government/organisations/ofqual",
+    "logo_formatted_title": "Ofqual",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/5bba55baed915d23b049e12f/ofqual_gov_uk_logo.png",
+    "organisation_brand": "department-for-education",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "non_ministerial_department",
+    "parent_organisations": [
+     "department-for-education"
+    ],
+    "public_timestamp": "2025-08-14T09:04:29Z",
+    "slug": "ofqual",
+    "superseded_organisations": [
+     "qualifications-and-curriculum-authority"
+    ],
+    "superseding_organisations": [],
+    "title": "Ofqual"
+   }
+  },
+  {
+   "documents": 19,
+   "value": {
+    "acronym": "BEIS",
+    "analytics_identifier": "D1198",
+    "child_organisations": [
+     "office-for-low-emission-vehicles",
+     "insolvency-practitioners-tribunal",
+     "uk-green-investment-bank",
+     "oil-and-gas-authority",
+     "shale-commissioner"
+    ],
+    "content_id": "2bde479a-97f2-42b5-986a-287a623c2a1c",
+    "link": "/government/organisations/department-for-business-energy-and-industrial-strategy",
+    "logo_formatted_title": "Department for<br/>Business, Energy<br/>&amp; Industrial Strategy",
+    "organisation_brand": "department-for-business-innovation-skills",
+    "organisation_closed_state": "split",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2023-05-15T09:55:55Z",
+    "slug": "department-for-business-energy-and-industrial-strategy",
+    "superseded_organisations": [
+     "department-of-energy-climate-change",
+     "department-for-business-innovation-skills"
+    ],
+    "superseding_organisations": [
+     "department-for-energy-security-and-net-zero",
+     "department-for-science-innovation-and-technology",
+     "department-for-business-and-trade"
+    ],
+    "title": "Department for Business, Energy & Industrial Strategy"
+   }
+  },
+  {
+   "documents": 19,
+   "value": {
+    "acronym": "DoJ (NI)",
+    "analytics_identifier": "D1073",
+    "child_organisations": [
+     "northern-ireland-court-service",
+     "office-of-the-police-ombudsman-for-northern-ireland",
+     "police-service-of-northern-ireland",
+     "northern-ireland-policing-board",
+     "youth-justice-agency-of-northern-ireland",
+     "legal-services-agency-northern-ireland",
+     "northern-ireland-prison-service",
+     "probation-board-for-northern-ireland"
+    ],
+    "content_id": "1649c095-3b5e-48c0-bf6b-f2966e590a57",
+    "link": "/government/organisations/department-of-justice-northern-ireland",
+    "logo_formatted_title": "Department of Justice <br/>(Northern Ireland)",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:35:15Z",
+    "slug": "department-of-justice-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Department of Justice (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 17,
+   "value": {
+    "acronym": "APHA",
+    "analytics_identifier": "EA1079",
+    "child_organisations": [],
+    "content_id": "4ad67f14-6f9c-4fa4-80ab-687b6d81ea6f",
+    "link": "/government/organisations/animal-and-plant-health-agency",
+    "logo_formatted_title": "Animal &amp;<br/>Plant Health<br/>Agency",
+    "organisation_brand": "department-for-environment-food-rural-affairs",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-for-environment-food-rural-affairs",
+     "welsh-government",
+     "the-scottish-government"
+    ],
+    "public_timestamp": "2026-06-09T11:32:15Z",
+    "slug": "animal-and-plant-health-agency",
+    "superseded_organisations": [
+     "animal-health-and-veterinary-laboratories-agency",
+     "veterinary-laboratories-agency",
+     "animal-health",
+     "the-food-and-environment-research-agency"
+    ],
+    "superseding_organisations": [],
+    "title": "Animal and Plant Health Agency"
+   }
+  },
+  {
+   "documents": 17,
+   "value": {
+    "acronym": "Natural England",
+    "analytics_identifier": "PB202",
+    "child_organisations": [],
+    "content_id": "d3ce4ba7-bc75-46b4-89d9-38cb3240376d",
+    "link": "/government/organisations/natural-england",
+    "logo_formatted_title": "Natural England",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/68f217cbe8e4040c38a3cffb/NE-logo2.png",
+    "organisation_brand": "department-for-environment-food-rural-affairs",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-environment-food-rural-affairs"
+    ],
+    "public_timestamp": "2025-10-17T10:17:47Z",
+    "slug": "natural-england",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Natural England"
+   }
+  },
+  {
+   "documents": 16,
+   "value": {
+    "acronym": "DIT",
+    "analytics_identifier": "D1196",
+    "child_organisations": [
+     "department-for-international-trade-defence-and-security-organisation",
+     "trade-remedies-investigations-directorate"
+    ],
+    "content_id": "082092f1-656c-470e-b024-229dc6e750e9",
+    "link": "/government/organisations/department-for-international-trade",
+    "logo_formatted_title": "Department for<br/>International Trade",
+    "organisation_brand": "department-for-business-trade",
+    "organisation_closed_state": "replaced",
+    "organisation_crest": "dbt",
+    "organisation_state": "closed",
+    "organisation_type": "other",
+    "parent_organisations": [],
+    "public_timestamp": "2023-05-11T15:08:07Z",
+    "slug": "department-for-international-trade",
+    "superseded_organisations": [
+     "uk-trade-investment"
+    ],
+    "superseding_organisations": [
+     "department-for-business-and-trade"
+    ],
+    "title": "Department for International Trade"
+   }
+  },
+  {
+   "documents": 16,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "D753",
+    "child_organisations": [],
+    "content_id": "11e064e0-5079-4216-b693-c10b8167c620",
+    "link": "/government/organisations/department-of-agriculture-and-rural-development",
+    "logo_formatted_title": "Department of Agriculture and Rural Development",
+    "organisation_closed_state": "devolved",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2021-04-15T09:02:14Z",
+    "slug": "department-of-agriculture-and-rural-development",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Department of Agriculture and Rural Development"
+   }
+  },
+  {
+   "documents": 16,
+   "value": {
+    "acronym": "DE (NI)",
+    "analytics_identifier": "D585",
+    "child_organisations": [
+     "northern-ireland-council-for-the-curriculum-examinations-and-assessment"
+    ],
+    "content_id": "b2590ca4-2e95-48a5-96bf-88e0548920f7",
+    "link": "/government/organisations/department-of-education",
+    "logo_formatted_title": "Department of Education (Northern Ireland)",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:35:07Z",
+    "slug": "department-of-education",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Department of Education (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 15,
+   "value": {
+    "acronym": "FCDO",
+    "analytics_identifier": "D1315",
+    "child_organisations": [
+     "wilton-park",
+     "british-council",
+     "great-britain-china-centre",
+     "marshall-aid-commemoration-commission",
+     "westminster-foundation-for-democracy",
+     "government-communications-headquarters",
+     "secret-intelligence-service",
+     "commonwealth-scholarship-commission-in-the-uk",
+     "independent-commission-for-aid-impact",
+     "fcdo-services",
+     "preventing-sexual-violence-in-conflict-initiative",
+     "hm-government-communications-centre"
+    ],
+    "content_id": "f9fcf3fe-2751-4dca-97ca-becaeceb4b26",
+    "link": "/government/organisations/foreign-commonwealth-development-office",
+    "logo_formatted_title": "Foreign, Commonwealth<br/>&amp; Development Office",
+    "organisation_brand": "foreign-commonwealth-development-office",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-06-18T12:25:20Z",
+    "slug": "foreign-commonwealth-development-office",
+    "superseded_organisations": [
+     "foreign-commonwealth-office",
+     "department-for-international-development",
+     "stabilisation-unit"
+    ],
+    "superseding_organisations": [],
+    "title": "Foreign, Commonwealth & Development Office"
+   }
+  },
+  {
+   "documents": 14,
+   "value": {
+    "acronym": "AFBI (NI)",
+    "analytics_identifier": "PB1072",
+    "child_organisations": [],
+    "content_id": "ffcd90a5-5112-454b-b8a0-2819f46bede8",
+    "link": "/government/organisations/agri-food-and-biosciences-institute",
+    "logo_formatted_title": "Agri-Food and <br/>Biosciences Institute  (Northern Ireland)",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-of-agriculture-environment-and-rural-affairs-northern-ireland"
+    ],
+    "public_timestamp": "2024-11-20T15:00:11Z",
+    "slug": "agri-food-and-biosciences-institute",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Agri-Food and Biosciences Institute (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 14,
+   "value": {
+    "acronym": "DFID",
+    "analytics_identifier": "D8",
+    "child_organisations": [],
+    "closed_at": "2020-09-02T00:00:00.000+01:00",
+    "content_id": "db994552-7644-404d-a770-a2fe659c661f",
+    "link": "/government/organisations/department-for-international-development",
+    "logo_formatted_title": "Department<br/>for International <br/>Development",
+    "organisation_brand": "department-for-international-development",
+    "organisation_closed_state": "replaced",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-11-09T09:22:58Z",
+    "slug": "department-for-international-development",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "foreign-commonwealth-development-office"
+    ],
+    "title": "Department for International Development"
+   }
+  },
+  {
+   "documents": 12,
+   "value": {
+    "acronym": "Forestry Commission",
+    "analytics_identifier": "D85",
+    "child_organisations": [
+     "forest-enterprise-england",
+     "forest-research"
+    ],
+    "content_id": "8bf5624b-dec2-44fa-9b6c-daed166333a5",
+    "link": "/government/organisations/forestry-commission",
+    "logo_formatted_title": "Forestry Commission",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/5ca34112ed915d0c4cabd379/fc_stack_col_resize.jpg",
+    "organisation_brand": "department-for-environment-food-rural-affairs",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "non_ministerial_department",
+    "parent_organisations": [
+     "department-for-environment-food-rural-affairs"
+    ],
+    "public_timestamp": "2026-11-05T15:30:20Z",
+    "slug": "forestry-commission",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Forestry Commission"
+   }
+  },
+  {
+   "documents": 12,
+   "value": {
+    "acronym": "NICTS",
+    "analytics_identifier": "EA725",
+    "child_organisations": [],
+    "content_id": "afaed224-8319-43c3-836a-0308b89081ca",
+    "link": "/government/organisations/northern-ireland-court-service",
+    "logo_formatted_title": "Northern Ireland Courts and Tribunals Service",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-of-justice-northern-ireland"
+    ],
+    "public_timestamp": "2024-11-20T14:55:19Z",
+    "slug": "northern-ireland-court-service",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Northern Ireland Courts and Tribunals Service"
+   }
+  },
+  {
+   "documents": 11,
+   "value": {
+    "acronym": "FSA",
+    "analytics_identifier": "D102",
+    "child_organisations": [
+     "advisory-committee-on-animal-feedingstuffs",
+     "advisory-committee-on-novel-foods-and-processes",
+     "advisory-committee-on-the-microbiological-safety-of-food",
+     "committee-on-toxicity-of-chemicals-in-food-consumer-products-and-the-environment",
+     "general-advisory-committee-on-science",
+     "social-science-research-committee",
+     "science-advisory-committees",
+     "science-council",
+     "advisory-committee-for-social-science"
+    ],
+    "content_id": "447f8075-1c8c-40d3-8119-3e45ea9e6496",
+    "link": "/government/organisations/food-standards-agency",
+    "logo_formatted_title": "Food Standards Agency",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/6a295b5aade52dc0882218ff/GOV.UK_logo_lock-up__1_.png",
+    "organisation_brand": "department-of-health-social-care",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "non_ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2026-09-02T07:39:11Z",
+    "slug": "food-standards-agency",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Food Standards Agency"
+   }
+  },
+  {
+   "documents": 11,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "EA39",
+    "child_organisations": [],
+    "content_id": "5e946baf-6dde-4916-a55e-8d44e0cdfe58",
+    "link": "/government/organisations/planning-inspectorate",
+    "logo_formatted_title": "Planning<br/>Inspectorate",
+    "organisation_brand": "ministry-of-housing-communities-local-government",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "ministry-of-housing-communities-local-government"
+    ],
+    "public_timestamp": "2026-06-18T12:37:09Z",
+    "slug": "planning-inspectorate",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Planning Inspectorate"
+   }
+  },
+  {
+   "documents": 10,
+   "value": {
+    "acronym": "HSE",
+    "analytics_identifier": "PB207",
+    "child_organisations": [],
+    "content_id": "5416838d-cdd3-4172-94db-caafd966fdf3",
+    "link": "/government/organisations/health-and-safety-executive",
+    "logo_formatted_title": "Health and Safety<br/>Executive",
+    "organisation_brand": "department-for-work-pensions",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-work-pensions"
+    ],
+    "public_timestamp": "2025-10-02T10:59:53Z",
+    "slug": "health-and-safety-executive",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Health and Safety Executive"
+   }
+  },
+  {
+   "documents": 10,
+   "value": {
+    "acronym": "PBNI",
+    "analytics_identifier": "OT659",
+    "child_organisations": [],
+    "content_id": "58db0eb8-a8c0-444f-9c16-d190bc244927",
+    "link": "/government/organisations/probation-board-for-northern-ireland",
+    "logo_formatted_title": "Probation Board for Northern Ireland",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "department-of-justice-northern-ireland"
+    ],
+    "public_timestamp": "2024-11-20T15:41:14Z",
+    "slug": "probation-board-for-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Probation Board for Northern Ireland"
+   }
+  },
+  {
+   "documents": 9,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "D748",
+    "child_organisations": [],
+    "content_id": "1ac90743-ac7e-4fdf-ba46-8f5871dc487e",
+    "link": "/government/organisations/department-for-social-development",
+    "logo_formatted_title": "Department for Social Development",
+    "organisation_closed_state": "replaced",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2021-04-15T09:02:12Z",
+    "slug": "department-for-social-development",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "department-for-communities-northern-ireland"
+    ],
+    "title": "Department for Social Development"
+   }
+  },
+  {
+   "documents": 9,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "OT1246",
+    "child_organisations": [],
+    "content_id": "a0ee18e7-9e1e-4ba1-aed5-f3f287dce752",
+    "link": "/government/organisations/office-for-product-safety-and-standards",
+    "logo_formatted_title": "Office for Product <br/>Safety &amp; Standards",
+    "organisation_brand": "uk-trade-investment",
+    "organisation_crest": "dbt",
+    "organisation_state": "live",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "department-for-business-innovation-science-and-trade"
+    ],
+    "public_timestamp": "2026-10-14T10:11:34Z",
+    "slug": "office-for-product-safety-and-standards",
+    "superseded_organisations": [
+     "regulatory-delivery"
+    ],
+    "superseding_organisations": [],
+    "title": "Office for Product Safety and Standards"
+   }
+  },
+  {
+   "documents": 8,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "D591",
+    "child_organisations": [],
+    "content_id": "6b012ebf-20c4-4125-929f-8867ad2a2b4e",
+    "link": "/government/organisations/department-of-the-environment",
+    "logo_formatted_title": "Department of the Environment",
+    "organisation_closed_state": "devolved",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2021-04-15T09:01:29Z",
+    "slug": "department-of-the-environment",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Department of the Environment (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 8,
+   "value": {
+    "acronym": "IOPC",
+    "analytics_identifier": "PB1248",
+    "child_organisations": [],
+    "content_id": "845769f6-794e-4999-8925-ac760e16862d",
+    "link": "/government/organisations/independent-office-for-police-conduct",
+    "logo_formatted_title": "Independent Office for Police Conduct",
+    "organisation_brand": "home-office",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "home-office"
+    ],
+    "public_timestamp": "2021-04-15T09:04:47Z",
+    "slug": "independent-office-for-police-conduct",
+    "superseded_organisations": [
+     "independent-police-complaint-commission"
+    ],
+    "superseding_organisations": [],
+    "title": "Independent Office for Police Conduct"
+   }
+  },
+  {
+   "documents": 8,
+   "value": {
+    "acronym": "NIO",
+    "analytics_identifier": "D19",
+    "child_organisations": [
+     "boundary-commission-for-northern-ireland",
+     "northern-ireland-human-rights-commission",
+     "parades-commission-for-northern-ireland",
+     "the-independent-commission-for-reconciliation-and-information-recovery",
+     "intertrade-uk"
+    ],
+    "content_id": "234148b2-66d6-457c-9d06-2bf2b98533ca",
+    "link": "/government/organisations/northern-ireland-office",
+    "logo_formatted_title": "Northern<br/>Ireland<br/>Office",
+    "organisation_brand": "northern-ireland-office",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2024-10-11T10:17:00Z",
+    "slug": "northern-ireland-office",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Northern Ireland Office"
+   }
+  },
+  {
+   "documents": 8,
+   "value": {
+    "acronym": "TEO (NI)",
+    "analytics_identifier": "OT1179",
+    "child_organisations": [],
+    "content_id": "2f8a3e24-a21b-4e0c-a68e-22f236a0cc0c",
+    "link": "/government/organisations/the-executive-office-northern-ireland",
+    "logo_formatted_title": "The Executive Office (Northern Ireland)",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:35:18Z",
+    "slug": "the-executive-office-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "The Executive Office (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 7,
+   "value": {
+    "acronym": "HCA",
+    "analytics_identifier": "PB161",
+    "child_organisations": [],
+    "closed_at": "2018-01-11T00:00:00.000+00:00",
+    "content_id": "5ddb26f6-caad-4b14-97a7-fabcfa25d4bc",
+    "link": "/government/organisations/homes-and-communities-agency",
+    "logo_formatted_title": "Homes &amp;<br/>Communities <br/>Agency",
+    "organisation_brand": "department-for-communities-and-local-government",
+    "organisation_closed_state": "split",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "ministry-of-housing-communities-and-local-government-2018-2021"
+    ],
+    "public_timestamp": "2021-04-15T08:59:41Z",
+    "slug": "homes-and-communities-agency",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "homes-england",
+     "regulator-of-social-housing"
+    ],
+    "title": "Homes and Communities Agency"
+   }
+  },
+  {
+   "documents": 7,
+   "value": {
+    "acronym": "YJB",
+    "analytics_identifier": "PB302",
+    "child_organisations": [],
+    "content_id": "7ad091b4-9098-4abd-aae3-1d2b790ee11e",
+    "link": "/government/organisations/youth-justice-board-for-england-and-wales",
+    "logo_formatted_title": "Youth Justice Board <br/>for England and Wales",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/59fa00e6ed915d7bfae58205/yjb_logo.gif",
+    "organisation_brand": "ministry-of-justice",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "ministry-of-justice"
+    ],
+    "public_timestamp": "2023-02-07T10:45:28Z",
+    "slug": "youth-justice-board-for-england-and-wales",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Youth Justice Board for England and Wales"
+   }
+  },
+  {
+   "documents": 6,
+   "value": {
+    "acronym": "CQC",
+    "analytics_identifier": "PB251",
+    "child_organisations": [
+     "national-guardians-office"
+    ],
+    "content_id": "a124d48a-7c10-48c9-9a1a-514f9d59cdbf",
+    "link": "/government/organisations/care-quality-commission",
+    "logo_formatted_title": "Care Quality <br/>Commission",
+    "organisation_brand": "department-of-health-social-care",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-of-health-and-social-care"
+    ],
+    "public_timestamp": "2021-04-15T09:00:04Z",
+    "slug": "care-quality-commission",
+    "superseded_organisations": [
+     "national-information-board"
+    ],
+    "superseding_organisations": [],
+    "title": "Care Quality Commission"
+   }
+  },
+  {
+   "documents": 6,
+   "value": {
+    "acronym": "HE",
+    "analytics_identifier": "PB1164",
+    "child_organisations": [],
+    "content_id": "4dc9c134-62e4-40ab-aaa0-45ca55f0a1e3",
+    "link": "/government/organisations/historic-england",
+    "logo_formatted_title": "Historic England",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "public_timestamp": "2026-08-20T14:18:37Z",
+    "slug": "historic-england",
+    "superseded_organisations": [
+     "english-heritage"
+    ],
+    "superseding_organisations": [],
+    "title": "Historic England"
+   }
+  },
+  {
+   "documents": 5,
+   "value": {
+    "acronym": "BDUK",
+    "analytics_identifier": "EA1352",
+    "child_organisations": [],
+    "content_id": "120a16f4-37db-451d-9034-a9038a5c65f4",
+    "link": "/government/organisations/building-digital-uk",
+    "logo_formatted_title": "Building Digital UK",
+    "organisation_brand": "department-for-culture-media-sport",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "department-for-digital-culture-media-and-sport"
+    ],
+    "public_timestamp": "2026-10-06T10:55:56Z",
+    "slug": "building-digital-uk",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "department-for-science-innovation-and-technology"
+    ],
+    "title": "Building Digital UK"
+   }
+  },
+  {
+   "documents": 5,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "EA54",
+    "child_organisations": [],
+    "content_id": "d740d375-ec0c-43fb-91c8-ca2bf5701093",
+    "link": "/government/organisations/forest-research",
+    "logo_formatted_title": "Forest Research",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "forestry-commission"
+    ],
+    "public_timestamp": "2021-04-15T08:59:12Z",
+    "slug": "forest-research",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Forest Research"
+   }
+  },
+  {
+   "documents": 5,
+   "value": {
+    "acronym": "BSO",
+    "analytics_identifier": "PB1279",
+    "child_organisations": [],
+    "content_id": "2408fbfe-72c9-4ca1-a9f2-598e143bb560",
+    "link": "/government/organisations/hsc-business-services-organisation-northern-ireland",
+    "logo_formatted_title": "HSC Business Services Organisation (Northern Ireland)",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-of-health-northern-ireland"
+    ],
+    "public_timestamp": "2025-05-27T10:20:22Z",
+    "slug": "hsc-business-services-organisation-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "HSC Business Services Organisation (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 5,
+   "value": {
+    "acronym": "ISD Scotland",
+    "analytics_identifier": "OT1074",
+    "child_organisations": [],
+    "content_id": "9783d098-3218-4570-84c2-58ed66e919dc",
+    "link": "/government/organisations/information-services-division-scotland",
+    "logo_formatted_title": "Information Services Division Scotland",
+    "organisation_closed_state": "devolved",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "other",
+    "parent_organisations": [],
+    "public_timestamp": "2021-04-15T09:03:44Z",
+    "slug": "information-services-division-scotland",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "the-scottish-government"
+    ],
+    "title": "Information Services Division (Scotland)"
+   }
+  },
+  {
+   "documents": 5,
+   "value": {
+    "acronym": "Invest NI",
+    "analytics_identifier": "OT1338",
+    "child_organisations": [],
+    "content_id": "325d6110-af70-4a59-9eda-c995d3fd6839",
+    "link": "/government/organisations/invest-northern-ireland",
+    "logo_formatted_title": "Invest Northern Ireland",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "department-for-the-economy-northern-ireland"
+    ],
+    "public_timestamp": "2024-11-20T15:42:49Z",
+    "slug": "invest-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Invest Northern Ireland"
+   }
+  },
+  {
+   "documents": 5,
+   "value": {
+    "acronym": "PPSNI",
+    "analytics_identifier": "OT962",
+    "child_organisations": [],
+    "content_id": "0f94fafd-f61e-47ae-8c11-d376a677d0a2",
+    "link": "/government/organisations/public-prosecution-service-for-northern-ireland",
+    "logo_formatted_title": "Public Prosecution Service for Northern Ireland",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "northern-ireland-executive"
+    ],
+    "public_timestamp": "2024-11-25T15:35:22Z",
+    "slug": "public-prosecution-service-for-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Public Prosecution Service for Northern Ireland"
+   }
+  },
+  {
+   "documents": 5,
+   "value": {
+    "acronym": "YCS",
+    "analytics_identifier": "OT1322",
+    "child_organisations": [],
+    "content_id": "9c0a6ad4-0212-4fbe-a42b-8b338881ff06",
+    "link": "/government/organisations/youth-custody-service",
+    "logo_formatted_title": "Youth<br/>Custody<br/>Service",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/5fc91fe9e90e0762a6d0e4ba/YCS_logo_image.png",
+    "organisation_brand": "ministry-of-justice",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "hm-prison-and-probation-service"
+    ],
+    "public_timestamp": "2024-08-29T10:31:14Z",
+    "slug": "youth-custody-service",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Youth Custody Service"
+   }
+  },
+  {
+   "documents": 4,
+   "value": {
+    "acronym": "OPONI",
+    "analytics_identifier": "OT636",
+    "child_organisations": [],
+    "content_id": "3f43ee0c-1989-4d2b-87db-773cec90fb0b",
+    "link": "/government/organisations/office-of-the-police-ombudsman-for-northern-ireland",
+    "logo_formatted_title": "Office of the Police Ombudsman for Northern Ireland",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "department-of-justice-northern-ireland"
+    ],
+    "public_timestamp": "2024-11-20T15:39:52Z",
+    "slug": "office-of-the-police-ombudsman-for-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Office of the Police Ombudsman for Northern Ireland"
+   }
+  },
+  {
+   "documents": 4,
+   "value": {
+    "acronym": "SFA",
+    "analytics_identifier": "EA86",
+    "child_organisations": [],
+    "closed_at": "2017-04-01T00:00:00.000+01:00",
+    "content_id": "3e5a6924-b369-4eb3-8b06-3c0814701de4",
+    "link": "/government/organisations/skills-funding-agency",
+    "logo_formatted_title": "Skills Funding <br/>Agency",
+    "organisation_brand": "department-for-education",
+    "organisation_closed_state": "replaced",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-for-education"
+    ],
+    "public_timestamp": "2021-04-15T08:59:27Z",
+    "slug": "skills-funding-agency",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "education-and-skills-funding-agency"
+    ],
+    "title": "Skills Funding Agency"
+   }
+  },
+  {
+   "documents": 3,
+   "value": {
+    "acronym": "Homes England",
+    "analytics_identifier": "PB1232",
+    "child_organisations": [
+     "national-housing-bank"
+    ],
+    "content_id": "ad6f059a-f36c-48eb-a07f-4a6856f08f7f",
+    "link": "/government/organisations/homes-england",
+    "logo_formatted_title": "Homes England",
+    "organisation_brand": "ministry-of-housing-communities-local-government",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "ministry-of-housing-communities-local-government"
+    ],
+    "public_timestamp": "2026-03-31T11:24:43Z",
+    "slug": "homes-england",
+    "superseded_organisations": [
+     "homes-and-communities-agency"
+    ],
+    "superseding_organisations": [],
+    "title": "Homes England"
+   }
+  },
+  {
+   "documents": 3,
+   "value": {
+    "acronym": "JAC",
+    "analytics_identifier": "PB299",
+    "child_organisations": [],
+    "content_id": "48ab7323-b4b7-41a4-bb8e-487ebdd5cdae",
+    "link": "/government/organisations/judicial-appointments-commission",
+    "logo_formatted_title": "Judicial Appointments Commission",
+    "organisation_brand": "ministry-of-justice",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "ministry-of-justice"
+    ],
+    "public_timestamp": "2021-04-15T09:00:13Z",
+    "slug": "judicial-appointments-commission",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Judicial Appointments Commission"
+   }
+  },
+  {
+   "documents": 3,
+   "value": {
+    "acronym": "National Records of Scotland",
+    "analytics_identifier": "OT1075",
+    "child_organisations": [],
+    "content_id": "f48ee4f8-913f-46af-ba73-e36d5cf0aa75",
+    "link": "/government/organisations/national-records-of-scotland",
+    "logo_formatted_title": "National Records of Scotland",
+    "organisation_closed_state": "devolved",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "other",
+    "parent_organisations": [],
+    "public_timestamp": "2021-04-15T09:03:44Z",
+    "slug": "national-records-of-scotland",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "the-scottish-government"
+    ],
+    "title": "National Records of Scotland"
+   }
+  },
+  {
+   "documents": 3,
+   "value": {
+    "acronym": "NIHE",
+    "analytics_identifier": "PB1212",
+    "child_organisations": [],
+    "content_id": "8809dcd1-c8ec-4e01-8c57-e349e052420f",
+    "link": "/government/organisations/northern-ireland-housing-executive",
+    "logo_formatted_title": "Northern Ireland Housing Executive",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-communities-northern-ireland"
+    ],
+    "public_timestamp": "2021-04-15T09:04:34Z",
+    "slug": "northern-ireland-housing-executive",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Northern Ireland Housing Executive"
+   }
+  },
+  {
+   "documents": 2,
+   "value": {
+    "acronym": "ACNI",
+    "analytics_identifier": "EA740",
+    "child_organisations": [],
+    "content_id": "b6849b69-fcd0-4ab0-83ea-dcb9d4e861ce",
+    "link": "/government/organisations/arts-council-of-northern-ireland",
+    "logo_formatted_title": "Arts Council of Northern Ireland",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "department-for-communities-northern-ireland"
+    ],
+    "public_timestamp": "2021-04-15T09:02:10Z",
+    "slug": "arts-council-of-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Arts Council of Northern Ireland"
+   }
+  },
+  {
+   "documents": 2,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "D854",
+    "child_organisations": [],
+    "content_id": "f4de645e-17ed-4a91-930f-4b2c1f1d4ef6",
+    "link": "/government/organisations/department-for-employment-and-learning",
+    "logo_formatted_title": "Department for Employment and Learning",
+    "organisation_closed_state": "devolved",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2021-04-15T09:02:42Z",
+    "slug": "department-for-employment-and-learning",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Department for Employment and Learning"
+   }
+  },
+  {
+   "documents": 2,
+   "value": {
+    "acronym": "DIT DSO",
+    "analytics_identifier": "OT1026",
+    "child_organisations": [],
+    "closed_at": "2020-07-15T00:00:00.000+01:00",
+    "content_id": "ed5279b6-6d8d-4031-8867-52a909d62870",
+    "link": "/government/organisations/department-for-international-trade-defence-and-security-organisation",
+    "logo_formatted_title": "Department for International Trade<br/>Defence &amp; Security<br/>Organisation",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/59fa00e8ed915d7bfae58209/DIT_DSO_logo_banner.jpg",
+    "organisation_brand": "department-for-business-trade",
+    "organisation_closed_state": "replaced",
+    "organisation_crest": "custom",
+    "organisation_state": "closed",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "department-for-international-trade"
+    ],
+    "public_timestamp": "2023-05-10T10:50:50Z",
+    "slug": "department-for-international-trade-defence-and-security-organisation",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "uk-defence-and-security-exports"
+    ],
+    "title": "Department for International Trade Defence & Security Organisation"
+   }
+  },
+  {
+   "documents": 2,
+   "value": {
+    "acronym": "ECJU",
+    "analytics_identifier": "OT557",
+    "child_organisations": [],
+    "content_id": "183520bb-7f82-487d-91d4-bb079cc259a2",
+    "link": "/government/organisations/export-control-joint-unit",
+    "logo_formatted_title": "Export Control Joint Unit",
+    "organisation_brand": "department-for-business-trade",
+    "organisation_crest": "no-identity",
+    "organisation_state": "live",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "department-for-business-innovation-science-and-trade"
+    ],
+    "public_timestamp": "2026-10-14T10:09:50Z",
+    "slug": "export-control-joint-unit",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Export Control Joint Unit"
+   }
+  },
+  {
+   "documents": 2,
+   "value": {
+    "acronym": "HMPS",
+    "analytics_identifier": "EA321",
+    "child_organisations": [],
+    "content_id": "05b3ff92-52c9-4577-b08e-7514b40c98ff",
+    "link": "/government/organisations/hm-prison-service",
+    "logo_formatted_title": "HM Prison Service",
+    "logo_url": "https://assets.publishing.service.gov.uk/media/6850134301d3b0e7b62da740/hmps_25_gov_240x188.png",
+    "organisation_brand": "ministry-of-justice",
+    "organisation_crest": "custom",
+    "organisation_state": "live",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "hm-prison-and-probation-service"
+    ],
+    "public_timestamp": "2025-06-16T12:51:15Z",
+    "slug": "hm-prison-service",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "HM Prison Service"
+   }
+  },
+  {
+   "documents": 2,
+   "value": {
+    "acronym": "IPCC",
+    "analytics_identifier": "PB456",
+    "child_organisations": [],
+    "content_id": "5aeea609-52dc-4cc6-ab47-c5936a3bcee5",
+    "link": "/government/organisations/independent-police-complaint-commission",
+    "logo_formatted_title": "Independent Police Complaints Commission",
+    "organisation_brand": "home-office",
+    "organisation_closed_state": "changed_name",
+    "organisation_crest": "no-identity",
+    "organisation_state": "closed",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "home-office"
+    ],
+    "public_timestamp": "2021-04-15T09:00:46Z",
+    "slug": "independent-police-complaint-commission",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "independent-office-for-police-conduct"
+    ],
+    "title": "Independent Police Complaints Commission"
+   }
+  },
+  {
+   "documents": 2,
+   "value": {
+    "acronym": "OLS",
+    "analytics_identifier": "OT502",
+    "child_organisations": [],
+    "content_id": "e54fd95b-b175-48f5-a406-bd36396f38a3",
+    "link": "/government/organisations/office-for-life-sciences",
+    "logo_formatted_title": "Office for Life Sciences",
+    "organisation_crest": "no-identity",
+    "organisation_state": "live",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "department-of-health-and-social-care",
+     "department-for-business-innovation-science-and-trade"
+    ],
+    "public_timestamp": "2026-10-14T10:16:20Z",
+    "slug": "office-for-life-sciences",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Office for Life Sciences"
+   }
+  },
+  {
+   "documents": 2,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "OT1254",
+    "child_organisations": [],
+    "closed_at": "2024-10-10T00:00:00.000+01:00",
+    "content_id": "941040f7-b103-4269-b2b7-6689fd9978f1",
+    "link": "/government/organisations/race-disparity-unit",
+    "logo_formatted_title": "Race Disparity Unit",
+    "organisation_brand": "cabinet-office",
+    "organisation_closed_state": "changed_name",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "cabinet-office"
+    ],
+    "public_timestamp": "2024-10-11T08:52:45Z",
+    "slug": "race-disparity-unit",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "race-equality-unit"
+    ],
+    "title": "Race Disparity Unit"
+   }
+  },
+  {
+   "documents": 1,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "OT1041",
+    "child_organisations": [],
+    "content_id": "c665dfa6-0a82-4aaf-b84e-0ea78ccd0e8e",
+    "link": "/government/organisations/civil-service-government-statistical-service",
+    "logo_formatted_title": "Government Statistical Service",
+    "organisation_brand": "cabinet-office",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "sub_organisation",
+    "parent_organisations": [
+     "civil-service"
+    ],
+    "public_timestamp": "2021-04-15T09:03:33Z",
+    "slug": "civil-service-government-statistical-service",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Government Statistical Service"
+   }
+  },
+  {
+   "documents": 1,
+   "value": {
+    "acronym": "FCO",
+    "analytics_identifier": "D13",
+    "child_organisations": [
+     "fco-services"
+    ],
+    "closed_at": "2020-09-02T00:00:00.000+01:00",
+    "content_id": "9adfc4ed-9f6c-4976-a6d8-18d34356367c",
+    "link": "/government/organisations/foreign-commonwealth-office",
+    "logo_formatted_title": "Foreign &amp;<br/>Commonwealth <br/>Office",
+    "organisation_brand": "foreign-commonwealth-office",
+    "organisation_closed_state": "replaced",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "ministerial_department",
+    "parent_organisations": [],
+    "public_timestamp": "2021-08-26T07:35:28Z",
+    "slug": "foreign-commonwealth-office",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "foreign-commonwealth-development-office"
+    ],
+    "title": "Foreign & Commonwealth Office"
+   }
+  },
+  {
+   "documents": 1,
+   "value": {
+    "acronym": "JO",
+    "analytics_identifier": "OT1215",
+    "child_organisations": [],
+    "content_id": "8c35283c-1045-4363-a51c-32209e58deee",
+    "link": "/government/organisations/judicial-office",
+    "logo_formatted_title": "Judicial<br/>Office",
+    "organisation_brand": "ministry-of-justice",
+    "organisation_crest": "single-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "ministry-of-justice"
+    ],
+    "public_timestamp": "2023-10-17T14:12:43Z",
+    "slug": "judicial-office",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Judicial Office"
+   }
+  },
+  {
+   "documents": 1,
+   "value": {
+    "acronym": "NOMS",
+    "analytics_identifier": "EA70",
+    "child_organisations": [],
+    "content_id": "8ece113b-f63c-44e1-8673-768cc78bf919",
+    "link": "/government/organisations/national-offender-management-service",
+    "logo_formatted_title": "National Offender <br/>Management Service",
+    "organisation_brand": "ministry-of-justice",
+    "organisation_closed_state": "changed_name",
+    "organisation_crest": "single-identity",
+    "organisation_state": "closed",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "ministry-of-justice"
+    ],
+    "public_timestamp": "2021-04-15T08:59:20Z",
+    "slug": "national-offender-management-service",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "hm-prison-and-probation-service"
+    ],
+    "title": "National Offender Management Service"
+   }
+  },
+  {
+   "documents": 1,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "DA1021",
+    "child_organisations": [
+     "uk-co-ordinating-body",
+     "social-security-agency",
+     "northern-ireland-audit-office",
+     "department-of-agriculture-environment-and-rural-affairs-northern-ireland",
+     "department-of-finance-northern-ireland",
+     "department-of-justice-northern-ireland",
+     "department-of-education",
+     "department-for-communities-northern-ireland",
+     "department-for-infrastructure-northern-ireland",
+     "department-for-the-economy-northern-ireland",
+     "department-of-health-northern-ireland",
+     "the-executive-office-northern-ireland",
+     "public-prosecution-service-for-northern-ireland"
+    ],
+    "content_id": "2aecc4c9-6ef3-43fb-9a82-987e3321db25",
+    "link": "/government/organisations/northern-ireland-executive",
+    "logo_formatted_title": "Northern Ireland Executive",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "devolved_administration",
+    "parent_organisations": [],
+    "public_timestamp": "2025-02-13T16:28:33Z",
+    "slug": "northern-ireland-executive",
+    "superseded_organisations": [
+     "western-health-and-social-services-board",
+     "department-for-employment-and-learning",
+     "department-of-agriculture-and-rural-development",
+     "department-of-education",
+     "department-of-finance-and-personnel-for-northern-ireland",
+     "department-of-health-social-services-and-public-safety",
+     "department-of-the-environment",
+     "police-service-of-northern-ireland",
+     "agri-food-and-biosciences-institute",
+     "department-of-justice-northern-ireland",
+     "northern-ireland-law-commission",
+     "northern-ireland-statistics-and-research-agency",
+     "social-security-agency",
+     "northern-ireland-audit-office",
+     "armagh-observatory-and-planetarium",
+     "arts-council-of-northern-ireland",
+     "compensation-agency",
+     "council-for-catholic-maintained-schools",
+     "court-of-judicature-of-northern-ireland",
+     "criminal-injuries-compensation-appeals-panel-for-northern-ireland",
+     "environment-and-heritage-service",
+     "equality-commission-for-northern-ireland",
+     "fire-authority-for-northern-ireland",
+     "fisheries-conservancy-board-for-northern-ireland",
+     "food-safety-promotion-board",
+     "forensic-science-northern-ireland",
+     "forest-service",
+     "general-consumer-council-for-northern-ireland",
+     "labour-relations-agency",
+     "land-registers-of-northern-ireland",
+     "life-sentence-review-commissioners",
+     "livestock-and-meat-commission-for-northern-ireland",
+     "loughs-agency",
+     "national-museums-and-galleries-of-northern-ireland",
+     "north-east-education-and-library-board",
+     "northern-ireland-authority-for-energy-regulation",
+     "northern-ireland-child-support-agency",
+     "northern-ireland-commissioner-for-children-and-young-people",
+     "northern-ireland-council-for-the-curriculum-examinations-and-assessment",
+     "northern-ireland-court-service",
+     "northern-ireland-health-and-social-services-estates-agency",
+     "northern-ireland-judicial-appointments-commission",
+     "northern-ireland-judicial-appointments-ombudsman",
+     "northern-ireland-legal-services-commission",
+     "northern-ireland-local-government-officers-superannuation-committee",
+     "northern-ireland-ombudsman",
+     "northern-ireland-practice-and-education-council",
+     "northern-ireland-prison-service",
+     "northern-ireland-social-care-council",
+     "northern-ireland-tourist-board",
+     "office-of-the-chief-electoral-officer-for-northern-ireland",
+     "office-of-the-first-minister-and-deputy-first-minister",
+     "office-of-the-police-ombudsman-for-northern-ireland",
+     "ordnance-survey-of-northern-ireland",
+     "parole-commissioners-for-northern-ireland",
+     "planning-service",
+     "probation-board-for-northern-ireland",
+     "public-prosecution-service-for-northern-ireland",
+     "rivers-agency",
+     "roads-service",
+     "south-eastern-education-and-library-board",
+     "special-eu-programmes-body",
+     "sports-council-for-northern-ireland",
+     "staff-commission-for-education-and-library-boards",
+     "valuation-and-lands-agency",
+     "water-service-northern-ireland",
+     "waterways-ireland",
+     "western-education-and-library-board",
+     "youth-justice-agency-of-northern-ireland",
+     "public-health-agency-northern-ireland"
+    ],
+    "superseding_organisations": [],
+    "title": "Northern Ireland Executive"
+   }
+  },
+  {
+   "documents": 1,
+   "value": {
+    "acronym": "PHA (NI)",
+    "analytics_identifier": "OT1265",
+    "child_organisations": [],
+    "content_id": "3360cb75-a882-48cd-bbb7-0059ec2ecf89",
+    "link": "/government/organisations/public-health-agency-northern-ireland",
+    "logo_formatted_title": "Public Health Agency<br/>(Northern Ireland)",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "other",
+    "parent_organisations": [
+     "department-of-health-northern-ireland"
+    ],
+    "public_timestamp": "2024-11-20T15:42:02Z",
+    "slug": "public-health-agency-northern-ireland",
+    "superseded_organisations": [],
+    "superseding_organisations": [
+     "northern-ireland-executive"
+    ],
+    "title": "Public Health Agency (Northern Ireland)"
+   }
+  },
+  {
+   "documents": 1,
+   "value": {
+    "acronym": "",
+    "analytics_identifier": "EA1440",
+    "child_organisations": [],
+    "content_id": "1b5d2d26-9f1e-4ac5-8335-12061d09ca8e",
+    "link": "/government/organisations/skills-england",
+    "logo_formatted_title": "Skills England",
+    "organisation_brand": "department-for-work-pensions",
+    "organisation_crest": "single-identity",
+    "organisation_state": "live",
+    "organisation_type": "executive_agency",
+    "parent_organisations": [
+     "department-for-work-pensions"
+    ],
+    "public_timestamp": "2025-12-10T10:58:05Z",
+    "slug": "skills-england",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "Skills England"
+   }
+  },
+  {
+   "documents": 1,
+   "value": {
+    "acronym": "TPR",
+    "analytics_identifier": "PB234",
+    "child_organisations": [],
+    "content_id": "283a5e75-445b-47d7-8b46-a2bd74fb8232",
+    "link": "/government/organisations/the-pensions-regulator",
+    "logo_formatted_title": "The Pensions Regulator",
+    "organisation_brand": "department-for-work-pensions",
+    "organisation_crest": "no-identity",
+    "organisation_state": "exempt",
+    "organisation_type": "executive_ndpb",
+    "parent_organisations": [
+     "department-for-work-pensions"
+    ],
+    "public_timestamp": "2021-08-05T07:28:04Z",
+    "slug": "the-pensions-regulator",
+    "superseded_organisations": [],
+    "superseding_organisations": [],
+    "title": "The Pensions Regulator"
+   }
+  }
+ ],
+ "total": 7929
+}

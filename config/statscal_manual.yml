@@ -1,0 +1,30 @@
+# Hand-maintained dates for things no API gives: TfL publications (its schedule pages refuse automated requests), Met Police and MOPAC
+# reports, GLA items. Add one entry per release. Dates more than 14 days past are ignored.
+#
+# Fields:  title (required)  publisher (required)  tier (national | alb | london)  date (YYYY-MM-DD, required)
+#          date_status (confirmed | provisional)  url  summary  time (HH:MM, London time, optional)  date_precision (day | month)
+#
+# EXAMPLES, not real dates. Remove the "example: true" line (and set a real date) when you add a real one; examples are never shown.
+releases:
+  - example: true
+    title: "Example: TfL quarterly performance report"
+    publisher: Transport for London
+    tier: london
+    date: 2099-01-15
+    date_status: provisional
+    url: https://tfl.gov.uk/corporate/transparency/
+    summary: Placeholder showing the format. Not a real release.
+  - example: true
+    title: "Example: Met Police monthly stop and search data"
+    publisher: Metropolitan Police Service
+    tier: london
+    date: 2099-01-20
+    date_status: provisional
+    url: https://www.met.police.uk/sd/stats-and-data/
+  - example: true
+    title: "Example: MOPAC quarterly crime dashboard update"
+    publisher: Mayor's Office for Policing and Crime
+    tier: london
+    date: 2099-01-25
+    date_status: provisional
+    url: https://www.london.gov.uk/programmes-strategies/mayors-office-policing-and-crime-mopac

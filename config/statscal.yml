@@ -1,0 +1,63 @@
+# Stats calendar (LUCIEN > Stats calendar): which sources are on, which GOV.UK organisations are followed, and what is left out.
+# Sources and the fields used are written up in docs/release-calendar/SOURCES.md. The collector is tracker/statscal.py and runs with the
+# other LUCIEN collectors at 6am and 6pm (the "Run everything" workflow).
+
+sources:
+  ons:            { on: true }
+  govuk:          { on: true }
+  london_datastore: { on: true }
+  police_uk:      { on: true }
+  manual:         { on: true }
+  # critical: a failure here is reported as a failed source in Source health (the run itself never stops for one source)
+
+windows:
+  published_days: 14      # "just published" looks back this far
+  keep_published_days: 45 # published items stay on the page this long
+  keep_other_days: 14     # upcoming / cancelled items stay this long after their date
+  changes_days: 90        # the change log is kept this long
+
+govuk:
+  # organisation slugs from GOV.UK's own list (https://www.gov.uk/api/search.json?facet_organisations=500). tier: national | alb
+  organisations:
+    - { slug: hm-revenue-customs, tier: national }
+    - { slug: hm-treasury, tier: national }
+    - { slug: cabinet-office, tier: national }
+    - { slug: department-for-education, tier: national }
+    - { slug: department-of-health-and-social-care, tier: national }
+    - { slug: home-office, tier: national }
+    - { slug: ministry-of-justice, tier: national }
+    - { slug: department-for-transport, tier: national }
+    - { slug: department-for-work-pensions, tier: national }
+    - { slug: department-for-energy-security-and-net-zero, tier: national }
+    - { slug: department-for-environment-food-rural-affairs, tier: national }
+    - { slug: department-for-science-innovation-and-technology, tier: national }
+    - { slug: ministry-of-housing-communities-local-government, tier: national }
+    - { slug: department-for-business-and-trade, tier: national }
+    - { slug: department-for-culture-media-and-sport, tier: national }
+    - { slug: ministry-of-defence, tier: national }
+    - { slug: nhs-england, tier: alb }
+    - { slug: uk-health-security-agency, tier: alb }
+    - { slug: office-for-health-improvement-and-disparities, tier: alb }
+    - { slug: ofcom, tier: alb }
+    - { slug: insolvency-service, tier: alb }
+    - { slug: office-of-rail-and-road, tier: alb }
+    - { slug: hm-prison-and-probation-service, tier: alb }
+    - { slug: valuation-office-agency, tier: alb }
+    - { slug: higher-education-statistical-agency, tier: alb }
+    - { slug: student-loans-company, tier: alb }
+    - { slug: gambling-commission, tier: alb }
+    - { slug: intellectual-property-office, tier: alb }
+    - { slug: companies-house, tier: alb }
+    - { slug: ofsted, tier: alb }
+    - { slug: marine-management-organisation, tier: alb }
+    - { slug: regulator-of-social-housing, tier: alb }
+  # (Ofgem and the Office for Statistics Regulation have no GOV.UK statistics announcements; they publish on their own sites)
+  # never kept, even if one of the feeds carries them (devolved administrations are out of scope)
+  exclude_slug_contains: [northern-ireland, scottish, scotland, welsh, wales, nisra]
+  exclude_slugs: [the-scottish-government, welsh-government, northern-ireland-statistics-and-research-agency]
+  # the ONS publishes through its own API (richer: date changes, provisional text), so its GOV.UK copies are not used
+  skip_slugs: [office-for-national-statistics]
+
+london:
+  maintainer_publishers: { MPS: Metropolitan Police Service, MOPAC: Mayor's Office for Policing and Crime, GLA: Greater London Authority, TfL: Transport for London }
+  default_publisher: Greater London Authority

@@ -1,0 +1,66 @@
+{
+ "breakdown": {
+  "cancelled": 2,
+  "confirmed": 336,
+  "provisional": 65,
+  "published": 26,
+  "total": 26
+ },
+ "releases": [
+  {
+   "date_changes": null,
+   "description": {
+    "cancelled": false,
+    "census": false,
+    "finalised": true,
+    "postponed": false,
+    "published": true,
+    "release_date": "2026-10-28T09:30:00.000Z",
+    "summary": "Measuring the contribution of the environment to the economy, the impact of economic activity on the environment, and society’s response to environmental issues.",
+    "title": "Greenhouse gas emissions, UK: provisional estimates, 2025"
+   },
+   "highlight": {
+    "summary": "Measuring the contribution of the environment to the economy, the impact of economic activity on the environment, and society’s response to environmental issues.",
+    "title": "Greenhouse gas emissions, UK: provisional estimates, 2025"
+   },
+   "uri": "/releases/greenhousegasemissionsukprovisionalestimates2025"
+  },
+  {
+   "date_changes": null,
+   "description": {
+    "cancelled": false,
+    "census": false,
+    "finalised": true,
+    "postponed": false,
+    "published": true,
+    "release_date": "2026-10-28T09:30:00.000Z",
+    "summary": "Provisional number of deaths registered in England and Wales in the latest weeks.",
+    "title": "Deaths registered weekly in England and Wales, provisional: week ending 16 October 2026"
+   },
+   "highlight": {
+    "summary": "Provisional number of deaths registered in England and Wales in the latest weeks.",
+    "title": "Deaths registered weekly in England and Wales, provisional: week ending 16 October 2026"
+   },
+   "uri": "/releases/deathsregisteredweeklyinenglandandwalesprovisionalweekending16october2026"
+  },
+  {
+   "date_changes": null,
+   "description": {
+    "cancelled": false,
+    "census": false,
+    "finalised": true,
+    "postponed": false,
+    "published": true,
+    "release_date": "2026-10-29T09:30:00.000Z",
+    "summary": "Official statistics in development on business births and deaths from the Inter-Departmental Business Register with high-level breakdowns by industry and region.",
+    "title": "Business demography, quarterly, UK: July to September 2026"
+   },
+   "highlight": {
+    "summary": "Official statistics in development on business births and deaths from the Inter-Departmental Business Register with high-level breakdowns by industry and region.",
+    "title": "Business demography, quarterly, UK: July to September 2026"
+   },
+   "uri": "/releases/businessdemographyquarterlyukjulytoseptember2026"
+  }
+ ],
+ "took": 10
+}

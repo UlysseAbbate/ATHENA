@@ -1,0 +1,67 @@
+{
+ "breakdown": {
+  "cancelled": 323,
+  "census": 5,
+  "confirmed": 336,
+  "provisional": 65,
+  "published": 9198,
+  "total": 401
+ },
+ "releases": [
+  {
+   "date_changes": null,
+   "description": {
+    "cancelled": false,
+    "census": false,
+    "finalised": true,
+    "postponed": false,
+    "published": false,
+    "release_date": "2026-11-10T09:30:00.000Z",
+    "summary": "All cause premature mortality rates for adults aged 18 to 74 years by ethnic group, highest qualification, National Statistics Socioeconomic Classification, and deprivation quintile, for England and Wales.",
+    "title": "Sociodemographic inequalities in premature mortality, England and Wales: March 2021 to December 2023"
+   },
+   "highlight": {
+    "summary": "All cause premature mortality rates for adults aged 18 to 74 years by ethnic group, highest qualification, National Statistics Socioeconomic Classification, and deprivation quintile, for England and Wales.",
+    "title": "Sociodemographic inequalities in premature mortality, England and Wales: March 2021 to December 2023"
+   },
+   "uri": "/releases/sociodemographicinequalitiesinprematuremortalityenglandandwalesmarch2021todecember2023"
+  },
+  {
+   "date_changes": null,
+   "description": {
+    "cancelled": false,
+    "census": false,
+    "finalised": true,
+    "postponed": false,
+    "published": false,
+    "release_date": "2026-11-10T09:30:00.000Z",
+    "summary": "Research on producing population estimates by country of birth.",
+    "title": "Research update on population estimates by country of birth for England and Wales: 2026"
+   },
+   "highlight": {
+    "summary": "Research on producing population estimates by country of birth.",
+    "title": "Research update on population estimates by country of birth for England and Wales: 2026"
+   },
+   "uri": "/releases/researchupdateonpopulationestimatesbycountryofbirthforenglandandwales2026"
+  },
+  {
+   "date_changes": null,
+   "description": {
+    "cancelled": false,
+    "census": false,
+    "finalised": true,
+    "postponed": false,
+    "published": false,
+    "release_date": "2026-11-10T09:30:00.000Z",
+    "summary": "Household estimates by size based on administrative data sources for 2021.",
+    "title": "Admin-based household estimates by size for local authorities in England and Wales: 2021"
+   },
+   "highlight": {
+    "summary": "Household estimates by size based on administrative data sources for 2021.",
+    "title": "Admin-based household estimates by size for local authorities in England and Wales: 2021"
+   },
+   "uri": "/releases/adminbasedhouseholdestimatesbysizeforlocalauthoritiesinenglandandwales2021"
+  }
+ ],
+ "took": 10
+}
