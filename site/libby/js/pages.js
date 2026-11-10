@@ -110,7 +110,7 @@ export const LD150_LINKS = [
 //   api       the /api routes behind this page and who may use them: [ ['route-name', { GET: level, '*': level }] ]
 //             'GET' is reading and '*' is anything else (saving, uploading). A route not listed here may be read by Peers and changed by no one but Admin.
 // Reads a beta tester may make (read-only) for the pages marked `beta: true`, beyond the routes listed under `api`.
-const BETA_READS = ['ld-peers', 'live', 'bulletin', 'day/.*', 'bills', 'bills/.*', 'bill-extras', 'bill-next', 'future', 'portfolios', 'portfolios/.*', 'commons/.*', 'past/.*', 'item-links', 'event-speakers',
+const BETA_READS = ['ld-peers', 'live', 'bulletin', 'day/.*', 'bills', 'bills/.*', 'previous-bills', 'bill-extras', 'bill-next', 'future', 'portfolios', 'portfolios/.*', 'commons/.*', 'past/.*', 'item-links', 'event-speakers',
   'policy/.*', 'room-bookings', 'ask-parliamentarian', 'concessions', 'bill-team', 'comms', 'todays-list'];
 
 export const PAGES = [
@@ -125,7 +125,7 @@ export const PAGES = [
     nav: (m, c) => (m[1] === c.today ? 'today' : ''), group: 'business', tab: 'future', beta: true, house: 'commons', switch: true },
 
   // Legislation: every live Bill, in either House
-  { id: 'legislation', match: /^\/legislation$/, view: 'legislation-page.js', fn: 'renderLegislation', nav: 'legislation', beta: true, house: 'both' },
+  { id: 'legislation', match: /^\/legislation(?:\/(previous))?$/, view: 'legislation-page.js', fn: 'renderLegislation', params: (m) => ({ tab: m[1] || 'live' }), nav: 'legislation', beta: true, house: 'both' },
   { id: 'bill', match: /^\/bill\/(\d+)$/, view: 'bill-page.js', fn: 'renderBill', params: (m) => ({ id: m[1] }), nav: 'legislation', beta: true, house: 'both',
     api: [['comments|grid-text|draft-amendment', { '*': WHIPS_FEATURES }],
       // Stakeholder notes and amendment flags are internal: Whips and above may read them, WHIPS_FEATURES may change them.
