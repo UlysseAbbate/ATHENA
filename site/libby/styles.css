@@ -593,7 +593,11 @@ a.cal-cell:hover { border-color: var(--accent); background: var(--accent-tint); 
 .houseswitch:not(:empty) + main .page-head { padding-top: .6rem; }
 
 /* a Bill's team at the top of its page: the adviser and the Bill lead in each House (green for the Commons, red for the Lords) */
-.bill-team { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin: 1rem 0; }
+.bill-team { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .8rem; margin: 1rem 0; }
+.bill-team-update { border-color: var(--btn-bg); }
+.bill-team-update .team-title { background: var(--accent-tint); border-bottom-color: var(--btn-bg); }
+.bill-team-update p { margin: .6rem .9rem 0; }
+@media (max-width: 760px) { .bill-team { grid-template-columns: 1fr; } }
 .bill-team-house { background: var(--card); border: 1px solid var(--band-line); border-radius: var(--radius); overflow: hidden; padding-bottom: .7rem; }
 .team-title { margin: 0; padding: .5rem .9rem; font: 800 1rem var(--head); letter-spacing: -.02em; border-bottom: 1px solid var(--band-line); }
 .bill-team-commons { border-color: var(--commons-line); }

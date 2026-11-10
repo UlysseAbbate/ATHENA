@@ -5,14 +5,14 @@
 // 934 / 2149 / 6354 / 1028 (Am# : Peer(s) : Member's Explanatory Statement : Notes), 0.75pt borders.
 // `D` is the docx library (window.docx in the browser, require('docx') in tests).
 
-const NAVY = '1F3864';
-const RED = 'C00000';
-const ORANGE = 'E97132';
+export const NAVY = '1F3864';
+export const RED = 'C00000';
+export const ORANGE = 'E97132';
 const TABLE_W = 10465;
 const COLS = [934, 2149, 6354, 1028];
-const FONT = 'Arial';
+export const FONT = 'Arial';
 
-function header(D) {
+export function header(D) {
   const line = (children) => new D.Paragraph({ alignment: D.AlignmentType.RIGHT, spacing: { after: 0 }, children });
   const bold = (text) => new D.TextRun({ text, bold: true, size: 20, font: FONT });
   return new D.Header({
@@ -38,7 +38,7 @@ function titleBlock(D, title, subtitle) {
   ];
 }
 
-function makeDocument(D, children) {
+export function makeDocument(D, children) {
   return new D.Document({
     styles: { default: { document: { run: { font: FONT, size: 20 } } } },
     sections: [{

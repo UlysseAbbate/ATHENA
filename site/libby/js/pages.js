@@ -130,7 +130,8 @@ export const PAGES = [
   { id: 'bill', match: /^\/bill\/(\d+)$/, view: 'bill-page.js', fn: 'renderBill', params: (m) => ({ id: m[1] }), nav: 'legislation', beta: true, house: 'both',
     api: [['comments|grid-text|draft-amendment', { '*': WHIPS_FEATURES }],
       // Stakeholder notes and amendment flags are internal: Whips and above may read them, WHIPS_FEATURES may change them.
-      ['bill-stakeholders|amendment-flags', { GET: 'whips', '*': WHIPS_FEATURES }]] },
+      ['bill-stakeholders|amendment-flags', { GET: 'whips', '*': WHIPS_FEATURES }],
+      ['bills/.*/update-summary', { '*': WHIPS_FEATURES }]] },
   { id: 'c-bill', match: /^\/c\/bill\/(\d+)$/, view: 'bill-page.js', fn: 'renderBill', params: (m) => ({ id: m[1], house: 'commons' }), nav: 'legislation', beta: true, house: 'both' },
 
   // Business: the coming weeks by calendar or by portfolio, past business and Comms
