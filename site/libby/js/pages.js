@@ -69,7 +69,7 @@ export const MENU = [
   { id: 'today', label: 'Today', href: '#/today', level: 'peers', beta: true, house: 'both', title: "Today's business", text: 'What is happening in the Commons or the Lords today: the order of business, Oral Questions and the committees.' },
   { id: 'business', label: 'Business', href: '#/business', level: 'peers', beta: true, house: 'both', title: 'Business', text: 'The coming weeks by calendar or by portfolio, and past business (votes, questions, committees, Hansard).' },
   { id: 'legislation', label: 'Legislation', href: '#/legislation', level: 'peers', beta: true, house: 'both', title: 'Legislation', text: 'Every live Bill in Parliament: where it is, the next stage, the documents for each stage and the amendments.' },
-  { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, Comms, the Wallace Room, Room 391, Ask a Parliamentarian, the Concessionometer and the guides.' },
+  { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, Comms, the Wallace Room, Room 391, Ask a Parliamentarian, the Concessionometer, the Issues Tracker and the guides.' },
   // Data: the one page every level has for now (for Whips and above it also sits under the Whips' page, so this item is only for the restricted levels)
   { id: 'data', label: 'Data', href: '#/data', level: 'peers', beta: true, liveOnly: true, house: 'both', title: 'Data', text: 'Voting analysis and the House of Lords Library data dashboards.' },
   { id: 'whips-office', label: 'MPs/Peers', href: '#/whips-office', level: 'whips', house: 'both', title: 'MPs/Peers', text: 'Availability for whipping, and the voting analysis and Lords Library data.' },
@@ -83,7 +83,7 @@ export const BETA_MENU = MENU.filter((m) => m.beta && !m.liveOnly);
 // Groups of subpages. Each group is shown as a hub page (cards) and as a row of buttons above each of its pages.
 export const GROUPS = {
   business: { title: 'Business', intro: 'What Parliament will do, what it has done, and what the team has been saying.' },
-  lds150: { title: 'Lib Dems 150', intro: 'Policy, Comms, the rooms, Ask a Parliamentarian, the Concessionometer and the guides.' },
+  lds150: { title: 'Lib Dems 150', intro: 'Policy, Comms, the rooms, Ask a Parliamentarian, the Concessionometer, the Issues Tracker and the guides.' },
   'whips-office': { title: 'MPs/Peers', intro: 'For Whips and above: availability for whipping, and the data.' },
   'advisers-office': { title: 'POLD Staff', intro: 'For Staff and Admin: the tools for Bills, the bulletin and the rota, and who has which role.' },
 };
@@ -94,6 +94,8 @@ export const LD150_LINKS = [
   ['Rolling Top Lines', '', 'The current top lines, kept up to date.'],
   ['Parliamentary Best Practice', '', 'How to get the most out of Parliament.'],
   ['MPs Staff New Starter Guide', '', 'A guide for new members of MPs\u2019 staff.'],
+  ['The Mill', '', 'The Mill.'],
+  ['Campaigns Hub', '', 'The Campaigns Hub.'],
 ];
 
 /* ------------------------------------------------------------------ the pages */
@@ -111,7 +113,7 @@ export const LD150_LINKS = [
 //             'GET' is reading and '*' is anything else (saving, uploading). A route not listed here may be read by Peers and changed by no one but Admin.
 // Reads a beta tester may make (read-only) for the pages marked `beta: true`, beyond the routes listed under `api`.
 const BETA_READS = ['ld-peers', 'live', 'bulletin', 'day/.*', 'bills', 'bills/.*', 'previous-bills', 'statutory-instruments', 'statutory-instruments/.*', 'bill-extras', 'bill-next', 'future', 'portfolios', 'portfolios/.*', 'commons/.*', 'past/.*', 'item-links', 'event-speakers',
-  'policy/.*', 'room-bookings', 'ask-parliamentarian', 'concessions', 'bill-team', 'comms', 'todays-list'];
+  'policy/.*', 'room-bookings', 'ask-parliamentarian', 'concessions', 'issues', 'bill-team', 'comms', 'todays-list'];
 
 export const PAGES = [
   { id: 'home', match: /^\/?$/, view: 'home-page.js', fn: 'renderHome', nav: '', beta: true, house: 'both', betaApi: BETA_READS },
@@ -153,6 +155,9 @@ export const PAGES = [
   { id: 'ask-parliamentarian', match: /^\/ask-parliamentarian$/, view: 'ask-page.js', fn: 'renderAsk', group: 'lds150', tab: 'ask', tabLabel: 'Ask a Parliamentarian', href: '#/ask-parliamentarian', beta: true, house: 'both',
     card: 'Ask for help (attend an AGM, work experience support ...) by a date; parliamentarians and their staff answer by offering support.',
     api: [['ask-parliamentarian', { GET: 'peers', '*': 'peers' }]] },
+  { id: 'issues-tracker', match: /^\/issues-tracker$/, view: 'issues-page.js', fn: 'renderIssues', group: 'lds150', tab: 'issues', tabLabel: 'Issues Tracker', href: '#/issues-tracker', beta: true, house: 'both',
+    card: 'Campaigns and long-standing issues by portfolio, with everything done on each: questions, debates, legislation, amendments, who was responsible, and notes.',
+    api: [['issues', { GET: 'peers', '*': 'peers' }]] },
   { id: 'concessionometer', match: /^\/concessionometer$/, view: 'concessionometer-page.js', fn: 'renderConcessionometer', group: 'lds150', tab: 'concessions', tabLabel: 'Concessionometer', href: '#/concessionometer', beta: true, house: 'both',
     card: 'Every amendment we have won a concession on, with the Bill’s portfolio and the POLD Staff’s notes. Kept after the Bill has passed.',
     api: [['concessions', { GET: 'peers', '*': WHIPS_FEATURES }]] },
