@@ -8,7 +8,7 @@ import { json, errorResponse } from '../../../lib/libby/util.js';
 import { sbSelect, supabaseConfigured } from '../../../lib/libby/supabase.js';
 import { passcodeProblem, cleanLine } from '../../../lib/libby/auth.js';
 
-const FLAGS = ['voting', 'content', 'notcontent'];
+const FLAGS = ['voting', 'content', 'notcontent', 'win'];   // 'win' is set through /api/libby/concessions, which also adds the amendment to the Concessionometer
 const OPPOSITE = { content: 'notcontent', notcontent: 'content' };
 const posInt = (v) => { const n = Number(v); return Number.isInteger(n) && n > 0 ? n : 0; };
 const missingTable = (err) => /amendment_flags/.test(String(err.message)) && /does not exist|relation|schema cache/.test(String(err.message));

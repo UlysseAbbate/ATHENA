@@ -2,7 +2,7 @@
 //   Signed peers (one per line)  |  # (the amendment's number, a dash while there is none)  |  Location (C3, P2, L14)  |  Member's explanatory statement  |  buttons
 // The row above it holds the highlights (Lib Dem amendments, Lib Dem-signed, Voting, Content, Not Content) that narrow the table.
 // The explanatory statements are fetched from the amendment API as rows scroll into view (a few at a time), and the whole
-// text of the amendment, with the comments, opens under a row when it is clicked or its Comment button is pressed.
+// text of the amendment, with the notes, opens under a row when it is clicked or its Note button is pressed. WIN marks an amendment as a concession won and sends it to the Concessionometer.
 import { api } from './api.js';
 import { esc, peer, empty, debounce } from './ui.js';
 import { authFieldsHtml, readAuth, rememberAuth, reopenPasscode, savedName, can, hasLevel } from './session.js';
@@ -25,8 +25,10 @@ export const FLAG_DEFS = [
   { key: 'content', label: 'Content', short: 'C', colour: 'green' },
   { key: 'notcontent', label: 'Not Content', short: 'NC', colour: 'red' },
 ];
+// WIN is not one of the Vote / C / NC buttons: it has its own button beside Note, and sends the amendment to the Concessionometer (/api/libby/concessions)
+export const WIN_DEF = { key: 'win', label: 'WIN', short: 'WIN', colour: 'win' };
 const OPPOSITE = { content: 'notcontent', notcontent: 'content' };
-const FLAG_ORDER = ['notcontent', 'content', 'voting'];   // an amendment with more than one takes the colour of the first of these
+const FLAG_ORDER = ['win', 'notcontent', 'content', 'voting'];   // an amendment with more than one takes the colour of the first of these
 const topFlag = (list) => FLAG_ORDER.find((k) => (list || []).includes(k)) || '';
 const rowClass = (list) => (topFlag(list) ? ` am-flag-${topFlag(list)}` : '');
 
@@ -38,26 +40,27 @@ const HIGHLIGHTS = [
 export function commentsHtml(list) {
   const items = list || [];
   return `
-    <h4>Comments</h4>
+    <h4>Notes</h4>
     ${items.length ? `<ul class="comment-list">${items.map((c) => `
       <li data-cid="${c.id}"><p>${esc(c.body)}</p>
         <p class="small muted">${esc(c.author || 'Unknown')}${c.at ? ` · ${esc(fmtWhen(c.at))}` : ''} · <button type="button" class="linkish" data-del>Delete</button></p></li>`).join('')}</ul>`
-    : '<p class="small muted">No comments yet.</p>'}
+    : '<p class="small muted">No notes yet.</p>'}
     <form class="comment-form" data-cform>
-      <label class="field"><span>Add a comment</span><textarea name="body" rows="3" maxlength="2000" required></textarea></label>
+      <label class="field"><span>Add a note</span><textarea name="body" rows="3" maxlength="2000" required></textarea></label>
       ${authFieldsHtml()}
-      <button class="button" type="submit">Save comment</button>
+      <button class="button" type="submit">Save note</button>
       <span class="small" data-cstatus aria-live="polite"></span>
     </form>`;
 }
 
-/** The buttons on a row, on two lines: Vote (orange), C (green) and NC (red); then Comment (black). People who may only look see the flags as labels. */
+/** The buttons on a row, on two lines: Vote (orange), C (green) and NC (red); then Note (black) and WIN (orange accent). People who may only look see the flags as labels. */
 function amendmentActions(n, flags) {
   if (can('whips')) {
     return `<span class="am-line">${FLAG_DEFS.map((f) => `<button type="button" class="button button-quiet button-small flag-btn flag-${f.colour}" data-flag="${f.key}" title="${f.label}" aria-label="${f.label}" aria-pressed="${(flags || []).includes(f.key)}">${f.short}</button>`).join('')}</span>
-      <span class="am-line"><button type="button" class="button button-small comment-btn" data-comment-btn>${n ? `Comment (${n})` : 'Comment'}</button></span>`;
+      <span class="am-line"><button type="button" class="button button-small comment-btn" data-comment-btn>${n ? `Note (${n})` : 'Note'}</button>
+        <button type="button" class="button button-small win-btn" data-win title="Mark as a win: it goes to the Concessionometer" aria-label="WIN" aria-pressed="${(flags || []).includes('win')}">WIN</button></span>`;
   }
-  return FLAG_DEFS.filter((f) => (flags || []).includes(f.key)).map((f) => `<span class="flag-tag flag-${f.colour}">${f.short}</span>`).join('');
+  return [...FLAG_DEFS, WIN_DEF].filter((f) => (flags || []).includes(f.key)).map((f) => `<span class="flag-tag flag-${f.colour}">${f.short}</span>`).join('');
 }
 
 function amendmentRow(a, comments, flags) {
@@ -92,7 +95,7 @@ function flagBar(d, flags, withFlags) {
     <span class="small muted">Highlights:</span>
     <button type="button" class="flag-filter" data-flagfilter="" aria-pressed="true">All ${d.all.length}</button>
     ${HIGHLIGHTS.map((h) => `<button type="button" class="flag-filter" data-flagfilter="${h.key}" aria-pressed="false">${h.label} ${d.all.filter(h.test).length}</button>`).join('')}
-    ${withFlags ? FLAG_DEFS.map((f) => `<button type="button" class="flag-filter flag-${f.colour}" data-flagfilter="${f.key}" aria-pressed="false">${f.label} <span data-fcount="${f.key}">${countFlag(f.key)}</span></button>`).join('') : ''}
+    ${withFlags ? [...FLAG_DEFS, WIN_DEF].map((f) => `<button type="button" class="flag-filter flag-${f.colour}" data-flagfilter="${f.key}" aria-pressed="false">${f.label} <span data-fcount="${f.key}">${countFlag(f.key)}</span></button>`).join('') : ''}
     <span class="small" data-flagstatus role="status" aria-live="polite"></span>
   </div>`;
 }
@@ -101,14 +104,14 @@ export function amendmentsHtml(d, comments, commentsError, flags, flagsError) {
   if (!d.all.length) return empty('No amendments have been tabled at this stage.');
   return `
     <p class="small muted">${d.total} amendments tabled at this stage.</p>
-    ${commentsError ? `<p class="small muted">Comments could not be loaded (has the amendment_comments table been created in Supabase?): ${esc(commentsError)}</p>` : ''}
-    ${flagsError ? `<p class="small muted">The Voting, Content and Not Content buttons could not be loaded: ${esc(flagsError)}</p>` : ''}
+    ${commentsError ? `<p class="small muted">Notes could not be loaded (has the amendment_comments table been created in Supabase?): ${esc(commentsError)}</p>` : ''}
+    ${flagsError ? `<p class="small muted">The Voting, Content, Not Content and WIN buttons could not be loaded: ${esc(flagsError)}</p>` : ''}
     ${flagBar(d, flags, hasLevel('whips') && !flagsError)}
     <label class="field"><span>Filter by number, peer, clause or words in the explanatory statement</span><input type="search" data-filter></label>
     ${allTable(d, comments, flags)}`;
 }
 
-export function wireAmendments(box, billId, stageId, state) {
+export function wireAmendments(box, billId, stageId, state, { house = 'lords' } = {}) {
   const byId = new Map(state.d.all.map((a) => [String(a.id), a]));
   const rowOf = (aid) => box.querySelector(`[data-aid-row="${aid}"]`);
   const moreOf = (aid) => box.querySelector(`[data-aid-more="${aid}"]`);
@@ -189,7 +192,7 @@ export function wireAmendments(box, billId, stageId, state) {
   const refresh = (aid) => {
     moreOf(aid).querySelector('[data-comments]').innerHTML = commentsHtml(state.comments[aid]);
     const n = state.comments[aid]?.length || 0;
-    rowOf(aid).querySelector('[data-comment-btn]').textContent = n ? `Comment (${n})` : 'Comment';
+    rowOf(aid).querySelector('[data-comment-btn]').textContent = n ? `Note (${n})` : 'Note';
   };
 
   /* ---- the buttons: the colour of the row, the pressed buttons and the counts follow state.flags */
@@ -200,8 +203,9 @@ export function wireAmendments(box, billId, stageId, state) {
       tr.className = `am-row${rowClass(list)}`;
       tr.dataset.flags = list.join(' ');
       tr.querySelectorAll('[data-flag]').forEach((b) => b.setAttribute('aria-pressed', String(list.includes(b.dataset.flag))));
+      tr.querySelectorAll('[data-win]').forEach((b) => b.setAttribute('aria-pressed', String(list.includes('win'))));
     }
-    for (const f of FLAG_DEFS) {
+    for (const f of [...FLAG_DEFS, WIN_DEF]) {
       const out = box.querySelector(`[data-fcount="${f.key}"]`);
       if (out) out.textContent = String(Object.values(state.flags).filter((l) => l.includes(f.key)).length);
     }
@@ -233,10 +237,35 @@ export function wireAmendments(box, billId, stageId, state) {
     } finally { btn.disabled = false; }
   }
 
-  // Clicking a row (or Comment) opens the amendment's text and comments under it; the flag buttons switch a flag on or off.
+  /** WIN: marks the amendment as a concession won and sends it to the Concessionometer (or takes it off again). The server keeps a snapshot of the Bill's title and portfolio. */
+  async function toggleWin(btn) {
+    const aid = btn.closest('[data-aid-row]').dataset.aidRow;
+    const status = box.querySelector('[data-flagstatus]');
+    const before = state.flags[aid] || [];
+    const on = !before.includes('win');
+    const a = byId.get(String(aid)) || {};
+    state.flags[aid] = on ? [...before, 'win'] : before.filter((k) => k !== 'win');
+    if (!state.flags[aid].length) delete state.flags[aid];
+    paintFlags(aid);
+    btn.disabled = true;
+    if (status) status.textContent = '';
+    try {
+      await api('concessions', { method: 'POST', body: JSON.stringify({ action: 'win', on, billId: Number(billId), stageId: Number(stageId), amendmentId: Number(aid), house,
+        number: a.number || '', place: shortPlace(a.place) || '', summary: a.summary || '', author: savedName() }) });
+      if (status) status.textContent = on ? 'Marked as a win: it is now in the Concessionometer.' : 'Taken out of the Concessionometer.';
+    } catch (err) {
+      if (before.length) state.flags[aid] = before; else delete state.flags[aid];
+      paintFlags(aid);
+      if (status) status.textContent = `Not saved: ${err.message}`;
+    } finally { btn.disabled = false; }
+  }
+
+  // Clicking a row (or Note) opens the amendment's text and notes under it; the flag buttons switch a flag on or off.
   box.addEventListener('click', async (e) => {
     const flagBtn = e.target.closest('[data-flag]');
     if (flagBtn) { e.preventDefault(); toggleFlag(flagBtn); return; }
+    const winBtn = e.target.closest('[data-win]');
+    if (winBtn) { e.preventDefault(); toggleWin(winBtn); return; }
     const filterBtn = e.target.closest('[data-flagfilter]');
     if (filterBtn) { showOnly = filterBtn.dataset.flagfilter; applyFilter(); return; }
     const commentBtn = e.target.closest('[data-comment-btn]');
@@ -252,10 +281,10 @@ export function wireAmendments(box, billId, stageId, state) {
       const more = del.closest('[data-aid-more]');
       const aid = more.dataset.aidMore;
       const li = del.closest('[data-cid]');
-      if (!window.confirm('Delete this comment?')) return;
+      if (!window.confirm('Delete this note?')) return;
       const form = more.querySelector('[data-cform]');
       let { passcode } = readAuth(form);
-      if (!passcode) passcode = window.prompt('Passcode to delete comments:') || '';
+      if (!passcode) passcode = window.prompt('Passcode to delete notes:') || '';
       try {
         await api('comments', { method: 'POST', body: JSON.stringify({ passcode, action: 'delete', id: Number(li.dataset.cid) }) });
         state.comments[aid] = (state.comments[aid] || []).filter((c) => String(c.id) !== li.dataset.cid);
@@ -276,7 +305,7 @@ export function wireAmendments(box, billId, stageId, state) {
     const aid = form.closest('[data-aid-more]').dataset.aidMore;
     const status = form.querySelector('[data-cstatus]');
     const text = form.querySelector('textarea').value.trim();
-    if (!text) { status.textContent = 'Type a comment first.'; return; }
+    if (!text) { status.textContent = 'Type a note first.'; return; }
     const { passcode, author } = readAuth(form);
     status.textContent = 'Saving…';
     try {

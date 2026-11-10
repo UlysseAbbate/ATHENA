@@ -237,6 +237,10 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           }
           if (u.pathname.endsWith("/api/libby/bills/1/amendment")) { const aid = u.searchParams.get("aid"); return j({ id: Number(aid), location: "Clause 3", text: ["Page 2, line 14, leave out subsection (2)"], explanatoryStatement: `Statement for ${aid}: this removes the subsection.`, note: "" }); }
           if (u.pathname.endsWith("/api/libby/comments")) return j({ comments: {} });
+          if (u.pathname.endsWith("/api/libby/concessions")) {
+            if (route.request().method() === "GET") return j({ concessions: [{ billId: 1, stageId: 50, amendmentId: 101, house: "lords", number: "12", place: "C3, P2, L14", summary: "Leave out subsection (2)", url: "https://bills.parliament.uk/bills/1/stages/50/amendments/101", billTitle: "Test Bill [HL]", portfolio: ["HO"], notes: "The Government will bring forward its own wording.", wonBy: "Pat", wonAt: new Date().toISOString(), updatedBy: "Pat", updatedAt: new Date().toISOString() }, { billId: 7, stageId: 9, amendmentId: 5, house: "commons", number: "3", place: "", summary: "", url: "https://bills.parliament.uk/bills/7/stages/9/amendments/5", billTitle: "Old Act", portfolio: ["DfT"], notes: "", wonBy: "", wonAt: new Date().toISOString(), updatedBy: "", updatedAt: new Date().toISOString() }] });
+            (globalThis.__concPosts = globalThis.__concPosts || []).push(route.request().postData()); return j({ ok: true });
+          }
           if (u.pathname.endsWith("/api/libby/amendment-flags")) return route.request().method() === "GET" ? j({ flags: {} }) : j({ ok: true });
           if (u.pathname.endsWith("/api/libby/groupings")) return j({ groupings: [] });
           if (u.pathname.includes("/api/libby/commons/day/")) return j({ date: "2026-11-03", rising: { Chamber: "19:00" }, source: { label: "UK Parliament \u2014 What's On (House of Commons)", url: "https://whatson.parliament.uk/commons/2026-11-03/" },
@@ -279,7 +283,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         if (who === "admin") {   // no gate: everyone goes straight to the Beta test; the Theme button and Developer button are in the foot
           const menu = async () => page.$$eval(".topnav a", as => as.map(a => a.textContent));
           check("admin: no Honourable / Noble front page and no Beta / Developer choice", !/Which House|Open the developer site|Open the beta/.test(lb) && (await page.$(".gate")) === null);
-          check("admin: the menu is Today, Business, Legislation, Lib Dems 150, Principals Parliamentarians and POLD Staff (no Developer in the Beta test)", (await menu()).join("|") === "Today|Business|Legislation|Lib Dems 150|Principals Parliamentarians|POLD Staff", (await menu()).join("|"));
+          check("admin: the menu is Today, Business, Legislation, Lib Dems 150, MPs/Peers and POLD Staff (no Developer in the Beta test)", (await menu()).join("|") === "Today|Business|Legislation|Lib Dems 150|MPs/Peers|POLD Staff", (await menu()).join("|"));
           check("admin: the Theme button is in the foot, not the masthead", (await page.$(".masthead [data-theme-btn]")) === null && (await page.$(".foot [data-theme-btn]")) !== null);
           const foot = await page.$eval(".foot", f => f.innerText);
           check("admin: the foot has Developer version, Team & access and Sign out", /Developer version/.test(foot) && /Team & access/.test(foot) && /Sign out/.test(foot), foot.replace(/\n/g, " ").slice(0, 200));
@@ -388,7 +392,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("staff: the home page offers just Data", /Data/.test(sh) && !/Legislation|Whips|Advisers/.test(sh), sh.slice(0, 120).replace(/\n/g, " "));
           for (const p_ of ["#/legislation", "#/today", "#/advisers-office"]) { await page.goto(BASE + "/libby/" + p_); await page.waitForTimeout(400); check(`staff: ${p_} says not available, for now`, /Not available/.test(await page.$eval("#app", b => b.innerText))); }
           lvl = "admin"; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
-          check("admin role: keeps everything", (await menu()).join("|") === "Today|Business|Legislation|Lib Dems 150|Principals Parliamentarians|POLD Staff", (await menu()).join("|"));
+          check("admin role: keeps everything", (await menu()).join("|") === "Today|Business|Legislation|Lib Dems 150|MPs/Peers|POLD Staff", (await menu()).join("|"));
           lvl = "beta"; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(700);
           for (const [path_, name] of [["#/legislation", "Legislation"], ["#/whips-office", "the Whips' page"], ["#/advisers-office", "the Advisers' page"], ["#/developer", "the Developer page"], ["#/team", "Team & access"]]) {
             await page.goto(BASE + "/libby/" + path_); await page.waitForTimeout(400);
@@ -444,9 +448,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("amendments: an amendment with no number yet shows an em dash", (await page.$eval('[data-aid-row="103"] .am-n', t => t.textContent.trim())) === "\u2014");
           check("amendments: the explanatory statement is filled in from the API", /Statement for 101/.test(await page.$eval("tr.am-row [data-mes]", t => t.textContent)));
           const btns = await page.$$eval("tr.am-row:first-child .am-actions button", bs => bs.map(b => b.textContent.trim()));
-          check("amendments: buttons are Vote, C, NC and Comment", btns.join("|") === "Vote|C|NC|Comment", btns.join("|"));
+          check("amendments: buttons are Vote, C, NC, Note and WIN", btns.join("|") === "Vote|C|NC|Note|WIN", btns.join("|"));
           const bar = await page.$$eval("[data-flagfilter]", bs => bs.map(b => b.textContent.replace(/\s+\d+$/, "").trim()));
-          check("amendments: highlights are All, Lib Dem amendments, Lib Dem-signed, Voting, Content, Not Content", bar.join("|") === "All|Lib Dem amendments|Lib Dem-signed|Voting|Content|Not Content", bar.join("|"));
+          check("amendments: highlights are All, Lib Dem amendments, Lib Dem-signed, Voting, Content, Not Content and WIN", bar.join("|") === "All|Lib Dem amendments|Lib Dem-signed|Voting|Content|Not Content|WIN", bar.join("|"));
           await page.click('tr.am-row:first-child [data-flag="content"]'); await page.waitForTimeout(200);
           check("amendments: Content turns the row green", (await page.$eval("tr.am-row:first-child", t => t.className)).includes("am-flag-content"));
           check("amendments: Content also puts Vote on the amendment", (await page.$eval('tr.am-row:first-child [data-flag="voting"]', b => b.getAttribute("aria-pressed"))) === "true");
@@ -456,11 +460,29 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           const vis = await page.$$eval("tr.am-row:not([hidden]) .place", ts => ts.map(t => t.textContent.trim()));
           check("amendments: the Lib Dem-signed highlight shows the amendments we signed but did not lead", vis.length === 1 && /C4/.test(vis[0]), vis.join("|"));
           await page.click('[data-flagfilter=""]');
+          globalThis.__concPosts = [];
+          await page.click('[data-aid-row="103"] [data-win]'); await page.waitForTimeout(250);
+          const winPost = JSON.parse((globalThis.__concPosts || [])[0] || "{}");
+          check("WIN: marks the amendment, turns the row on and sends it to the Concessionometer (action, amendment, number)", winPost.action === "win" && winPost.on === true && winPost.amendmentId === 103 && winPost.billId === 1 && winPost.house === "lords" && (await page.$eval('[data-aid-row="103"]', t => t.className.includes("am-flag-win") && t.querySelector("[data-win]").getAttribute("aria-pressed") === "true")), JSON.stringify(winPost));
+          check("WIN: the highlight counts it", (await page.$eval('[data-fcount="win"]', o => o.textContent)) === "1");
+          await page.click('[data-aid-row="103"] [data-win]'); await page.waitForTimeout(250);
+          check("WIN: pressing it again takes it off", JSON.parse(globalThis.__concPosts[1]).on === false && !(await page.$eval('[data-aid-row="103"]', t => t.className.includes("am-flag-win"))));
           await page.click('[data-aid-row="102"] [data-comment-btn]'); await page.waitForTimeout(250);
-          check("amendments: Comment opens the amendment text and comment box", await page.$eval('[data-aid-more="102"]', t => !t.hidden && /Add a comment/.test(t.textContent) && /leave out subsection/.test(t.textContent)));
+          check("amendments: Note opens the amendment text and note box", await page.$eval('[data-aid-more="102"]', t => !t.hidden && /Add a note/.test(t.textContent) && /leave out subsection/.test(t.textContent)));
           await page.click(".am-table thead th:nth-child(2) .tf-btn"); await page.waitForTimeout(150);
           await page.click('.tf-pop [data-s="desc"]'); await page.waitForTimeout(200);
           check("amendments: Sort Z to A in the filter reorders the rows, each with its detail row", (await page.$$eval("tr.am-row .am-n", ts => ts.map(t => t.textContent.trim()))).join(",") === "13,12,\u2014" && (await page.$$eval("tbody tr", rs => rs.map(r => r.className.split(" ")[0]))).join(" ") === "am-row am-more am-row am-more am-row am-more");
+          await page.goto(BASE + "/libby/#/concessionometer"); await page.waitForTimeout(900);
+          const ch = await page.$$eval(".conc-table thead th", hs => hs.map(h => h.textContent.trim()));
+          check("Concessionometer: a grid of Amendment, Portfolio and Notes", ch.join("|") === "Amendment|Portfolio|Notes on the concession", ch.join("|"));
+          const cr = await page.$$eval(".conc-table tbody tr", rs => rs.map(r => r.innerText.replace(/\s+/g, " ")));
+          check("Concessionometer: lists each win with its link, Bill and portfolio, live Bill or not", cr.length === 2 && /Amendment 12/.test(cr[0]) && /Test Bill/.test(cr[0]) && /HO/.test(cr[0]) && /Old Act/.test(cr[1]) && /DfT/.test(cr[1]), cr.join(" || "));
+          check("Concessionometer: the amendment links to bills.parliament.uk", (await page.$eval(".conc-table tbody tr a", a => a.href)).startsWith("https://bills.parliament.uk/bills/1/stages/50/amendments/101"));
+          globalThis.__concPosts = [];
+          await page.fill(".conc-table tbody tr textarea", "Agreed in principle"); await page.click(".conc-table tbody tr [data-save]"); await page.waitForTimeout(250);
+          check("Concessionometer: Staff can save notes on a concession", JSON.parse(globalThis.__concPosts[0] || "{}").notes === "Agreed in principle" && JSON.parse(globalThis.__concPosts[0]).action === "note");
+          await page.selectOption("[data-portfolio]", "DfT"); await page.waitForTimeout(150);
+          check("Concessionometer: filter by portfolio", (await page.$$(".conc-table tbody tr")).length === 1);
           lvl = "developer";
         }
         const cspErr = errors.filter(e => /Content Security Policy|violates/i.test(e));

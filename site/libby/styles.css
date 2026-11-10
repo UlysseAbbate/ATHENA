@@ -619,3 +619,13 @@ a.cal-cell:hover { border-color: var(--accent); background: var(--accent-tint); 
 .ask-by.is-late { color: var(--err); }
 .ask-details { margin: .3rem 0; white-space: pre-wrap; }
 .ask-offer { margin-top: .6rem; padding-top: .6rem; border-top: 1px solid var(--rule); }
+/* WIN (a concession won): the accent colour, so it stands out from Vote, C and NC */
+.win-btn { background: var(--card); border: 2px solid var(--btn-bg); color: var(--ink); font-weight: 800; letter-spacing: .04em; }
+.win-btn[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-fg); }
+.flag-filter.flag-win[aria-pressed="true"], .flag-tag.flag-win { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); }
+.all-table tr.am-flag-win > * { background: var(--accent-tint); }
+.all-table tr.am-flag-win > :first-child { box-shadow: inset 6px 0 0 var(--btn-bg); }
+/* Concessionometer */
+.conc-table td.conc-notes { min-width: 16rem; }
+.conc-table textarea { width: 100%; }
+.conc-meta { font-size: .85rem; }
