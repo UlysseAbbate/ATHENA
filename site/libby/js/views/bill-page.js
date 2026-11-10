@@ -6,6 +6,7 @@ import { buildGridDoc, buildHymnDoc, downloadDoc, fileSafe } from '../docs/word.
 import { assembleDay, getThemes } from '../docs/grid-data.js';
 import { groupDocs, rankOfLabel } from '../doc-groups.js';
 import { amendmentsHtml, wireAmendments } from '../amendments-table.js';
+import { renderSecondarySection } from './secondary-section.js';
 
 const stripTags = (html) => { const d = document.createElement('div'); d.innerHTML = html || ''; return d.textContent.trim(); };
 
@@ -410,6 +411,7 @@ export async function renderBill(el, { id, house }, query = {}) {
   const sections = [
     { key: 'stages', label: 'Stages', count: stageCount },
     { key: 'amendments', label: 'Amendments' },
+    { key: 'secondary', label: 'Secondary legislation' },
     ...(hasLevel('whips') ? [{ key: 'stakeholders', label: 'Stakeholders' }] : []),
   ];
 
@@ -438,6 +440,7 @@ export async function renderBill(el, { id, house }, query = {}) {
       <div class="tabs" role="tablist" aria-label="Amendments" id="am-tabs">${tabsHtml()}</div>
       <div id="ams" role="tabpanel"></div>
     </section>
+    <section id="sec-secondary" role="tabpanel" aria-labelledby="sec-btn-secondary" hidden></section>
     ${sections.some((x) => x.key === 'stakeholders') ? '<section id="sec-stakeholders" role="tabpanel" aria-labelledby="sec-btn-stakeholders" hidden></section>' : ''}`;
 
   // The Bill's team (who is the adviser and the Bill lead in each House) and its next stage: both are on this page, not on the Legislation list.
@@ -566,6 +569,7 @@ export async function renderBill(el, { id, house }, query = {}) {
     if (opened.has(key)) return;
     opened.add(key);
     if (key === 'amendments') show(firstTab());
+    if (key === 'secondary') renderSecondarySection(el.querySelector('#sec-secondary'), id);
     if (key === 'stakeholders') renderStakeholders(el.querySelector('#sec-stakeholders'), { billId: id });
   };
   el.querySelectorAll('[data-sec]').forEach((btn) => btn.addEventListener('click', () => openSection(btn.dataset.sec)));

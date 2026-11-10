@@ -629,3 +629,11 @@ a.cal-cell:hover { border-color: var(--accent); background: var(--accent-tint); 
 .conc-table td.conc-notes { min-width: 16rem; }
 .conc-table textarea { width: 100%; }
 .conc-meta { font-size: .85rem; }
+/* Legislation page: the two sections (primary / secondary legislation) and their tabs */
+.leg-section { margin: 1.25rem 0 .5rem; }
+.leg-section-title { font: 800 .8rem var(--head); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 .4rem; }
+/* statutory instrument page */
+.si-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .75rem 1.5rem; margin: 1rem 0 1.5rem; }
+.si-facts dt { font: 700 .75rem var(--head); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.si-facts dd { margin: .1rem 0 0; }
+.si-stages { padding-left: 1.2rem; } .si-stages li { margin-bottom: .35rem; } .si-date { font-weight: 700; margin-right: .5rem; }

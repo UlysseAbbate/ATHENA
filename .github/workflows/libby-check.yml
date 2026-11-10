@@ -21,6 +21,8 @@ jobs:
         run: node scripts/libby/check-site.mjs
       - name: Check the Today's List PDF reader and the estimated times
         run: node scripts/libby/check-list.mjs
+      - name: Check the legislation.gov.uk readers (secondary legislation tracker)
+        run: node scripts/libby/check-legislation.mjs
       - name: Check sign-in, the guessing throttle and the security headers
         run: node scripts/libby/check-access.mjs
       - name: Check how Lords business rows become a day
