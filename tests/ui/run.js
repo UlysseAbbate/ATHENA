@@ -237,6 +237,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           }
           if (u.pathname.endsWith("/api/libby/bills/1/amendment")) { const aid = u.searchParams.get("aid"); return j({ id: Number(aid), location: "Clause 3", text: ["Page 2, line 14, leave out subsection (2)"], explanatoryStatement: `Statement for ${aid}: this removes the subsection.`, note: "" }); }
           if (u.pathname.endsWith("/api/libby/comments")) return j({ comments: {} });
+          if (u.pathname.endsWith("/api/libby/issues")) {
+            if (route.request().method() === "GET") {
+              const only = u.searchParams.get("portfolio");
+              const issues = [{ id: 1, portfolio: "DEFRA", title: "Water company regulation", description: "Sewage discharges and Ofwat.", status: "open", createdBy: "Pat", createdAt: new Date().toISOString(), actions: [{ id: 11, what: "Oral Question on sewage discharges", kind: "oral-question", date: "2026-10-05", url: "https://hansard.parliament.uk/lords/2026-10-05/debates/x", parliamentarian: "Baroness Beta", staff: "Pat Adviser", notes: "Minister promised a review", addedBy: "Pat" }, { id: 12, what: "Amendment 14 to the Water Bill", kind: "amendment", date: "2026-11-02", url: "", parliamentarian: "Lord Alpha", staff: "", notes: "", addedBy: "" }] }, { id: 2, portfolio: "HO", title: "Asylum backlog", description: "", status: "open", createdBy: "", createdAt: new Date().toISOString(), actions: [] }];
+              return j({ portfolios: [{ code: "DEFRA", name: "Environment, Food and Rural Affairs", count: 1 }, { code: "HO", name: "Home Office", count: 1 }, { code: "DfT", name: "Transport", count: 0 }], issues: only ? issues.filter(i => i.portfolio === only) : issues });
+            }
+            (globalThis.__issuePosts = globalThis.__issuePosts || []).push(route.request().postData()); return j({ ok: true, id: 3 });
+          }
           if (u.pathname.endsWith("/api/libby/concessions")) {
             if (route.request().method() === "GET") return j({ concessions: [{ billId: 1, stageId: 50, amendmentId: 101, house: "lords", number: "12", place: "C3, P2, L14", summary: "Leave out subsection (2)", url: "https://bills.parliament.uk/bills/1/stages/50/amendments/101", billTitle: "Test Bill [HL]", portfolio: ["HO"], notes: "The Government will bring forward its own wording.", wonBy: "Pat", wonAt: new Date().toISOString(), updatedBy: "Pat", updatedAt: new Date().toISOString() }, { billId: 7, stageId: 9, amendmentId: 5, house: "commons", number: "3", place: "", summary: "", url: "https://bills.parliament.uk/bills/7/stages/9/amendments/5", billTitle: "Old Act", portfolio: ["DfT"], notes: "", wonBy: "", wonAt: new Date().toISOString(), updatedBy: "", updatedAt: new Date().toISOString() }] });
             (globalThis.__concPosts = globalThis.__concPosts || []).push(route.request().postData()); return j({ ok: true });
@@ -370,9 +378,27 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           // Lib Dems 150
           await page.goto(BASE + "/libby/#/lib-dems-150"); await page.waitForTimeout(700);
           const ld = await page.$eval("#app", a => a.innerText);
-          check("Lib Dems 150: Policy, Comms, Wallace Room, Room 391 and Ask a Parliamentarian (Comms is no longer under Business)", ["Policy", "Comms", "Wallace Room", "Room 391", "Ask a Parliamentarian"].every(t => ld.includes(t)), ld.slice(0, 200).replace(/\n/g, " "));
+          check("Lib Dems 150: Policy, Comms, Wallace Room, Room 391 and Ask a Parliamentarian (Comms is no longer under Business)", ["Policy", "Comms", "Wallace Room", "Room 391", "Ask a Parliamentarian", "Issues Tracker", "Concessionometer"].every(t => ld.includes(t)), ld.slice(0, 200).replace(/\n/g, " "));
           const guides = await page.$$eval(".link-buttons li", ls => ls.map(l => ({ t: l.querySelector(".button").textContent.trim(), href: l.querySelector("a.button")?.getAttribute("href") || "", off: !!l.querySelector("button[disabled]") })));
-          check("Lib Dems 150: the Organogram button links out; the other three guides say the link is to come", guides.length === 4 && guides[0].href.startsWith("https://libdemsparli.retool.com/embedded/public/c9c6ad33") && guides.slice(1).every(g => g.off), JSON.stringify(guides));
+          check("Lib Dems 150: the Organogram button links out; the other five (including The Mill and Campaigns Hub) say the link is to come", guides.length === 6 && guides.slice(4).map(g => g.t).join("|") === "The Mill|Campaigns Hub" && guides[0].href.startsWith("https://libdemsparli.retool.com/embedded/public/c9c6ad33") && guides.slice(1).every(g => g.off), JSON.stringify(guides));
+          await page.goto(BASE + "/libby/#/issues-tracker"); await page.waitForTimeout(800);
+          const pb = await page.$$eval(".iss-portfolios a", as => as.map(a => a.textContent.trim().replace(/\s+/g, " ")));
+          check("Issues Tracker: buttons at the top for All and each portfolio, with how many issues each holds", pb[0] === "All 2" && pb.includes("DEFRA 1") && pb.includes("HO 1") && pb.includes("DfT 0"), pb.join("|"));
+          const ih = (await page.$$eval(".iss-table thead th", hs => hs.map(h => h.textContent.trim()))).slice(0, 6);
+          check("Issues Tracker: each campaign lists its actions: date, what was done, link, parliamentarian, adviser/staff, notes", ih.join("|") === "Date|What was done|Link|Parliamentarian|Adviser / Staff|Notes" && /sewage discharges/.test(await page.$eval(".iss-table", t => t.innerText)) && /Baroness Beta/.test(await page.$eval(".iss-table", t => t.innerText)) && /Pat Adviser/.test(await page.$eval(".iss-table", t => t.innerText)) && /Minister promised a review/.test(await page.$eval(".iss-table", t => t.innerText)));
+          check("Issues Tracker: an action links to Hansard", (await page.$eval('.iss-table tr[data-action="11"] a', a => a.getAttribute("href"))).startsWith("https://hansard.parliament.uk/"));
+          await page.click('.iss-portfolios a[href="#/issues-tracker?p=HO"]'); await page.waitForTimeout(500);
+          check("Issues Tracker: choosing a portfolio shows only its campaigns", (await page.$$(".iss-card")).length === 1 && /Asylum backlog/.test(await page.$eval(".iss-card", c => c.innerText)));
+          globalThis.__issuePosts = [];
+          await page.click("[data-new-issue]"); await page.fill('[data-issue-form] [name="title"]', "Detention reform"); await page.click('[data-issue-form] button[type="submit"]'); await page.waitForTimeout(400);
+          const ip = JSON.parse(globalThis.__issuePosts[0] || "{}");
+          check("Issues Tracker: add a campaign to the chosen portfolio", ip.action === "issue" && ip.portfolio === "HO" && ip.title === "Detention reform", JSON.stringify(ip));
+          globalThis.__issuePosts = [];
+          await page.click("[data-add-action]"); await page.fill('[data-action-form] [name="what"]', "Debate on the Asylum Bill"); await page.fill('[data-action-form] [name="date"]', "2026-11-09");
+          await page.fill('[data-action-form] [name="url"]', "https://hansard.parliament.uk/lords/2026-11-09"); await page.fill('[data-action-form] [name="parliamentarian"]', "Baroness Beta"); await page.fill('[data-action-form] [name="staff"]', "Pat Adviser"); await page.fill('[data-action-form] [name="notes"]', "Spoke for 8 minutes");
+          await page.click('[data-action-form] button[type="submit"]'); await page.waitForTimeout(400);
+          const ap = JSON.parse(globalThis.__issuePosts[0] || "{}");
+          check("Issues Tracker: add an action with what, date, link, parliamentarian, staff and notes", ap.action === "action" && ap.issueId === 2 && ap.what === "Debate on the Asylum Bill" && ap.date === "2026-11-09" && ap.url.startsWith("https://hansard") && ap.parliamentarian === "Baroness Beta" && ap.staff === "Pat Adviser" && ap.notes === "Spoke for 8 minutes", JSON.stringify(ap));
           await page.goto(BASE + "/libby/#/room-391"); await page.waitForTimeout(800);
           check("Lib Dems 150: Room 391 is a booking calendar like the Wallace Room", /Room 391/.test(await page.$eval("#app", a => a.innerText)) && (await page.$("#room-cal")) !== null && !/Wallace/.test(await page.$eval("#app h1", a => a.textContent)));
           if (process.env.SHOTS) { await page.screenshot({ path: path.join(process.env.SHOTS, "libby-room-391.png"), fullPage: true }); }
