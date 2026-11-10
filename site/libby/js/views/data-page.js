@@ -1,6 +1,7 @@
 // The Data page (Whips and above): #/data, #/data/votes?view=..., #/data/lords?d=...
-//   Voting Data: the Whips' Office voting analysis, worked out from the Lords Votes API (see lib/voting-analysis.js).
+//   Voting Data: the Whips' Office voting analysis, worked out from the Lords Votes API or (with the House buttons) the Commons Votes API (see lib/voting-analysis.js).
 //   Lords Data:  the House of Lords Library's data dashboards in one place.
+//   Commons Data: the Commons' party strengths and Lib Dem MPs, from the Members API, and a link to the Commons Library's own data dashboards.
 // Each subpage shows one type of data at a time, chosen with the buttons along the top.
 import { api } from '../api.js';
 import { esc, fmtDate, todayIso, addDays, loading, errorBox, empty, extLink, pageHeader } from '../ui.js';
@@ -18,10 +19,12 @@ function buttonRow(items, current, hrefFor) {
 /* ------------------------------------------------------------------ Landing */
 
 function landing(el) {
-  el.innerHTML = `${pageHeader('Data', 'Voting analysis and House of Lords data for the Whips\u2019 Office.')}
+  el.innerHTML = `${pageHeader('Data', 'Voting analysis and data for the Lords and the Commons.')}
     <nav class="index index-small" aria-label="Data sections">
       <a class="index-row" href="#/data/votes"><span class="index-title"><span class="swipe">Voting Data</span></span>
-        <span class="index-text">Every Lords division: Government wins and defeats, how the Lib Dems voted alongside the other parties, and where they made the difference.</span></a>
+        <span class="index-text">Every Lords or Commons division (choose the House on the page): Government wins and defeats, how the Lib Dems voted alongside the other parties, and where they made the difference.</span></a>
+      <a class="index-row" href="#/data/commons"><span class="index-title"><span class="swipe">Commons Data</span></span>
+        <span class="index-text">The Commons by party and the Lib Dem MPs, and a link to the Commons Library\u2019s own data dashboards.</span></a>
       <a class="index-row" href="#/data/lords"><span class="index-title"><span class="swipe">Lords Data</span></span>
         <span class="index-text">The House of Lords Library\u2019s data dashboards: membership, peerage creations, party strengths, sittings, delegated legislation and more.</span></a>
     </nav>`;
@@ -242,7 +245,7 @@ async function downloadSpreadsheet(d, status) {
     const yes = (b) => (b ? 'TRUE' : 'FALSE');
     const divisions = d.divisions.map((x) => ({
       'Division Number': x.id, 'Vote Link': x.url, 'Vote Name': x.title, Date: x.date, Department: x.department,
-      Content: x.content, 'Not Content': x.notContent, Result: x.result,
+      [d.sides[0]]: x.content, [d.sides[1]]: x.notContent, Result: x.result,
       'Tory Intention': x.parties.con.intention, 'Tory Votes': x.parties.con.votes,
       'Labour Intention': x.parties.lab.intention, 'Labour Votes': x.parties.lab.votes,
       'Lib Dem Intention': x.parties.ld.intention, 'Lib Dem Vote': x.parties.ld.votes,
@@ -264,7 +267,7 @@ async function downloadSpreadsheet(d, status) {
     add(divisions, 'Divisions', [10, 48, 48, 11, 10, 8, 10, 11, 13, 9, 14, 11, 14, 10, 9, 12, 8, 8, 10, 12, 11, 11, 12, 10]);
     add([...d.months.map((m) => tallyRow(['Month', monthName(m.month)], m)), tallyRow(['Month', 'TOTAL'], d.total)], 'Months', [18, 10, 10, 10, 8, 8, 10, 12, 11, 11, 12]);
     add(d.departments.map((x) => tallyRow(['Department', x.department], x)), 'Departments', [12, 10, 10, 10, 8, 8, 10, 12, 11, 11, 12]);
-    XLSX.writeFile(wb, `Lords_Voting_Data_${d.from}_to_${d.to}.xlsx`);
+    XLSX.writeFile(wb, `${d.house === 'commons' ? 'Commons' : 'Lords'}_Voting_Data_${d.from}_to_${d.to}.xlsx`);
     status.textContent = 'Downloaded.';
   } catch (err) {
     status.textContent = `The spreadsheet could not be made: ${err.message}`;
@@ -277,9 +280,14 @@ async function votingPage(el, query) {
   const view = VOTE_VIEWS.some(([k]) => k === query.view) ? query.view : 'summary';
   const from = /^\d{4}-\d{2}-\d{2}$/.test(query.from || '') ? query.from : PARLIAMENT_START;
   const to = /^\d{4}-\d{2}-\d{2}$/.test(query.to || '') ? query.to : todayIso();
-  const params = (extra) => { const p = new URLSearchParams({ view, ...(query.from ? { from } : {}), ...(query.to ? { to } : {}), ...extra }); return `#/data/votes?${p}`; };
+  const house = query.house === 'commons' ? 'commons' : 'lords';
+  const params = (extra) => { const p = new URLSearchParams({ view, ...(house === 'commons' ? { house } : {}), ...(query.from ? { from } : {}), ...(query.to ? { to } : {}), ...extra }); return `#/data/votes?${p}`; };
+  const houseName = house === 'commons' ? 'Commons' : 'Lords';
 
-  el.innerHTML = `${pageHeader('Voting Data', 'Lords divisions analysed the Whips\u2019 Office way: Government wins and defeats, who the Lib Dems voted with, and where they made the difference.', crumbs)}
+  el.innerHTML = `${pageHeader('Voting Data', `${houseName} divisions analysed the Whips\u2019 Office way: Government wins and defeats, who the Lib Dems voted with, and where they made the difference.`, crumbs)}
+    <nav class="toggle data-house" role="group" aria-label="House">
+      <a href="${esc(params({ house: 'lords' }))}" ${house === 'lords' ? 'aria-current="true"' : ''}>Lords</a>
+      <a href="${esc(params({ house: 'commons' }))}" ${house === 'commons' ? 'aria-current="true"' : ''}>Commons</a></nav>
     <form class="search data-range" data-range>
       <label class="field field-narrow"><span>From</span><input type="date" name="from" value="${esc(from)}"></label>
       <label class="field field-narrow"><span>To</span><input type="date" name="to" value="${esc(to)}"></label>
@@ -300,17 +308,17 @@ async function votingPage(el, query) {
   });
 
   const box = el.querySelector('#data-body');
-  const key = `${from}|${to}`;
+  const key = `${house}|${from}|${to}`;
   let d = votesCache.key === key ? votesCache.data : null;
   if (!d) {
-    try { d = await api(`data/votes?from=${from}&to=${to}`); votesCache = { key, data: d }; }
+    try { d = await api(`data/votes?from=${from}&to=${to}${house === 'commons' ? '&house=commons' : ''}`); votesCache = { key, data: d }; }
     catch (err) { box.innerHTML = errorBox(err); return; }
   }
   if (!box.isConnected) return;
   const period = `${fmtDate(d.from, { day: 'numeric', month: 'long', year: 'numeric' })} to ${fmtDate(d.to, { day: 'numeric', month: 'long', year: 'numeric' })}`;
-  const foot = `<p class="small muted">Source: ${extLink('https://votes.parliament.uk/votes/lords', 'Lords Votes')}, copied each morning${d.updated ? ` (last copied ${esc(fmtDate(d.updated, { day: 'numeric', month: 'short', year: 'numeric' }))})` : ''}. A party's "intention" is the way most of its peers voted. The Government party is Labour.</p>`;
+  const foot = `<p class="small muted">Source: ${extLink(`https://votes.parliament.uk/votes/${house}`, `${houseName} Votes`)}, copied at 6am and 6pm${d.updated ? ` (last copied ${esc(fmtDate(d.updated, { day: 'numeric', month: 'short', year: 'numeric' }))})` : ''}. A party's "intention" is the way most of its peers voted. The Government party is Labour.</p>`;
   if (!d.divisions.length) {
-    box.innerHTML = `${empty(`No divisions are stored for ${period}.`)}<p class="small muted">If this is unexpected, run the \u201cIngest Lords votes\u201d workflow in GitHub Actions.</p>`;
+    box.innerHTML = `${empty(`No divisions are stored for ${period}.`)}<p class="small muted">If this is unexpected, run the \u201cIngest Lords votes\u201d workflow in GitHub Actions (it loads the Commons divisions too).</p>`;
     return;
   }
 
@@ -435,10 +443,31 @@ async function lordsPage(el, query) {
   }
 }
 
+/* ------------------------------------------------------------------ Commons Data */
+
+async function commonsPage(el) {
+  el.innerHTML = `${pageHeader('Commons Data', 'The House of Commons by party, and the Lib Dem MPs. The Commons Library\u2019s own data dashboards are on its website.', crumbs)}
+    <div id="commons-body">${loading('Loading the Commons data')}</div>`;
+  const box = el.querySelector('#commons-body');
+  let d;
+  try { d = await api('data/commons-members'); } catch (err) { box.innerHTML = errorBox(err); return; }
+  if (!box.isConnected) return;
+  box.innerHTML = `<section><h2 class="h2-rule">Party strengths <span class="small muted">${esc(fmtDate(d.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</span></h2>
+      <div class="table-wrap"><table class="grid data-table"><thead><tr><th scope="col">Party</th><th scope="col" class="num">MPs</th><th scope="col" class="num">Share</th><th scope="col" class="num">Men</th><th scope="col" class="num">Women</th></tr></thead><tbody>
+        ${d.parties.map((p) => `<tr><th scope="row">${/liberal democrat/i.test(p.name) ? `<mark class="ld">${esc(p.name)}</mark>` : esc(p.name)}</th><td class="num">${p.total}</td><td class="num">${pct(p.total, d.total)}</td><td class="num">${p.male}</td><td class="num">${p.female}</td></tr>`).join('')}
+        <tr class="data-total"><th scope="row">All parties</th><td class="num">${d.total}</td><td class="num">100%</td><td class="num">${d.parties.reduce((n, p) => n + p.male, 0)}</td><td class="num">${d.parties.reduce((n, p) => n + p.female, 0)}</td></tr></tbody></table></div>
+      <p class="small muted">Source: ${extLink('https://members.parliament.uk/', 'Members of Parliament')} (the Members API), refreshed through the day.</p></section>
+    <section><h2 class="h2-rule">Lib Dem MPs <span class="count">${d.ldMps.length}</span></h2>
+      <ul class="plain data-mps">${d.ldMps.map((m) => `<li><mark class="ld">${esc(m.name)}</mark> ${extLink(`https://members.parliament.uk/member/${m.id}/contact`, 'profile')}</li>`).join('')}</ul></section>
+    <section><h2 class="h2-rule">Commons Library data dashboards</h2>
+      <p>The Commons Library publishes data dashboards (membership, constituencies, elections and more). Its website does not allow automated reading, so they cannot be listed or shown here: ${extLink(d.library, 'open them on the Commons Library website')}.</p></section>`;
+}
+
 /* ------------------------------------------------------------------ Router entry */
 
 export async function renderData(el, { sub }, query) {
   if (sub === 'votes') return votingPage(el, query);
   if (sub === 'lords') return lordsPage(el, query);
+  if (sub === 'commons') return commonsPage(el);
   return landing(el);
 }

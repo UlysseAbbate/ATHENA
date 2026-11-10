@@ -71,5 +71,17 @@ globalThis.fetch = realFetch;
 ok(asked.length === 3 && asked.every(([f, t]) => (Date.parse(t) - Date.parse(f)) / 864e5 < WHATSON_CHUNK_DAYS) && asked[0][0] === '2026-11-04' && asked.at(-1)[1] === '2026-12-15', 'a six-week range is asked for in fortnights, covering every day');
 ok(long.length === commonsEvents.length && long.every((e, i) => e.title === commonsEvents[i].title), 'and the fortnights are put back together in order');
 
+// Voting Data for the Commons: the same calculations as the Lords, with Aye / No (a tie is settled against the motion by the Speaker's casting vote)
+import { analyseDivision, votingData } from '../../lib/libby/voting-analysis.js';
+const cdiv = { division_id: 2473, number: 118, division_date: '2026-11-04', title: 'Sporting Events Bill [Lords] Report: New Clause 1', content: 62, not_content: 286,
+  parties: { Conservative: { c: 5, nc: 90 }, Labour: { c: 2, nc: 190 }, 'Labour (Co-op)': { c: 0, nc: 30 }, 'Liberal Democrat': { c: 50, nc: 0 } } };
+const ca = analyseDivision(cdiv, () => 'DCMS', 'commons');
+ok(ca.result === 'No' && ca.parties.lab.intention === 'No' && ca.parties.lab.votes === 220 && ca.parties.ld.intention === 'Aye' && ca.url === 'https://votes.parliament.uk/votes/commons/division/2473', 'a Commons division is worked out with Aye and No, counting Labour (Co-op) as Labour, and links to the Commons vote');
+ok(ca.govWin && !ca.ldCon && !ca.ldLab && ca.ldAlone && ca.ldNoSupport && !ca.ldDiff, 'the Government (Labour) won, and the Lib Dems voted alone');
+ok(analyseDivision({ ...cdiv, content: 100, not_content: 100 }, () => '', 'commons').result === 'No', 'a tie in the Commons counts as a No');
+const cd = votingData([cdiv], { departmentOf: () => 'DCMS', house: 'commons' });
+ok(cd.house === 'commons' && cd.sides.join('|') === 'Aye|No' && cd.total.divisions === 1 && cd.total.ldAlone === 1, 'the Commons voting data says which House and which sides');
+ok(analyseDivision({ ...cdiv, content: 10, not_content: 5 }, () => '').result === 'Content', 'the Lords calculation is as it was (Content / Not Content)');
+
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll business checks passed.');
 process.exit(failed ? 1 : 0);

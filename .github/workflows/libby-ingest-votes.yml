@@ -44,3 +44,10 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: python ingest_votes.py ${{ inputs.probe && '--probe' || (inputs.since && format('--since {0}', inputs.since)) || '' }}
+      - name: Ingest Commons votes
+        if: ${{ !inputs.probe }}
+        working-directory: scripts/libby
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python ingest_commons_votes.py ${{ inputs.since && format('--since {0}', inputs.since) || '' }}

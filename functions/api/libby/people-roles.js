@@ -1,16 +1,16 @@
 // The directory of who is a Whip, Spokesperson and so on. It decides who appears in the Whips pages (the duty rota and availability
 // for whipping); it does not give anyone access (that is the role and password chosen at sign-in: lib/access.js).
-//   GET  /api/people-roles  -> { roles: [ { id, label } ], people: [ { name, role, onList } ] }                (Whips and above)
-//        `people` is every current Liberal Democrat peer on the Members list (role Peer unless one has been assigned), then the people
-//        added by hand (`onList: false`), each with their role.
+//   GET  /api/people-roles  -> { roles: [ { id, label } ], people: [ { name, role, onList, house } ] }          (Whips and above)
+//        `people` is every current Liberal Democrat peer, then every Lib Dem MP, on the Members list (role Peer / MP-as-"peers" unless one has been assigned;
+//        `house` is 'lords' or 'commons'), then the people added by hand (`onList: false`, with the House they were added to), each with their role.
 //   POST /api/people-roles  { action: 'set',    name, role }   change someone's role                          (Admin: back-channel)
-//   POST /api/people-roles  { action: 'add',    name, role }   add a person who is not on the Members list    (Admin)
+//   POST /api/people-roles  { action: 'add',    name, role, house? }   add a person who is not on the Members list (Admin); house is 'lords' (default) or 'commons'
 //   POST /api/people-roles  { action: 'remove', name }         remove a person added by hand                  (Admin)
 // Only people whose role is not Peer, and people added by hand, are stored (table people_roles).
 
 import { json, errorResponse, normPeer } from '../../../lib/libby/util.js';
 import { sbSelect, supabaseConfigured } from '../../../lib/libby/supabase.js';
-import { ldPeers } from '../../../lib/libby/parliament.js';
+import { ldPeers, ldMPs } from '../../../lib/libby/parliament.js';
 import { passcodeProblem, cleanLine } from '../../../lib/libby/auth.js';
 import { ROLE_ORDER, LEVEL_NAMES } from '../../../lib/libby/access.js';
 
@@ -18,9 +18,11 @@ const DEFAULT_ROLE = 'peers';
 const missingTable = (err) => /people_roles/.test(String(err.message)) && /does not exist|relation|schema cache/.test(String(err.message));
 const MISSING = 'The people_roles table has not been created yet: run supabase/migrations/004_people-roles.sql in Supabase.';
 
-/** "Baroness Brinton" sorts as "brinton", "Lord Purvis of Tweed" as "purvis of tweed". */
-const surnameKey = (n) => String(n).replace(/^(The\s+)?(Lord|Baroness|Lady|Viscount|Earl|Countess|Marquess|Duke|Bishop)\s+/i, '').toLowerCase();
-const bySurname = (a, b) => surnameKey(a.name).localeCompare(surnameKey(b.name)) || a.name.localeCompare(b.name);
+/** "Baroness Brinton" sorts as "brinton", "Lord Purvis of Tweed" as "purvis of tweed"; an MP, "Sir Ed Davey", by the last word: "davey". */
+const surnameKey = (n, house = 'lords') => (house === 'commons'
+  ? String(n).trim().split(/\s+/).slice(-1)[0].toLowerCase()
+  : String(n).replace(/^(The\s+)?(Lord|Baroness|Lady|Viscount|Earl|Countess|Marquess|Duke|Bishop)\s+/i, '').toLowerCase());
+const bySurname = (a, b) => surnameKey(a.name, a.house).localeCompare(surnameKey(b.name, b.house)) || a.name.localeCompare(b.name);
 const same = (a, b) => normPeer(a) === normPeer(b);
 
 const roles = () => ROLE_ORDER.map((id) => ({ id, label: LEVEL_NAMES[id] }));
@@ -33,23 +35,25 @@ async function must(res, what) {
   return res;
 }
 
-/** The Members list (names) and the stored rows. */
+/** The Members lists (names: the Lib Dem peers and the Lib Dem MPs) and the stored rows. `peers` here is everyone on either list. */
 async function load(ctx) {
-  const [peers, rows] = await Promise.all([
+  const [lords, commons, rows] = await Promise.all([
     ldPeers(ctx).then((list) => list.map((p) => p.name).filter(Boolean)).catch(() => []),
-    sbSelect(ctx.env, 'people_roles', 'select=name,role&order=name.asc'),
+    ldMPs(ctx).then((list) => list.map((p) => p.name).filter(Boolean)).catch(() => []),
+    sbSelect(ctx.env, 'people_roles', 'select=name,role,house&order=name.asc'),
   ]);
-  return { peers, rows };
+  return { lords, commons, peers: [...lords, ...commons], rows };
 }
 
 export async function onRequestGet(ctx) {
   if (!supabaseConfigured(ctx.env)) return json({ error: 'Supabase settings are missing in Cloudflare.' }, { status: 503 });
   try {
-    const { peers, rows } = await load(ctx);
+    const { lords, commons, peers, rows } = await load(ctx);
     const stored = new Map(rows.map((r) => [r.name, r.role]));
-    const listed = peers.map((name) => ({ name, role: stored.get(name) || DEFAULT_ROLE, onList: true })).sort(bySurname);
+    const listed = [...lords.map((name) => ({ name, house: 'lords' })), ...commons.map((name) => ({ name, house: 'commons' }))]
+      .map((p) => ({ ...p, role: stored.get(p.name) || DEFAULT_ROLE, onList: true })).sort((a, b) => (a.house === b.house ? bySurname(a, b) : a.house === 'lords' ? -1 : 1));
     const onList = new Set(peers);
-    const added = rows.filter((r) => !onList.has(r.name)).map((r) => ({ name: r.name, role: r.role, onList: false })).sort((a, b) => a.name.localeCompare(b.name));
+    const added = rows.filter((r) => !onList.has(r.name)).map((r) => ({ name: r.name, role: r.role, onList: false, house: r.house || 'lords' })).sort((a, b) => a.name.localeCompare(b.name));
     return json({ roles: roles(), people: [...listed, ...added] });
   } catch (err) {
     if (missingTable(err)) return json({ error: MISSING }, { status: 503 });
@@ -92,9 +96,10 @@ export async function onRequestPost(ctx) {
     if (action === 'add') {
       if (name.length < 2) return json({ error: 'Enter the full name.' }, { status: 400 });
       if (peers.some((p) => same(p, name)) || rows.some((r) => same(r.name, name))) return json({ error: `${name} is already in the list.` }, { status: 409 });
+      const house = body?.house === 'commons' ? 'commons' : 'lords';
       await must(await fetch(table, { method: 'POST', headers: writeHeaders(env),
-        body: JSON.stringify([{ name, role, updated_by: by, updated_at: new Date().toISOString() }]) }), 'people_roles');
-      return json({ ok: true, name, role });
+        body: JSON.stringify([{ name, role, house, updated_by: by, updated_at: new Date().toISOString() }]) }), 'people_roles');
+      return json({ ok: true, name, role, house });
     }
 
     if (action === 'remove') {
