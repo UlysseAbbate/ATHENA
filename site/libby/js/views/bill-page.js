@@ -540,7 +540,7 @@ export async function renderBill(el, { id, house }, query = {}) {
       wrap.innerHTML = amendmentsHtml(state.d, state.comments, state.commentsError, state.flags, state.flagsError);
       panel.innerHTML = '';
       panel.appendChild(wrap);
-      wireAmendments(wrap, id, tab.stage.billStageId, state);
+      wireAmendments(wrap, id, tab.stage.billStageId, state, { house: amCommons ? 'commons' : 'lords' });
     } catch (err) { if (mine === token) panel.innerHTML = errorBox(err); }
   };
 
