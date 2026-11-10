@@ -3,6 +3,7 @@
 // amendments) is on the Bill's own page.
 import { api } from '../api.js';
 import { esc, loading, errorBox, pageHeader } from '../ui.js';
+import { renderStatutoryInstruments } from './si-list.js';
 
 /** The Bill's portfolio chips: the department that sponsors it. A Bill that no department or keyword placed is marked, so it can be settled in lib/portfolio-overrides.js. */
 function tags(b) {
@@ -47,6 +48,7 @@ async function allBills() {
 /** The two sections of the page and their tabs. Primary legislation is Bills; secondary legislation is statutory instruments. */
 const SECTIONS = [
   { title: 'Primary legislation', tabs: [['live', 'Live Bills', '#/legislation'], ['previous', 'Previous Bills', '#/legislation/previous']] },
+  { title: 'Secondary legislation', tabs: [['statutory-instruments', 'Statutory instruments', '#/legislation/statutory-instruments']] },
 ];
 const nav = (tab) => SECTIONS.map((sec) => `<div class="leg-section"><h2 class="leg-section-title">${esc(sec.title)}</h2>
   <div class="toggle" role="group" aria-label="${esc(sec.title)}">${sec.tabs.map(([key, label, href]) => `<a href="${href}" ${key === tab ? 'aria-current="true"' : ''}>${esc(label)}</a>`).join('')}</div></div>`).join('');
@@ -99,10 +101,11 @@ async function renderLive(box) {
 }
 
 export async function renderLegislation(el, { tab = 'live' } = {}) {
-  el.innerHTML = `${pageHeader('Legislation', 'Primary legislation: every live Bill in Parliament, and the Bills that have become Acts. Open a Bill for its next stage, who is looking after it, its stages, documents and amendments.')}
+  el.innerHTML = `${pageHeader('Legislation', 'Primary legislation: every live Bill in Parliament, and the Bills that have become Acts; secondary legislation: the statutory instruments before Parliament. Open a Bill for its next stage, who is looking after it, its stages, documents and amendments.')}
     ${nav(tab)}
     <div id="leg-body"></div>`;
   const box = el.querySelector('#leg-body');
   if (tab === 'previous') return renderPrevious(box);
+  if (tab === 'statutory-instruments') return renderStatutoryInstruments(box);
   return renderLive(box);
 }

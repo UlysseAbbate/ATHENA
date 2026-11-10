@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:leg="http://www.legislation.gov.uk/namespaces/legislation" xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata" xmlns:theme="http://www.legislation.gov.uk/namespaces/theme" xmlns:openSearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:parameters="http://a9.com/-/spec/opensearch/extensions/parameters/1.0/">
+			<id>http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2022&amp;title=Health%20and%20Care</id>
+			<link rel="self" type="application/atom+xml" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2022&amp;title=Health%20and%20Care&amp;results-count=5"/>
+			
+			<link rel="alternate" type="text/csv" href="http://www.legislation.gov.uk/search/data.csv?type=ukpga&amp;year=2022&amp;title=Health%20and%20Care&amp;results-count=5"/>
+			<updated>2025-11-19T23:59:59Z</updated>
+			<title>Search Results</title>
+			<openSearch:Query role="request" leg:type="ukpga" leg:year="2022" leg:title="Health and Care"> </openSearch:Query>
+			<openSearch:itemsPerPage>5</openSearch:itemsPerPage>
+			<openSearch:startIndex>1</openSearch:startIndex>
+			<leg:page>1</leg:page>
+			<leg:morePages>1</leg:morePages>
+			<leg:facets>
+								
+								<leg:facetTypes remove="http://www.legislation.gov.uk/search/data.feed?year=2022&amp;title=Health%20and%20Care&amp;results-count=5"><leg:facetType type="UnitedKingdomPublicGeneralAct" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2022&amp;title=Health%20and%20Care&amp;results-count=5" value="2"/></leg:facetTypes>
+								<leg:facetYears remove="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;title=Health%20and%20Care&amp;results-count=5"><leg:facetYear year="2022" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2022&amp;title=Health%20and%20Care&amp;results-count=5" total="2" value="2"/><leg:facetYear year="2021" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2021&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/><leg:facetYear year="2018" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2018&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/><leg:facetYear year="2015" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2015&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/><leg:facetYear year="2012" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2012&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/><leg:facetYear year="2008" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2008&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/><leg:facetYear year="2003" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2003&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/><leg:facetYear year="2002" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2002&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/><leg:facetYear year="2001" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2001&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/><leg:facetYear year="1997" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=1997&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/><leg:facetYear year="1990" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=1990&amp;title=Health%20and%20Care&amp;results-count=5" total="1"/></leg:facetYears>
+								<leg:facetHundreds/>
+								
+							</leg:facets>
+			<leg:title><leg:and><leg:term>Health</leg:term><leg:term ignored="true">and</leg:term><leg:term>Care</leg:term></leg:and></leg:title>
+			<openSearch:totalResults>2</openSearch:totalResults>
+			<link rel="first" type="application/atom+xml" href="http://www.legislation.gov.uk/search/data.feed?type=ukpga&amp;year=2022&amp;title=Health%20and%20Care&amp;results-count=5"/><entry>
+			<id>http://www.legislation.gov.uk/id/ukpga/2022/43</id>
+			<title>Health and Social Care Levy (Repeal) Act 2022</title>
+			<link rel="self" href="http://www.legislation.gov.uk/id/ukpga/2022/43"/>
+			<link href="http://www.legislation.gov.uk/ukpga/2022/43/2022-10-25"/>
+			<link rel="alternate" type="application/xml" href="http://www.legislation.gov.uk/ukpga/2022/43/2022-10-25/data.xml" title="XML"/><link rel="alternate" type="application/rdf+xml" href="http://www.legislation.gov.uk/ukpga/2022/43/2022-10-25/data.rdf" title="RDF/XML"/><link rel="alternate" type="application/akn+xml" href="http://www.legislation.gov.uk/ukpga/2022/43/2022-10-25/data.akn" title="AKN"/><link rel="alternate" type="application/xhtml+xml" href="http://www.legislation.gov.uk/ukpga/2022/43/2022-10-25/data.xht" title="HTML snippet"/><link rel="alternate" type="application/akn+xhtml" href="http://www.legislation.gov.uk/ukpga/2022/43/2022-10-25/data.html" title="HTML5"/><link rel="alternate" type="text/html" href="http://www.legislation.gov.uk/ukpga/2022/43/2022-10-25/data.htm" title="Website (XHTML) Default View"/><link rel="alternate" type="text/csv" href="http://www.legislation.gov.uk/ukpga/2022/43/2022-10-25/data.csv" title="CSV"/><link rel="alternate" type="application/pdf" href="http://www.legislation.gov.uk/ukpga/2022/43/2022-10-25/data.pdf" title="PDF"/>
+			<link rel="http://purl.org/dc/terms/tableOfContents" type="application/xml" href="http://www.legislation.gov.uk/ukpga/2022/43/contents" title="Table of Contents"/>
+			<author><name/></author>
+			<updated>2024-07-16T15:01:07Z</updated>
+			<published>2022-10-26T09:35:16.729756Z</published>
+			<ukm:DocumentMainType Value="UnitedKingdomPublicGeneralAct"/><ukm:Year Value="2022"/><ukm:Number Value="43"/><ukm:ISBN Value="9780105701811"/><ukm:CreationDate Date="2022-10-25"/>
+			
+			
+			
+			<summary>An Act to make provision for and in connection with the repeal of the Health and Social Care Levy Act 2021.</summary>
+		</entry><entry>
+			<id>http://www.legislation.gov.uk/id/ukpga/2022/31</id>
+			<title>Health and Care Act 2022</title>
+			<link rel="self" href="http://www.legislation.gov.uk/id/ukpga/2022/31"/>
+			<link href="http://www.legislation.gov.uk/ukpga/2022/31/2025-07-07"/>
+			<link rel="alternate" type="application/xml" href="http://www.legislation.gov.uk/ukpga/2022/31/2025-07-07/data.xml" title="XML"/><link rel="alternate" type="application/rdf+xml" href="http://www.legislation.gov.uk/ukpga/2022/31/2025-07-07/data.rdf" title="RDF/XML"/><link rel="alternate" type="application/akn+xml" href="http://www.legislation.gov.uk/ukpga/2022/31/2025-07-07/data.akn" title="AKN"/><link rel="alternate" type="application/xhtml+xml" href="http://www.legislation.gov.uk/ukpga/2022/31/2025-07-07/data.xht" title="HTML snippet"/><link rel="alternate" type="application/akn+xhtml" href="http://www.legislation.gov.uk/ukpga/2022/31/2025-07-07/data.html" title="HTML5"/><link rel="alternate" type="text/html" href="http://www.legislation.gov.uk/ukpga/2022/31/2025-07-07/data.htm" title="Website (XHTML) Default View"/><link rel="alternate" type="text/csv" href="http://www.legislation.gov.uk/ukpga/2022/31/2025-07-07/data.csv" title="CSV"/><link rel="alternate" type="application/pdf" href="http://www.legislation.gov.uk/ukpga/2022/31/2025-07-07/data.pdf" title="PDF"/>
+			<link rel="http://purl.org/dc/terms/tableOfContents" type="application/xml" href="http://www.legislation.gov.uk/ukpga/2022/31/contents" title="Table of Contents"/>
+			<author><name/></author>
+			<updated>2025-11-19T08:55:08Z</updated>
+			<published>2022-08-04T00:00:00Z</published>
+			<ukm:DocumentMainType Value="UnitedKingdomPublicGeneralAct"/><ukm:Year Value="2022"/><ukm:Number Value="31"/><ukm:ISBN Value="9780105701736"/><ukm:CreationDate Date="2022-04-28"/>
+			
+			
+			
+			<summary>An Act to make provision about health and social care.</summary>
+		</entry>
+		</feed>

@@ -12,7 +12,8 @@ import { londonToday, addDays } from '../../lib/libby/util.js';
 import { SAVED_DAYS_AHEAD, SAVED_FUTURE_LENGTHS } from '../../lib/libby/schedule.js';
 import { writeSnapshot } from '../../lib/libby/snapshots.js';
 import { PORTFOLIOS } from '../../lib/libby/portfolios.js';
-import { activeLordsBills, activeBills, billTypes, ldPeers, departments, allCommittees, recentLordsReports, billStagesMany, billPortfolios, previousBills } from '../../lib/libby/parliament.js';
+import { secondaryForBill } from '../../lib/libby/act-instruments.js';
+import { activeLordsBills, activeBills, billTypes, ldPeers, departments, allCommittees, recentLordsReports, billStagesMany, billPortfolios, previousBills, openInstruments } from '../../lib/libby/parliament.js';
 import { onRequestGet as dayRoute } from '../../functions/api/libby/day/[date].js';
 import { onRequestGet as futureRoute } from '../../functions/api/libby/future.js';
 import { onRequestGet as portfolioRoute } from '../../functions/api/libby/portfolios/[code].js';
@@ -70,6 +71,11 @@ await step('bill types', () => billTypes(context()));
 await step('Bills in the Lords', () => activeLordsBills(context()));
 await step('Bills in the Commons', () => activeBills(context(), 'Commons'));
 await step('previous Bills (Acts)', () => previousBills(context()));
+await step('secondary legislation of recent Acts', async () => {
+  const recent = (await previousBills(context())).slice(0, 12);   // the instruments under the Acts most recently passed (commencement and powers, from legislation.gov.uk)
+  for (const b of recent) await secondaryForBill(context(), b.id);
+});
+await step('statutory instruments', () => openInstruments(context()));
 await step('Lib Dem peers', () => ldPeers(context()));
 await step('departments', () => departments(context()));
 await step('Bill portfolios', async () => {
