@@ -71,8 +71,8 @@ export const MENU = [
   { id: 'legislation', label: 'Legislation', href: '#/legislation', level: 'peers', beta: true, house: 'both', title: 'Legislation', text: 'Every live Bill in Parliament: where it is, the next stage, the documents for each stage and the amendments.' },
   { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, Comms, the Wallace Room, Room 391, Ask a Parliamentarian, the Concessionometer, the Issues Tracker and the guides.' },
   // Data: the one page every level has for now (for Whips and above it also sits under the Whips' page, so this item is only for the restricted levels)
-  { id: 'data', label: 'Data', href: '#/data', level: 'peers', beta: true, liveOnly: true, house: 'both', title: 'Data', text: 'Voting analysis and the House of Lords Library data dashboards.' },
-  { id: 'whips-office', label: 'MPs/Peers', href: '#/whips-office', level: 'whips', house: 'both', title: 'MPs/Peers', text: 'Availability for whipping, and the voting analysis and Lords Library data.' },
+  { id: 'data', label: 'Data', href: '#/data', level: 'peers', beta: true, liveOnly: true, house: 'both', title: 'Data', text: 'Voting analysis for the Lords and the Commons, and the Lords and Commons data.' },
+  { id: 'whips-office', label: 'MPs/Peers', href: '#/whips-office', level: 'whips', house: 'both', title: 'MPs/Peers', text: 'Availability for whipping, and the voting analysis and data for the Lords and the Commons.' },
   { id: 'advisers-office', label: 'POLD Staff', href: '#/advisers-office', level: 'staff', house: 'both', title: 'POLD Staff', text: 'Bill advisers and leads, groupings and grids, the bulletin, the duty rota and the roles.' },
   { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, house: 'both', title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
 ];
@@ -170,8 +170,8 @@ export const PAGES = [
   { id: 'whips', match: /^\/whips(?:\/availability)?$/, view: 'whips-page.js', fn: 'renderWhips', level: 'whips',
     group: 'whips-office', tab: 'availability', tabLabel: 'Availability', href: '#/whips', house: 'both', card: 'Mark the days you would prefer to be duty whip, have no preference, or are not free.',
     api: [['whip-availability', { GET: 'whips', '*': 'whips' }], ['people-roles', { GET: 'whips', '*': BACKCHANNEL }]] },
-  { id: 'data', match: /^\/data(?:\/(votes|lords))?$/, view: 'data-page.js', fn: 'renderData', params: (m) => ({ sub: m[1] || '' }), level: 'peers', beta: true,
-    group: 'whips-office', tab: 'data', tabLabel: 'Data', href: '#/data', house: 'both', card: 'Voting analysis and the House of Lords Library data dashboards.',
+  { id: 'data', match: /^\/data(?:\/(votes|lords|commons))?$/, view: 'data-page.js', fn: 'renderData', params: (m) => ({ sub: m[1] || '' }), level: 'peers', beta: true,
+    group: 'whips-office', tab: 'data', tabLabel: 'Data', href: '#/data', house: 'both', card: 'Voting analysis for the Lords and the Commons, and the Lords and Commons data.',
     api: [['data/.*', { '*': 'peers' }]], betaApi: ['data/.*'] },
 
   // The Advisers' page (Staff and above): the advisers' tools, and the roles

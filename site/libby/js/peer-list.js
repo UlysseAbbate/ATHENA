@@ -27,7 +27,8 @@ export const clearRoster = () => { roster = null; };
 export async function loadWhips() {
   try {
     const { people } = await loadRoster();
-    const whips = people.filter((p) => p.role === 'whips').map((p) => p.name).sort((a, b) => surnameKey(a).localeCompare(surnameKey(b)));
+    const whips = people.filter((p) => p.role === 'whips' && p.house !== 'commons')   // the duty rota and availability are the Lords Whips'
+      .map((p) => p.name).sort((a, b) => surnameKey(a).localeCompare(surnameKey(b)));
     if (whips.length) return { names: whips, assigned: true };
   } catch { /* the directory could not be read: fall back to the peers */ }
   return { names: await loadPeers().catch(() => []), assigned: false };

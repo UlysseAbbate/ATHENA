@@ -120,6 +120,7 @@ for (const month of [monthOf(today), lastMonth.toISOString().slice(0, 7)]) {
   await step(`Hansard ${month}`, () => route(pastRoute, `/api/past/hansard?month=${month}`, { kind: 'hansard' }));
 }
 await step('voting data', () => route(votesRoute, '/api/data/votes'));
+await step('voting data (Commons)', () => route(votesRoute, '/api/data/votes?house=commons'));
 await step('Lords Library dashboards', () => route(dashboardsRoute, '/api/data/lords'));
 
 /* ---- tidy up: copies nobody has renewed for two weeks belong to Bills / days / months that no longer matter */

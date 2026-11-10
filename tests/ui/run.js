@@ -237,6 +237,11 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           }
           if (u.pathname.endsWith("/api/libby/bills/1/amendment")) { const aid = u.searchParams.get("aid"); return j({ id: Number(aid), location: "Clause 3", text: ["Page 2, line 14, leave out subsection (2)"], explanatoryStatement: `Statement for ${aid}: this removes the subsection.`, note: "" }); }
           if (u.pathname.endsWith("/api/libby/comments")) return j({ comments: {} });
+          if (u.pathname.endsWith("/api/libby/data/commons-members")) return j({ date: "2026-11-10", total: 650, parties: [{ name: "Labour", abbreviation: "Lab", colour: "d50000", male: 215, female: 189, nonBinary: 0, total: 404 }, { name: "Liberal Democrat", abbreviation: "LD", colour: "faa61a", male: 40, female: 32, nonBinary: 0, total: 72 }], ldMps: [{ id: 1, name: "Daisy Cooper" }, { id: 2, name: "Sir Ed Davey" }], library: "https://commonslibrary.parliament.uk/type/data-dashboard/" });
+          if (u.pathname.endsWith("/api/libby/people-roles")) {
+            if (route.request().method() === "GET") return j({ roles: [{ id: "peers", label: "Peer" }, { id: "whips", label: "Whip" }, { id: "staff", label: "Staff" }], people: [{ name: "Baroness Beta", role: "whips", onList: true, house: "lords" }, { name: "Sir Ed Davey", role: "peers", onList: true, house: "commons" }, { name: "Daisy Cooper", role: "peers", onList: true, house: "commons" }, { name: "Pat Staffer", role: "staff", onList: false, house: "commons" }] });
+            (globalThis.__rolePosts = globalThis.__rolePosts || []).push(route.request().postData()); return j({ ok: true });
+          }
           if (u.pathname.endsWith("/api/libby/issues")) {
             if (route.request().method() === "GET") {
               const only = u.searchParams.get("portfolio");
@@ -284,7 +289,8 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
             const party = (i, v) => ({ intention: i, votes: v, rebels: 0, content: v, notContent: 0 });
             const div = (id, date, title) => ({ id, date, title, url: "https://votes.parliament.uk/votes/lords/" + id, department: "DHSC", result: "Content", content: 200, notContent: 150, majority: 50,
               parties: { con: party("Not Content", 80), lab: party("Content", 120), ld: party("Content", 70) }, splits: [], govWin: true, ldCon: false, ldLab: true, ldAlone: false, ldDiff: false, conNeedLd: false, labNeedLd: false, ldNoSupport: false });
-            return j({ from: "2024-07-04", to: "2026-10-28", updated: null, total: tally(20), months: [{ month: "2026-09", ...tally(8) }, { month: "2026-10", ...tally(12) }],
+            const hs = u.searchParams.get("house") === "commons" ? "commons" : "lords"; (globalThis.__voteHouses = globalThis.__voteHouses || []).push(hs);
+            return j({ house: hs, sides: hs === "commons" ? ["Aye", "No"] : ["Content", "Not Content"], from: "2024-07-04", to: "2026-10-28", updated: null, total: tally(20), months: [{ month: "2026-09", ...tally(8) }, { month: "2026-10", ...tally(12) }],
               departments: [{ department: "DHSC", ...tally(10) }, { department: "MoJ", ...tally(10) }], divisions: [div(1, "2026-09-10", "Health Bill: amendment 1"), div(2, "2026-10-12", "Courts Bill: clause 4")] });
           }
           return j({}, 404);
@@ -474,6 +480,26 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.$eval(".table-wrap", w => { w.scrollLeft = 200; });
           const stay = await page.$eval(".data-table", t => { const w = t.closest(".table-wrap").getBoundingClientRect().left; return Math.abs(t.querySelector("tbody th").getBoundingClientRect().left - w) <= 2; });
           check("data: scrolled sideways, the first column stays at the left edge", stay);
+          await page.setViewportSize({ width: 1200, height: 900 });
+          await page.goto(BASE + "/libby/#/data"); await page.waitForTimeout(600);
+          check("Data: the landing page offers Voting Data, Commons Data and Lords Data", /Voting Data/.test(await page.$eval("#app", a => a.innerText)) && /Commons Data/.test(await page.$eval("#app", a => a.innerText)) && /Lords Data/.test(await page.$eval("#app", a => a.innerText)));
+          globalThis.__voteHouses = [];
+          await page.goto(BASE + "/libby/#/data/votes?view=summary&house=commons"); await page.waitForTimeout(900);
+          check("Voting Data: House buttons, and the Commons view asks for the Commons divisions", (await page.$$eval(".data-house a", as => as.map(a => a.textContent.trim()))).join("|") === "Lords|Commons" && globalThis.__voteHouses.includes("commons") && /Commons divisions analysed/.test(await page.$eval("#app", a => a.innerText)), (globalThis.__voteHouses || []).join(","));
+          await page.goto(BASE + "/libby/#/data/commons"); await page.waitForTimeout(900);
+          const cd = await page.$eval("#app", a => a.innerText.replace(/\s+/g, " "));
+          check("Commons Data: party strengths, the Lib Dem MPs (highlighted yellow) and the Library link", /Party strengths/.test(cd) && /Labour\s+404/.test(cd) && /Lib Dem MPs/.test(cd) && (await page.$$eval(".data-mps mark.ld", ms => ms.map(m => m.textContent)).then(a => a.join("|"))) === "Daisy Cooper|Sir Ed Davey" && (await page.$eval('a[href^="https://commonslibrary.parliament.uk"]', a => a.href)).includes("data-dashboard"), cd.slice(0, 160));
+          await page.goto(BASE + "/libby/#/roles"); await page.waitForTimeout(900);
+          const rh = await page.$$eval(".roles-table thead th", hs => hs.map(h => h.textContent.trim()));
+          check("Roles: the list covers peers and Lib Dem MPs, with a House column", rh.join("|") === "Person|House|Role" && (await page.$$eval(".roles-table tbody tr", rs => rs.map(r => r.dataset.house))).join("|") === "lords|commons|commons|commons");
+          check("Roles: Lib Dem MPs and peers on the Members lists are highlighted in yellow; staff added by hand are not", (await page.$$eval('.roles-table tbody tr[data-name="Daisy Cooper"] mark.ld', m => m.length)) === 1 && (await page.$$eval('.roles-table tbody tr[data-name="Baroness Beta"] mark.ld', m => m.length)) === 1 && (await page.$$eval('.roles-table tbody tr[data-name="Pat Staffer"] mark.ld', m => m.length)) === 0);
+          await page.selectOption("[data-house]", "commons"); await page.waitForTimeout(150);
+          check("Roles: filter by House", (await page.$$eval(".roles-table tbody tr:not([hidden])", rs => rs.length)) === 3);
+          globalThis.__rolePosts = [];
+          await page.selectOption('tr[data-name="Daisy Cooper"] [data-set]', "whips"); await page.waitForTimeout(300);
+          check("Roles: pick a role for an MP, as for a peer", JSON.parse(globalThis.__rolePosts[0] || "{}").name === "Daisy Cooper" && JSON.parse(globalThis.__rolePosts[0]).role === "whips");
+          await page.fill('#roles-add [name="name"]', "Sam New"); await page.selectOption('[name="house"][form="roles-add"]', "commons"); await page.click('button[form="roles-add"]'); await page.waitForTimeout(300);
+          check("Roles: a person added by hand says which House", JSON.parse(globalThis.__rolePosts[1] || "{}").action === "add" && JSON.parse(globalThis.__rolePosts[1]).house === "commons");
           if (process.env.SHOTS) for (const [view, name] of [["months", "data-months"], ["divisions", "data-divisions"]]) { await page.goto(BASE + "/libby/#/data/votes?view=" + view); await page.waitForTimeout(900); await page.screenshot({ path: path.join(process.env.SHOTS, name + ".png"), fullPage: true }); }
           await page.setViewportSize({ width: 1280, height: 720 });
           lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(600);
