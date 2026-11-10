@@ -7,6 +7,7 @@ import { assembleDay, getThemes } from '../docs/grid-data.js';
 import { groupDocs, rankOfLabel } from '../doc-groups.js';
 import { amendmentsHtml, wireAmendments } from '../amendments-table.js';
 import { renderSecondarySection } from './secondary-section.js';
+import { buildUpdateDoc, updateTitle } from '../docs/update-doc.js';
 
 const stripTags = (html) => { const d = document.createElement('div'); d.innerHTML = html || ''; return d.textContent.trim(); };
 
@@ -426,6 +427,12 @@ export async function renderBill(el, { id, house }, query = {}) {
         <h3 id="team-${h}" class="team-title">${h === 'commons' ? 'Commons' : 'Lords'}</h3>
         <dl><div><dt>Adviser</dt><dd data-team="${h}-adviser"><span class="muted">…</span></dd></div><div><dt>Bill lead</dt><dd data-team="${h}-lead"><span class="muted">…</span></dd></div></dl>
       </section>`).join('')}
+      <section class="bill-team-house bill-team-update" aria-label="Update document">
+        <h3 class="team-title">Update</h3>
+        <p class="small muted">A short Word document on this Bill: where it is, what it does, what the Lib Dems have tabled, and the votes.</p>
+        <p><button type="button" class="button" data-update>Give me an Update</button></p>
+        <p class="small" data-update-status role="status" aria-live="polite"></p>
+      </section>
     </div>
     ${b.summary ? `<details class="summary-box"><summary>Summary</summary><p>${esc(stripTags(b.summary))}</p></details>` : ''}
 
@@ -454,6 +461,25 @@ export async function renderBill(el, { id, house }, query = {}) {
     const n = (d.dates || {})[id];
     el.querySelector('[data-next-stage]').innerHTML = n && n.date ? `Next stage: <strong>${esc(fmtShort(n.date))}</strong>${n.stage ? ` · ${esc(n.stage)}${n.house ? ` (${esc(n.house)})` : ''}` : ''}` : 'Next stage: <span class="muted">not yet scheduled</span>';
   }).catch(() => { const p = el.querySelector('[data-next-stage]'); if (p) p.innerHTML = 'Next stage: <span class="muted">unavailable</span>'; });
+
+  // "Give me an Update": a Word document on this Bill (intro, summary, Lib Dem activity, parliamentary activity)
+  el.querySelector('[data-update]').addEventListener('click', async (e) => {
+    const btn = e.currentTarget, out = el.querySelector('[data-update-status]');
+    btn.disabled = true;
+    try {
+      out.textContent = 'Gathering the Bill’s stages, amendments and votes…';
+      const data = await api(`bills/${id}/update`);
+      let ai = null;
+      if (can('whips')) {
+        out.textContent = 'Writing the summary from the official documents…';
+        try { ai = await api(`bills/${id}/update-summary`, { method: 'POST', body: JSON.stringify({ title: data.bill.title, longTitle: data.bill.longTitle, official: data.summary.official, parts: data.summary.parts, sources: data.summary.sources }) }); } catch (err) { out.textContent = `The summary could not be written (${err.message}); using the official wording.`; }
+      }
+      out.textContent = 'Building the document…';
+      const D = await loadLib('docx');
+      await downloadDoc(D, buildUpdateDoc(D, data, ai), `${updateTitle(data)}.docx`);
+      out.textContent = `Downloaded: ${updateTitle(data)}.docx`;
+    } catch (err) { out.textContent = `Could not make the update: ${err.message}`; } finally { btn.disabled = false; }
+  });
 
   const panel = el.querySelector('#ams');
   const cache = new Map();
