@@ -60,7 +60,7 @@ export const inHouse = (item, house = 'lords') => item.house === 'both' || (item
 //   rank 3 and above (Leader's circle and its Staff, Administrator, Developer)       everything their level allows: Leader's circle everything except the back-end
 // The pages are listed by id, the /api routes by name. The server enforces the same lists (functions/api/libby/_middleware.js).
 const BASIC_OPEN = { pages: ['home', 'data'], routes: ['data/.*', 'status', 'ld-peers'], write: [] };
-const WHIPS_OPEN = { pages: ['home', 'data', 'whips-office', 'whips', 'parliamentary-process', 'issues-tracker', 'concessionometer'], routes: [...BASIC_OPEN.routes, 'whip-availability', 'people-roles', 'parliamentary-process', 'issues', 'concessions'], write: ['whip-availability', 'parliamentary-process', 'issues'] };
+const WHIPS_OPEN = { pages: ['home', 'data', 'whips-office', 'whips', 'lds150', 'parliamentary-process', 'issues-tracker', 'concessionometer'], routes: [...BASIC_OPEN.routes, 'whip-availability', 'people-roles', 'parliamentary-process', 'issues', 'concessions'], write: ['whip-availability', 'parliamentary-process', 'issues'] };
 /** What this level may open for now: { pages, routes (reads), write (any request) }, or null if it is not held back. */
 export const openFor = (level) => (RANK[level] >= 3 ? null : RANK[level] === 2 ? WHIPS_OPEN : BASIC_OPEN);
 /** True if this level is held to part of LIBBY for now. */
@@ -85,10 +85,10 @@ export const MENU = [
   { id: 'today', label: 'Today', href: '#/today', level: 'peers', beta: true, house: 'both', title: "Today's business", text: 'What is happening in the Commons or the Lords today: the order of business, Oral Questions and the committees.' },
   { id: 'business', label: 'Business', href: '#/business', level: 'peers', beta: true, house: 'both', title: 'Business', text: 'The coming weeks by calendar or by portfolio, and past business (votes, questions, committees, Hansard).' },
   { id: 'legislation', label: 'Legislation', href: '#/legislation', level: 'peers', beta: true, house: 'both', title: 'Legislation', text: 'Every live Bill in Parliament: where it is, the next stage, the documents for each stage and the amendments.' },
-  { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, Comms, the Wallace Room, Room 391, Ask a Parliamentarian and the guides.' },
+  { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, Comms, the Wallace Room, Room 391, Ask a Parliamentarian, Parliamentary process and the guides.' },
   // Data: the one page every level has for now (for Whips and above it also sits under the Whips' page, so this item is only for the restricted levels)
   { id: 'data', label: 'Data', href: '#/data', level: 'peers', beta: true, liveOnly: true, house: 'both', title: 'Data', text: 'Voting analysis for the Lords and the Commons, and the Lords and Commons data.' },
-  { id: 'whips-office', label: 'Whips Hub', href: '#/whips-office', level: 'whips', house: 'both', title: 'Whips Hub', text: 'Availability for whipping, the voting analysis and data for the Lords and the Commons, parliamentary process (Erskine May and the Lords Companion), the Issues Tracker and the Concessionometer.' },
+  { id: 'whips-office', label: 'Whips Hub', href: '#/whips-office', level: 'whips', house: 'both', title: 'Whips Hub', text: 'Availability for whipping, the voting analysis and data for the Lords and the Commons, the Issues Tracker and the Concessionometer.' },
   { id: 'advisers-office', label: 'POLD Staff', href: '#/advisers-office', level: 'staff', house: 'both', title: 'POLD Staff', text: 'Bill advisers and leads, groupings and grids, the bulletin, the duty rota and the roles.' },
   { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, house: 'both', title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
 ];
@@ -99,8 +99,8 @@ export const BETA_MENU = MENU.filter((m) => m.beta && !m.liveOnly);
 // Groups of subpages. Each group is shown as a hub page (cards) and as a row of buttons above each of its pages.
 export const GROUPS = {
   business: { title: 'Business', intro: 'What Parliament will do, what it has done, and what the team has been saying.' },
-  lds150: { title: 'Lib Dems 150', intro: 'Policy, Comms, the rooms, Ask a Parliamentarian and the guides.' },
-  'whips-office': { title: 'Whips Hub', intro: 'For Whips and above: availability for whipping, the data, parliamentary process, the Issues Tracker and the Concessionometer.' },
+  lds150: { title: 'Lib Dems 150', intro: 'Policy, Comms, the rooms, Ask a Parliamentarian, Parliamentary process and the guides.' },
+  'whips-office': { title: 'Whips Hub', intro: 'For Whips and above: availability for whipping, the data, the Issues Tracker and the Concessionometer.' },
   'advisers-office': { title: 'POLD Staff', intro: 'For Staff and Admin: the tools for Bills, the bulletin and the rota, and who has which role.' },
 };
 
@@ -171,6 +171,9 @@ export const PAGES = [
   { id: 'ask-parliamentarian', match: /^\/ask-parliamentarian$/, view: 'ask-page.js', fn: 'renderAsk', group: 'lds150', tab: 'ask', tabLabel: 'Ask a Parliamentarian', href: '#/ask-parliamentarian', beta: true, house: 'both',
     card: 'Ask for help (attend an AGM, work experience support ...) by a date; parliamentarians and their staff answer by offering support.',
     api: [['ask-parliamentarian', { GET: 'peers', '*': 'peers' }]] },
+  { id: 'parliamentary-process', match: /^\/parliamentary-process$/, view: 'process-page.js', fn: 'renderProcess', group: 'lds150', tab: 'process', tabLabel: 'Parliamentary process', href: '#/parliamentary-process', house: 'both',
+    card: 'Ask a question about procedure: answered from Erskine May (the Commons) and the Lords Companion, with the passages it used.',
+    api: [['parliamentary-process', { GET: 'peers', '*': 'peers' }], ['process-companion', { GET: 'whips', '*': WHIPS_FEATURES }]] },
   { id: 'comms', match: /^\/comms$/, view: 'comms-page.js', fn: 'renderComms', group: 'lds150', tab: 'comms', tabLabel: 'Comms', href: '#/comms', beta: true, house: 'lords',
     card: 'The latest posts from the Lib Dem Lords team on Bluesky, X, Instagram and LinkedIn.',
     api: [['comms', { GET: 'peers', '*': WHIPS_FEATURES }]] },
@@ -185,9 +188,6 @@ export const PAGES = [
     api: [['data/.*', { '*': 'peers' }]], betaApi: ['data/.*'] },
 
   // The Advisers' page (Staff and above): the advisers' tools, and the roles
-  { id: 'parliamentary-process', match: /^\/parliamentary-process$/, view: 'process-page.js', fn: 'renderProcess', level: 'whips', group: 'whips-office', tab: 'process', tabLabel: 'Parliamentary process', href: '#/parliamentary-process', house: 'both',
-    card: 'Ask a question about procedure: answered from Erskine May (the Commons) and the Lords Companion, with the passages it used.',
-    api: [['parliamentary-process', { GET: 'whips', '*': 'whips' }], ['process-companion', { GET: 'whips', '*': WHIPS_FEATURES }]] },
   { id: 'issues-tracker', match: /^\/issues-tracker$/, view: 'issues-page.js', fn: 'renderIssues', level: 'whips', group: 'whips-office', tab: 'issues', tabLabel: 'Issues Tracker', href: '#/issues-tracker', house: 'both',
     card: 'Campaigns and long-standing issues by portfolio, with everything done on each: questions, debates, legislation, amendments, who was responsible, and notes.',
     api: [['issues', { GET: 'whips', '*': 'whips' }]] },

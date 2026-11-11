@@ -417,7 +417,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           // Lib Dems 150
           await page.goto(BASE + "/libby/#/lib-dems-150"); await page.waitForTimeout(700);
           const ld = await page.$eval("#app", a => a.innerText);
-          check("Lib Dems 150: Policy, Comms, Wallace Room, Room 391 and Ask a Parliamentarian (Comms is no longer under Business)", ["Policy", "Comms", "Wallace Room", "Room 391", "Ask a Parliamentarian"].every(t => ld.includes(t)) && !/Issues Tracker|Concessionometer/.test(ld), ld.slice(0, 200).replace(/\n/g, " "));
+          check("Lib Dems 150: Policy, Comms, Wallace Room, Room 391 and Ask a Parliamentarian (Comms is no longer under Business)", ["Policy", "Comms", "Wallace Room", "Room 391", "Ask a Parliamentarian", "Parliamentary process"].every(t => ld.includes(t)) && !/Issues Tracker|Concessionometer/.test(ld), ld.slice(0, 200).replace(/\n/g, " "));
           const guides = await page.$$eval(".link-buttons li", ls => ls.map(l => ({ t: l.querySelector(".button").textContent.trim(), href: l.querySelector("a.button")?.getAttribute("href") || "", off: !!l.querySelector("button[disabled]") })));
           check("Lib Dems 150: the Organogram button links out; the other five (including The Mill and Campaigns Hub) say the link is to come", guides.length === 6 && guides.slice(4).map(g => g.t).join("|") === "The Mill|Campaigns Hub" && guides[0].href.startsWith("https://libdemsparli.retool.com/embedded/public/c9c6ad33") && guides.slice(1).every(g => g.off), JSON.stringify(guides));
           await page.goto(BASE + "/libby/#/issues-tracker"); await page.waitForTimeout(800);
@@ -455,7 +455,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           // the Whips' page and the Advisers' page
           await page.goto(BASE + "/libby/#/whips-office"); await page.waitForTimeout(600);
           const wo = await page.$$eval("#app .index-row .swipe", es => es.map(e => e.textContent));
-          check("Whips Hub: Availability, Data and Parliamentary process sit under it", wo.join("|") === "Availability|Data|Parliamentary process|Issues Tracker|Concessionometer", wo.join("|"));
+          check("Whips Hub: Availability, Data, the Issues Tracker and the Concessionometer sit under it", wo.join("|") === "Availability|Data|Issues Tracker|Concessionometer", wo.join("|"));
           await page.goto(BASE + "/libby/#/advisers-office"); await page.waitForTimeout(600);
           const ao = await page.$$eval("#app .index-row .swipe", es => es.map(e => e.textContent));
           check("Advisers' page: the Advisers and Roles pages sit under it", ao.join("|") === "Advisers|Roles", ao.join("|"));
@@ -486,9 +486,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           }
           for (const whip of ["whips", "whips_staff"]) {
             lvl = whip; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
-            check(`${whip}: the menu is the Whips Hub`, (await menu()).join("|") === "Whips Hub", (await menu()).join("|"));
+            check(`${whip}: the menu is Lib Dems 150 (for Parliamentary process) and the Whips Hub`, (await menu()).join("|") === "Lib Dems 150|Whips Hub", (await menu()).join("|"));
             await page.goto(BASE + "/libby/#/whips-office"); await page.waitForTimeout(500);
-            check(`${whip}: the Whips Hub opens, with Availability, Data, Parliamentary process, the Issues Tracker and the Concessionometer`, (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|") === "Availability|Data|Parliamentary process|Issues Tracker|Concessionometer", (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|"));
+            check(`${whip}: the Whips Hub opens, with Availability, Data, the Issues Tracker and the Concessionometer`, (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|") === "Availability|Data|Issues Tracker|Concessionometer", (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|"));
             await page.goto(BASE + "/libby/#/parliamentary-process"); await page.waitForTimeout(600);
             check(`${whip}: Parliamentary process opens`, !/Not available/.test(await page.$eval("#app", b => b.innerText)) && /Your question/.test(await page.$eval("#app", b => b.innerText)));
             if (whip === "whips") {
