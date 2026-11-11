@@ -184,3 +184,7 @@ footer.foot,footer.shell-foot{margin:3rem 0 0;padding:1.25rem max(1.25rem,calc((
 .foot a:hover,.foot .linkish:hover,.shell-foot .linkish:hover{color:var(--accent-ink);text-decoration-color:var(--accent)}
 @media (max-width:600px){.brand-sub{display:none}.masthead-inner{align-items:flex-start}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* a short message that stays in view wherever the page is scrolled (the Access page) */
+.flash{position:fixed;left:50%;bottom:1.25rem;transform:translateX(-50%);z-index:60;max-width:min(92vw,40rem);padding:.6rem 1rem;border-radius:6px;background:var(--ink);color:var(--paper);font-size:.9rem;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.flash.flash-bad{background:var(--red);color:var(--on-fill)}
+.flash[hidden]{display:none}

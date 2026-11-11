@@ -66,7 +66,7 @@ export async function renderAsk(el, _params, query = {}) {
         <label class="field"><span>Offer support, as</span><input name="who" list="ask-people" required maxlength="100" value="${esc(who)}" placeholder="a parliamentarian or their staff"></label>
         <label class="field"><span>What you can do (optional)</span><input name="note" maxlength="400"></label>
         <button class="button button-quiet" type="submit">I can help</button>
-        ${staff || r.requester === who ? `<button class="button button-quiet" type="button" data-cancel="${r.id}">Cancel request</button>` : ''}
+        ${staff || r.requester === who ? `<button class="button button-quiet" type="button" data-cancel="${r.id}">Delete request</button>` : ''}
       </form></article>`;
   }).join('') : empty(show === 'open' ? 'Nothing is waiting for an answer.' : 'Nothing here.')) + `<datalist id="ask-people">${peers.map((n) => `<option value="${esc(n)}">`).join('')}</datalist>`;
 
@@ -100,7 +100,7 @@ export async function renderAsk(el, _params, query = {}) {
   root.querySelector('[data-past]').addEventListener('change', (e) => { const h = new URLSearchParams(link({}).split('?')[1]); if (e.target.checked) h.set('past', '1'); else h.delete('past'); location.hash = `#/ask-parliamentarian?${h}`.slice(1); });
   root.addEventListener('click', (e) => {
     const wd = e.target.closest('[data-withdraw]'); if (wd) return act({ action: 'withdraw', offerId: Number(wd.dataset.withdraw), as: who }, 'Offer taken back.');
-    const cn = e.target.closest('[data-cancel]'); if (cn && confirm('Cancel this request?')) return act({ action: 'cancel', id: Number(cn.dataset.cancel), as: who }, 'Request cancelled.');
+    const cn = e.target.closest('[data-cancel]'); if (cn && confirm('Delete this request for good, with the offers on it?')) return act({ action: 'cancel', id: Number(cn.dataset.cancel), as: who }, 'Request deleted.');
   });
   root.addEventListener('submit', (e) => {
     const f = e.target.closest('[data-offer]'); if (!f) return;

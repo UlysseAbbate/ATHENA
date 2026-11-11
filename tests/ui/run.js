@@ -92,6 +92,7 @@ async function mock(page, who, log) {
     const req = route.request(), url = new URL(req.url()), m = req.method();
     const json = (body, status = 200, headers = {}) => route.fulfill({ status, contentType: "application/json", headers: { "access-control-allow-origin": "*", "access-control-expose-headers": "content-range", ...headers }, body: JSON.stringify(body) });
     if (m === "OPTIONS") return route.fulfill({ status: 200, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "*" } });
+    if (url.pathname === "/functions/v1/invite-person") { log.push(`INVITE ${req.postData()}`); return json({ status: "invited", emailed: true, note: "" }); }
     if (url.pathname === "/rest/v1/rpc/my_access") return json(access(u));
     if (url.pathname === "/rest/v1/rpc/team_last_seen") return json(Object.values(USERS).map(x => ({ id: x.id, last_sign_in_at: ts })));
     if (url.pathname.startsWith("/rest/v1/rpc/")) {
@@ -174,7 +175,23 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       check(`${who}: Access page shows the right programs`, JSON.stringify(aTabs) === JSON.stringify({ admin: ["Everyone", "LOVELACE", "LUCIEN", "LIBBY"], core: ["LOVELACE"], lmgr: ["LUCIEN"], member: [] }[who]) && (aTabs.length > 0 || /Not found/.test(aText)), aTabs.join(","));
       if (who === "admin") {   // Everyone: one row per account, a level to choose for each program
         const rows = await page.$$eval("#everyone tbody tr", rs => rs.map(r => r.dataset.e));
-        check("admin: Everyone lists every account, with the ones waiting for access", rows.length === 3 && rows.includes("newbie@test.invalid") && /1 waiting for access/.test(await page.$eval("#body", b => b.innerText)), rows.join(","));
+        check("admin: Everyone lists every account, with the ones waiting for access", rows.length === 3 && rows.includes("newbie@test.invalid") && /Waiting for your approval\s*1/.test(await page.$eval("#body", b => b.innerText)), rows.join(","));
+        check("admin: a new account waits for approval (nothing is open to it until approved), with Approve and Delete", (await page.$$eval("#approve tbody tr", rs => rs.map(r => r.dataset.e))).join() === "newbie@test.invalid" && (await page.$$("#approve [data-approve]")).length === 1 && (await page.$$("#approve [data-delperson]")).length === 1);
+        check("admin: every account except an administrator and yourself can be deleted outright", (await page.$$eval("#everyone tbody tr", rs => rs.filter(r => r.querySelector("[data-delperson]")).map(r => r.dataset.e))).join() === "newbie@test.invalid,core@test.invalid");
+        check("admin: there is a form to invite someone by email", (await page.$("#invite")) !== null && (await page.$$eval("#invite #ip option", os => os.map(o => o.value))).join() === "lovelace,lucien,libby");
+        await page.fill("#ie", "invitee@test.invalid"); await page.click("#invite button[type=submit]"); await page.waitForTimeout(500);
+        check("admin: inviting sends the email, program, level and the redirect", log.some(l => l.startsWith("INVITE") && l.includes("invitee@test.invalid") && l.includes('"program":"lovelace"') && l.includes('"send":true')), log.filter(l => l.startsWith("INVITE")).join(";"));
+        await page.evaluate(() => { document.querySelector("#everyone").dataset.marker = "same-table"; window.scrollTo(0, 120); });
+        const yBefore = await page.evaluate(() => window.scrollY);
+        await page.selectOption('#everyone tr[data-e="core@test.invalid"] select[data-ev="lucien"]', "access"); await page.waitForTimeout(500);
+        check("admin: changing someone's level does not redraw the page: the table, scroll position and focus stay put, so the next change can follow at once", (await page.$eval("#everyone", t => t.dataset.marker)) === "same-table" && Math.abs((await page.evaluate(() => window.scrollY)) - yBefore) < 3 && /access saved/.test(await page.$eval("#flash", f => f.textContent)));
+        await page.selectOption('#everyone tr[data-e="core@test.invalid"] select[data-ev="lucien"]', ""); await page.waitForTimeout(400);
+        check("admin: and the next change works straight away", (await page.$eval("#everyone", t => t.dataset.marker)) === "same-table" && /access removed/.test(await page.$eval("#flash", f => f.textContent)));
+        await page.click('#approve [data-approve]'); await page.waitForTimeout(400);
+        check("admin: Approve gives the chosen level (grant_access)", log.some(l => l.startsWith("RPC grant_access") && l.includes("newbie@test.invalid")));
+        page.once("dialog", d => d.accept());
+        await page.click('#everyone tr[data-e="newbie@test.invalid"] [data-delperson]'); await page.waitForTimeout(400);
+        check("admin: Delete removes an account for good (delete_person)", log.some(l => l.startsWith("RPC delete_person") && l.includes('"p_user":"n1"')), log.filter(l => l.startsWith("RPC")).slice(-3).join(";"));
         const sels = await page.$$eval('#everyone tr[data-e="newbie@test.invalid"] select', ss => ss.map(x => x.dataset.ev));
         check("admin: each account has a level for LOVELACE, LUCIEN and LIBBY", sels.join(",") === "lovelace,lucien,libby", sels.join(","));
         if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `access-everyone-${scheme}.png`), fullPage: true }); }
@@ -195,8 +212,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: Give access calls grant_access`, log.some(l => l.startsWith("RPC grant_access") && l.includes("new@test.invalid")), log.filter(l => l.startsWith("RPC")).join(";"));
         await page.fill("#cl", "Volunteers"); await page.fill("#cc", "simple-pass-1"); await page.click('#mk button[type=submit]'); await page.waitForTimeout(500);
         check(`${who}: a new code is shown, and kept in the table`, (await page.$eval("#newcode", e => e.textContent).catch(() => "")) === "abcd-1234-abcd-1234-abcd" && log.some(l => l.startsWith("RPC create_access_code") && l.includes("simple-pass-1")));
+        check(`${who}: a program tab can invite someone by email too`, (await page.$("#invite")) !== null && (await page.$$("#invite #ip")).length === 1);
+        if (await page.$("#codes [data-delcode]")) {
+          page.once("dialog", d => d.accept());
+          await page.click("#codes [data-delcode]"); await page.waitForTimeout(400);
+          check(`${who}: a code can be deleted outright, not only switched off`, log.some(l => l.startsWith("RPC delete_access_code")), log.filter(l => l.startsWith("RPC")).slice(-3).join(";"));
+        }
         if (await page.$("#codes")) {
-          const kept = await page.$eval("#codes", t => t.innerText);
+          const kept =await page.$eval("#codes", t => t.innerText);
           check(`${who}: the codes table shows each code (to copy), its level, end time and use`, /Peers2026-test/.test(kept) && (await page.$$("#codes [data-copy]")).length >= 1 && (await page.$$("#codes select[data-cl]")).length >= 1 && (await page.$$("#codes input[data-ce]")).length >= 1 && /used/i.test(kept), kept.slice(0, 120).replace(/\n/g, " "));
           await page.selectOption("#codes select[data-cl]", { index: 0 }); await page.waitForTimeout(400);
           check(`${who}: changing a code's level calls set_code_level`, log.some(l => l.startsWith("RPC set_code_level")), log.filter(l => l.startsWith("RPC")).slice(-4).join(";"));
@@ -394,7 +417,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           // Lib Dems 150
           await page.goto(BASE + "/libby/#/lib-dems-150"); await page.waitForTimeout(700);
           const ld = await page.$eval("#app", a => a.innerText);
-          check("Lib Dems 150: Policy, Comms, Wallace Room, Room 391 and Ask a Parliamentarian (Comms is no longer under Business)", ["Policy", "Comms", "Wallace Room", "Room 391", "Ask a Parliamentarian", "Issues Tracker", "Concessionometer"].every(t => ld.includes(t)), ld.slice(0, 200).replace(/\n/g, " "));
+          check("Lib Dems 150: Policy, Comms, Wallace Room, Room 391 and Ask a Parliamentarian (Comms is no longer under Business)", ["Policy", "Comms", "Wallace Room", "Room 391", "Ask a Parliamentarian", "Parliamentary process"].every(t => ld.includes(t)) && !/Issues Tracker|Concessionometer/.test(ld), ld.slice(0, 200).replace(/\n/g, " "));
           const guides = await page.$$eval(".link-buttons li", ls => ls.map(l => ({ t: l.querySelector(".button").textContent.trim(), href: l.querySelector("a.button")?.getAttribute("href") || "", off: !!l.querySelector("button[disabled]") })));
           check("Lib Dems 150: the Organogram button links out; the other five (including The Mill and Campaigns Hub) say the link is to come", guides.length === 6 && guides.slice(4).map(g => g.t).join("|") === "The Mill|Campaigns Hub" && guides[0].href.startsWith("https://libdemsparli.retool.com/embedded/public/c9c6ad33") && guides.slice(1).every(g => g.off), JSON.stringify(guides));
           await page.goto(BASE + "/libby/#/issues-tracker"); await page.waitForTimeout(800);
@@ -432,7 +455,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           // the Whips' page and the Advisers' page
           await page.goto(BASE + "/libby/#/whips-office"); await page.waitForTimeout(600);
           const wo = await page.$$eval("#app .index-row .swipe", es => es.map(e => e.textContent));
-          check("Whips Hub: Availability, Data and Parliamentary process sit under it", wo.join("|") === "Availability|Data|Parliamentary process", wo.join("|"));
+          check("Whips Hub: Availability, Data, the Issues Tracker and the Concessionometer sit under it", wo.join("|") === "Availability|Data|Issues Tracker|Concessionometer", wo.join("|"));
           await page.goto(BASE + "/libby/#/advisers-office"); await page.waitForTimeout(600);
           const ao = await page.$$eval("#app .index-row .swipe", es => es.map(e => e.textContent));
           check("Advisers' page: the Advisers and Roles pages sit under it", ao.join("|") === "Advisers|Roles", ao.join("|"));
@@ -463,9 +486,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           }
           for (const whip of ["whips", "whips_staff"]) {
             lvl = whip; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
-            check(`${whip}: the menu is the Whips Hub`, (await menu()).join("|") === "Whips Hub", (await menu()).join("|"));
+            check(`${whip}: the menu is Lib Dems 150 (for Parliamentary process) and the Whips Hub`, (await menu()).join("|") === "Lib Dems 150|Whips Hub", (await menu()).join("|"));
             await page.goto(BASE + "/libby/#/whips-office"); await page.waitForTimeout(500);
-            check(`${whip}: the Whips Hub opens, with Availability, Data and Parliamentary process`, (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|") === "Availability|Data|Parliamentary process", (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|"));
+            check(`${whip}: the Whips Hub opens, with Availability, Data, the Issues Tracker and the Concessionometer`, (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|") === "Availability|Data|Issues Tracker|Concessionometer", (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|"));
             await page.goto(BASE + "/libby/#/parliamentary-process"); await page.waitForTimeout(600);
             check(`${whip}: Parliamentary process opens`, !/Not available/.test(await page.$eval("#app", b => b.innerText)) && /Your question/.test(await page.$eval("#app", b => b.innerText)));
             if (whip === "whips") {
@@ -611,6 +634,22 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("Concessionometer: Staff can save notes on a concession", JSON.parse(globalThis.__concPosts[0] || "{}").notes === "Agreed in principle" && JSON.parse(globalThis.__concPosts[0]).action === "note");
           await page.selectOption("[data-portfolio]", "DfT"); await page.waitForTimeout(150);
           check("Concessionometer: filter by portfolio", (await page.$$(".conc-table tbody tr")).length === 1);
+          await page.selectOption("[data-portfolio]", ""); await page.waitForTimeout(100);
+          globalThis.__concPosts = [];
+          page.once("dialog", d => d.accept());
+          await page.click(".conc-table tbody tr [data-remove]"); await page.waitForTimeout(400);
+          const rmPost = JSON.parse(globalThis.__concPosts[0] || "{}");
+          check("Concessionometer: an entry can be removed outright (it stops being a WIN)", rmPost.action === "win" && rmPost.on === false && (await page.$$(".conc-table tbody tr")).length === 1, JSON.stringify(rmPost));
+          globalThis.__processPosts = [];
+          await page.goto(BASE + "/libby/#/parliamentary-process"); await page.waitForTimeout(700);
+          page.once("dialog", d => d.accept());
+          await page.click("[data-del-q]"); await page.waitForTimeout(300);
+          check("Parliamentary process: Staff can delete a question and its answer", JSON.parse(globalThis.__processPosts[0] || "{}").action === "delete" && (await page.$$("[data-del-q]")).length === 0);
+          globalThis.__issuePosts = [];
+          await page.goto(BASE + "/libby/#/issues-tracker"); await page.waitForTimeout(700);
+          page.once("dialog", d => d.accept());
+          await page.click("[data-del-action]"); await page.waitForTimeout(400);
+          check("Issues Tracker: an action can be deleted for good (and an issue too)", JSON.parse(globalThis.__issuePosts[0] || "{}").action === "delete-action" && (await page.$$("[data-del-issue]")).length >= 1);
           lvl = "developer";
         }
         const cspErr = errors.filter(e => /Content Security Policy|violates/i.test(e));

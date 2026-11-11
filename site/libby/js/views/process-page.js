@@ -29,7 +29,7 @@ export async function renderProcess(el) {
   const staff = hasLevel('staff');
 
   const history = (qs) => (qs.length ? qs.map((q) => `<article class="proc-item"><header><h3>${esc(q.question)}</h3>
-      <span class="small muted">${esc(q.askedBy || 'Someone')} · ${esc(fmtDate(q.createdAt, { day: 'numeric', month: 'short', year: 'numeric' }))}${q.house ? ` · ${esc(HOUSES[q.house])}` : ''}</span></header>
+      <span class="small muted">${esc(q.askedBy || 'Someone')} · ${esc(fmtDate(q.createdAt, { day: 'numeric', month: 'short', year: 'numeric' }))}${q.house ? ` · ${esc(HOUSES[q.house])}` : ''}</span>${staff ? ` <button type="button" class="linkish small" data-del-q="${q.id}">Delete</button>` : ''}</header>
       <div class="proc-answer">${answerHtml(q.answer)}</div>
       ${q.sources.length ? `<p class="small muted">Sources: ${q.sources.map((s) => `${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.source)} ${esc(s.ref)}</a>` : `${esc(s.source)} ${esc(s.ref)}`}`).join('; ')}</p>` : ''}</article>`).join('')
     : empty('No questions have been asked yet.'));
@@ -50,6 +50,11 @@ export async function renderProcess(el) {
         <label class="field"><span>Edition</span><input name="edition" maxlength="120" placeholder="e.g. 2022 edition, updated February 2024" required></label></div>
         <p><button class="button button-quiet" type="submit">Upload the Companion</button> <span class="small" data-ustatus aria-live="polite"></span></p></form></section>` : ''}`;
 
+  root.addEventListener('click', async (e) => {
+    const del = e.target.closest('[data-del-q]');
+    if (!del || !window.confirm('Delete this question and its answer for good?')) return;
+    try { await api('parliamentary-process', { method: 'POST', body: JSON.stringify({ action: 'delete', id: Number(del.dataset.delQ) }) }); del.closest('.proc-item').remove(); } catch (err) { window.alert(err.message); }
+  });
   const status = root.querySelector('[data-status]');
   root.querySelector('[data-ask]').addEventListener('submit', async (e) => {
     e.preventDefault();

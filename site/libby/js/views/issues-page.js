@@ -29,7 +29,7 @@ export async function renderIssues(el, _params, query = {}) {
   let data, peers = [];
   try { [data, peers] = await Promise.all([api(`issues${code ? `?portfolio=${encodeURIComponent(code)}` : ''}`), loadPeers().catch(() => [])]); } catch (err) { root.innerHTML = errorBox(err); return; }
   if (!root.isConnected) return;
-  const staff = hasLevel('staff');
+  const staff = hasLevel('whips');   // may delete
   const who = () => store.get(NAME_KEY);
   const known = data.portfolios.find((p) => p.code === code);
   const link = (c) => `#/issues-tracker${c ? `?p=${c}` : ''}`;
@@ -119,9 +119,9 @@ export async function renderIssues(el, _params, query = {}) {
       return act({ action: 'update-issue', id: i.id, title, description }, 'Saved.');
     }
     const da = t.closest('[data-del-action]');
-    if (da) { if (window.confirm('Delete this action?')) await act({ action: 'delete-action', id: Number(da.dataset.delAction) }, 'Deleted.'); return; }
+    if (da) { if (window.confirm('Delete this action for good?')) await act({ action: 'delete-action', id: Number(da.dataset.delAction) }, 'Deleted.'); return; }
     const di = t.closest('[data-del-issue]');
-    if (di) { if (window.confirm('Delete this issue and all its actions?')) await act({ action: 'delete-issue', id: Number(di.dataset.delIssue) }, 'Deleted.'); }
+    if (di) { if (window.confirm('Delete this issue and all its actions for good? (Closing it keeps them.)')) await act({ action: 'delete-issue', id: Number(di.dataset.delIssue) }, 'Deleted.'); }
   });
   root.addEventListener('submit', async (e) => {
     e.preventDefault();
