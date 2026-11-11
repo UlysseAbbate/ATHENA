@@ -231,6 +231,12 @@ export const ADVISER_LINKS = [
     ['Duty Whips: choose the rota', '#/duty-whips', 'Choose the two duty whips for each day.'],
     ['Availability: see who is free', '#/whips', 'Who has marked each day green, amber or red.'],
   ]],
+  ['Upload a spreadsheet', [
+    ['Import concessions', '#/concessionometer', 'Open "Import Concessions from a spreadsheet" at the top: Bill, when it was won, portfolio and notes.'],
+    ['Import campaigns and actions', '#/issues-tracker', 'Open "Import Issues Tracker from a spreadsheet" at the top: one row for each thing done, with its campaign and portfolio.'],
+    ['Import Bulletin messages', '#/bulletin-editor', 'Open "Import Bulletin messages from a spreadsheet" at the top: a heading and a message on each row.'],
+    ['Import roles', '#/roles', 'Open "Import Roles from a spreadsheet": a name and a role on each row.'],
+  ]],
   ['Office', [
     ['Wallace Room', '#/wallace-room', 'See every booking and book the room. Staff and Admin can cancel anyone\u2019s booking, or a whole repeating series.'],
   ]],

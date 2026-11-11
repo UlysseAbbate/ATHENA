@@ -47,7 +47,7 @@ export async function onRequestPost({ request, env }) {
   try {
     const out = await answerQuestion(env, { question, house });
     let id = null;
-    if (supabaseConfigured(env)) {
+    if (supabaseConfigured(env) && !out.failed) {
       const res = await fetch(`${env.SUPABASE_URL}/rest/v1/process_questions`, {
         method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, 'content-type': 'application/json', prefer: 'return=representation' },
         body: JSON.stringify([{ question, house, asked_by: cleanLine(body.asker, 80) || null, answer: out.answer, sources: out.sources.filter((s) => s.used).map(({ n, source, ref, title, where, url }) => ({ n, source, ref, title, where, url })) }]) });
@@ -55,6 +55,6 @@ export async function onRequestPost({ request, env }) {
     }
     return json({ id, ...out });
   } catch (err) {
-    return fail(`The question could not be answered (${err.message}).`, 502);
+    return fail(`The question could not be answered: ${err.message}. Please try again in a minute.`, 502);
   }
 }

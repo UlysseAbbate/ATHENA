@@ -3,7 +3,10 @@
 // Notes are shown as ordinary text; the editing boxes (Bill, date won, notes) open only when Edit is pressed. The Bill's name links to the amendment (details on hover).
 import { api } from '../api.js';
 import { esc, fmtDate, loading, errorBox, empty, pageHeader } from '../ui.js';
+import { norm } from '../../../shared/import/sheet.js';
 import { can, savedName } from '../session.js';
+import { mountImport } from '../../../shared/import/panel.js';
+import { IMPORTERS } from '../../../shared/import/importers.js';
 
 const chips = (codes) => (codes || []).map((c) => `<a class="tag" href="#/portfolio/${esc(c)}">${esc(c)}</a>`).join(' ') || '<span class="muted">None</span>';
 const dateOnly = (iso) => (iso ? String(iso).slice(0, 10) : '');
@@ -11,6 +14,7 @@ const keyOf = (c) => `${c.billId}-${c.stageId}-${c.amendmentId}`;
 
 export async function renderConcessionometer(el) {
   el.innerHTML = `${pageHeader('Concessionometer', 'Every amendment we have won a concession on: the Bill and the date it was won, the Bill’s portfolio, and the Staff’s notes about the concession. Amendments are added with the WIN button on a Bill’s Amendments tab, and stay here after the Bill has passed.')}
+    <div id="conc-import"></div>
     <div id="conc-root">${loading('Loading the concessions')}</div>`;
   const root = el.querySelector('#conc-root');
   let data;
@@ -23,10 +27,11 @@ export async function renderConcessionometer(el) {
   let only = '';
 
   const billCell = (c) => (editing.has(keyOf(c))
-    ? `<label class="field"><span>Bill</span><input data-bill maxlength="200" value="${esc(c.billTitle)}"></label>
+    ? `<label class="field"><span>Concession name</span><input data-name maxlength="200" value="${esc(c.name)}"></label>
+       <label class="field"><span>Bill</span><input data-bill maxlength="200" value="${esc(c.billTitle)}"></label>
        <label class="field"><span>Date won</span><input type="date" data-won value="${esc(dateOnly(c.wonAt))}"></label>`
-    : `<a class="conc-bill" href="${esc(c.url)}" target="_blank" rel="noopener noreferrer" title="Open the amendment${c.number ? `: ${esc(c.number)}` : ''}${c.place ? `, ${esc(c.place)}` : ''}${c.summary ? ` (${esc(c.summary)})` : ''}">${esc(c.billTitle || 'Bill')}</a>
-       <br><span class="small muted">${c.wonAt ? esc(fmtDate(c.wonAt, { day: 'numeric', month: 'short', year: 'numeric' })) : 'date not set'}</span>`);
+    : `${c.name ? `<strong class="conc-name">${esc(c.name)}</strong><br>` : ''}${c.url ? `<a class="conc-bill" href="${esc(c.url)}" target="_blank" rel="noopener noreferrer" title="Open the amendment${c.number ? `: ${esc(c.number)}` : ''}${c.place ? `, ${esc(c.place)}` : ''}${c.summary ? ` (${esc(c.summary)})` : ''}">${esc(c.billTitle || 'Bill')}</a>` : `<span class="conc-bill">${esc(c.billTitle || 'Bill')}</span>`}
+       <br><span class="small muted">${c.period ? esc(c.period) : c.wonAt ? esc(fmtDate(c.wonAt, { day: 'numeric', month: 'short', year: 'numeric' })) : 'date not set'}</span>`);
 
   const notesCell = (c) => {
     const open = editing.has(keyOf(c));
@@ -52,6 +57,31 @@ export async function renderConcessionometer(el) {
       : empty(list.length ? 'No concessions in this portfolio.' : 'No concessions yet. Press WIN on an amendment on a Bill’s Amendments tab to add it here.')}`;
   };
   draw();
+  // Import from a spreadsheet: one row per concession (Bill, when, portfolio, notes). Concessions already here (same Bill and name) are left as they are.
+  if (edit) {
+    const known = data.portfolios || [];
+    mountImport(el.querySelector('#conc-import'), {
+      importer: IMPORTERS.concessions,
+      lookups: async () => ({ portfolios: known }),
+      after: () => renderConcessionometer(el),
+      commit: async (entries, progress) => {
+        const have = new Set(list.map((c) => `${norm(c.billTitle)}|${norm(c.name)}`));
+        let added = 0, skipped = 0, done = 0; const failed = [];
+        for (const e of entries) {
+          try {
+            const key = `${norm(e.bill)}|${norm(e.name)}`;
+            if (have.has(key)) skipped++;
+            else {
+              await api('concessions', { method: 'POST', body: JSON.stringify({ action: 'add', billTitle: e.bill, name: e.name, portfolio: e.portfolio, notes: e.notes, wonAt: e.wonAt, period: e.period, author: savedName() }) });
+              have.add(key); added++;
+            }
+          } catch (err) { failed.push({ summary: `${e.bill}${e.name ? ` · ${e.name}` : ''}`, error: err.message }); }
+          progress(++done, entries.length);
+        }
+        return { added, skipped, failed };
+      },
+    });
+  }
 
   const find = (tr) => { const [billId, stageId, amendmentId] = tr.dataset.key.split('-').map(Number); return list.find((x) => x.billId === billId && x.stageId === stageId && x.amendmentId === amendmentId); };
   root.addEventListener('change', (e) => { if (e.target.matches('[data-portfolio]')) { only = e.target.value; draw(); } });
@@ -64,7 +94,7 @@ export async function renderConcessionometer(el) {
     if (e.target.closest('[data-remove]')) {
       if (!window.confirm('Take this off the Concessionometer? The amendment stops being marked WIN.')) return;
       try {
-        await api('concessions', { method: 'POST', body: JSON.stringify({ action: 'win', on: false, billId: c.billId, stageId: c.stageId, amendmentId: c.amendmentId, author: savedName() }) });
+        await api('concessions', { method: 'POST', body: JSON.stringify({ action: 'remove', billId: c.billId, stageId: c.stageId, amendmentId: c.amendmentId, author: savedName() }) });
         list.splice(list.indexOf(c), 1); editing.delete(keyOf(c)); draw();
       } catch (err) { tr.querySelector('[data-saved]').textContent = `Not removed: ${err.message}`; }
       return;
@@ -72,12 +102,12 @@ export async function renderConcessionometer(el) {
     const save = e.target.closest('[data-save]');
     if (!save) return;
     const out = tr.querySelector('[data-saved]');
-    const billTitle = tr.querySelector('[data-bill]').value.trim(), wonAt = tr.querySelector('[data-won]').value, notes = tr.querySelector('[data-notes]').value;
+    const billTitle = tr.querySelector('[data-bill]').value.trim(), name = tr.querySelector('[data-name]').value.trim(), wonAt = tr.querySelector('[data-won]').value, notes = tr.querySelector('[data-notes]').value;
     if (!wonAt) { out.textContent = 'Give the date it was won.'; return; }
     save.disabled = true; out.textContent = 'Saving…';
     try {
-      await api('concessions', { method: 'POST', body: JSON.stringify({ action: 'edit', billId: c.billId, stageId: c.stageId, amendmentId: c.amendmentId, billTitle, wonAt, notes, author: savedName() }) });
-      Object.assign(c, { billTitle, wonAt: `${wonAt}T12:00:00Z`, notes, updatedBy: savedName() || c.updatedBy });
+      await api('concessions', { method: 'POST', body: JSON.stringify({ action: 'edit', billId: c.billId, stageId: c.stageId, amendmentId: c.amendmentId, billTitle, name, wonAt, notes, author: savedName() }) });
+      Object.assign(c, { billTitle, name, period: dateOnly(c.wonAt) === wonAt ? c.period : '', wonAt: `${wonAt}T12:00:00Z`, notes, updatedBy: savedName() || c.updatedBy });
       editing.delete(keyOf(c)); draw();
     } catch (err) { out.textContent = `Not saved: ${err.message}`; save.disabled = false; }
   });

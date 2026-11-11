@@ -46,5 +46,27 @@ ok(/Lords Companion has not been uploaded/.test(ans.note), 'it says when the Lor
 ok((await companionPieces({}, ['royal assent'])).length === 0, 'with no database there are simply no Companion pieces');
 globalThis.fetch = realFetch;
 
+// when Claude misbehaves: an unknown model name is skipped, a busy answer is retried, a reply that is not JSON is still shown, and a failure still returns the passages
+const realFetch2 = globalThis.fetch;
+const models = []; let busy = 1;
+const anthropic = (handler) => { globalThis.fetch = async (url, init) => {
+  const u = String(url);
+  if (u.includes('erskinemay-api') && u.includes('/Search/')) return new Response(JSON.stringify(read('erskine-may-search-royal-assent.json')), { status: 200 });
+  if (u.includes('erskinemay-api') && u.includes('/Section/')) return new Response(JSON.stringify(read('erskine-may-section-16612.json')), { status: 200 });
+  if (u.includes('api.anthropic.com')) { const b = JSON.parse(init.body); models.push(b.model); return handler(b); }
+  return new Response('{}', { status: 404 });
+}; };
+const reply = (text) => new Response(JSON.stringify({ content: [{ type: 'text', text }] }), { status: 200 });
+anthropic((b) => (b.model === 'claude-sonnet-5-5' ? new Response('{"error":"not_found"}', { status: 404 }) : reply(/Passages:/.test(b.messages[0].content) ? '{"answer":"Fine [1].","confidence":"clear","used":[1]}' : '{"queries":["royal assent"]}')));
+const a1 = await answerQuestion({ ANTHROPIC_API_KEY: 'x' }, { question: 'How is Royal Assent notified in the Lords?' });
+ok(a1.answer === 'Fine [1].' && models.includes('claude-sonnet-5'), 'a model name the account does not have is skipped for the next one');
+anthropic((b) => (/Passages:/.test(b.messages[0].content) ? (busy-- > 0 ? new Response('overloaded', { status: 529 }) : reply('Plain words, no JSON, see [1].')) : reply('{"queries":["royal assent"]}')));
+const a2 = await answerQuestion({ ANTHROPIC_API_KEY: 'x' }, { question: 'How is Royal Assent notified in the Lords?' });
+ok(a2.answer === 'Plain words, no JSON, see [1].' && a2.sources[0].used === true, 'a busy answer is retried, and a reply that is not JSON is shown as the answer');
+anthropic(() => new Response('{"error":"bad key"}', { status: 401 }));
+const a3 = await answerQuestion({ ANTHROPIC_API_KEY: 'x' }, { question: 'How is Royal Assent notified in the Lords?' });
+ok(a3.failed === true && a3.sources.length >= 1 && /ANTHROPIC_API_KEY/.test(a3.answer), 'if Claude cannot answer, the passages found are still returned, with the reason');
+globalThis.fetch = realFetch2;
+
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll parliamentary process checks passed.');
 process.exit(failed ? 1 : 0);

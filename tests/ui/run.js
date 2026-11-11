@@ -543,7 +543,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           }
           lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(700); await page.goto(BASE + "/libby/#/advisers"); await page.waitForTimeout(700);
           const adv = await page.$$eval("#app h2, #app .adv-list a.button", es => es.map(e => e.textContent));
-          check("the Advisers page has exactly the Legislation / Whipping / Office buttons", adv.join("|") === ["Legislation", "Update Bill advisers and leads", "Upload Groupings, Grids & Hymn Sheets", "Whipping", "Whips\u2019 Office Bulletin", "Duty Whips: choose the rota", "Availability: see who is free", "Office", "Wallace Room"].join("|"), adv.join("|"));
+          check("the Advisers page has exactly the Legislation / Whipping / Upload a spreadsheet / Office buttons", adv.join("|") === ["Legislation", "Update Bill advisers and leads", "Upload Groupings, Grids & Hymn Sheets", "Whipping", "Whips\u2019 Office Bulletin", "Duty Whips: choose the rota", "Availability: see who is free", "Upload a spreadsheet", "Import concessions", "Import campaigns and actions", "Import Bulletin messages", "Import roles", "Office", "Wallace Room"].join("|"), adv.join("|"));
           await page.goto(BASE + "/libby/#/duty-whips"); await page.waitForTimeout(700);
           check("the Duty Whips page loads from the Advisers page", /Duty Whips/.test(await page.$eval("#app", b => b.innerText)) && !/page could not be loaded|Not available/i.test(await page.$eval("#app", b => b.innerText)));
           await page.goto(BASE + "/libby/#/whips"); await page.waitForTimeout(700);
@@ -690,7 +690,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           page.once("dialog", d => d.accept());
           await page.click(".conc-table tbody tr [data-edit]"); await page.click(".conc-table tbody tr [data-remove]"); await page.waitForTimeout(400);
           const rmPost = JSON.parse(globalThis.__concPosts[0] || "{}");
-          check("Concessionometer: an entry can be removed outright (it stops being a WIN)", rmPost.action === "win" && rmPost.on === false && (await page.$$(".conc-table tbody tr")).length === 1, JSON.stringify(rmPost));
+          check("Concessionometer: an entry can be removed outright (it stops being a WIN)", rmPost.action === "remove" && (await page.$$(".conc-table tbody tr")).length === 1, JSON.stringify(rmPost));
           globalThis.__processPosts = [];
           await page.goto(BASE + "/libby/#/parliamentary-process"); await page.waitForTimeout(700);
           page.once("dialog", d => d.accept());

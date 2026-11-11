@@ -9,7 +9,7 @@ Every page where data is typed in has an **Import from a spreadsheet** box (fold
 | `site/shared/import/sheet.js` | Reads the file (finds the heading row under a title), scores headings against fields, sniffs columns by contents, reads dates (day-first, Excel numbers, written forms). No page code. |
 | `site/shared/import/importers.js` | **One entry per page**: its fields (with `aliases`, the headings it recognises), the words it understands (`KIND_WORDS`, `ROLE_WORDS`, portfolios), and `resolve()`, which turns a row into an entry or a reason it was refused. |
 | `site/shared/import/panel.js` | The folded box on the screen: file, mapping drop-downs, preview, Add. |
-| the page's own file (`issues-page.js`, `roles-page.js`, `bulletin-editor-page.js`, `access/access.js`) | The `commit` function: saves the good rows with that page's existing API calls (so access rules are unchanged), skipping what is already there. |
+| the page's own file (`issues-page.js`, `concessionometer-page.js`, `roles-page.js`, `bulletin-editor-page.js`, `access/access.js`) | The `commit` function: saves the good rows with that page's existing API calls (so access rules are unchanged), skipping what is already there. |
 | `scripts/libby/check-import.mjs` | Self-tests (run in CI), and the tool below for looking at a real sheet. |
 
 ## For Claude Code: when the owner shares a sample sheet
