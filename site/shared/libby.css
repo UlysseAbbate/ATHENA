@@ -188,3 +188,10 @@ footer.foot,footer.shell-foot{margin:3rem 0 0;padding:1.25rem max(1.25rem,calc((
 .flash{position:fixed;left:50%;bottom:1.25rem;transform:translateX(-50%);z-index:60;max-width:min(92vw,40rem);padding:.6rem 1rem;border-radius:6px;background:var(--ink);color:var(--paper);font-size:.9rem;box-shadow:0 4px 16px rgba(0,0,0,.25)}
 .flash.flash-bad{background:var(--red);color:var(--on-fill)}
 .flash[hidden]{display:none}
+/* spreadsheet import (site/shared/import/) */
+.import-box{border:1px solid var(--band-line);border-radius:6px;background:var(--card);padding:.5rem .9rem;margin:1rem 0}
+.import-box>summary{cursor:pointer;font-weight:700}
+.import-pick{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;align-items:flex-end}
+.import-map select{max-width:100%}
+.import-preview .import-bad td{background:var(--red-tint)}
+.import-preview .import-warn td{background:var(--orange-tint)}

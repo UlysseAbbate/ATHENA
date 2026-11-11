@@ -192,6 +192,13 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         page.once("dialog", d => d.accept());
         await page.click('#everyone tr[data-e="newbie@test.invalid"] [data-delperson]'); await page.waitForTimeout(400);
         check("admin: Delete removes an account for good (delete_person)", log.some(l => l.startsWith("RPC delete_person") && l.includes('"p_user":"n1"')), log.filter(l => l.startsWith("RPC")).slice(-3).join(";"));
+        // spreadsheet import on the Access page: many invites at once, the level read from its name
+        await page.click('[data-import="invites"] summary');
+        await page.setInputFiles('[data-import="invites"] [data-file]', { name: "invites.csv", mimeType: "text/csv", buffer: Buffer.from("E-mail address,Access level,Valid until\nbulk1@test.invalid,Candidate,31/12/2026\nbad-address,Candidate,\nbulk2@test.invalid,Wizard,") });
+        await page.waitForSelector('[data-import="invites"] .import-preview'); await page.waitForTimeout(200);
+        check("Import (Access): emails and levels are read from the sheet; a bad address and an unknown level are refused", /1 ready to add/.test(await page.$eval('[data-import="invites"] [data-counts]', p => p.textContent)) && (await page.$$('[data-import="invites"] .import-bad')).length === 2);
+        await page.click('[data-import="invites"] [data-confirm]'); await page.waitForTimeout(700);
+        check("Import (Access): the good row is invited, with its level, end date and the program chosen", log.filter(l => l.startsWith("INVITE")).some(l => l.includes("bulk1@test.invalid") && l.includes('"level":"candidate"') && l.includes('"program":"lovelace"') && l.includes("2026-12-31")), log.filter(l => l.startsWith("INVITE")).join(";"));
         const sels = await page.$$eval('#everyone tr[data-e="newbie@test.invalid"] select', ss => ss.map(x => x.dataset.ev));
         check("admin: each account has a level for LOVELACE, LUCIEN and LIBBY", sels.join(",") === "lovelace,lucien,libby", sels.join(","));
         if (process.env.SHOTS) for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `access-everyone-${scheme}.png`), fullPage: true }); }
@@ -272,7 +279,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           }
           if (u.pathname.endsWith("/api/libby/data/commons-members")) return j({ date: "2026-11-10", total: 650, parties: [{ name: "Labour", abbreviation: "Lab", colour: "d50000", male: 215, female: 189, nonBinary: 0, total: 404 }, { name: "Liberal Democrat", abbreviation: "LD", colour: "faa61a", male: 40, female: 32, nonBinary: 0, total: 72 }], ldMps: [{ id: 1, name: "Daisy Cooper" }, { id: 2, name: "Sir Ed Davey" }], library: "https://commonslibrary.parliament.uk/type/data-dashboard/" });
           if (u.pathname.endsWith("/api/libby/people-roles")) {
-            if (route.request().method() === "GET") return j({ roles: [{ id: "peers", label: "Peer" }, { id: "whips", label: "Whip" }, { id: "staff", label: "Staff" }], people: [{ name: "Baroness Beta", role: "whips", onList: true, house: "lords" }, { name: "Sir Ed Davey", role: "peers", onList: true, house: "commons" }, { name: "Daisy Cooper", role: "peers", onList: true, house: "commons" }, { name: "Pat Staffer", role: "staff", onList: false, house: "commons" }] });
+            if (route.request().method() === "GET") return j({ roles: [{ id: "backbench", label: "Backbench parliamentarian" }, { id: "frontbench", label: "Frontbencher parliamentarian" }, { id: "whips", label: "Whip" }, { id: "leader", label: "Leader's circle" }, { id: "leader_staff", label: "Leader's circle's Staff" }, { id: "admin", label: "Administrator" }], people: [{ name: "Baroness Beta", role: "whips", onList: true, house: "lords" }, { name: "Sir Ed Davey", role: "peers", onList: true, house: "commons" }, { name: "Daisy Cooper", role: "peers", onList: true, house: "commons" }, { name: "Pat Staffer", role: "staff", onList: false, house: "commons" }] });
             (globalThis.__rolePosts = globalThis.__rolePosts || []).push(route.request().postData()); return j({ ok: true });
           }
           if (u.pathname.endsWith("/api/libby/issues")) {
@@ -438,6 +445,25 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.click('[data-action-form] button[type="submit"]'); await page.waitForTimeout(400);
           const ap = JSON.parse(globalThis.__issuePosts[0] || "{}");
           check("Issues Tracker: add an action with what, date, link, parliamentarian, staff and notes", ap.action === "action" && ap.issueId === 2 && ap.what === "Debate on the Asylum Bill" && ap.date === "2026-11-09" && ap.url.startsWith("https://hansard") && ap.parliamentarian === "Baroness Beta" && ap.staff === "Pat Adviser" && ap.notes === "Spoke for 8 minutes", JSON.stringify(ap));
+          // spreadsheet import on the Issues Tracker: the sheet is in the user's own words; an action already there is skipped, a campaign already there is reused, a bad row is refused
+          await page.goto(BASE + "/libby/#/issues-tracker"); await page.waitForTimeout(800);
+          globalThis.__issuePosts = [];
+          await page.click('[data-import="issues"] summary');
+          await page.setInputFiles('[data-import="issues"] [data-file]', { name: "campaigns.csv", mimeType: "text/csv", buffer: Buffer.from([
+            "Campaign tracker 2026,,,,,,", ",,,,,,",
+            "Brief,Campaign,What we did,When,Type,Hansard,Who",
+            "Environment,Water company regulation,Oral Question on sewage discharges,05/10/2026,OQ,https://hansard.parliament.uk/lords/2026-10-05/x,Baroness Beta",
+            ",,Debate on the Water Bill,12/11/2026,Debate,,Lord Alpha",
+            "Home Office,Detention reform,Written question on detention,01/11/2026,Written PQ,,Baroness Beta",
+            "Narnia,Lamp posts,Speech,02/11/2026,Debate,,"].join("\n")) });
+          await page.waitForSelector('[data-import="issues"] .import-preview'); await page.waitForTimeout(200);
+          const imap = await page.$$eval('[data-import="issues"] [data-map]', ss => Object.fromEntries(ss.map(s => [s.dataset.map, s.options[s.selectedIndex].text])));
+          check("Import (Issues): the page matches the sheet's own headings to its fields", imap.portfolio === "Brief" && imap.issue === "Campaign" && imap.what === "What we did" && imap.date === "When" && imap.kind === "Type" && imap.url === "Hansard" && imap.parliamentarian === "Who", JSON.stringify(imap));
+          const iprev = await page.$$eval('[data-import="issues"] .import-preview tbody tr', rs => rs.map(r => r.innerText.replace(/\s+/g, " ")));
+          check("Import (Issues): the preview shows each row, and refuses the one with an unknown portfolio", iprev.length === 4 && /✓/.test(iprev[0]) && /✗.*Unknown portfolio "Narnia"/.test(iprev[3]) && /3 ready to add/.test(await page.$eval('[data-import="issues"] [data-counts]', p => p.textContent)), iprev.join(" || "));
+          await page.click('[data-import="issues"] [data-confirm]'); await page.waitForTimeout(900);
+          const ip2 = globalThis.__issuePosts.map(x => JSON.parse(x));
+          check("Import (Issues): the new campaign is made, the existing one reused, the actions added, and the one already there left alone", ip2.filter(x => x.action === "issue").length === 1 && ip2.find(x => x.action === "issue").title === "Detention reform" && ip2.find(x => x.action === "issue").portfolio === "HO" && ip2.filter(x => x.action === "action").map(x => x.what).join("|") === "Debate on the Water Bill|Written question on detention" && ip2.find(x => x.action === "action" && x.what === "Debate on the Water Bill").issueId === 1 && ip2.find(x => x.what === "Debate on the Water Bill").date === "2026-11-12" && ip2.find(x => x.what === "Written question on detention").kind === "written-question", JSON.stringify(ip2.map(x => [x.action, x.title || x.what, x.date])));
           await page.goto(BASE + "/libby/#/room-391"); await page.waitForTimeout(800);
           check("Lib Dems 150: Room 391 is a booking calendar like the Wallace Room", /Room 391/.test(await page.$eval("#app", a => a.innerText)) && (await page.$("#room-cal")) !== null && !/Wallace/.test(await page.$eval("#app h1", a => a.textContent)));
           if (process.env.SHOTS) { await page.screenshot({ path: path.join(process.env.SHOTS, "libby-room-391.png"), fullPage: true }); }
@@ -558,6 +584,23 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           globalThis.__bulletinPosts = [];
           await page.click(".bul-card [data-save]"); await page.waitForTimeout(400);
           check("Bulletin: saving a Commons message goes to the Commons bulletin", JSON.parse(globalThis.__bulletinPosts[0] || "{}").house === "commons" && JSON.parse(globalThis.__bulletinPosts[0]).action === "save");
+          // spreadsheet import on the Bulletin editor: a heading and a message on each row, into this House's bulletin
+          globalThis.__bulletinPosts = [];
+          await page.click('[data-import="bulletin"] summary');
+          await page.setInputFiles('[data-import="bulletin"] [data-file]', { name: "notices.csv", mimeType: "text/csv", buffer: Buffer.from("Headline,Text\nRecess dates,The House rises on Thursday.\n,A second message with no heading") });
+          await page.waitForSelector('[data-import="bulletin"] .import-preview'); await page.click('[data-import="bulletin"] [data-confirm]'); await page.waitForTimeout(600);
+          const bp = globalThis.__bulletinPosts.map(x => JSON.parse(x));
+          check("Import (Bulletin): each row becomes a message in the Commons bulletin", bp.length === 2 && bp.every(x => x.action === "save" && x.house === "commons") && bp[0].heading === "Recess dates" && bp[0].body === "The House rises on Thursday." && bp[1].heading === "", JSON.stringify(bp));
+          await page.goto(BASE + "/libby/#/roles"); await page.waitForTimeout(900);
+          // spreadsheet import on Roles: the words used for a role are understood; someone already in the role is left, someone in another role is changed, a new person is added with their House
+          globalThis.__rolePosts = [];
+          await page.click('[data-import="roles"] summary');
+          await page.setInputFiles('[data-import="roles"] [data-file]', { name: "people.csv", mimeType: "text/csv", buffer: Buffer.from("Person,Position,Chamber\nBaroness Beta,Whip,Lords\nDaisy Cooper,Whip,Commons\nSam Newcomer,Leader's circle's Staff,Commons\nNobody,Astronaut,Lords") });
+          await page.waitForSelector('[data-import="roles"] .import-preview'); await page.waitForTimeout(150);
+          check("Import (Roles): an unknown role is refused, the rest ready", /3 ready to add/.test(await page.$eval('[data-import="roles"] [data-counts]', p => p.textContent)) && /✗.*Astronaut/.test(await page.$eval('[data-import="roles"] .import-preview', t => t.innerText.replace(/\s+/g, " "))));
+          await page.click('[data-import="roles"] [data-confirm]'); await page.waitForTimeout(700);
+          const rp = globalThis.__rolePosts.map(x => JSON.parse(x));
+          check("Import (Roles): one already in the role is left, one is changed, one is added with their House", rp.length === 2 && rp[0].action === "set" && rp[0].name === "Daisy Cooper" && rp[0].role === "whips" && rp[1].action === "add" && rp[1].name === "Sam Newcomer" && rp[1].role === "leader_staff" && rp[1].house === "commons", JSON.stringify(rp));
           await page.goto(BASE + "/libby/#/roles"); await page.waitForTimeout(900);
           const rh =await page.$$eval(".roles-table thead th", hs => hs.map(h => h.textContent.trim()));
           check("Roles: the list covers peers and Lib Dem MPs, with a House column", rh.join("|") === "Person|House|Role" && (await page.$$eval(".roles-table tbody tr", rs => rs.map(r => r.dataset.house))).join("|") === "lords|commons|commons|commons");

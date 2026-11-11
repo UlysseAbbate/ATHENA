@@ -5,6 +5,9 @@ import { api } from '../api.js';
 import { esc, fmtDate, todayIso, loading, errorBox, empty, pageHeader } from '../ui.js';
 import { loadPeers } from '../peer-list.js';
 import { hasLevel } from '../session.js';
+import { mountImport } from '../../../shared/import/panel.js';
+import { IMPORTERS } from '../../../shared/import/importers.js';
+import { norm } from '../../../shared/import/sheet.js';
 
 const KINDS = [['oral-question', 'Oral Question'], ['written-question', 'Written Question'], ['debate', 'Debate'], ['legislation', 'Legislation'], ['amendment', 'Amendment'],
   ['committee', 'Committee'], ['event', 'Event'], ['media', 'Media'], ['other', 'Other']];
@@ -24,6 +27,7 @@ const post = async (body) => {
 export async function renderIssues(el, _params, query = {}) {
   const code = String(query.p || '').toUpperCase();
   el.innerHTML = `${pageHeader('Issues Tracker', 'Campaigns and long-standing issues, by portfolio. Add a campaign to its portfolio, then add everything that forms part of it (an Oral Question, a debate, legislation, an amendment ...), so each issue builds up a list of what has been done.')}
+    <div id="iss-import"></div>
     <div id="iss-root">${loading('Loading the issues')}</div>`;
   const root = el.querySelector('#iss-root');
   let data, peers = [];
@@ -70,6 +74,38 @@ export async function renderIssues(el, _params, query = {}) {
       <div id="iss-list" data-flat>${data.issues.length ? data.issues.map(issueCard).join('') : empty(known ? 'No campaigns or issues in this portfolio yet. Add the first one.' : 'No campaigns or issues yet. Pick a portfolio and add the first one.')}</div>${people}`;
   };
   draw();
+  // Import from a spreadsheet: one row per thing done, with its campaign and portfolio. Campaigns that already exist are reused; an action already there (same campaign, wording and date) is left as it was.
+  mountImport(el.querySelector('#iss-import'), {
+    importer: IMPORTERS.issues,
+    lookups: async () => ({ portfolios: data.portfolios }),
+    after: () => renderIssues(el, _params, query),
+    commit: async (entries, progress) => {
+      const everything = (await api('issues')).issues;
+      const byKey = new Map(everything.map((i) => [`${i.portfolio}|${norm(i.title)}`, i]));
+      let added = 0, skipped = 0, done = 0; const failed = [];
+      for (const e of entries) {
+        try {
+          const key = `${e.portfolio}|${norm(e.issue)}`;
+          let issue = byKey.get(key);
+          if (!issue) {
+            const r = await post({ action: 'issue', portfolio: e.portfolio, title: e.issue, description: e.description, author: who() });
+            if (!r.ok) throw new Error(r.data.error || 'not saved');
+            issue = { id: r.data.id, actions: [] }; byKey.set(key, issue); added++;
+          }
+          if (e.action) {
+            if (issue.actions.some((a) => a.what.toLowerCase() === e.action.what.toLowerCase() && a.date === e.action.date)) skipped++;
+            else {
+              const r = await post({ action: 'action', issueId: issue.id, ...e.action, author: who() });
+              if (!r.ok) throw new Error(r.data.error || 'not saved');
+              issue.actions.push({ what: e.action.what, date: e.action.date }); added++;
+            }
+          }
+        } catch (err) { failed.push({ summary: `${e.issue}${e.action ? ` · ${e.action.what}` : ''}`, error: err.message }); }
+        progress(++done, entries.length);
+      }
+      return { added, skipped, failed };
+    },
+  });
   const status = () => root.querySelector('[data-status]');
   const refresh = async (msg) => { await renderIssues(el, _params, query); const s = el.querySelector('[data-status]'); if (s && msg) s.textContent = msg; };
   const act = async (body, ok) => {

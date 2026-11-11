@@ -1,0 +1,178 @@
+// Spreadsheet import, what each page expects. One entry per page that takes data in; the reading is in sheet.js and the screen in panel.js.
+//
+// HOW TO CHANGE WHAT A SHEET IS UNDERSTOOD AS (also written up in docs/IMPORTS.md, which Claude Code is told to read when the owner shares a sample sheet):
+//   - a heading the sheet uses that the page does not recognise  ->  add it to that field's `aliases`
+//   - a value that is not understood (a role, a kind of action, a portfolio)  ->  add it to the importer's synonyms (ROLE_WORDS, KIND_WORDS) or the lookups
+//   - a sheet for a page that cannot take one yet  ->  add an importer here (fields + resolve), then its `commit` where the page is (see issues-page.js for the pattern)
+//   - then run `node scripts/libby/check-import.mjs <the sheet>` to see how every importer reads it, and add the sheet's shape to scripts/libby/check-import.mjs's tests.
+import { cellValue, blockValue, matchColumns, fitScore, norm } from './sheet.js';
+
+const f = (key, label, aliases, extra = {}) => ({ key, label, aliases, type: 'text', ...extra });
+
+/* ------------------------------------------------------------------ Issues Tracker: one row per thing done, grouped under its campaign */
+export const KIND_WORDS = [
+  ['oral-question', ['oral question', 'oq', 'oral q', 'topical question']], ['written-question', ['written question', 'wq', 'pq', 'parliamentary question', 'written q', 'wpq']],
+  ['debate', ['debate', 'speech', 'statement', 'urgent question', 'uq', 'adjournment', 'westminster hall', 'motion']], ['amendment', ['amendment', 'am ']],
+  ['legislation', ['legislation', 'bill', 'act', 'si ', 'statutory instrument', 'regulations', 'order', 'clause']], ['committee', ['committee', 'select committee', 'inquiry', 'evidence']],
+  ['event', ['event', 'meeting', 'visit', 'roundtable', 'reception', 'briefing', 'conference']], ['media', ['media', 'press', 'article', 'op-ed', 'oped', 'interview', 'social', 'tweet', 'blog']],
+];
+const KIND_IDS = KIND_WORDS.map(([k]) => k);
+export function kindOf(text) {
+  const t = ` ${String(text || '').toLowerCase().trim()} `;
+  if (!t.trim()) return '';
+  const hit = KIND_IDS.find((k) => t.trim().replace(/\s+/g, '-') === k);
+  if (hit) return hit;
+  for (const [k, words] of KIND_WORDS) if (words.some((w) => t.includes(` ${w.trim()} `) || t.includes(` ${w.trim()}s `) || t.trim() === w.trim())) return k;
+  return 'other';
+}
+/** A portfolio from a code ("DEFRA") or a name ("Environment, Food and Rural Affairs", or a word of it). */
+export function portfolioOf(text, portfolios) {
+  const t = norm(text);
+  if (!t) return null;
+  return portfolios.find((p) => norm(p.code) === t) || portfolios.find((p) => norm(p.name) === t)
+    || (t.length >= 4 ? portfolios.find((p) => norm(p.name).includes(t) || t.includes(norm(p.name))) : null) || null;
+}
+
+const issues = {
+  id: 'issues', title: 'Issues Tracker', noun: 'action',
+  blurb: 'One row for each thing that was done, with the campaign it belongs to. A row with only a campaign (and no action) just creates the campaign. Blank campaign or portfolio cells take the one above, so sheets grouped under a heading work.',
+  fields: [
+    f('portfolio', 'Portfolio', ['portfolio', 'department', 'dept', 'policy area', 'area', 'brief', 'topic area', 'subject area'], { required: true, fillDown: true }),
+    f('issue', 'Campaign or issue', ['campaign', 'issue', 'campaign name', 'issue name', 'campaign or issue', 'topic', 'subject', 'theme'], { required: true, fillDown: true }),
+    f('description', 'About the campaign', ['description', 'about', 'background', 'campaign description', 'what is it', 'overview'], { type: 'block' }),
+    f('what', 'What was done', ['what was done', 'action', 'activity', 'item', 'intervention', 'contribution', 'event', 'what', 'detail', 'details', 'description of action']),
+    f('date', 'Date', ['date', 'when', 'date done', 'date of action', 'day', 'done on'], { type: 'date' }),
+    f('kind', 'Kind', ['kind', 'type', 'category', 'format', 'type of action', 'vehicle']),
+    f('url', 'Link', ['link', 'url', 'hansard', 'hansard link', 'source', 'web address', 'reference', 'link to hansard'], { type: 'url' }),
+    f('parliamentarian', 'Parliamentarian', ['parliamentarian', 'mp', 'peer', 'member', 'lead', 'who', 'spokesperson', 'tabled by', 'lord', 'baroness', 'responsible parliamentarian']),
+    f('staff', 'Adviser or Staff', ['staff', 'adviser', 'advisor', 'staffer', 'researcher', 'pold', 'office', 'responsible staff', 'adviser or staff']),
+    f('notes', 'Notes', ['notes', 'note', 'comments', 'comment', 'remarks', 'outcome', 'result', 'follow up'], { type: 'block' }),
+  ],
+  resolve(v, lk) {
+    if (!v.issue && !v.what) return { skip: true };
+    const problems = [];
+    const p = portfolioOf(v.portfolio, lk.portfolios || []);
+    if (!v.portfolio) problems.push('No portfolio'); else if (!p) problems.push(`Unknown portfolio "${v.portfolio}"`);
+    if (!v.issue) problems.push('No campaign or issue');
+    if (v.what && !v.date) problems.push('No date for the action');
+    if (v.date_bad) problems.push(`"${v.date_bad}" is not a date`);
+    if (v.url_bad) problems.push(`"${v.url_bad}" is not a web address (left out)`);
+    const entry = { portfolio: p && p.code, issue: v.issue, description: v.description,
+      action: v.what ? { what: v.what, date: v.date, kind: kindOf(v.kind) || 'other', url: v.url_bad ? '' : v.url, parliamentarian: v.parliamentarian, staff: v.staff, notes: v.notes } : null };
+    return { entry, problems, fatal: problems.filter((x) => !/left out/.test(x)).length > 0, summary: `${p ? p.code : '?'} · ${v.issue || '?'}${v.what ? ` · ${v.what}` : ''}` };
+  },
+};
+
+/* ------------------------------------------------------------------ Roles: people and the role they hold */
+export const ROLE_WORDS = [
+  // checked in this order; "staff" words come first so "Whip's staff" is not read as "Whip"
+  ['whips_staff', ['whip staff', 'whips staff', 'whip s staff', 'whips office staff']], ['leader_staff', ['leader staff', 'leaders staff', 'leader s circle s staff', 'leaders circle staff', 'leader s office staff', 'pold staff', 'pold', 'staff']],
+  ['frontbench_staff', ['frontbench staff', 'frontbencher staff', 'frontbencher parliamentarian s staff', 'spokesperson staff', 'front bench staff']], ['backbench_staff', ['backbench staff', 'backbencher staff', 'backbench parliamentarian s staff', 'back bench staff']],
+  ['whips', ['whip', 'whips', 'deputy whip', 'chief whip']], ['leader', ['leader', 'leaders circle', 'leader s circle', 'leaders office', 'leader s office', 'leadership', 'deputy leader']],
+  ['frontbench', ['frontbench', 'frontbencher', 'frontbencher parliamentarian', 'front bench', 'spokesperson', 'spokesman', 'spokeswoman', 'shadow']], ['backbench', ['backbench', 'backbencher', 'backbench parliamentarian', 'back bench', 'peer', 'mp', 'member']],
+  ['admin', ['admin', 'administrator', 'administration']],
+];
+/** A role from the words in a cell ("Whip", "Frontbencher parliamentarian's Staff", "Spokesperson"), or a role id. */
+export function roleOf(text, roles) {
+  const t = String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  if (!t) return '';
+  const byId = (roles || []).find((r) => r.id === t.replace(/ /g, '_') || norm(r.label) === norm(t));
+  if (byId) return byId.id;
+  for (const [id, words] of ROLE_WORDS) if (words.some((w) => t === w || (w.length >= 5 && t.includes(w)) || new RegExp(`(^| )${w}( |$)`).test(t))) return (!roles || roles.some((r) => r.id === id)) ? id : '';
+  return '';
+}
+const houseOf = (text) => { const t = String(text || '').toLowerCase(); return /commons|\bmp\b|\bmps\b/.test(t) ? 'commons' : /lords|peer|baroness|lord\b/.test(t) ? 'lords' : ''; };
+
+const roles = {
+  id: 'roles', title: 'Roles', noun: 'person',
+  blurb: 'One row for each person: their name and their role. People already on the list get the new role; anyone else is added (with the House, if the sheet gives one).',
+  fields: [
+    f('name', 'Name', ['name', 'person', 'full name', 'member', 'peer', 'mp', 'who', 'parliamentarian', 'staff member'], { required: true }),
+    f('role', 'Role', ['role', 'level', 'position', 'job', 'job title', 'status', 'access', 'type'], { required: true }),
+    f('house', 'House', ['house', 'chamber'], {}),
+  ],
+  resolve(v, lk) {
+    if (!v.name && !v.role) return { skip: true };
+    const problems = [];
+    const role = roleOf(v.role, lk.roles);
+    if (!v.name) problems.push('No name');
+    if (!v.role) problems.push('No role'); else if (!role) problems.push(`"${v.role}" is not a role I know (${(lk.roles || []).map((r) => r.label).join(', ')})`);
+    return { entry: { name: v.name, role, house: houseOf(v.house) || 'lords' }, problems, fatal: problems.length > 0, summary: `${v.name || '?'} · ${role || v.role || '?'}` };
+  },
+};
+
+/* ------------------------------------------------------------------ Whips' Office Bulletin: messages */
+const bulletin = {
+  id: 'bulletin', title: 'Bulletin messages', noun: 'message',
+  blurb: 'One row for each message: an optional heading and the message. They are added to the end of the bulletin.',
+  fields: [
+    f('heading', 'Heading', ['heading', 'title', 'headline', 'subject'], {}),
+    f('body', 'Message', ['message', 'body', 'text', 'content', 'note', 'notice', 'item', 'bulletin'], { type: 'block', required: true }),
+  ],
+  resolve(v) {
+    if (!v.body && !v.heading) return { skip: true };
+    const problems = v.body ? [] : ['No message'];
+    return { entry: { heading: v.heading, body: v.body }, problems, fatal: problems.length > 0, summary: `${v.heading ? `${v.heading}: ` : ''}${(v.body || '').slice(0, 60)}` };
+  },
+};
+
+/* ------------------------------------------------------------------ Access: invite many people at once */
+const invites = {
+  id: 'invites', title: 'Invites', noun: 'invite',
+  blurb: 'One row for each person: their email, and the level to give them. If the sheet has a program column it is used; otherwise the program chosen above.',
+  fields: [
+    f('email', 'Email', ['email', 'e-mail', 'email address', 'mail', 'address'], { required: true, type: 'email' }),
+    f('level', 'Level', ['level', 'role', 'access', 'permission', 'access level', 'type'], { required: true }),
+    f('program', 'Program', ['program', 'programme', 'app', 'site', 'system', 'area'], {}),
+    f('until', 'Access until', ['until', 'expires', 'expiry', 'end', 'end date', 'access until', 'valid until', 'to'], { type: 'date' }),
+  ],
+  resolve(v, lk) {
+    if (!v.email && !v.level) return { skip: true };
+    const problems = [];
+    const prog = v.program ? (lk.programs || []).find((p) => norm(p.id) === norm(v.program) || norm(p.name) === norm(v.program)) : (lk.programs || []).find((p) => p.id === lk.fixedProgram);
+    if (!prog) problems.push(v.program ? `Unknown program "${v.program}"` : 'No program (choose one above)');
+    const levels = prog ? ((lk.levels || {})[prog.id] || []) : [];
+    const lv = v.level && levels.find((l) => norm(l.level) === norm(v.level) || norm(l.label) === norm(v.level) || (norm(v.level).length >= 4 && norm(l.label).includes(norm(v.level))));
+    if (!v.email || v.email_bad) problems.push(v.email ? `"${v.email}" is not an email address` : 'No email');
+    if (!v.level) problems.push('No level'); else if (prog && !lv) problems.push(`"${v.level}" is not a level in ${prog.name}`);
+    if (v.until_bad) problems.push(`"${v.until_bad}" is not a date`);
+    return { entry: { email: v.email, program: prog && prog.id, level: lv && lv.level, until: v.until }, problems, fatal: problems.length > 0, summary: `${v.email || '?'} · ${prog ? prog.name : '?'} · ${lv ? lv.label : v.level || '?'}` };
+  },
+};
+
+export const IMPORTERS = { issues, roles, bulletin, invites };
+
+/* ------------------------------------------------------------------ putting a sheet through an importer */
+
+/**
+ * Read a sheet (as readWorkbook gives it) the way `importer` expects, using `mapping` (from matchColumns, possibly corrected by the person).
+ * Returns { entries: [ { row, entry, problems, fatal, summary } ], skipped (empty rows), counts: { ok, problems, fatal } }.
+ */
+export function analyse(sheet, importer, lookups, mapping) {
+  const out = []; let skipped = 0;
+  const last = {};
+  sheet.rows.forEach((r, i) => {
+    const v = {};
+    for (const fld of importer.fields) {
+      const col = mapping[fld.key];
+      const raw = col >= 0 ? r[col] : '';
+      if (fld.type === 'block') { v[fld.key] = blockValue(raw); continue; }
+      const c = cellValue(fld.type, raw);
+      v[fld.key] = c.ok ? c.value : '';
+      if (!c.ok) v[`${fld.key}_bad`] = c.value;
+      if (fld.fillDown) { if (v[fld.key]) last[fld.key] = v[fld.key]; else if (last[fld.key]) v[fld.key] = last[fld.key]; }
+    }
+    const res = importer.resolve(v, lookups || {});
+    if (res.skip) { skipped++; return; }
+    out.push({ row: i + 2, ...res });
+  });
+  return { entries: out, skipped, counts: { ok: out.filter((e) => !e.fatal).length, problems: out.filter((e) => e.problems.length).length, fatal: out.filter((e) => e.fatal).length } };
+}
+
+/** How every importer would read a sheet: for the dev check and for choosing the right importer when a page offers several. */
+export function readWithAll(sheet, lookups = {}) {
+  return Object.values(IMPORTERS).map((imp) => {
+    const match = matchColumns(sheet.headers, sheet.rows, imp.fields);
+    return { importer: imp, match, fit: fitScore(match, imp.fields), result: analyse(sheet, imp, lookups, match.mapping) };
+  }).sort((a, b) => b.fit - a.fit);
+}

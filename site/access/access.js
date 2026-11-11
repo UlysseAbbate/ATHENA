@@ -75,7 +75,8 @@ function inviteFormHtml(progs) {
       <div><label for="iu">Until (optional)</label><input id="iu" type="date"></div>
       <div><label class="show" style="display:inline"><input type="checkbox" id="is" checked> Send them an email</label></div>
       <button class="button" type="submit">Invite</button></form>
-    <p class="muted">If they already have an account they get access at once. Otherwise the invite waits, and becomes their access as soon as they make an account with that email.</p>`;
+    <p class="muted">If they already have an account they get access at once. Otherwise the invite waits, and becomes their access as soon as they make an account with that email.</p>
+    <div id="invite-import"></div>`;
 }
 function invitesTable(list, label) {
   if (!list.length) return "";
@@ -84,8 +85,40 @@ function invitesTable(list, label) {
     ${list.map(i => `<tr data-i="${i.id}"><td>${esc(i.email)}</td><td>${esc(label ? label(i.level) : i.level)}</td><td>${esc(day(i.expires_at))}</td><td>${esc(when(i.created_at))}</td>
       <td class="act"><button class="button button-small button-quiet" data-delinvite title="Delete this invite">Delete</button></td></tr>`).join("")}</tbody></table></div>`;
 }
+/* Invite many people from a spreadsheet (an email and a level on each row): the same invites as the form, one after another. */
+async function mountInviteImport(root, progs) {
+  const host = root.querySelector("#invite-import");
+  if (!host) return;
+  const [{ mountImport }, { IMPORTERS }] = await Promise.all([import("../shared/import/panel.js"), import("../shared/import/importers.js")]);
+  const programs = progs.map(id => ({ id, name: NAMES[id] }));
+  const mapLevels = () => Object.fromEntries(progs.map(p => [p, (levels[p] || []).filter(canGiveIn(p)).map(l => ({ level: l.level, label: l.label }))]));
+  mountImport(host, {
+    importer: IMPORTERS.invites,
+    lookups: async () => ({ programs, levels: mapLevels() }),
+    after: () => keepPlace(draw),
+    controls: {
+      html: `<div class="row-form"><div><label for="iprog">Program (for rows with no program column)</label><select id="iprog" data-iprog>${programs.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></div>
+        <div><label class="show" style="display:inline"><input type="checkbox" data-isend checked> Send them an email</label></div></div>`,
+      read: box => ({ fixedProgram: box.querySelector("[data-iprog]").value }),
+      onChange: (box, again) => box.querySelector("[data-iprog]").addEventListener("change", again),
+    },
+    commit: async (entries, progress) => {
+      const send = host.querySelector("[data-isend]").checked;
+      let added = 0, done = 0; const failed = [];
+      for (const e of entries) {
+        const { data, error } = await sb.functions.invoke("invite-person", { body: { email: e.email, program: e.program, level: e.level, expires: e.until || null, send, redirectTo: location.origin + "/" } });
+        let msg = data && data.error;
+        if (error && !msg) { try { msg = (await error.context.json()).error; } catch { msg = error.message; } }
+        if (msg) failed.push({ summary: e.email, error: msg }); else added++;
+        progress(++done, entries.length);
+      }
+      return { added, skipped: 0, failed };
+    },
+  });
+}
 function wireInvites(root) {
   const f = root.querySelector("#invite");
+  if (f) mountInviteImport(root, f.dataset.programs.split(","));
   if (f) {
     const ip = f.querySelector("#ip"), il = f.querySelector("#il");
     ip.addEventListener("change", () => { il.innerHTML = levelOptions(ip.value); });

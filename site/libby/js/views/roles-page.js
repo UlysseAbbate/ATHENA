@@ -7,6 +7,9 @@ import { api } from '../api.js';
 import { esc, loading, errorBox, empty, pageHeader, debounce, peer } from '../ui.js';
 import { savedName } from '../session.js';
 import { clearRoster } from '../peer-list.js';
+import { mountImport } from '../../../shared/import/panel.js';
+import { IMPORTERS } from '../../../shared/import/importers.js';
+import { norm } from '../../../shared/import/sheet.js';
 
 const plural = { backbench: 'Backbench parliamentarians', frontbench: 'Frontbencher parliamentarians', backbench_staff: 'Backbench Staff', frontbench_staff: 'Frontbencher Staff', whips_staff: 'Whip’s Staff', leader_staff: 'Leader’s circle’s Staff', peers: 'Peers', whips: 'Whips', spokesperson: 'Spokespeople', leader: 'Leader’s circle', staff: 'Staff', admin: 'Administrators' };
 
@@ -30,6 +33,7 @@ export async function renderRoles(el) {
       <td><select data-set aria-label="Role of ${esc(p.name)}">${options(p.role)}</select>${p.onList ? '' : ' <button type="button" class="linkish" data-remove>Remove</button>'}</td></tr>`;
 
   box.innerHTML = `
+    <div data-import-roles></div>
     <p class="small roles-summary" data-summary></p>
     <div class="roles-tools">
       <label class="field"><span>Find a person</span><input type="search" data-find placeholder="Name"></label>
@@ -137,6 +141,26 @@ export async function renderRoles(el) {
       summary();
       apply();
     } catch (err) { status.textContent = err.message; }
+  });
+
+  // Import from a spreadsheet: a name and a role on each row. Someone already on the list gets the new role; anyone else is added (with their House).
+  mountImport(box.querySelector('[data-import-roles]'), {
+    importer: IMPORTERS.roles,
+    lookups: async () => ({ roles }),
+    after: () => renderRoles(el),
+    commit: async (entries, progress) => {
+      let added = 0, skipped = 0, done = 0; const failed = [];
+      for (const e of entries) {
+        try {
+          const have = people.find((p) => norm(p.name) === norm(e.name));
+          if (have && have.role === e.role) skipped++;
+          else if (have) { await post({ action: 'set', name: have.name, role: e.role }); have.role = e.role; added++; }
+          else { await post({ action: 'add', name: e.name, role: e.role, house: e.house }); people.push({ name: e.name, role: e.role, house: e.house, onList: false }); added++; }
+        } catch (err) { failed.push({ summary: e.name, error: err.message }); }
+        progress(++done, entries.length);
+      }
+      return { added, skipped, failed };
+    },
   });
 
   if (!people.length) body.innerHTML = `<tr><td colspan="3">${empty('No one is in the list yet.')}</td></tr>`;
