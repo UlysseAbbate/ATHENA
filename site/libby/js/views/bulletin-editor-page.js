@@ -3,12 +3,15 @@ import { api } from '../api.js';
 import { esc, loading, errorBox, pageHeader } from '../ui.js';
 import { authFieldsHtml, readAuth, rememberAuth } from '../session.js';
 import { bulletinHtml } from '../bulletin-box.js';
+import { mountImport } from '../../../shared/import/panel.js';
+import { IMPORTERS } from '../../../shared/import/importers.js';
 
 export async function renderBulletinEditor(el, _params, query = {}) {
   const house = query.house === 'commons' ? 'commons' : 'lords';
   const houseName = house === 'commons' ? 'Commons' : 'Lords';
   el.innerHTML = `${pageHeader(`Whips\u2019 Office Bulletin: ${houseName}`, `Messages for the ${houseName} bulletin, the box on the home page, which everyone signed in can read. They stay there until you change or delete them.`, [['#/advisers', 'Advisers']])}
     <nav class="toggle bul-house" role="group" aria-label="Which bulletin"><a href="#/bulletin-editor" ${house === 'lords' ? 'aria-current="true"' : ''}>Lords bulletin</a><a href="#/bulletin-editor?house=commons" ${house === 'commons' ? 'aria-current="true"' : ''}>Commons bulletin</a></nav>
+    <div id="bul-import"></div>
     <div id="bul-root">
     <div class="row" style="display:flex;flex-wrap:wrap;gap:.75rem">${authFieldsHtml()}</div>
     <p class="small" data-status aria-live="polite"></p>
@@ -43,6 +46,23 @@ export async function renderBulletinEditor(el, _params, query = {}) {
     preview.innerHTML = bulletinHtml(messages.filter((m) => m.id), { admin: false, house }) || '<p class="small muted">Nothing to show yet: the box is hidden on the home page until there is a message.</p>';
   };
   try { await load(); draw(); } catch (err) { cards.innerHTML = errorBox(err); return; }
+
+  // Import from a spreadsheet: a heading (optional) and a message on each row, added to this House's bulletin.
+  mountImport(el.querySelector('#bul-import'), {
+    importer: IMPORTERS.bulletin,
+    after: () => renderBulletinEditor(el, _params, query),
+    commit: async (entries, progress) => {
+      let added = 0, skipped = 0, done = 0; const failed = [];
+      for (const e of entries) {
+        try {
+          if (messages.some((m) => m.id && String(m.body || '').trim() === e.body.trim())) skipped++;
+          else { await api('bulletin', { method: 'POST', body: JSON.stringify({ action: 'save', house, heading: e.heading, body: e.body, author: nameBox() }) }); messages.push({ id: -1, body: e.body }); added++; }
+        } catch (err) { failed.push({ summary: e.heading || e.body.slice(0, 40), error: err.message }); }
+        progress(++done, entries.length);
+      }
+      return { added, skipped, failed };
+    },
+  });
 
   const run = async (label, fn) => {
     status.textContent = `${label}\u2026`;
