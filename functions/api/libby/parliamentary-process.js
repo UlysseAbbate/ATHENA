@@ -1,11 +1,13 @@
 // Parliamentary process (Whips Hub): ask a question about procedure, answered from Erskine May and the Lords Companion (see lib/process-search.js).
 //   GET  /api/libby/parliamentary-process  -> { questions: [ { id, question, house, askedBy, answer, sources, createdAt } ] (the latest 40), companion: { loaded, edition, pieces } }
 //   POST { question, house? ('lords' | 'commons' | ''), asker? }  -> { id, answer, confidence, sources, queries, note }; the question and answer are kept on the list
+//   POST { action: 'delete', id }   take a question off the list for good (Staff)
 // Whips and above. The list is shared: everyone with access sees every question asked.
 import { json, errorResponse, safe } from '../../../lib/libby/util.js';
 import { sbSelect, supabaseConfigured } from '../../../lib/libby/supabase.js';
 import { passcodeProblem, cleanLine, cleanBlock } from '../../../lib/libby/auth.js';
 import { answerQuestion } from '../../../lib/libby/process-search.js';
+import { levelFromRequest, atLeast } from '../../../lib/libby/access.js';
 
 const fail = (message, status = 400) => json({ error: message }, { status });
 const missingTable = (err) => /process_(questions|chunks)/.test(String(err.message)) && /does not exist|relation|schema cache/.test(String(err.message));
@@ -30,6 +32,14 @@ export async function onRequestPost({ request, env }) {
   if (refused) return refused;
   let body;
   try { body = await request.json(); } catch { return fail('Send JSON.'); }
+  if (body.action === 'delete') {
+    if (!atLeast(await levelFromRequest(request, env), 'staff')) return fail('Only Staff may delete a question.', 403);
+    const id = Number(body.id);
+    if (!Number.isInteger(id) || id <= 0) return fail('Unknown question.');
+    const res = await fetch(`${env.SUPABASE_URL}/rest/v1/process_questions?id=eq.${id}`, { method: 'DELETE', headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, prefer: 'return=minimal' } });
+    if (!res.ok) return fail('The question could not be deleted.', 502);
+    return json({ ok: true });
+  }
   const question = cleanBlock(body.question, 1500);
   if (question.length < 8) return fail('Ask the question in a few words.');
   if (!env.ANTHROPIC_API_KEY) return fail('ANTHROPIC_API_KEY is not set in Cloudflare, so questions cannot be answered yet.', 503);

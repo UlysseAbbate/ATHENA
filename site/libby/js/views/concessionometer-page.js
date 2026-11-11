@@ -31,13 +31,24 @@ export async function renderConcessionometer(el) {
           <td>${chips(c.portfolio)}</td>
           <td class="conc-notes">${edit
             ? `<textarea rows="3" maxlength="4000" aria-label="Notes on the concession" data-notes>${esc(c.notes)}</textarea>
-               <p><button type="button" class="button button-small" data-save>Save notes</button> <span class="small muted" data-saved aria-live="polite">${c.updatedBy && c.notes ? `Last edited by ${esc(c.updatedBy)}` : ''}</span></p>`
+               <p><button type="button" class="button button-small" data-save>Save notes</button> <button type="button" class="button button-quiet button-small" data-remove title="Take this off the Concessionometer (it stops being marked WIN)">Remove</button> <span class="small muted" data-saved aria-live="polite">${c.updatedBy && c.notes ? `Last edited by ${esc(c.updatedBy)}` : ''}</span></p>`
             : (c.notes ? esc(c.notes).replace(/\n/g, '<br>') : '<span class="muted">No notes yet.</span>')}</td>
         </tr>`).join('')}</tbody></table></div>` : empty(list.length ? 'No concessions in this portfolio.' : 'No concessions yet. Press WIN on an amendment on a Bill’s Amendments tab to add it here.')}`;
   };
   draw();
   root.addEventListener('change', (e) => { if (e.target.matches('[data-portfolio]')) { only = e.target.value; draw(); } });
   root.addEventListener('click', async (e) => {
+    const rm = e.target.closest('[data-remove]');
+    if (rm) {
+      if (!window.confirm('Take this off the Concessionometer? The amendment stops being marked WIN.')) return;
+      const tr0 = rm.closest('tr'), [b0, s0, a0] = tr0.dataset.key.split('-').map(Number);
+      try {
+        await api('concessions', { method: 'POST', body: JSON.stringify({ action: 'win', on: false, billId: b0, stageId: s0, amendmentId: a0, author: savedName() }) });
+        list.splice(list.findIndex((x) => x.billId === b0 && x.stageId === s0 && x.amendmentId === a0), 1);
+        draw();
+      } catch (err) { tr0.querySelector('[data-saved]').textContent = `Not removed: ${err.message}`; }
+      return;
+    }
     const btn = e.target.closest('[data-save]');
     if (!btn) return;
     const tr = btn.closest('tr'), [billId, stageId, amendmentId] = tr.dataset.key.split('-').map(Number);

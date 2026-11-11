@@ -6,12 +6,12 @@
 //        { action: 'update-issue', id, title?, description?, status? ('open' | 'closed') } change one
 //        { action: 'action', issueId, what, date, kind?, url?, parliamentarian?, staff?, notes?, author? }   add something that was done on it
 //        { action: 'update-action', id, what?, date?, kind?, url?, parliamentarian?, staff?, notes? }
-//        { action: 'delete-action', id } / { action: 'delete-issue', id }                    Staff only
-// Anyone signed in may add and change; only Staff may delete. Shared codes cannot prove who someone is, so the names are a record.
+//        { action: 'delete-action', id } / { action: 'delete-issue', id }                    Whips and above (deleted for good, with an issue's actions)
+// Everyone who can open the page may add and change; Whips and above may delete. Shared codes cannot prove who someone is, so the names are a record.
 import { json, errorResponse, isIsoDate } from '../../../lib/libby/util.js';
 import { sbSelect, supabaseConfigured } from '../../../lib/libby/supabase.js';
 import { passcodeProblem, cleanLine, cleanBlock } from '../../../lib/libby/auth.js';
-import { levelFromRequest, atLeast, WHIPS_FEATURES } from '../../../lib/libby/access.js';
+import { levelFromRequest, atLeast } from '../../../lib/libby/access.js';
 import { PORTFOLIOS } from '../../../lib/libby/portfolios.js';
 
 export const KINDS = ['oral-question', 'written-question', 'debate', 'legislation', 'amendment', 'committee', 'event', 'media', 'other'];
@@ -111,7 +111,7 @@ export async function onRequestPost({ request, env }) {
       case 'delete-action':
       case 'delete-issue': {
         const level = await levelFromRequest(request, env);
-        if (!atLeast(level, WHIPS_FEATURES)) return fail('Only Staff may delete.', 403);
+        if (!atLeast(level, 'whips')) return fail('Only Whips and above may delete.', 403);
         const id = posInt(body.id);
         if (!id) return fail('Unknown item.');
         await send(`${body.action === 'delete-issue' ? 'issues' : 'issue_actions'}?id=eq.${id}`, 'DELETE');
