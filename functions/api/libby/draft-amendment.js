@@ -85,7 +85,7 @@ export async function onRequestPost({ request, env }) {
       method: 'POST',
       headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
-        model: env.CLAUDE_MODEL || 'claude-sonnet-5',
+        model: env.CLAUDE_MODEL || 'claude-sonnet-5-5',
         max_tokens: 3500,
         system: SYSTEM,
         messages: [{ role: 'user', content: parts.join('\n\n') }],

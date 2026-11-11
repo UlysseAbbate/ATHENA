@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { readWorkbook, matchColumns, parseDate, headerScore } from '../../site/shared/import/sheet.js';
-import { IMPORTERS, analyse, readWithAll, kindOf, roleOf, portfolioOf } from '../../site/shared/import/importers.js';
+import { IMPORTERS, analyse, readWithAll, kindOf, roleOf, portfolioOf, whenOf } from '../../site/shared/import/importers.js';
 import { PORTFOLIOS } from '../../lib/libby/portfolios.js';
 import { ROLE_ORDER, LEVEL_NAMES } from '../../lib/libby/access.js';
 
@@ -92,6 +92,20 @@ const iv = readWithAll(invBook.sheets[0], LOOKUPS);
 ok(iv[0].importer.id === 'invites' && iv[0].result.entries[0].entry.level === 'whips' && iv[0].result.entries[0].entry.until === '2026-12-31' && iv[0].result.entries[1].fatal && iv[0].result.entries[2].fatal, 'a sheet of emails and levels is recognised as invites; a bad address or level is refused');
 const bulBook = csv('Headline,Text\nRecess dates,The House rises on Thursday.\n,Second message with no heading');
 ok(readWithAll(bulBook.sheets[0], LOOKUPS)[0].importer.id === 'bulletin' && readWithAll(bulBook.sheets[0], LOOKUPS)[0].result.counts.ok === 2, 'a sheet of headings and texts is recognised as bulletin messages');
+
+// a Concessionometer sheet (the Staff's own: season instead of a date, several portfolios in a cell, extra columns that are ignored)
+const concBook = csv(`Date,Concession Name,Bill/Legislation,Portfolio/Department,Importance,Rating,Details
+Summer 2025,Kinship care ,Armed Forces Commissioner Bill,"Defence, DHSC",4,****,Julie Smith pressed the Government.
+Winter 2025,Employment law,Employment Rights Bill ,DBT,4,****,Six-month window.
+Spring 2026,Odd one,Some Bill,"Narnia, Education",2,**,
+Someday,Bad date,Another Bill,DfT,1,*,
+,,,,,,`);
+const cc = readWithAll(concBook.sheets[0], LOOKUPS);
+ok(cc[0].importer.id === 'concessions', 'a sheet of concession names, Bills and details is recognised as Concessionometer rows');
+const ce = cc[0].result.entries;
+ok(ce[0].entry.bill === 'Armed Forces Commissioner Bill' && ce[0].entry.name === 'Kinship care' && ce[0].entry.portfolio.join() === 'MOD,DHSC' && ce[0].entry.period === 'Summer 2025' && ce[0].entry.wonAt === '2025-06-01' && /pressed/.test(ce[0].entry.notes), 'a concession is read: Bill, name, several portfolios, the season as a date and as the words, the details as notes');
+ok(!ce[2].fatal && ce[2].entry.portfolio.join() === 'DFE' && /Narnia/.test(ce[2].problems.join()) && !ce[3].fatal && ce[3].entry.wonAt === '' && /not a date/.test(ce[3].problems.join()), 'an unknown portfolio or date is left out with a warning; the row is still added');
+ok(whenOf('Autumn 2025').date === '2025-09-01' && whenOf('5 Oct 2026').date === '2026-10-05' && whenOf('5 Oct 2026').period === '' && whenOf('') .date === '' && whenOf('later') === null, 'seasons and dates are read for "date won"');
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll spreadsheet import checks passed.');
 process.exit(failed ? 1 : 0);

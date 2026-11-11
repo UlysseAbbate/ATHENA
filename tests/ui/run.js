@@ -690,7 +690,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           page.once("dialog", d => d.accept());
           await page.click(".conc-table tbody tr [data-edit]"); await page.click(".conc-table tbody tr [data-remove]"); await page.waitForTimeout(400);
           const rmPost = JSON.parse(globalThis.__concPosts[0] || "{}");
-          check("Concessionometer: an entry can be removed outright (it stops being a WIN)", rmPost.action === "win" && rmPost.on === false && (await page.$$(".conc-table tbody tr")).length === 1, JSON.stringify(rmPost));
+          check("Concessionometer: an entry can be removed outright (it stops being a WIN)", rmPost.action === "remove" && (await page.$$(".conc-table tbody tr")).length === 1, JSON.stringify(rmPost));
           globalThis.__processPosts = [];
           await page.goto(BASE + "/libby/#/parliamentary-process"); await page.waitForTimeout(700);
           page.once("dialog", d => d.accept());

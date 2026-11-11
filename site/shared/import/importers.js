@@ -5,7 +5,7 @@
 //   - a value that is not understood (a role, a kind of action, a portfolio)  ->  add it to the importer's synonyms (ROLE_WORDS, KIND_WORDS) or the lookups
 //   - a sheet for a page that cannot take one yet  ->  add an importer here (fields + resolve), then its `commit` where the page is (see issues-page.js for the pattern)
 //   - then run `node scripts/libby/check-import.mjs <the sheet>` to see how every importer reads it, and add the sheet's shape to scripts/libby/check-import.mjs's tests.
-import { cellValue, blockValue, matchColumns, fitScore, norm } from './sheet.js';
+import { cellValue, blockValue, matchColumns, fitScore, norm, parseDate } from './sheet.js';
 
 const f = (key, label, aliases, extra = {}) => ({ key, label, aliases, type: 'text', ...extra });
 
@@ -60,6 +60,45 @@ const issues = {
     const entry = { portfolio: p && p.code, issue: v.issue, description: v.description,
       action: v.what ? { what: v.what, date: v.date, kind: kindOf(v.kind) || 'other', url: v.url_bad ? '' : v.url, parliamentarian: v.parliamentarian, staff: v.staff, notes: v.notes } : null };
     return { entry, problems, fatal: problems.filter((x) => !/left out/.test(x)).length > 0, summary: `${p ? p.code : '?'} · ${v.issue || '?'}${v.what ? ` · ${v.what}` : ''}` };
+  },
+};
+
+/* ------------------------------------------------------------------ Concessionometer: one row per concession */
+const SEASON_START = { spring: [3, 1], summer: [6, 1], autumn: [9, 1], fall: [9, 1], winter: [12, 1] };   // month, day: the season's first day, so the order on the page is right
+/** "Summer 2025" -> { date: '2025-06-01', period: 'Summer 2025' }; a real date -> { date }; anything else -> null. */
+export function whenOf(text) {
+  const t = String(text || '').trim();
+  if (!t) return { date: '', period: '' };
+  const d = parseDate(t);
+  if (d) return { date: d, period: '' };
+  const m = /^(spring|summer|autumn|fall|winter)\s+(\d{4})$/i.exec(t.replace(/\s+/g, ' '));
+  if (m) { const [mo, da] = SEASON_START[m[1].toLowerCase()]; return { date: `${m[2]}-${String(mo).padStart(2, '0')}-${String(da).padStart(2, '0')}`, period: `${m[1][0].toUpperCase()}${m[1].slice(1).toLowerCase()} ${m[2]}` }; }
+  return null;
+}
+const concessions = {
+  id: 'concessions', title: 'Concessions', noun: 'concession',
+  blurb: 'One row for each concession: the Bill, when it was won (a date, or a season such as "Summer 2025"), the portfolio (one or more, e.g. "DBT, DSIT") and the Staff’s notes. A column for what the concession is called is kept as its name. Other columns (importance, rating) are ignored. A concession already on the list (same Bill and name) is left as it is.',
+  fields: [
+    f('bill', 'Bill', ['bill', 'bill legislation', 'legislation', 'bill name', 'act', 'bill or legislation', 'bill title'], { required: true }),
+    f('name', 'Concession name', ['concession name', 'concession', 'name', 'title', 'win', 'what was won']),
+    f('when', 'Date won', ['date', 'date won', 'when', 'won', 'season', 'period', 'time', 'date of concession']),
+    f('portfolio', 'Portfolio', ['portfolio', 'department', 'portfolio department', 'dept', 'brief', 'policy area']),
+    f('notes', 'Notes', ['notes', 'note', 'details', 'detail', 'comments', 'comment', 'description', 'summary', 'outcome'], { type: 'block' }),
+  ],
+  resolve(v, lk) {
+    if (!v.bill && !v.name) return { skip: true };
+    const problems = [];
+    if (!v.bill) problems.push('No Bill');
+    const w = whenOf(v.when);
+    if (w === null) problems.push(`"${v.when}" is not a date or a season (date left blank)`);
+    const codes = [], unknown = [];
+    for (const part of String(v.portfolio || '').split(/[,;/&+]|\band\b/i).map((x) => x.trim()).filter(Boolean)) {
+      const p = portfolioOf(part, lk.portfolios || []);
+      if (p) { if (!codes.includes(p.code)) codes.push(p.code); } else unknown.push(part);
+    }
+    if (unknown.length) problems.push(`Unknown portfolio ${unknown.map((u) => `"${u}"`).join(', ')} (left out)`);
+    const entry = { bill: v.bill, name: v.name, portfolio: codes, notes: v.notes, wonAt: (w && w.date) || '', period: (w && w.period) || '' };
+    return { entry, problems, fatal: !v.bill, summary: `${v.bill || '?'}${v.name ? ` · ${v.name}` : ''} · ${codes.join(', ') || 'no portfolio'} · ${(w && (w.period || w.date)) || 'no date'}` };
   },
 };
 
@@ -140,7 +179,7 @@ const invites = {
   },
 };
 
-export const IMPORTERS = { issues, roles, bulletin, invites };
+export const IMPORTERS = { issues, concessions, roles, bulletin, invites };
 
 /* ------------------------------------------------------------------ putting a sheet through an importer */
 
