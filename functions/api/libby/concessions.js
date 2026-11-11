@@ -3,7 +3,8 @@
 //        -> { concessions: [ { billId, stageId, amendmentId, house, number, place, summary, url, billTitle, portfolio: ['HO', ...], notes, wonBy, wonAt, updatedBy, updatedAt } ] }, newest first
 //   POST { action: 'win', on, billId, stageId, amendmentId, house, number?, place?, summary?, author? }
 //        on: true marks the amendment WIN (the WIN button) and adds it here, with a snapshot of its Bill's title and portfolio; false takes it off again.
-//   POST { action: 'note', billId, stageId, amendmentId, notes, author? }   the POLD Staff's notes about the concession
+//   POST { action: 'edit', billId, stageId, amendmentId, notes?, billTitle?, wonAt? ('YYYY-MM-DD'), author? }   the POLD Staff's notes about the concession, and the Bill's name and date won, corrected by hand
+//   POST { action: 'note', billId, stageId, amendmentId, notes, author? }   (notes only; kept for older callers)
 // Reading: everyone signed in. Changing: the Whips' Office features (Staff), as for the other amendment buttons.
 import { json, errorResponse, safe, pick } from '../../../lib/libby/util.js';
 import { sbSelect, supabaseConfigured } from '../../../lib/libby/supabase.js';
@@ -81,6 +82,19 @@ export async function onRequestPost(ctx) {
         if (!fl.ok) throw new Error(`Supabase amendment_flags: ${fl.status} ${await fl.text()}`);
       }
       return json({ ok: true, on: !!body.on });
+    }
+    if (body.action === 'edit') {
+      // the notes, and the Bill's name and the date it was won, which can be corrected by hand
+      const patch = { updated_by: author, updated_at: new Date().toISOString() };
+      if (body.notes !== undefined) patch.notes = cleanBlock(body.notes, 4000);
+      if (body.billTitle !== undefined) { patch.bill_title = cleanLine(body.billTitle, 200) || null; }
+      if (body.wonAt !== undefined) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(String(body.wonAt))) return fail('Give the date won as a date.');
+        patch.won_at = `${body.wonAt}T12:00:00Z`;
+      }
+      const res = await fetch(`${table}?${key}`, { method: 'PATCH', headers: wHeaders(env), body: JSON.stringify(patch) });
+      if (!res.ok) throw new Error(`Supabase concessions: ${res.status} ${await res.text()}`);
+      return json({ ok: true });
     }
     if (body.action === 'note') {
       const res = await fetch(`${table}?${key}`, { method: 'PATCH', headers: wHeaders(env), body: JSON.stringify({ notes: cleanBlock(body.notes, 4000), updated_by: author, updated_at: new Date().toISOString() }) });

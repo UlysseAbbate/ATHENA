@@ -659,3 +659,12 @@ a.cal-cell:hover { border-color: var(--accent); background: var(--accent-tint); 
 .proc-answer p { margin: .5rem 0; }
 .proc-sources li { margin-bottom: .45rem; }
 .proc-upload { margin-top: 2rem; }
+/* Concessionometer: a narrow Bill column, a narrow Portfolio column, and the notes taking the rest of the width */
+.conc-table { table-layout: fixed; width: 100%; }
+.conc-table .conc-col-bill { width: 9.5rem; }
+.conc-table .conc-col-port { width: 5.5rem; }
+.conc-table td.conc-notes { width: auto; }
+.conc-table textarea { width: 100%; min-height: 9rem; }
+.conc-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.conc-bill { font-weight: 700; }
+.conc-table .conc-col-bill .field input { width: 100%; }
