@@ -10,13 +10,15 @@ export function linkify(text) {
  * The box. Nothing is shown when there are no messages, except that Staff and Admin get a prompt to add one.
  * messages: [ { heading, body, updated_at } ]
  */
-export function bulletinHtml(messages, { admin = false } = {}) {
+export function bulletinHtml(messages, { admin = false, house = 'lords' } = {}) {
+  const label = `Whips' Office Bulletin: ${house === 'commons' ? 'Commons' : 'Lords'}`;
+  const editor = `#/bulletin-editor${house === 'commons' ? '?house=commons' : ''}`;
   if (!messages || !messages.length) {
-    return admin ? `<section class="bulletin bulletin-empty" aria-label="Whips' Office Bulletin"><h2>Whips' Office Bulletin</h2>
-      <p class="small muted">There is no bulletin message at the moment. <a href="#/bulletin-editor">Add one</a> (only Staff and Admin see this).</p></section>` : '';
+    return admin ? `<section class="bulletin bulletin-empty" aria-label="${label}"><h2>${label}</h2>
+      <p class="small muted">There is no bulletin message at the moment. <a href="${editor}">Add one</a> (only Staff and Admin see this).</p></section>` : '';
   }
   const latest = messages.map((m) => m.updated_at || '').sort().pop();
-  return `<section class="bulletin" aria-label="Whips' Office Bulletin"><h2>Whips' Office Bulletin</h2>
+  return `<section class="bulletin" aria-label="${label}"><h2>${label}</h2>
     ${messages.map((m) => `<div class="bulletin-msg">${m.heading ? `<h3>${esc(m.heading)}</h3>` : ''}<p>${linkify(m.body)}</p></div>`).join('')}
-    ${latest ? `<p class="bulletin-foot">Last updated ${esc(fmtDate(latest, { day: 'numeric', month: 'long', year: 'numeric' }))}.${admin ? ' <a href="#/bulletin-editor">Edit</a>' : ''}</p>` : ''}</section>`;
+    ${latest ? `<p class="bulletin-foot">Last updated ${esc(fmtDate(latest, { day: 'numeric', month: 'long', year: 'numeric' }))}.${admin ? ` <a href="${editor}">Edit</a>` : ''}</p>` : ''}</section>`;
 }

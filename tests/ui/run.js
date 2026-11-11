@@ -237,6 +237,16 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           }
           if (u.pathname.endsWith("/api/libby/bills/1/amendment")) { const aid = u.searchParams.get("aid"); return j({ id: Number(aid), location: "Clause 3", text: ["Page 2, line 14, leave out subsection (2)"], explanatoryStatement: `Statement for ${aid}: this removes the subsection.`, note: "" }); }
           if (u.pathname.endsWith("/api/libby/comments")) return j({ comments: {} });
+          if (u.pathname.endsWith("/api/libby/bulletin")) {
+            const hs = u.searchParams.get("house") === "commons" ? "commons" : "lords";
+            if (route.request().method() === "GET") return j({ house: hs, messages: [{ id: hs === "commons" ? 2 : 1, heading: hs === "commons" ? "Commons Whips notice" : "Lords Whips notice", body: `Message for the ${hs}.`, position: 1, updated_by: "Pat", updated_at: new Date().toISOString() }] });
+            (globalThis.__bulletinPosts = globalThis.__bulletinPosts || []).push(route.request().postData()); return j({ ok: true });
+          }
+          if (u.pathname.endsWith("/api/libby/parliamentary-process")) {
+            if (route.request().method() === "GET") return j({ questions: [{ id: 1, question: "When is a Bill a Money Bill?", house: "commons", askedBy: "Pat", answer: "A Bill is a Money Bill when the Speaker certifies it [1].", sources: [{ n: 1, source: "Erskine May", ref: "26.29", title: "Money Bills", where: "", url: "https://erskinemay.parliament.uk/section/1/" }], createdAt: new Date().toISOString() }], companion: { loaded: false, edition: "", pieces: 0 } });
+            (globalThis.__processPosts = globalThis.__processPosts || []).push(route.request().postData());
+            return j({ id: 2, answer: "Royal Assent may be notified at a break in business [1].", confidence: "clear", sources: [{ n: 1, source: "Erskine May", ref: "26.29", title: "Royal Assent", where: "Chapter 26", url: "https://erskinemay.parliament.uk/section/16612/", excerpt: "Royal Assent may be notified at any convenient break", used: true }], queries: ["royal assent"], note: "The Lords Companion has not been uploaded yet." });
+          }
           if (u.pathname.endsWith("/api/libby/data/commons-members")) return j({ date: "2026-11-10", total: 650, parties: [{ name: "Labour", abbreviation: "Lab", colour: "d50000", male: 215, female: 189, nonBinary: 0, total: 404 }, { name: "Liberal Democrat", abbreviation: "LD", colour: "faa61a", male: 40, female: 32, nonBinary: 0, total: 72 }], ldMps: [{ id: 1, name: "Daisy Cooper" }, { id: 2, name: "Sir Ed Davey" }], library: "https://commonslibrary.parliament.uk/type/data-dashboard/" });
           if (u.pathname.endsWith("/api/libby/people-roles")) {
             if (route.request().method() === "GET") return j({ roles: [{ id: "peers", label: "Peer" }, { id: "whips", label: "Whip" }, { id: "staff", label: "Staff" }], people: [{ name: "Baroness Beta", role: "whips", onList: true, house: "lords" }, { name: "Sir Ed Davey", role: "peers", onList: true, house: "commons" }, { name: "Daisy Cooper", role: "peers", onList: true, house: "commons" }, { name: "Pat Staffer", role: "staff", onList: false, house: "commons" }] });
@@ -303,7 +313,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         if (who === "admin") {   // no gate: everyone goes straight to the Beta test; the Theme button and Developer button are in the foot
           const menu = async () => page.$$eval(".topnav a", as => as.map(a => a.textContent));
           check("admin: no Honourable / Noble front page and no Beta / Developer choice", !/Which House|Open the developer site|Open the beta/.test(lb) && (await page.$(".gate")) === null);
-          check("admin: the menu is Today, Business, Legislation, Lib Dems 150, MPs/Peers and POLD Staff (no Developer in the Beta test)", (await menu()).join("|") === "Today|Business|Legislation|Lib Dems 150|MPs/Peers|POLD Staff", (await menu()).join("|"));
+          check("admin: the menu is Today, Business, Legislation, Lib Dems 150, Whips Hub and POLD Staff (no Developer in the Beta test)", (await menu()).join("|") === "Today|Business|Legislation|Lib Dems 150|Whips Hub|POLD Staff", (await menu()).join("|"));
           check("admin: the Theme button is in the foot, not the masthead", (await page.$(".masthead [data-theme-btn]")) === null && (await page.$(".foot [data-theme-btn]")) !== null);
           const foot = await page.$eval(".foot", f => f.innerText);
           check("admin: the foot has Developer version, Team & access and Sign out", /Developer version/.test(foot) && /Team & access/.test(foot) && /Sign out/.test(foot), foot.replace(/\n/g, " ").slice(0, 200));
@@ -422,7 +432,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           // the Whips' page and the Advisers' page
           await page.goto(BASE + "/libby/#/whips-office"); await page.waitForTimeout(600);
           const wo = await page.$$eval("#app .index-row .swipe", es => es.map(e => e.textContent));
-          check("Whips' page: Availability and Data sit under it", wo.join("|") === "Availability|Data", wo.join("|"));
+          check("Whips Hub: Availability, Data and Parliamentary process sit under it", wo.join("|") === "Availability|Data|Parliamentary process", wo.join("|"));
           await page.goto(BASE + "/libby/#/advisers-office"); await page.waitForTimeout(600);
           const ao = await page.$$eval("#app .index-row .swipe", es => es.map(e => e.textContent));
           check("Advisers' page: the Advisers and Roles pages sit under it", ao.join("|") === "Advisers|Roles", ao.join("|"));
@@ -443,14 +453,40 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           check("beta: the menu is just Data, for now", (await menu()).join("|") === "Data", (await menu()).join("|"));
           await page.goto(BASE + "/libby/#/data"); await page.waitForTimeout(900);
           check("beta: the Data page opens", !/Not available/.test(await page.$eval("#app", b => b.innerText)) && /Data/.test(await page.$eval("#app h1", h => h.textContent)));
-          // for now every level except Admin and Developer sees only Data
-          lvl = "staff"; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
-          check("staff: the menu is just Data, for now", (await menu()).join("|") === "Data", (await menu()).join("|"));
-          const sh = await page.$eval("#app", b => b.innerText);
-          check("staff: the home page offers just Data", /Data/.test(sh) && !/Legislation|Whips|Advisers/.test(sh), sh.slice(0, 120).replace(/\n/g, " "));
-          for (const p_ of ["#/legislation", "#/today", "#/advisers-office"]) { await page.goto(BASE + "/libby/" + p_); await page.waitForTimeout(400); check(`staff: ${p_} says not available, for now`, /Not available/.test(await page.$eval("#app", b => b.innerText))); }
+          // for now: Backbench and Frontbencher parliamentarians (and their Staff) see only Data; Whips (and Whip's Staff) also the Whips Hub; Leader's circle (and its Staff) everything except the back-end; Administrators everything
+          for (const basic of ["backbench", "frontbench_staff"]) {
+            lvl = basic; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
+            check(`${basic}: the menu is just Data, for now (as a Peer always had)`, (await menu()).join("|") === "Data", (await menu()).join("|"));
+            const sh = await page.$eval("#app", b => b.innerText);
+            check(`${basic}: the home page offers just Data`, /Data/.test(sh) && !/Legislation|Whips|Advisers/.test(sh), sh.slice(0, 120).replace(/\n/g, " "));
+            for (const p_ of ["#/legislation", "#/today", "#/advisers-office", "#/whips-office", "#/parliamentary-process"]) { await page.goto(BASE + "/libby/" + p_); await page.waitForTimeout(300); check(`${basic}: ${p_} says not available, for now`, /Not available/.test(await page.$eval("#app", b => b.innerText))); }
+          }
+          for (const whip of ["whips", "whips_staff"]) {
+            lvl = whip; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
+            check(`${whip}: the menu is the Whips Hub`, (await menu()).join("|") === "Whips Hub", (await menu()).join("|"));
+            await page.goto(BASE + "/libby/#/whips-office"); await page.waitForTimeout(500);
+            check(`${whip}: the Whips Hub opens, with Availability, Data and Parliamentary process`, (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|") === "Availability|Data|Parliamentary process", (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|"));
+            await page.goto(BASE + "/libby/#/parliamentary-process"); await page.waitForTimeout(600);
+            check(`${whip}: Parliamentary process opens`, !/Not available/.test(await page.$eval("#app", b => b.innerText)) && /Your question/.test(await page.$eval("#app", b => b.innerText)));
+            if (whip === "whips") {
+              globalThis.__processPosts = [];
+              await page.goto(BASE + "/libby/#/parliamentary-process"); await page.waitForTimeout(600);
+              check("Parliamentary process: recent questions are listed with their sources, and there is no Companion upload for a Whip (Staff only)", /Money Bill/.test(await page.$eval("#app", b => b.innerText)) && (await page.$("[data-upload]")) === null);
+              await page.fill('[data-ask] [name="question"]', "How is Royal Assent notified in the Lords?"); await page.selectOption('[data-ask] [name="house"]', "lords"); await page.click('[data-ask] button[type="submit"]'); await page.waitForTimeout(500);
+              const ans = await page.$eval("[data-result]", e => e.innerText.replace(/\s+/g, " "));
+              check("Parliamentary process: a question is answered from Erskine May, with the passages used and a link", /Royal Assent may be notified at a break/.test(ans) && /Erskine May 26\.29/.test(ans) && /Lords Companion has not been uploaded/.test(ans) && (await page.$eval('[data-result] a[href^="https://erskinemay.parliament.uk"]', a => a.href)).includes("16612"), ans.slice(0, 200));
+              const pp = JSON.parse(globalThis.__processPosts[0] || "{}");
+              check("Parliamentary process: the question goes to the server with the House", pp.question === "How is Royal Assent notified in the Lords?" && pp.house === "lords");
+            }
+            for (const p_ of ["#/legislation", "#/advisers-office", "#/roles"]) { await page.goto(BASE + "/libby/" + p_); await page.waitForTimeout(300); check(`${whip}: ${p_} says not available`, /Not available/.test(await page.$eval("#app", b => b.innerText))); }
+          }
+          for (const leader of ["leader", "leader_staff"]) {
+            lvl = leader; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
+            check(`${leader}: everything except the back-end (POLD Staff included)`, (await menu()).join("|") === "Today|Business|Legislation|Lib Dems 150|Whips Hub|POLD Staff", (await menu()).join("|"));
+            for (const p_ of ["#/roles", "#/team", "#/developer"]) { await page.goto(BASE + "/libby/" + p_); await page.waitForTimeout(300); check(`${leader}: ${p_} (the back-end) says not available`, /Not available/.test(await page.$eval("#app", b => b.innerText))); }
+          }
           lvl = "admin"; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
-          check("admin role: keeps everything", (await menu()).join("|") === "Today|Business|Legislation|Lib Dems 150|MPs/Peers|POLD Staff", (await menu()).join("|"));
+          check("admin role: keeps everything", (await menu()).join("|") === "Today|Business|Legislation|Lib Dems 150|Whips Hub|POLD Staff", (await menu()).join("|"));
           lvl = "beta"; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(700);
           for (const [path_, name] of [["#/legislation", "Legislation"], ["#/whips-office", "the Whips' page"], ["#/advisers-office", "the Advisers' page"], ["#/developer", "the Developer page"], ["#/team", "Team & access"]]) {
             await page.goto(BASE + "/libby/" + path_); await page.waitForTimeout(400);
@@ -489,8 +525,18 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/libby/#/data/commons"); await page.waitForTimeout(900);
           const cd = await page.$eval("#app", a => a.innerText.replace(/\s+/g, " "));
           check("Commons Data: party strengths, the Lib Dem MPs (highlighted yellow) and the Library link", /Party strengths/.test(cd) && /Labour\s+404/.test(cd) && /Lib Dem MPs/.test(cd) && (await page.$$eval(".data-mps mark.ld", ms => ms.map(m => m.textContent)).then(a => a.join("|"))) === "Daisy Cooper|Sir Ed Davey" && (await page.$eval('a[href^="https://commonslibrary.parliament.uk"]', a => a.href)).includes("data-dashboard"), cd.slice(0, 160));
+          await page.evaluate(() => { try { localStorage.setItem("libbyHouse", "lords"); } catch (e) { /* ignore */ } });
+          await page.goto(BASE + "/libby/#/"); await page.reload(); await page.waitForTimeout(1200);
+          check("Bulletin: the home page shows the Lords bulletin for the Lords, with a button for the Commons one", /Whips' Office Bulletin: Lords/.test(await page.$eval("#bulletin", b => b.innerText)) && /Lords Whips notice/.test(await page.$eval("#bulletin", b => b.innerText)) && /Show the Commons bulletin/.test(await page.$eval("#bulletin", b => b.innerText)));
+          await page.click("[data-bulletin]"); await page.waitForTimeout(500);
+          check("Bulletin: the other button shows the Commons bulletin", /Whips' Office Bulletin: Commons/.test(await page.$eval("#bulletin", b => b.innerText)) && /Commons Whips notice/.test(await page.$eval("#bulletin", b => b.innerText)));
+          await page.goto(BASE + "/libby/#/bulletin-editor?house=commons"); await page.waitForTimeout(800);
+          check("Bulletin: the editor has a Lords and a Commons bulletin, and opens the Commons one", (await page.$$eval(".bul-house a", as => as.map(a => a.textContent.trim()))).join("|") === "Lords bulletin|Commons bulletin" && /Commons/.test(await page.$eval("#app h1", h => h.textContent)) && (await page.$eval(".bul-card [data-heading]", i => i.value)) === "Commons Whips notice");
+          globalThis.__bulletinPosts = [];
+          await page.click(".bul-card [data-save]"); await page.waitForTimeout(400);
+          check("Bulletin: saving a Commons message goes to the Commons bulletin", JSON.parse(globalThis.__bulletinPosts[0] || "{}").house === "commons" && JSON.parse(globalThis.__bulletinPosts[0]).action === "save");
           await page.goto(BASE + "/libby/#/roles"); await page.waitForTimeout(900);
-          const rh = await page.$$eval(".roles-table thead th", hs => hs.map(h => h.textContent.trim()));
+          const rh =await page.$$eval(".roles-table thead th", hs => hs.map(h => h.textContent.trim()));
           check("Roles: the list covers peers and Lib Dem MPs, with a House column", rh.join("|") === "Person|House|Role" && (await page.$$eval(".roles-table tbody tr", rs => rs.map(r => r.dataset.house))).join("|") === "lords|commons|commons|commons");
           check("Roles: Lib Dem MPs and peers on the Members lists are highlighted in yellow; staff added by hand are not", (await page.$$eval('.roles-table tbody tr[data-name="Daisy Cooper"] mark.ld', m => m.length)) === 1 && (await page.$$eval('.roles-table tbody tr[data-name="Baroness Beta"] mark.ld', m => m.length)) === 1 && (await page.$$eval('.roles-table tbody tr[data-name="Pat Staffer"] mark.ld', m => m.length)) === 0);
           await page.selectOption("[data-house]", "commons"); await page.waitForTimeout(150);

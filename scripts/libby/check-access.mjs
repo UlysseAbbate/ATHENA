@@ -111,11 +111,13 @@ ok(await beta('/api/libby/data/votes') === 200 && await beta('/api/libby/data/lo
   'a Beta tester can read what is behind the Data page');
 ok(await beta('/api/libby/day/today') === 403 && await beta('/api/libby/bills') === 403 && await beta('/api/libby/commons/day/today') === 403 && await beta('/api/libby/room-bookings') === 403,
   'and, for now, nothing else');
-// FOR NOW every level except Admin and Developer is held to the Data page, whatever the level would otherwise allow
+// FOR NOW the lower ranks open only part of LIBBY, whatever the level would otherwise allow: a Peer (rank 1) the Data page only; a Whip (rank 2) the Whips Hub too
 const as = async (tok, path) => (await middleware(ctx(path, { token: tok }))).status;
-ok(await as('tok-peer', '/api/libby/data/votes') === 200 && await as('tok-peer', '/api/libby/day/today') === 403 && await as('tok-peer', '/api/libby/bills') === 403
-  && await as('tok-code', '/api/libby/data/votes') === 200 && await as('tok-code', '/api/libby/whip-availability') === 403 && await as('tok-code', '/api/libby/commons/day/today') === 403,
-  'a Peer and a Whip can read the Data page and nothing else');
+ok(await as('tok-peer', '/api/libby/data/votes') === 200 && await as('tok-peer', '/api/libby/day/today') === 403 && await as('tok-peer', '/api/libby/bills') === 403 && await as('tok-peer', '/api/libby/whip-availability') === 403 && await as('tok-peer', '/api/libby/parliamentary-process') === 403,
+  'a Backbench parliamentarian can read the Data page and nothing else');
+ok(await as('tok-code', '/api/libby/data/votes') === 200 && await as('tok-code', '/api/libby/whip-availability') === 200 && await as('tok-code', '/api/libby/parliamentary-process') === 200
+  && await as('tok-code', '/api/libby/commons/day/today') === 403 && await as('tok-code', '/api/libby/day/today') === 403 && await as('tok-code', '/api/libby/bills') === 403 && await as('tok-code', '/api/libby/duty-whips') === 403 && await as('tok-code', '/api/libby/bulletin') === 403,
+  'a Whip can use the Whips Hub (availability, data, parliamentary process) and nothing else');
 ok(await as('tok-admin', '/api/libby/day/today') === 200 && await as('tok-admin', '/api/libby/commons/day/today') === 200 && await as('tok-dev', '/api/libby/bills') === 200,
   'Admin and Developer keep everything');
 ok(await beta('/api/libby/data/votes', 'POST') === 403 && await beta('/api/libby/room-bookings', 'POST') === 403 && await beta('/api/libby/ask-parliamentarian', 'POST') === 403, 'a Beta tester cannot change anything');
