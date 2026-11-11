@@ -1,5 +1,5 @@
 // POST /api/refresh-all  -> starts the "Run everything" workflow on GitHub (every action on the site: LOVELACE, LUCIEN and LIBBY data).
-// The button at the foot of every page calls this. Anyone signed in to Athena may press it; it does nothing if a run is already going.
+// The button at the foot of every page calls this. Anyone signed in with access to at least one program may press it; it does nothing if a run is already going.
 // Needs (Cloudflare Pages -> Settings -> Variables): GITHUB_TOKEN, a fine-grained token for the repository with "Actions: read and write";
 // optional GITHUB_REPO (default UlysseAbbate/ATHENA) and GITHUB_REF (default main). SUPABASE_URL etc. are used to check the sign-in.
 
@@ -15,6 +15,11 @@ export async function onRequestPost({ request, env }) {
     throw e;
   }
   if (!who) return json({ error: 'Please sign in to refresh the data.' }, { status: 401 });
+  // Signing in is not enough: an account that is still waiting to be approved (no access to any program) may not start the update.
+  if (!who.level) {
+    const others = await Promise.all(['lovelace', 'lucien'].map((p) => identityFromRequest(request, env, p).catch(() => null)));
+    if (!others.some((o) => o && o.level)) return json({ error: 'Your account has not been given access yet.' }, { status: 403 });
+  }
   if (!env.GITHUB_TOKEN) return json({ error: 'The refresh button is not set up yet: the site needs a GITHUB_TOKEN setting.' }, { status: 503 });
 
   const repo = env.GITHUB_REPO || 'UlysseAbbate/ATHENA';

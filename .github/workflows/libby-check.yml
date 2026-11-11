@@ -8,6 +8,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# the jobs only read the repository; nothing here can push, tag or change settings
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest

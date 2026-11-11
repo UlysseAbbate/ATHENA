@@ -199,6 +199,10 @@ node tests/ui/run.js        # needs Playwright
 node scripts/libby/check-site.mjs && node scripts/libby/check-access.mjs && node scripts/libby/check-list.mjs
 ```
 
+## Security and governance
+
+How the site is protected and the rules for changing it: `SECURITY.md`. Who is responsible for what, the personal data held, what to do if something goes wrong, backups, and the actions only the owner can take: `docs/GOVERNANCE.md`. What users are told: `/privacy/`.
+
 ## Settings to switch on in the Supabase dashboard
 
 - **Authentication → Providers → Email → Leaked password protection** (checks new passwords against known breaches; on paid plans).

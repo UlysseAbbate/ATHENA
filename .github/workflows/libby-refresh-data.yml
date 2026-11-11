@@ -15,6 +15,10 @@ on:
   workflow_call:   # from "Run everything" (run-all.yml), which wakes it at 6am and 6pm London time
   workflow_dispatch:
 
+# the jobs only read the repository; nothing here can push, tag or change settings
+permissions:
+  contents: read
+
 concurrency:
   group: refresh-data
   cancel-in-progress: false
