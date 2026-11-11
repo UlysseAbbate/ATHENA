@@ -8,25 +8,32 @@
 
 /* ------------------------------------------------------------------ levels */
 
-// The roles, lowest to highest. A person signs in as one role with that role's password (lib/access.js).
-//   peers          read (as before)
-//   whips          also the Data page and the Whips pages (as before)
-//   spokesperson   the same as Whips for now
-//   leader         Leader's office: the same as Whips for now
-//   staff          everything except the back-channel operations (below)
-//   admin          everything, including the back-channel operations
-// Roles with the same number are equal: to give Spokespeople or the Leader's office their own access later, raise or lower their number here
-// (and give pages and routes that level in the lists below).
+// The roles, lowest to highest. A person has one role. Each role has a rank, and roles with the same rank may do the same things:
+//   backbench, frontbench    Backbench / Frontbencher parliamentarian: read, and the Data page (for now, as Peers always had)
+//   whips                    Whip: also the Whips Hub (availability for whipping, the data, parliamentary process)
+//   leader                   Leader's circle: everything except the back-end (the back-end is the Admin's alone), including POLD Staff
+//   admin                    Administrator: everything, including the back-end (back-channel) operations. Not other programs: only the site's owner has those
+//   <role>_staff             each role's Staff (backbench_staff, frontbench_staff, whips_staff, leader_staff) have exactly their principal's access
+// To give one of these roles more or less access later, change its number here (and the lists below).
 //   beta           Beta tester: ONLY the pages marked `beta: true` below (today only Data), read-only. Not a step on the ladder:
 //                  see canOpenPage() and betaMay(), which are what keep a beta tester out of everything else
 //   developer      the Developer site: everything, plus the pages marked `level: DEVELOPER` (work in progress). Only the admin can give it,
 //                  and the admin always has it
-export const RANK = { beta: 1, peers: 1, whips: 2, spokesperson: 2, leader: 2, staff: 3, admin: 4, developer: 5 };
-export const LEVEL_NAMES = { beta: 'Beta tester', peers: 'Peer', whips: 'Whip', spokesperson: 'Spokesperson', leader: 'Leader\u2019s office', staff: 'Staff', admin: 'Admin', developer: 'Developer' };
+// The names `peers`, `spokesperson` and `staff` are the older names: `peers` and `staff` are still what the page and route lists below say for "at least this rank"
+// (rank 1, and rank 3, Leader's circle), and all three keep their rank so nobody is locked out while the database is brought up to date.
+export const RANK = {
+  beta: 1, backbench: 1, backbench_staff: 1, frontbench: 1, frontbench_staff: 1, whips: 2, whips_staff: 2, leader: 3, leader_staff: 3, admin: 4, developer: 5,
+  peers: 1, spokesperson: 1, staff: 3,
+};
+export const LEVEL_NAMES = {
+  beta: 'Beta tester', backbench: 'Backbench parliamentarian', frontbench: 'Frontbencher parliamentarian', whips: 'Whip', leader: 'Leader\u2019s circle',
+  backbench_staff: 'Backbench parliamentarian\u2019s Staff', frontbench_staff: 'Frontbencher parliamentarian\u2019s Staff', whips_staff: 'Whip\u2019s Staff', leader_staff: 'Leader\u2019s circle\u2019s Staff',
+  admin: 'Administrator', developer: 'Developer', peers: 'Backbench parliamentarian', spokesperson: 'Frontbencher parliamentarian', staff: 'Leader\u2019s circle',
+};
 export const BETA = 'beta';
 export const DEVELOPER = 'developer';
 /** The roles in the order they are offered on the sign-in page and in the roles table. */
-export const ROLE_ORDER = ['peers', 'whips', 'spokesperson', 'leader', 'staff', 'admin'];
+export const ROLE_ORDER = ['backbench', 'frontbench', 'whips', 'leader', 'backbench_staff', 'frontbench_staff', 'whips_staff', 'leader_staff', 'admin'];
 
 // The level needed for the Whips' Office features (comments, drafting amendments, grids, Oral Question suggestions, Comms updates,
 // stakeholders, amendment flags). Staff and Admin have them. To give them to Whips, change 'staff' to 'whips' here: this one line is the whole switch.
@@ -47,18 +54,27 @@ export const HOUSES = {
 };
 export const inHouse = (item, house = 'lords') => item.house === 'both' || (item.house || 'lords') === house;
 
-// FOR NOW every level except Admin and Developer opens only the Data page (and the home page that leads to it). The rest of LIBBY is built and waiting:
-// to open it up again, make LIVE_PAGES null (and LIVE_ROUTES with it). The server enforces the same list (functions/api/libby/_middleware.js).
-export const LIVE_PAGES = ['home', 'data'];
-export const LIVE_ROUTES = ['data/.*', 'status', 'ld-peers'];
-export const FULL_LEVELS = ['admin', 'developer'];
-/** True if this level is held to the live pages for now. */
-export const isRestricted = (level) => !!LIVE_PAGES && !FULL_LEVELS.includes(level);
-/** May a restricted level make this request? Reading what is behind the live pages only. */
-export const liveMay = (method, path) => ['GET', 'HEAD'].includes(String(method || 'GET').toUpperCase()) && LIVE_ROUTES.some((route) => new RegExp(`^/api/libby/(?:${route})$`).test(path));
+// FOR NOW the lowest ranks open only part of LIBBY (the rest is built and waiting). What each rank may open:
+//   rank 1 (Backbench and Frontbencher parliamentarians, their Staff, Beta testers)   the Data page only, as Peers always had
+//   rank 2 (Whips and Whip's Staff)                                                  the Whips Hub too: availability for whipping, the data, parliamentary process
+//   rank 3 and above (Leader's circle and its Staff, Administrator, Developer)       everything their level allows: Leader's circle everything except the back-end
+// The pages are listed by id, the /api routes by name. The server enforces the same lists (functions/api/libby/_middleware.js).
+const BASIC_OPEN = { pages: ['home', 'data'], routes: ['data/.*', 'status', 'ld-peers'], write: [] };
+const WHIPS_OPEN = { pages: ['home', 'data', 'whips-office', 'whips', 'parliamentary-process'], routes: [...BASIC_OPEN.routes, 'whip-availability', 'people-roles', 'parliamentary-process'], write: ['whip-availability', 'parliamentary-process'] };
+/** What this level may open for now: { pages, routes (reads), write (any request) }, or null if it is not held back. */
+export const openFor = (level) => (RANK[level] >= 3 ? null : RANK[level] === 2 ? WHIPS_OPEN : BASIC_OPEN);
+/** True if this level is held to part of LIBBY for now. */
+export const isRestricted = (level) => openFor(level) !== null;
+/** May a restricted level make this request? Reading what is behind its open pages, and writing only where its open pages save. */
+export function liveMay(method, path, level) {
+  const open = openFor(level);
+  if (!open) return true;
+  const hit = (list) => list.some((route) => new RegExp(`^/api/libby/(?:${route})$`).test(path));
+  return (['GET', 'HEAD'].includes(String(method || 'GET').toUpperCase()) && hit(open.routes)) || hit(open.write);
+}
 
 /** May a person at this level open this page, in this House? A beta tester may open only the pages marked `beta: true`; everyone else goes by level; restricted levels only the live pages. */
-export const canOpenPage = (page, level, house = 'lords') => inHouse(page, house) && (!isRestricted(level) || LIVE_PAGES.includes(page.id))
+export const canOpenPage = (page, level, house = 'lords') => inHouse(page, house) && (!isRestricted(level) || openFor(level).pages.includes(page.id))
   && (level === BETA ? !!page.beta : atLeast(level, page.level));
 
 /* ------------------------------------------------------------------ the menu */
@@ -72,7 +88,7 @@ export const MENU = [
   { id: 'lds150', label: 'Lib Dems 150', href: '#/lib-dems-150', level: 'peers', beta: true, house: 'both', title: 'Lib Dems 150', text: 'Policy, Comms, the Wallace Room, Room 391, Ask a Parliamentarian, the Concessionometer, the Issues Tracker and the guides.' },
   // Data: the one page every level has for now (for Whips and above it also sits under the Whips' page, so this item is only for the restricted levels)
   { id: 'data', label: 'Data', href: '#/data', level: 'peers', beta: true, liveOnly: true, house: 'both', title: 'Data', text: 'Voting analysis for the Lords and the Commons, and the Lords and Commons data.' },
-  { id: 'whips-office', label: 'MPs/Peers', href: '#/whips-office', level: 'whips', house: 'both', title: 'MPs/Peers', text: 'Availability for whipping, and the voting analysis and data for the Lords and the Commons.' },
+  { id: 'whips-office', label: 'Whips Hub', href: '#/whips-office', level: 'whips', house: 'both', title: 'Whips Hub', text: 'Availability for whipping, the voting analysis and data for the Lords and the Commons, and parliamentary process (Erskine May and the Lords Companion).' },
   { id: 'advisers-office', label: 'POLD Staff', href: '#/advisers-office', level: 'staff', house: 'both', title: 'POLD Staff', text: 'Bill advisers and leads, groupings and grids, the bulletin, the duty rota and the roles.' },
   { id: 'developer', label: 'Developer', href: '#/developer', level: DEVELOPER, house: 'both', title: 'Developer', text: 'Work in progress, and a register of every page and who can open it. Visible only to you.' },
 ];
@@ -84,7 +100,7 @@ export const BETA_MENU = MENU.filter((m) => m.beta && !m.liveOnly);
 export const GROUPS = {
   business: { title: 'Business', intro: 'What Parliament will do, what it has done, and what the team has been saying.' },
   lds150: { title: 'Lib Dems 150', intro: 'Policy, Comms, the rooms, Ask a Parliamentarian, the Concessionometer, the Issues Tracker and the guides.' },
-  'whips-office': { title: 'MPs/Peers', intro: 'For Whips and above: availability for whipping, and the data.' },
+  'whips-office': { title: 'Whips Hub', intro: 'For Whips and above: availability for whipping, the data, and parliamentary process.' },
   'advisers-office': { title: 'POLD Staff', intro: 'For Staff and Admin: the tools for Bills, the bulletin and the rota, and who has which role.' },
 };
 
@@ -175,11 +191,14 @@ export const PAGES = [
     api: [['data/.*', { '*': 'peers' }]], betaApi: ['data/.*'] },
 
   // The Advisers' page (Staff and above): the advisers' tools, and the roles
+  { id: 'parliamentary-process', match: /^\/parliamentary-process$/, view: 'process-page.js', fn: 'renderProcess', level: 'whips', group: 'whips-office', tab: 'process', tabLabel: 'Parliamentary process', href: '#/parliamentary-process', house: 'both',
+    card: 'Ask a question about procedure: answered from Erskine May (the Commons) and the Lords Companion, with the passages it used.',
+    api: [['parliamentary-process', { GET: 'whips', '*': 'whips' }], ['process-companion', { GET: 'whips', '*': WHIPS_FEATURES }]] },
   { id: 'advisers-office', match: /^\/advisers-office$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'advisers-office' }), level: 'staff', nav: 'advisers-office', house: 'both' },
   { id: 'advisers', match: /^\/advisers$/, view: 'advisers-page.js', fn: 'renderAdvisers', level: 'staff', group: 'advisers-office', tab: 'advisers', tabLabel: 'Advisers', href: '#/advisers', house: 'both',
     card: 'Every page the advisers use: Bill advisers, groupings and grids, the bulletin, the duty rota, availability and the Wallace Room.' },
   { id: 'roles', match: /^\/roles$/, view: 'roles-page.js', fn: 'renderRoles', level: BACKCHANNEL, group: 'advisers-office', tab: 'roles', tabLabel: 'Roles', href: '#/roles', house: 'both',
-    card: 'Say who is a Whip, a Spokesperson and so on, and add staff who are not on the Members list.' },
+    card: 'Say who is a Backbench or Frontbencher parliamentarian, a Whip, in the Leader’s circle, their Staff, or an Administrator, and add staff who are not on the Members lists.' },
   // Duty Whips: Staff choose the rota (on the Advisers page; the rota itself shows on every day's page)
   { id: 'duty-whips', match: /^\/duty-whips$/, view: 'duty-page.js', fn: 'renderDuty', level: 'staff', group: 'advisers-office', tab: 'advisers', house: 'both',
     api: [['duty-whips', { GET: 'whips', '*': 'staff' }]] },
@@ -220,7 +239,13 @@ export const ADVISER_LINKS = [
 /* ------------------------------------------------------------------ helpers (used by the website, the server and the checker) */
 
 /** The menu items a person at this level sees, in this House. */
-export const menuFor = (level, house = 'lords') => (isRestricted(level) ? MENU.filter((m) => m.liveOnly && (level === BETA ? m.beta : atLeast(level, m.level))) : MENU.filter((m) => !m.liveOnly && atLeast(level, m.level))).filter((m) => inHouse(m, house));
+export const menuFor = (level, house = 'lords') => {
+  const open = openFor(level);
+  const may = (m) => (level === BETA ? m.beta : atLeast(level, m.level));
+  // for a restricted level: its open pages; the Data item (liveOnly) only if the Whips Hub, which holds Data too, is not open
+  const items = open ? MENU.filter((m) => may(m) && (m.liveOnly ? !open.pages.includes('whips-office') : open.pages.includes(m.id))) : MENU.filter((m) => !m.liveOnly && atLeast(level, m.level));
+  return items.filter((m) => inHouse(m, house));
+};
 
 /** The buttons (and hub cards) of a group that a person at this level may open, in this House. */
 export const tabsFor = (group, level, house = 'lords') => PAGES.filter((p) => p.group === group && p.tabLabel && canOpenPage(p, level, house))

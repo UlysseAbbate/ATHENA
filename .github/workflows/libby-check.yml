@@ -25,6 +25,8 @@ jobs:
         run: node scripts/libby/check-legislation.mjs
       - name: Check the Update Word document
         run: node scripts/libby/check-update-doc.mjs
+      - name: Check the Parliamentary process readers and answers
+        run: node scripts/libby/check-process.mjs
       - name: Check sign-in, the guessing throttle and the security headers
         run: node scripts/libby/check-access.mjs
       - name: Check how Lords business rows become a day

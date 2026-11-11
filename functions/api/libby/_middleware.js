@@ -45,8 +45,8 @@ async function gate(ctx) {
   if (who.level === BETA ? !betaMay(request.method, path) : !atLeast(who.level, requiredLevel(request.method, path))) {
     return jsonReply({ error: 'Your access level does not allow this.' }, 403);
   }
-  // For now every level except Admin and Developer may only read what is behind the Data page (pages.js: LIVE_PAGES).
-  if (isRestricted(who.level) && !liveMay(request.method, path)) return jsonReply({ error: 'Only the Data page is open for now.' }, 403);
+  // For now the lower ranks open only part of LIBBY (pages.js: openFor): the Data page, and for Whips the Whips Hub too.
+  if (isRestricted(who.level) && !liveMay(request.method, path, who.level)) return jsonReply({ error: 'That part of LIBBY is not open to your role for now.' }, 403);
   ctx.data.level = who.level;
   ctx.data.email = who.email;
 

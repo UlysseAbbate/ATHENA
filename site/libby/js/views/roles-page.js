@@ -1,4 +1,4 @@
-// Roles (Admin only): who is a Whip, a Spokesperson and so on.
+// Roles (Admin only): who is a Backbench or Frontbencher parliamentarian, a Whip, in the Leader’s circle, their Staff, or an Administrator.
 // A compact table: the person (a Lib Dem peer or MP on the Members lists is highlighted in yellow, as everywhere on the site), their House, and their role (a drop-down).
 // Every Lib Dem peer and MP on the Members lists is there; people who are not on them (staff) are added at the end, and can be removed again. A change saves as soon as it is made.
 // The list decides who appears on the Whips pages (the duty rota and availability for whipping). It does not give anyone access:
@@ -8,10 +8,10 @@ import { esc, loading, errorBox, empty, pageHeader, debounce, peer } from '../ui
 import { savedName } from '../session.js';
 import { clearRoster } from '../peer-list.js';
 
-const plural = { peers: 'Peers', whips: 'Whips', spokesperson: 'Spokespeople', leader: 'Leader’s office', staff: 'Staff', admin: 'Admin' };
+const plural = { backbench: 'Backbench parliamentarians', frontbench: 'Frontbencher parliamentarians', backbench_staff: 'Backbench Staff', frontbench_staff: 'Frontbencher Staff', whips_staff: 'Whip’s Staff', leader_staff: 'Leader’s circle’s Staff', peers: 'Peers', whips: 'Whips', spokesperson: 'Spokespeople', leader: 'Leader’s circle', staff: 'Staff', admin: 'Administrators' };
 
 export async function renderRoles(el) {
-  el.innerHTML = `${pageHeader('Roles', 'Say who is a Whip, a Spokesperson and so on. This list decides who appears on the Whips pages (the duty rota and availability for whipping). It does not change anyone’s access: that comes from the role and password chosen when signing in.')}
+  el.innerHTML = `${pageHeader('Roles', 'Say who is a Backbench or Frontbencher parliamentarian, a Whip, in the Leader’s circle, their Staff, or an Administrator. This list decides who appears on the Whips pages (the duty rota and availability for whipping). It does not change anyone’s access: that comes from the role and password chosen when signing in.')}
     <div id="roles">${loading('Loading the list')}</div>`;
   const box = el.querySelector('#roles');
   let data;

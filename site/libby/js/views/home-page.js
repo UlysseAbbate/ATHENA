@@ -26,11 +26,16 @@ export async function renderHome(el) {
 
   annunciators(el.querySelector('#live'));
 
-  // The Whips' Office Bulletin: between the live panels and the sections. It is left out if it cannot be read or is empty.
-  api('bulletin').then((d) => {
+  // The Whips' Office Bulletin: between the live panels and the sections. There is one for each House: the one for the House you are in shows, with a button for the other.
+  // It is left out if it cannot be read or is empty.
+  const showBulletin = (house) => api(`bulletin?house=${house}`).then((d) => {
     const box = el.querySelector('#bulletin');
-    if (box) box.innerHTML = bulletinHtml(d.messages, { admin: hasLevel('staff') });
+    if (!box) return;
+    const other = house === 'commons' ? 'lords' : 'commons';
+    box.innerHTML = bulletinHtml(d.messages, { admin: hasLevel('staff'), house }) + `<p class="small bulletin-switch"><button type="button" class="linkish" data-bulletin="${other}">Show the ${other === 'commons' ? 'Commons' : 'Lords'} bulletin</button></p>`;
+    box.querySelector('[data-bulletin]').addEventListener('click', (e) => showBulletin(e.currentTarget.dataset.bulletin));
   }).catch(() => {});
+  showBulletin(currentHouse());
 
   api('day/today').then((d) => {
     const items = d.sections.flatMap((s) => s.items).filter((i) => i.kind !== 'prayers'); // Prayers are not business

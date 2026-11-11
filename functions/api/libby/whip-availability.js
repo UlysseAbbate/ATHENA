@@ -1,7 +1,7 @@
 // Availability for whipping: for each day, who would prefer to be duty whip (green), has no preference (amber) or is not free (red).
 //   GET  /api/whip-availability?from=YYYY-MM-DD&days=35  -> { from, to, entries: [ { date, whip, status } ] }
 //   POST /api/whip-availability { whip, entries: [ { date, status: 'green'|'amber'|'red'|null } ] }   null clears that day
-// Whips and above (Whip, Spokesperson, Leader's office, Staff, Admin; not Peers). Everyone shares a code, so the name is whatever the person chose: it is a record, not a login.
+// Whips and above (Whip, Leader's circle, their Staff, Administrator; not Backbench or Frontbencher parliamentarians). Everyone shares a code, so the name is whatever the person chose: it is a record, not a login.
 import { json, errorResponse, isIsoDate, londonToday, addDays } from '../../../lib/libby/util.js';
 import { sbSelect, sbUpsert, supabaseConfigured } from '../../../lib/libby/supabase.js';
 import { passcodeProblem, cleanLine } from '../../../lib/libby/auth.js';

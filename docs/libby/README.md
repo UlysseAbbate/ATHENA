@@ -40,8 +40,7 @@ People sign in by choosing a **role** and typing that role's password. Six roles
 |---|---|
 | **Peer** | read (the Legislation, Business and Policy pages, and book the Wallace Room) |
 | **Whip** | also the Data page, the Whips page (Availability for Whipping) and read stakeholders and amendment flags |
-| **Spokesperson** | the same as Whip for now |
-| **Leader's office** | the same as Whip for now |
+| **Leader's circle** | everything except the back-end (so POLD Staff too) |
 | **Staff** | everything except the back-channel operations: also comments, drafting, stakeholders, amendment flags, the Advisers pages (Bill advisers, groupings and grids, the Bulletin, the duty rota, Availability, the Wallace Room) and Comms |
 | **Admin** | everything, including the back-channel operations |
 
@@ -172,3 +171,5 @@ Both pages are built from two official Parliament APIs (read by `scripts/libby/i
 - **What's On API** (`whatson-api.parliament.uk`): the calendar, with the members and their party, the Bill an item is about, the room, the times, the estimated rising time, the committee meetings, and each debate's **speakers list** (shown under the item when *Speakers* is pressed; Lib Dems are marked).
 
 The APIs are the only automatic sources. For one day the page uses a Today's List that Staff have uploaded, if there is one (an optional extra that carries the groupings of amendments); otherwise the Order Paper, then Future Business, then the calendar alone, with the calendar added on top for the Bill, the speakers, the room and the Committees section. Each is read from the copy in Supabase (renewed by the ingest workflows) and, for a day the copy does not hold, straight from the API. The Whips' Office website and PDF are not read at all.
+
+> Updated for the Whips Hub: the roles are now Backbench parliamentarian, Frontbencher parliamentarian, Whip, Leader's circle, each one's Staff (same access as their principal) and Administrator. The older rows above (Peer, Spokesperson, Staff) are the previous names; see `site/libby/js/pages.js` for the current ranks.

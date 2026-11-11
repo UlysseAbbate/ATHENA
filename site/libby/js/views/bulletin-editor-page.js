@@ -1,11 +1,14 @@
-// Where Staff and Admin write the Whips' Office Bulletin (the box on the home page). Reached from the Advisers page.
+// Where Staff and Admin write the Whips' Office Bulletin (the box on the home page). There are two, the Lords' and the Commons', chosen with the buttons at the top. Reached from the Advisers page.
 import { api } from '../api.js';
 import { esc, loading, errorBox, pageHeader } from '../ui.js';
 import { authFieldsHtml, readAuth, rememberAuth } from '../session.js';
 import { bulletinHtml } from '../bulletin-box.js';
 
-export async function renderBulletinEditor(el) {
-  el.innerHTML = `${pageHeader('Whips\u2019 Office Bulletin', 'Messages for the box at the top of the home page, which everyone signed in can read. They stay there until you change or delete them.', [['#/advisers', 'Advisers']])}
+export async function renderBulletinEditor(el, _params, query = {}) {
+  const house = query.house === 'commons' ? 'commons' : 'lords';
+  const houseName = house === 'commons' ? 'Commons' : 'Lords';
+  el.innerHTML = `${pageHeader(`Whips\u2019 Office Bulletin: ${houseName}`, `Messages for the ${houseName} bulletin, the box on the home page, which everyone signed in can read. They stay there until you change or delete them.`, [['#/advisers', 'Advisers']])}
+    <nav class="toggle bul-house" role="group" aria-label="Which bulletin"><a href="#/bulletin-editor" ${house === 'lords' ? 'aria-current="true"' : ''}>Lords bulletin</a><a href="#/bulletin-editor?house=commons" ${house === 'commons' ? 'aria-current="true"' : ''}>Commons bulletin</a></nav>
     <div id="bul-root">
     <div class="row" style="display:flex;flex-wrap:wrap;gap:.75rem">${authFieldsHtml()}</div>
     <p class="small" data-status aria-live="polite"></p>
@@ -22,7 +25,7 @@ export async function renderBulletinEditor(el) {
 
   let messages = [];
   const load = async () => {
-    const d = await api('bulletin');
+    const d = await api(`bulletin?house=${house}`);
     messages = d.messages || [];
     if (d.note) status.textContent = d.note;
   };
@@ -37,7 +40,7 @@ export async function renderBulletinEditor(el) {
           <button type="button" class="button button-quiet" data-delete>Delete</button>
         </div></div>`).join('')
       : '<p class="state">There are no messages yet. Choose "Add a message" below.</p>';
-    preview.innerHTML = bulletinHtml(messages.filter((m) => m.id), { admin: false }) || '<p class="small muted">Nothing to show yet: the box is hidden on the home page until there is a message.</p>';
+    preview.innerHTML = bulletinHtml(messages.filter((m) => m.id), { admin: false, house }) || '<p class="small muted">Nothing to show yet: the box is hidden on the home page until there is a message.</p>';
   };
   try { await load(); draw(); } catch (err) { cards.innerHTML = errorBox(err); return; }
 
@@ -60,7 +63,7 @@ export async function renderBulletinEditor(el) {
     if (e.target.closest('[data-save]')) {
       const author = nameBox();
       run('Saving', async () => {
-        await api('bulletin', { method: 'POST', body: JSON.stringify({ action: 'save', id: m.id, heading: card.querySelector('[data-heading]').value, body: card.querySelector('[data-body]').value, author }) });
+        await api('bulletin', { method: 'POST', body: JSON.stringify({ action: 'save', id: m.id, house, heading: card.querySelector('[data-heading]').value, body: card.querySelector('[data-body]').value, author }) });
         rememberAuth('', author);
       });
     } else if (e.target.closest('[data-delete]')) {

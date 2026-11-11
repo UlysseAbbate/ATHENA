@@ -1,7 +1,7 @@
-// The directory of who is a Whip, Spokesperson and so on. It decides who appears in the Whips pages (the duty rota and availability
+// The directory of who is a Whip, a Frontbencher, Leader's circle and so on. It decides who appears in the Whips pages (the duty rota and availability
 // for whipping); it does not give anyone access (that is the role and password chosen at sign-in: lib/access.js).
 //   GET  /api/people-roles  -> { roles: [ { id, label } ], people: [ { name, role, onList, house } ] }          (Whips and above)
-//        `people` is every current Liberal Democrat peer, then every Lib Dem MP, on the Members list (role Peer / MP-as-"peers" unless one has been assigned;
+//        `people` is every current Liberal Democrat peer, then every Lib Dem MP, on the Members list (role Backbench parliamentarian unless one has been assigned;
 //        `house` is 'lords' or 'commons'), then the people added by hand (`onList: false`, with the House they were added to), each with their role.
 //   POST /api/people-roles  { action: 'set',    name, role }   change someone's role                          (Admin: back-channel)
 //   POST /api/people-roles  { action: 'add',    name, role, house? }   add a person who is not on the Members list (Admin); house is 'lords' (default) or 'commons'
@@ -14,7 +14,7 @@ import { ldPeers, ldMPs } from '../../../lib/libby/parliament.js';
 import { passcodeProblem, cleanLine } from '../../../lib/libby/auth.js';
 import { ROLE_ORDER, LEVEL_NAMES } from '../../../lib/libby/access.js';
 
-const DEFAULT_ROLE = 'peers';
+const DEFAULT_ROLE = 'backbench';   // Backbench parliamentarian: what everyone on the Members lists is until given another role
 const missingTable = (err) => /people_roles/.test(String(err.message)) && /does not exist|relation|schema cache/.test(String(err.message));
 const MISSING = 'The people_roles table has not been created yet: run supabase/migrations/004_people-roles.sql in Supabase.';
 

@@ -651,3 +651,11 @@ a.cal-cell:hover { border-color: var(--accent); background: var(--accent-tint); 
 .iss-date { white-space: nowrap; }
 .iss-tools { display: flex; flex-wrap: wrap; gap: .5rem .8rem; align-items: center; margin: .8rem 0 0; }
 .iss-btns { white-space: nowrap; }
+/* Parliamentary process */
+.proc-item { background: var(--card); border: 1px solid var(--band-line); border-radius: var(--radius); padding: .9rem 1.1rem; margin: 0 0 1rem; }
+.proc-item.proc-new { border-color: var(--btn-bg); }
+.proc-item h3 { margin: 0; font: 700 1rem var(--head); }
+.proc-item header { display: flex; flex-wrap: wrap; gap: .3rem .7rem; align-items: baseline; }
+.proc-answer p { margin: .5rem 0; }
+.proc-sources li { margin-bottom: .45rem; }
+.proc-upload { margin-top: 2rem; }
