@@ -3,7 +3,7 @@
 //        -> { portfolios: [ { code, name } ], concessions: [ { billId, stageId, amendmentId, house, number, place, summary, url, billTitle, portfolio: ['HO', ...], notes, wonBy, wonAt, updatedBy, updatedAt } ] }, newest first
 //   POST { action: 'win', on, billId, stageId, amendmentId, house, number?, place?, summary?, author? }
 //        on: true marks the amendment WIN (the WIN button) and adds it here, with a snapshot of its Bill's title and portfolio; false takes it off again.
-//   POST { action: 'edit', billId, stageId, amendmentId, notes?, billTitle?, wonAt? ('YYYY-MM-DD'), author? }   the POLD Staff's notes about the concession, and the Bill's name and date won, corrected by hand
+//   POST { action: 'edit', billId, stageId, amendmentId, notes?, billTitle?, name?, portfolio? (codes), wonAt? ('YYYY-MM-DD'), author? }   the POLD Staff's notes about the concession, and the Bill's name and date won, corrected by hand
 //   POST { action: 'remove', billId, stageId, amendmentId }   take a concession off (the only way for one added by hand; a WIN one is also unmarked)
 //   POST { action: 'add', billTitle, name?, portfolio? (codes), notes?, wonAt? ('YYYY-MM-DD'), period?, author? }   a concession not tied to an amendment (typed in, or imported from a spreadsheet)
 //   POST { action: 'remove', billId, stageId, amendmentId }   take a concession off (the way for one added by hand; a WIN one is unmarked too)
@@ -133,6 +133,7 @@ export async function onRequestPost(ctx) {
       const patch = { updated_by: author, updated_at: new Date().toISOString() };
       if (body.notes !== undefined) patch.notes = cleanBlock(body.notes, 4000);
       if (body.billTitle !== undefined) { patch.bill_title = cleanLine(body.billTitle, 200) || null; }
+      if (body.portfolio !== undefined) patch.portfolio = [...new Set((Array.isArray(body.portfolio) ? body.portfolio : []).map((c) => String(c).toUpperCase()).filter((c) => PORTFOLIO_CODES.has(c)))].join(',');
       if (body.name !== undefined) patch.name = cleanLine(body.name, 200) || null;
       if (body.wonAt !== undefined) {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(String(body.wonAt))) return fail('Give the date won as a date.');

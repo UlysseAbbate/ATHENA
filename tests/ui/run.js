@@ -291,7 +291,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
             (globalThis.__issuePosts = globalThis.__issuePosts || []).push(route.request().postData()); return j({ ok: true, id: 3 });
           }
           if (u.pathname.endsWith("/api/libby/concessions")) {
-            if (route.request().method() === "GET") return j({ concessions: [{ billId: 1, stageId: 50, amendmentId: 101, house: "lords", number: "12", place: "C3, P2, L14", summary: "Leave out subsection (2)", url: "https://bills.parliament.uk/bills/1/stages/50/amendments/101", billTitle: "Test Bill [HL]", portfolio: ["HO"], notes: "The Government will bring forward its own wording.", wonBy: "Pat", wonAt: new Date().toISOString(), updatedBy: "Pat", updatedAt: new Date().toISOString() }, { billId: 7, stageId: 9, amendmentId: 5, house: "commons", number: "3", place: "", summary: "", url: "https://bills.parliament.uk/bills/7/stages/9/amendments/5", billTitle: "Old Act", portfolio: ["DfT"], notes: "", wonBy: "", wonAt: new Date().toISOString(), updatedBy: "", updatedAt: new Date().toISOString() }] });
+            if (route.request().method() === "GET") return j({ portfolios: [{ code: "HO", name: "Home Office" }, { code: "DFT", name: "Transport" }], concessions: [{ billId: 1, stageId: 50, amendmentId: 101, house: "lords", number: "12", place: "C3, P2, L14", summary: "Leave out subsection (2)", url: "https://bills.parliament.uk/bills/1/stages/50/amendments/101", billTitle: "Test Bill [HL]", portfolio: ["HO"], notes: "The Government will bring forward its own wording.", wonBy: "Pat", wonAt: new Date().toISOString(), updatedBy: "Pat", updatedAt: new Date().toISOString() }, { billId: 7, stageId: 9, amendmentId: 5, house: "commons", number: "3", place: "", summary: "", url: "https://bills.parliament.uk/bills/7/stages/9/amendments/5", billTitle: "Old Act", portfolio: ["DfT"], notes: "", wonBy: "", wonAt: new Date().toISOString(), updatedBy: "", updatedAt: new Date().toISOString() }] });
             (globalThis.__concPosts = globalThis.__concPosts || []).push(route.request().postData()); return j({ ok: true });
           }
           if (u.pathname.endsWith("/api/libby/amendment-flags")) return route.request().method() === "GET" ? j({ flags: {} }) : j({ ok: true });
@@ -678,17 +678,17 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           globalThis.__concPosts = [];
           await page.click(".conc-table tbody tr [data-edit]"); await page.waitForTimeout(150);
           check("Concessionometer: Edit opens the boxes (Bill, date won, notes)", (await page.$$(".conc-table tbody tr [data-bill], .conc-table tbody tr [data-won], .conc-table tbody tr [data-notes]")).length === 3);
-          await page.fill(".conc-table tbody tr [data-bill]", "Test Act (corrected)"); await page.fill(".conc-table tbody tr [data-won]", "2026-09-30"); await page.fill(".conc-table tbody tr [data-notes]", "Agreed in principle\nSecond line");
+          await page.check('.conc-table tbody tr [data-port][value="DFT"]'); await page.fill(".conc-table tbody tr [data-bill]", "Test Act (corrected)"); await page.fill(".conc-table tbody tr [data-won]", "2026-09-30"); await page.fill(".conc-table tbody tr [data-notes]", "Agreed in principle\nSecond line");
           await page.click(".conc-table tbody tr [data-save]"); await page.waitForTimeout(300);
           const ep = JSON.parse(globalThis.__concPosts[0] || "{}");
-          check("Concessionometer: Save sends the notes, the Bill and the date won", ep.action === "edit" && ep.notes === "Agreed in principle\nSecond line" && ep.billTitle === "Test Act (corrected)" && ep.wonAt === "2026-09-30", JSON.stringify(ep));
+          check("Concessionometer: Save sends the notes, the Bill and the date won", ep.action === "edit" && ep.notes === "Agreed in principle\nSecond line" && ep.billTitle === "Test Act (corrected)" && ep.wonAt === "2026-09-30" && ep.portfolio.join() === "HO,DFT", JSON.stringify(ep));
           check("Concessionometer: after saving the boxes close and the notes show as text again", (await page.$(".conc-table tbody tr textarea")) === null && /Second line/.test(await page.$eval(".conc-table tbody tr .conc-text", t => t.textContent)) && /Test Act \(corrected\)/.test(await page.$eval(".conc-table tbody tr a.conc-bill", a => a.textContent)) && /30 Sep/.test(await page.$eval(".conc-table tbody tr", r => r.innerText)));
           await page.selectOption("[data-portfolio]", "DfT"); await page.waitForTimeout(150);
           check("Concessionometer: filter by portfolio", (await page.$$(".conc-table tbody tr")).length === 1);
           await page.selectOption("[data-portfolio]", ""); await page.waitForTimeout(100);
           globalThis.__concPosts = [];
           page.once("dialog", d => d.accept());
-          await page.click(".conc-table tbody tr [data-edit]"); await page.click(".conc-table tbody tr [data-remove]"); await page.waitForTimeout(400);
+          await page.click(".conc-table tbody tr [data-remove]"); await page.waitForTimeout(400);   // Delete is on the row itself, no need to open Edit first
           const rmPost = JSON.parse(globalThis.__concPosts[0] || "{}");
           check("Concessionometer: an entry can be removed outright (it stops being a WIN)", rmPost.action === "remove" && (await page.$$(".conc-table tbody tr")).length === 1, JSON.stringify(rmPost));
           globalThis.__processPosts = [];
