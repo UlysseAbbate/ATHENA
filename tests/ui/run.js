@@ -249,6 +249,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       // LIBBY, under the same sign-in: the page runs under its own security policy and asks the server who this is
       if (who === "admin" || who === "core") {
         let lvl = "developer";
+        let maskRooms = false;   // the server sends only "booked" to anyone below the Whips: the page draws what it is sent
         // which LIBBY (house) and which edition the tab has chosen; the tests start in Noble LIBBY (the Lords) unless they say otherwise
         const ed = (v, house = "lords") => page.evaluate(([x, h]) => { try { if (x) sessionStorage.setItem("libbyEdition", x); else sessionStorage.removeItem("libbyEdition"); if (h) localStorage.setItem("libbyHouse", h); else localStorage.removeItem("libbyHouse"); } catch { /* none */ } }, [v, house]);
         await page.route(BASE + "/api/libby/**", route => {
@@ -325,6 +326,16 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
             { number: "1", topic: "Care", minutes: 35, minister: false, noSignatories: false, speakers: [{ name: "Lord A", minutes: 15, role: "opening" }, { name: "Lord B", minutes: 10, role: "speaker" }, { name: "Lord C", minutes: 10, role: "speaker" }] },
             { number: "2", topic: "Cost", minutes: 25, minister: false, noSignatories: false, speakers: [{ name: "Lord D", minutes: 15, role: "opening" }, { name: "Lord B", minutes: 10, role: "speaker" }] }] }] });
           if (u.pathname.includes("/api/libby/day/")) return j({ date: "2026-11-03", sections: [], source: { label: "Lords Business", url: "https://services.lordsbusiness.parliament.uk/" }, rising: {} });
+          if (u.pathname.endsWith("/api/libby/room-requests")) {
+            if (route.request().method() === "POST") { (globalThis.__roomPosts = globalThis.__roomPosts || []).push(route.request().postData()); return j({ ok: true, id: 1 }); }
+            return j({ incoming: [], outgoing: [] });
+          }
+          if (u.pathname.endsWith("/api/libby/room-bookings") && u.searchParams.get("room") === "wallace" && route.request().method() === "GET") {
+            const mon = (() => { const d = new Date(Date.now() + 7 * 864e5); return iso(new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 864e5)); })();
+            const day = n => iso(new Date(Date.parse(mon + "T12:00:00Z") + n * 864e5));
+            const mk = (id, n, start, end, peer, note, extra = {}) => ({ id, seriesId: null, date: day(n), start, end, peer: maskRooms && !extra.mine ? "" : peer, note: maskRooms && !extra.mine ? "" : note, locked: false, mine: false, manage: !maskRooms || !!extra.mine, ...extra });
+            return j({ room: "wallace", bookings: [mk(7, 1, "10:00", "11:00", "Lord Secret", "Budget briefing"), mk(8, 2, "10:00", "11:00", "Lord Fixed", "Away day", { locked: true }), mk(9, 3, "14:00", "15:00", "Baroness Mine", "My meeting", { mine: true })], series: {} });
+          }
           if (u.pathname.endsWith("/api/libby/room-bookings")) return j({ room: u.searchParams.get("room"), bookings: [], series: {} });
           if (u.pathname.endsWith("/api/libby/ask-parliamentarian")) return j({ requests: [{ id: 1, requester: "Rae Office", contact: "", kind: "agm", title: "A Peer to speak at our AGM", details: "About 40 members", neededBy: plus(10), eventDate: plus(30), offers: [{ id: 5, who: "Baroness Beta", note: "I can come" }] }, { id: 2, requester: "Sam Student", contact: "", kind: "work-experience", title: "Two days of work experience", details: "", neededBy: plus(5), eventDate: "", offers: [] }] });
           if (u.pathname.endsWith("/api/libby/bill-team")) return j({ billId: 1, lords: { adviser: "Pat Adviser", lead: "Lord Alpha" }, commons: { adviser: "Chris Commons", lead: "Daisy Cooper" } });
@@ -443,6 +454,27 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           const gt = await page.$$eval(".group-table tbody tr", rs => rs.map(r => r.textContent.replace(/\s+/g, " ").trim()));   // (the table sits in a closed details, so textContent)
           check("Lords timings (Whips+): Committee groups are timed from the signatories, a group noted as started keeps its real start and the next follows", gt.length === 2 && /4\.10pm/.test(gt[0]) && /4\.45pm/.test(gt[1]), gt.join(" || "));
           check("Lords timings (Whips+): the pace line says nothing has finished yet", /No group has finished yet/.test(await page.$eval(".group-times [data-pace]", e => e.textContent)));
+          const nextWeek = "/libby/#/wallace-room?view=week&from=" + plus(7);
+          await page.goto(BASE + nextWeek); await page.waitForTimeout(900);
+          const full = await page.$$eval(".room-booking", bs => bs.map(b => b.innerText.replace(/\s+/g, " ").trim()));
+          check("Room bookings: the Whips and above see who booked, and the note", full.some(t => /Lord Secret/.test(t) && /Budget briefing/.test(t)) && full.some(t => /Lord Fixed/.test(t)), full.join(" | "));
+          await page.click('[data-booking="7"]'); await page.waitForTimeout(200);
+          check("Room bookings: the Whips can set a booking in stone, amend it or cancel it", (await page.$('[data-lock="1"]')) !== null && (await page.$("[data-amend-open]")) !== null && (await page.$('[data-cancel="one"]')) !== null);
+          maskRooms = true; await page.reload(); await page.waitForTimeout(900);
+          const masked = await page.$$eval(".room-booking", bs => bs.map(b => b.innerText.replace(/\s+/g, " ").trim()));
+          check("Room bookings: anyone below the Whips sees only “Booked” on other people's bookings (no name, no note)", masked.filter(t => /^10:00–11:00 Booked/.test(t)).length === 2 && !masked.some(t => /Secret|Budget|Fixed|Away/.test(t)), masked.join(" | "));
+          check("Room bookings: their own booking shows in full, and one set in stone says it is fixed", masked.some(t => /Baroness Mine/.test(t) && /My meeting/.test(t)) && masked.some(t => /fixed/.test(t)), masked.join(" | "));
+          await page.click('[data-booking="7"]'); await page.waitForTimeout(200);
+          check("Room bookings: clicking a booked slot offers to ask for it, with a message", (await page.$('form[data-ask="7"] textarea')) !== null && !/Secret/.test(await page.$eval("#room-panel", p => p.innerText)));
+          globalThis.__roomPosts = [];
+          await page.fill('form[data-ask="7"] textarea', "A briefing for the Leader that morning"); await page.click('form[data-ask="7"] button[type=submit]'); await page.waitForTimeout(400);
+          const rq = JSON.parse((globalThis.__roomPosts || [])[0] || "{}");
+          check("Room bookings: the request goes to the booker with its message", rq.action === "request" && rq.bookingId === 7 && /Leader/.test(rq.message), JSON.stringify(rq));
+          await page.click('[data-booking="8"]'); await page.waitForTimeout(200);
+          check("Room bookings: a booking set in stone cannot be requested", (await page.$("form[data-ask]")) === null && /cannot be requested/.test(await page.$eval("#room-panel", p => p.innerText)));
+          await page.click('[data-booking="9"]'); await page.waitForTimeout(200);
+          check("Room bookings: the account that made a booking can change or cancel it", (await page.$("[data-amend-open]")) !== null && (await page.$('[data-cancel="one"]')) !== null);
+          maskRooms = false;
           await page.goto(BASE + "/libby/#/issues-tracker"); await page.waitForTimeout(800);
           const pb = await page.$$eval(".iss-portfolios a", as => as.map(a => a.textContent.trim().replace(/\s+/g, " ")));
           check("Issues Tracker: buttons at the top for All and each portfolio, with how many issues each holds", pb[0] === "All 2" && pb.includes("DEFRA 1") && pb.includes("HO 1") && pb.includes("DfT 0"), pb.join("|"));

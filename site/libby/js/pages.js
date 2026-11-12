@@ -168,7 +168,7 @@ export const PAGES = [
     card: 'Search conference motions and policy papers, or browse them by portfolio.' },
   { id: 'wallace-room', match: /^\/wallace-room$/, view: 'wallace-room-page.js', fn: 'renderWallaceRoom', params: () => ({ room: 'wallace' }), group: 'lds150', tab: 'wallace', tabLabel: 'Wallace Room', href: '#/wallace-room', beta: true, house: 'both',
     card: 'Book the Wallace Room: see who has it and when, by week or month, and book it once or on a repeat.',
-    api: [['room-bookings', { GET: 'peers', '*': 'peers' }]] },
+    api: [['room-bookings', { GET: 'peers', '*': 'peers' }], ['room-requests', { GET: 'peers', '*': 'peers' }]] },
   { id: 'room-391', match: /^\/room-391$/, view: 'wallace-room-page.js', fn: 'renderWallaceRoom', params: () => ({ room: '391' }), group: 'lds150', tab: 'room391', tabLabel: 'Room 391', href: '#/room-391', beta: true, house: 'both',
     card: 'Book Room 391, in the same way as the Wallace Room.' },
   { id: 'ask-parliamentarian', match: /^\/ask-parliamentarian$/, view: 'ask-page.js', fn: 'renderAsk', group: 'lds150', tab: 'ask', tabLabel: 'Ask a Parliamentarian', href: '#/ask-parliamentarian', beta: true, house: 'both',
