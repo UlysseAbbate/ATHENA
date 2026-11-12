@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { parseTodaysList, clockToMinutes, minutesToClock, durationToMinutes, expandName } from '../../site/libby/js/docs/list-parser.js';
+import { parseSpeakersText, titleKey } from '../../site/libby/js/docs/speakers-upload.js';
 import * as T from '../../site/libby/js/docs/sitting-times.js';
 
 const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
@@ -76,8 +77,25 @@ a = times(tue, { items: { [tue.sections[0].items[6].key]: { minutes: 20 } } })[0
 a = times(tue, { sections: { Chamber: { start: '15:00' } } })[0].items; eq(at(a[0].start), '3pm');
 a = times(tue, {}, T.mergeRules({ brief: 10, oq: 99, nonsense: 5, pnq: -3, legislation: 'x' }))[0].items; eq([at(a[7].start), at(a[8].start)], ['3.40pm', '3.50pm'], 'rules can be changed; nonsense is ignored');
 
-/* ---- a debate with a speakers' list but no limit adds up the speakers (Companion 4.42) */
-eq(T.speakersMinutes({ speakers: Array.from({ length: 5 }, (_, i) => ({ full: `Lord ${i}` })) }), 20 + 15 * 3 + 20);
-eq(T.speakersMinutes({ speakers: [{ full: 'A' }, { full: 'B' }, { full: 'C' }], speechLimits: { default: 4, byName: { A: 15 } } }), 15 + 4 + 4);
+/* ---- a debate with a speakers' list: advisory time for peers, 15 for the Minister and the frontbench pair next to them */
+const sp = (n) => Array.from({ length: n }, (_, i) => ({ full: `Lord ${i}` }));
+eq(T.speakersMinutes({ speakers: sp(5) }), 5 * 15, 'no advisory time, no Minister: the Companion\u2019s 15 minutes, the last two as the winding-up pair');
+const open = T.speakerPlan({ speakers: [{ full: 'Baroness Minister' }, { full: 'Lord Con' }, { full: 'Baroness LD' }, { full: 'Lord A' }, { full: 'Lord B' }], minister: 'Baroness Minister', backbenchMinutes: 5 });
+eq(open.speakers.map((x) => [x.minutes, x.role[0]]), [[15, 'm'], [15, 'f'], [15, 'f'], [5, 'b'], [5, 'b']], 'the Minister opens: the two speakers after them are the frontbench pair');
+eq(open.speakers.map((x) => x.offset), [0, 15, 30, 45, 50], 'a running start for every peer');
+const wind = T.speakerPlan({ speakers: [{ full: 'Lord A' }, { full: 'Lord B' }, { full: 'Lord Con' }, { full: 'Baroness LD' }, { full: 'Baroness Minister' }], minister: 'Baroness Minister', advisoryMinutes: 4 });
+eq(wind.speakers.map((x) => x.minutes), [4, 4, 15, 15, 15], 'the Minister winds up: the pair before them are the frontbench pair');
+const none = T.speakerPlan({ speakers: [{ full: 'Lord A' }, { full: 'Lord B' }, { full: 'Lord C' }, { full: 'Lord D' }], minister: 'Baroness Minister', backbenchMinutes: 5 });
+eq([none.speakers.length, none.speakers[4].added, none.total], [5, true, 5 + 5 + 15 + 15 + 15], 'a Minister who is not listed speaks at the end, after the last two listed speakers');
+eq(T.speakersMinutes({ speakers: [{ full: 'A' }, { full: 'B' }, { full: 'C' }], speechLimits: { default: 4, byName: { A: 12 } } }), 12 + 4 + 4, 'limits given by the list win');
+const est = T.estimateSection({ name: 'Chamber', startMinutes: 900, items: [{ key: 'x', kind: 'motion', title: 'M', speakers: open.speakers.map((x) => ({ full: x.full })), minister: 'Baroness Minister', backbenchMinutes: 5 }] }, { weekday: 'tuesday' });
+eq([est.items[0].minutes, est.items[0].how, est.items[0].speakers.map((x) => x.start)], [55, 'speakers', [900, 915, 930, 945, 950]], 'the debate takes the sum, and each peer has a start time');
+eq(T.estimateSection({ name: 'Chamber', start: '14:30', items: [{ key: 'q', kind: 'oq', title: 'Q' }, { key: 'r', kind: 'si', title: 'S' }] }, { weekday: 'tuesday' }).items.map((e) => e.start), [870, 910], 'a day with no list is predicted from the sitting time and the rules');
+
+/* ---- a speakers' list shared before the Today's List: names and the advisory time are read from whatever text it arrives as */
+const up = parseSpeakersText(['Debate on the Government\u2019s policy on housing', 'Advisory speaking time: 5 minutes', 'Speakers (alphabetical):', '1. Baroness Abbott of Foo (Lab)', '2) Lord Brown, Lord Carter of Bar; Bishop of Peterborough', 'L Clement-Jones   B Lloyd of Effra', 'The Lord Speaker', 'Lord Brown']);
+eq(up.advisoryMinutes, 5); eq(up.names, ['Baroness Abbott of Foo', 'Lord Brown', 'Lord Carter of Bar', 'Bishop of Peterborough', 'Lord Clement-Jones', 'Baroness Lloyd of Effra'], 'numbers, party tags, separators and abbreviations are handled; the Lord Speaker and repeats are not speakers');
+eq(parseSpeakersText('nothing here').names, []);
+eq(titleKey('Armed Forces Bill'), titleKey('Armed Forces Bill!'), 'the same debate is found whichever paper names it');
 
 console.log(`Today's List reader: ${checks} checks passed.`);

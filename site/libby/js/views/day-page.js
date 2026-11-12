@@ -6,6 +6,7 @@ import { liveStrip } from '../live-panel.js';
 import { can } from '../session.js';
 import { dutyWhipsHtml, computeEstimates, timeChipHtml, refreshTimes, speakersHtml, listAdminHtml, wireListAdmin, wireDayList, minutesText } from '../day-list.js';
 import { estimateText } from '../docs/sitting-times.js';
+import { loadGroupTimes, drawGroupTimes, stageFor } from '../group-times.js';
 
 const peers = (list) => (list || []).map((p) => peer(p.name, p.ld)).join(', ');
 // On a business item's right-hand side each peer goes on their own line (e.g. the Minister, then the regret-motion peer).
@@ -48,7 +49,7 @@ function guidance(item) {
     ? `<details class="guidance"><summary>Speaking guidance</summary><ul>${item.guidance.map((g) => `<li>${esc(g)}</li>`).join('')}</ul></details>` : '';
 }
 
-function oqItem(item, date, i, chip) {
+function oqItem(item, date, i, chip, e1) {
   return `
   <li class="item item-${item.kind}">
     <details class="oq" data-oq="${i}">
@@ -62,11 +63,11 @@ function oqItem(item, date, i, chip) {
         ${can('whips') ? '<div class="suggest" aria-live="polite"></div>' : ''}
       </div>
     </details>
-    ${speakersHtml(item)}
+    ${speakersHtml(item, e1)}
   </li>`;
 }
 
-function plainItem(item, i, chip) {
+function plainItem(item, i, chip, e1) {
   const who = item.peers?.length ? `<span class="item-who">${peerLines(item.peers)}</span>` : '';
   const title = item.link?.internal ? `<a href="${esc(item.link.href)}">${hl(item.title)}</a>` : hl(item.title);
   const quiet = item.kind === 'prayers';
@@ -78,8 +79,8 @@ function plainItem(item, i, chip) {
       ${who}
     </div>
     ${item.minister ? `<p class="muted small">${hl(item.minister)}${item.dept ? `, ${esc(item.dept)}` : ''}</p>` : ''}
-    ${notes(item)}${guidance(item)}${groupings(item)}${links(item, i)}${quiet ? '' : `<p class="tags">${tags(item)}</p>`}
-    ${speakersHtml(item)}
+    ${notes(item)}${guidance(item)}${groupings(item)}${item.kind === 'legislation' && item.billId && can('whips') ? `<div class="group-times-host" data-group-item="${esc(item.key)}"></div>` : ''}${links(item, i)}${quiet ? '' : `<p class="tags">${tags(item)}</p>`}
+    ${speakersHtml(item, e1)}
   </li>`;
 }
 
@@ -199,8 +200,33 @@ export async function renderDay(el, { date }) {
       if (listDate !== date) { location.hash = listDate === todayIso() ? '#/today' : `#/day/${listDate}`; return; }
       load();
     },
-    times() { refreshTimes(box, state.data); },
+    times() { refreshTimes(box, state.data); redrawGroups(); },
   };
+
+  /** Where each legislation item is expected to start, for the group timings under it. */
+  const startsOf = () => {
+    const out = {};
+    const est = computeEstimates(state.data);
+    for (const s of state.data.sections) { const e = est.get(s.name); if (e) s.items.forEach((it, n) => { out[it.key] = e.items[n].start; }); }
+    return out;
+  };
+  /** Group timings (Whips and above): the placeholders are tied to their Bill's saved grouping once the plans arrive. */
+  function attachGroups(data) {
+    if (!can('whips')) return;
+    const items = data.sections.flatMap((s) => s.items).filter((it) => it.kind === 'legislation' && it.billId);
+    if (!items.length) return;
+    loadGroupTimes(box, date, startsOf).then(() => {
+      for (const it of items) {
+        const stage = stageFor(it, box._groupStages || []);
+        const host = box.querySelector(`[data-group-item="${it.key}"]`);
+        if (stage && host) host.setAttribute('data-group-times', `${stage.billId}-${stage.stageId}`), host.setAttribute('data-item-key', it.key);
+      }
+      redrawGroups();
+    });
+  }
+  function redrawGroups() {
+    if (box._groupStages) { box._groupStarts = startsOf(); drawGroupTimes(box, box._groupStages, box._groupStarts, date); }
+  }
 
   function draw() {
     const data = state.data;
@@ -234,15 +260,17 @@ export async function renderDay(el, { date }) {
           const head = item.group && item.group.label !== lastGroup ? groupHead(item.group) : '';
           lastGroup = item.group ? item.group.label : null;
           const chip = timeChipHtml(data, item, est && est.items[n]);
-          return head + (item.kind === 'oq' || item.kind === 'pnq' ? oqItem(item, date, i, chip) : plainItem(item, i, chip));
+          const e1 = est && est.items[n];
+          return head + (item.kind === 'oq' || item.kind === 'pnq' ? oqItem(item, date, i, chip, e1) : plainItem(item, i, chip, e1));
         }).join('')}</ol>
       </section>`;
       }).join('')}`;
 
     refreshTimes(box, data);
-    wireDayList(box, state);
+    wireDayList(box, state, hooks);
     wireSpeakers(box);
     fillDirectLinks(box, all);
+    attachGroups(data);
     box.querySelectorAll('details[data-oq]').forEach((d) => {
       d.addEventListener('toggle', () => {
         const target = d.querySelector('.suggest');

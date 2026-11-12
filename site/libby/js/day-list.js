@@ -10,6 +10,8 @@ import { esc, peer, fmtDate, fmtShort, loading } from './ui.js';
 import { can, savedName } from './session.js';
 import { loadPeers } from './peer-list.js';
 import { readPdfLines } from './docs/pdf-lines.js';
+import { parseSpeakersText } from './docs/speakers-upload.js';
+import { loadXLSX } from '../../shared/import/panel.js';
 import { parseTodaysList } from './docs/list-parser.js';
 import { estimateSection, estimateText, explain, hhmmToMinutes, minutesToHhmm, RULE_FIELDS, DEFAULT_RULES } from './docs/sitting-times.js';
 
@@ -35,10 +37,16 @@ export function dutyWhipsHtml(data) {
 
 /* ------------------------------------------------------------------ estimated times */
 
-/** One estimate per item for every sitting: Map(section name -> { start, end, items: [ ... ] }). Empty when no list has been uploaded. */
+const londonToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+
+/**
+ * One estimate per item for every sitting: Map(section name -> { start, end, items: [ ... ] }).
+ * With the day's Today's List the estimates use its lengths. Without one (a day still to come) they are predictions from the sitting time and the
+ * rules alone, and from any speakers' list uploaded ahead of the Today's List. A day already gone gets none.
+ */
 export function computeEstimates(data) {
   const out = new Map();
-  if (!data.list) return out;
+  if (!data.list && (!data.date || data.date < londonToday())) return out;
   for (const s of data.sections) out.set(s.name, estimateSection(s, { settings: data.settings || {}, rules: data.rules || DEFAULT_RULES, weekday: data.weekday }));
   return out;
 }
@@ -47,8 +55,12 @@ const visibleToAll = (data, item) => (data.settings || {}).show !== false && !((
 
 /** The "est. 3.20pm" beside a piece of business. Staff get a button that opens the editor; others get plain text (or nothing if it is hidden). */
 export function timeChipHtml(data, item, est) {
-  if (!est || !data.list) return '';
+  if (!est) return '';
   const shown = visibleToAll(data, item);
+  if (!data.list) {   // a prediction: nothing to edit until the Today's List is uploaded
+    const why = `Predicted, because there is no Today\u2019s List yet: ${explain(est, item)}`;
+    return `<span class="est est-predicted" data-est-key="${esc(item.key)}" title="${esc(why)}">predicted ${estimateText(est.start)}</span>`;
+  }
   const staff = can('whips');
   if (!shown && !staff) return '';
   const title = `${explain(est, item)}${shown ? '' : ' Hidden from everyone but Staff.'}${staff ? ' Click to change.' : ''}`;
@@ -70,11 +82,16 @@ export function refreshTimes(box, data) {
       if (!chip) return;
       const shown = visibleToAll(data, item);
       const staff = can('whips');
-      chip.textContent = `${shown ? 'est.' : 'hidden'} ${estimateText(e.items[i].start)}`;
+      chip.textContent = `${!data.list ? 'predicted' : shown ? 'est.' : 'hidden'} ${estimateText(e.items[i].start)}`;
       chip.classList.toggle('est-hidden', !shown);
       chip.classList.toggle('est-set', e.items[i].fixed || e.items[i].how === 'set');
       chip.hidden = !shown && !staff;
       chip.title = `${explain(e.items[i], item)}${shown ? '' : ' Hidden from everyone but Staff.'}${staff ? ' Click to change.' : ''}`;
+    });
+    s.items.forEach((item, i) => {   // when each peer is expected to rise
+      const starts = e.items[i].speakers;
+      if (!starts) return;
+      box.querySelectorAll(`[data-spk-key="${item.key}"] [data-spk-i]`).forEach((el) => { const sp = starts[Number(el.dataset.spkI)]; if (sp) el.textContent = estimateText(sp.start); });
     });
     const end = box.querySelector(`[data-est-end="${s.name}"]`);
     if (end) {
@@ -102,8 +119,12 @@ function estimateEditor(data, item, est) {
 
 /* ------------------------------------------------------------------ speakers */
 
-/** "Speakers (24)": the list from the Whips (with each speaker's limit), then anyone Staff have added. */
-export function speakersHtml(item) {
+/**
+ * "Speakers (24)": the list from the Whips, or the one uploaded ahead of the Today's List, each with the time they are expected to rise;
+ * then anyone Staff have added, and (for Staff) the form to upload a speakers' list.
+ * @param est  this item's estimate (entry of estimateSection), which carries the running start times
+ */
+export function speakersHtml(item, est = null) {
   const staff = can('whips');
   const listed = item.speakers || [];
   const added = item.addedSpeakers || [];
@@ -111,17 +132,21 @@ export function speakersHtml(item) {
   const limits = item.speechLimits;
   const limitOf = (full) => (limits ? (limits.byName && limits.byName[full]) ?? limits.default : null);
   const ld = [...listed, ...added].filter((s) => s.ld).length;
+  const up = item.uploadedSpeakers;
+  const advisory = item.advisoryMinutes || item.backbenchMinutes;
   const note = [
     listed.length && limits && limits.default ? `speeches are limited to ${limits.default} minutes except where shown` : '',
-    item.noLimit ? `no official time limit${item.backbenchMinutes ? `; backbench speeches within ${item.backbenchMinutes} minutes` : ''}` : '',
-  ].filter(Boolean).join(' · ');
+    item.noLimit || advisory ? `no official time limit${advisory ? `; the advisory time for backbench speeches is ${advisory} minutes` : ''}` : '',
+  ].filter(Boolean).join(' \u00B7 ');
+  const plan = est && est.speakers;
   return `<details class="speakers" data-spk-key="${esc(item.key)}">
     <summary>${listed.length + added.length ? 'Speakers' : '+ Add speakers'} <span class="count" data-spk-count>${listed.length + added.length || ''}</span>${ld ? ` <span class="small muted">${ld} Lib Dem</span>` : ''}</summary>
-    ${listed.length ? `<p class="small muted">From the Whips’ list${note ? ` · ${esc(note)}` : ''}</p>
-      <ol class="spk-list">${listed.map((sp) => {
+    ${listed.length ? `<p class="small muted">${up && !up.ordered ? `Uploaded${up.by ? ` by ${esc(up.by)}` : ''} before the Today\u2019s List, so in alphabetical order for now; the Today\u2019s List will put them in order` : 'From the Whips\u2019 list'}${note ? ` \u00B7 ${esc(note)}` : ''}</p>
+      <ol class="spk-list">${listed.map((sp, i) => {
         const lim = limitOf(sp.full);
-        return `<li class="spk${sp.ld ? ' spk-ld' : ''}"><span class="spk-n">${sp.n}</span>${peer(sp.full, sp.ld)}${lim ? ` <span class="spk-min">${esc(lim)} min</span>` : ''}</li>`;
-      }).join('')}</ol>` : ''}
+        const p = plan && plan[i];
+        return `<li class="spk${sp.ld ? ' spk-ld' : ''}"><span class="spk-n">${sp.n}</span>${peer(sp.full, sp.ld)}${p ? ` <span class="spk-min" title="Expected to rise at about this time (${esc(Math.round(p.minutes))} minutes${p.role === 'minister' ? ', the Minister' : p.role === 'frontbench' ? ', frontbench' : ''})">from <span data-spk-i="${i}">${esc(estimateText(p.start))}</span></span>` : ''}${lim ? ` <span class="spk-min">${esc(lim)} min</span>` : ''}</li>`;
+      }).join('')}</ol>${plan && plan.length > listed.length ? `<p class="small muted">${esc(plan[plan.length - 1].full)} (the Minister) is expected to speak last, from ${esc(estimateText(plan[plan.length - 1].start))}.</p>` : ''}` : ''}
     <div data-spk-added>${addedHtml(added, staff)}</div>
     ${staff ? `<form class="spk-add" data-spk-add autocomplete="off">
         <label class="sr-only" for="spk-${esc(item.key)}">A peer who is speaking</label>
@@ -129,7 +154,18 @@ export function speakersHtml(item) {
         <button class="button button-small" type="submit">Add</button>
         <span class="small" data-spk-status role="status" aria-live="polite"></span>
       </form>
-      <p class="small muted">Someone who is not on the list can still speak “in the gap” (Companion 4.26), expected to take no more than four minutes.</p>` : ''}
+      <p class="small muted">Someone who is not on the list can still speak \u201Cin the gap\u201D (Companion 4.26), expected to take no more than four minutes.</p>
+      <details class="spk-upload"><summary>${up && !up.ordered ? 'Replace the uploaded speakers\u2019 list' : 'Upload the speakers\u2019 list'}</summary>
+        <form data-spk-upload>
+          <p class="small muted">The list is usually shared about 48 hours before the debate, in alphabetical order. Upload the file (PDF, Excel, CSV or text) or paste the names; the Today\u2019s List replaces it with the real order. Each peer is timed at the advisory time, the Minister and the two frontbench speeches next to theirs at 15 minutes.</p>
+          <div class="row"><label class="field"><span>File</span><input type="file" name="file" accept=".pdf,.xlsx,.xls,.csv,.txt,text/plain,text/csv,application/pdf"></label>
+            <label class="field field-narrow"><span>Advisory time (minutes)</span><input type="number" name="advisory" min="1" max="60" value="${esc(advisory || '')}"></label></div>
+          <label class="field"><span>Speakers (one per line, or separated by commas)</span><textarea name="names" rows="5" maxlength="6000">${esc(up && !up.ordered ? listed.map((sp) => sp.full).join('\n') : '')}</textarea></label>
+          <p class="small" data-spk-found aria-live="polite"></p>
+          <p><button class="button button-small" type="submit">Save the speakers\u2019 list</button>
+            ${up && !up.ordered ? '<button class="button button-quiet button-small" type="button" data-spk-unupload>Delete the uploaded list</button>' : ''}
+            <span class="small" data-spk-upstatus role="status" aria-live="polite"></span></p>
+        </form></details>` : ''}
   </details>`;
 }
 
@@ -145,7 +181,7 @@ function addedHtml(added, staff) {
  * @param box    the element holding the business
  * @param state  { date, data }  data is the /api/day reply; it is changed in place as Staff edit
  */
-export function wireDayList(box, state) {
+export function wireDayList(box, state, hooks = {}) {
   // The page can be drawn again (after an upload, say) into the same box: attach the handlers once, and read the data afresh each time.
   if (box.dataset.dayListWired) return;
   box.dataset.dayListWired = '1';
@@ -184,7 +220,53 @@ export function wireDayList(box, state) {
     if (rm && staff) changeSpeaker(rm.closest('[data-spk-key]'), { remove: rm.dataset.spkRemove });
   });
 
-  box.addEventListener('submit', (e) => {
+  const readNames = async (file) => {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (ext === 'pdf') return (await readPdfLines(file)).map((l) => l.text);
+    if (ext === 'xlsx' || ext === 'xls') {
+      const XLSX = await loadXLSX();
+      const wb = XLSX.read(new Uint8Array(await file.arrayBuffer()), { type: 'array' });
+      return wb.SheetNames.flatMap((n) => XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: false, defval: '' }).map((r) => r.join('\t')));
+    }
+    return (await file.text()).split(/\r?\n/);
+  };
+  // choosing a file (or pasting) fills in the names and the advisory time it finds, for the person to check before saving
+  box.addEventListener('change', async (e) => {
+    const input = e.target.closest('[data-spk-upload] input[type="file"]');
+    if (!input || !input.files[0]) return;
+    const form = input.closest('[data-spk-upload]');
+    const found = form.querySelector('[data-spk-found]');
+    found.textContent = 'Reading the file…';
+    try {
+      const got = parseSpeakersText(await readNames(input.files[0]));
+      form.elements.names.value = got.names.join('\n');
+      if (got.advisoryMinutes) form.elements.advisory.value = got.advisoryMinutes;
+      found.textContent = got.names.length ? `Found ${got.names.length} peers${got.advisoryMinutes ? ` and an advisory time of ${got.advisoryMinutes} minutes` : ' (no advisory time: enter it above)'}. Check them, then save.` : 'I could not find any peers in that file. Paste the names instead.';
+    } catch (err) { found.textContent = err.message; }
+  });
+  box.addEventListener('click', async (e) => {
+    const un = e.target.closest('[data-spk-unupload]');
+    if (!un) return;
+    const key = un.closest('[data-spk-key]').dataset.spkKey;
+    if (!window.confirm('Delete the uploaded speakers’ list for this debate?')) return;
+    try { await api('debate-speakers', { method: 'POST', body: JSON.stringify({ action: 'remove', date: state.date, title: itemByKey(key).title }) }); (hooks.reload || (() => {}))(state.date); } catch (err) { un.closest('form').querySelector('[data-spk-upstatus]').textContent = err.message; }
+  });
+
+  box.addEventListener('submit', async (e) => {
+    const upl = e.target.closest('[data-spk-upload]');
+    if (upl) {
+      e.preventDefault();
+      const status = upl.querySelector('[data-spk-upstatus]');
+      const key = upl.closest('[data-spk-key]').dataset.spkKey;
+      const got = parseSpeakersText(upl.elements.names.value);
+      if (!got.names.length) { status.textContent = 'I could not find any peers in that box (each starts with Lord, Baroness, Viscount, Earl, Bishop ...).'; return; }
+      status.textContent = 'Saving…';
+      try {
+        await api('debate-speakers', { method: 'POST', body: JSON.stringify({ action: 'save', date: state.date, title: itemByKey(key).title, speakers: got.names, advisoryMinutes: Number(upl.elements.advisory.value) || got.advisoryMinutes || null, author: savedName() }) });
+        (hooks.reload || (() => {}))(state.date);
+      } catch (err) { status.textContent = err.message; }
+      return;
+    }
     const est = e.target.closest('[data-est-form]');
     if (est) { e.preventDefault(); const f = est.elements; saveEstimate(est, { start: f.start.value, minutes: f.minutes.value === '' ? null : Number(f.minutes.value), hidden: f.hidden.checked }); return; }
     const add = e.target.closest('[data-spk-add]');

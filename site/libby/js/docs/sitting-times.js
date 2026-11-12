@@ -26,7 +26,13 @@ export const DEFAULT_RULES = {
   motion: 90,        // estimate, used only when the list gives no time limit and no speakers
   other: 30,         // estimate
   speaker: 15,       // Companion 4.42: other speakers in a debate with no formal limit are expected to keep within 15 minutes
-  openingWinding: 20, // Companion 4.42: members opening or winding up are expected to keep within 20 minutes
+  openingWinding: 20, // Companion 4.42: members opening or winding up are expected to keep within 20 minutes (used only when a debate's own advisory time is not known)
+  ministerSpeech: 15,   // a Minister's speech in a debate with a speakers' list
+  frontbenchSpeech: 15, // the Conservative and Liberal Democrat frontbench speeches next to the Minister's (straight after it, or straight before it)
+  groupOpening: 15,   // Committee and Report: the opening speech of a group of amendments (the first amendment's lead signatory)
+  groupSpeaker: 10,   // ... every other speaker in the group
+  groupWindUp: 10,    // ... a Minister who opened a group speaking again to reply
+  groupFallback: 20,  // ... a group whose signatories could not be found
   grandCommitteeMax: 300, // Companion 3.18: the afternoon Grand Committee sits for a maximum of five hours
   // Used only when a list gives no time: the usual times (Companion 3.1, 3.17).
   sittingStart: { monday: 870, tuesday: 870, wednesday: 900, thursday: 660, friday: 600 },
@@ -49,8 +55,14 @@ export const RULE_FIELDS = [
   ['legislation', 'A stage of a Bill, when the list gives no time', 'estimate', 'no figure in the Companion'],
   ['motion', 'A motion or debate with no time limit and no speakers\u2019 list', 'estimate', 'no figure in the Companion'],
   ['other', 'Any other business', 'estimate', 'no figure in the Companion'],
-  ['speaker', 'A backbench speech in a debate with no time limit', 'companion', '4.42: expected to keep within 15 minutes'],
-  ['openingWinding', 'Opening or winding up in such a debate', 'companion', '4.42: expected to keep within 20 minutes'],
+  ['speaker', 'A backbench speech when the debate gives no advisory time', 'companion', '4.42: expected to keep within 15 minutes (the debate\u2019s own advisory time is used when it has one)'],
+  ['openingWinding', 'Opening or winding up when the debate gives no advisory time', 'companion', '4.42: expected to keep within 20 minutes'],
+  ['ministerSpeech', 'A Minister\u2019s speech in a debate', 'estimate', 'set by the Whips\u2019 Office'],
+  ['frontbenchSpeech', 'A Conservative or Liberal Democrat frontbench speech next to the Minister\u2019s', 'estimate', 'set by the Whips\u2019 Office'],
+  ['groupOpening', 'Committee and Report: opening a group of amendments', 'estimate', 'set by the Whips\u2019 Office'],
+  ['groupSpeaker', 'Committee and Report: each other speaker in a group', 'estimate', 'set by the Whips\u2019 Office'],
+  ['groupWindUp', 'Committee and Report: a Minister who opened a group, replying', 'estimate', 'set by the Whips\u2019 Office'],
+  ['groupFallback', 'Committee and Report: a group whose signatories are not known', 'estimate', 'set by the Whips\u2019 Office'],
 ];
 
 export const slug = (text) => String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -100,7 +112,7 @@ export function estimateSection(section, { settings = {}, rules = DEFAULT_RULES,
   const grand = section.name === 'Grand Committee';
   const startSetting = hhmmToMinutes(settings.sections && settings.sections[section.name] && settings.sections[section.name].start);
   const usualStart = grand ? (rules.grandCommitteeStart || DEFAULT_RULES.grandCommitteeStart)[weekday] : (rules.sittingStart || DEFAULT_RULES.sittingStart)[weekday];
-  let t = startSetting ?? section.startMinutes ?? usualStart ?? 14 * 60 + 30;
+  let t = startSetting ?? section.startMinutes ?? hhmmToMinutes(section.start) ?? usualStart ?? 14 * 60 + 30;   // (a day with no list may still have a sitting time from the calendar)
   const start = t;
 
   // how many items share each group's time (4 oral questions share the 40 minutes)
@@ -128,22 +140,55 @@ export function estimateSection(section, { settings = {}, rules = DEFAULT_RULES,
     else { minutes = rules[it.kind] ?? rules.other; how = 'rule'; }
 
     t = begin + minutes;
-    out.push({ start: begin, end: t, minutes, how, fixed: fixed !== null });
+    const entry = { start: begin, end: t, minutes, how, fixed: fixed !== null };
+    if (it.speakers && it.speakers.length) entry.speakers = speakerPlan(it, rules).speakers.map((sp) => ({ ...sp, start: begin + sp.offset }));   // when each peer is expected to rise
+    out.push(entry);
   });
   return { start, end: t, items: out };
 }
 
-/** Adds up what each speaker on the list may take: the limit the list gives them, else 20 minutes to open or wind up and 15 for the rest (Companion 4.42). */
-export function speakersMinutes(item, rules = DEFAULT_RULES) {
+const nameKey = (x) => String(x || '').toLowerCase().replace(/[^a-z]+/g, ' ').trim();
+const sameName = (a, b) => { const x = nameKey(a), y = nameKey(b); return !!x && !!y && (x === y || x.includes(y) || y.includes(x)); };
+
+/**
+ * Who speaks when in a debate with a speakers' list, and for how long each:
+ *   - a speaker the list gives a limit for takes that limit;
+ *   - the Minister takes `ministerSpeech` (15), and so do the two frontbenchers (Conservative and Liberal Democrat) next to the Minister's speech:
+ *     straight after it when the Minister opens, straight before it when the Minister winds up;
+ *   - everyone else takes the debate's advisory backbench time (from the list, or uploaded with the speakers), else the Companion's 15 minutes.
+ * If the Minister is not in the list but the debate names one, their speech is added at the end, with the last two listed speakers as the frontbenchers.
+ * Returns { speakers: [ { n, full, name, minutes, role: 'minister' | 'frontbench' | 'backbench' | 'limit', offset, added } ], total, advisory }.
+ */
+export function speakerPlan(item, rules = DEFAULT_RULES) {
   const limits = item.speechLimits || { default: null, byName: {} };
-  const n = item.speakers.length;
-  const backbench = item.backbenchMinutes || rules.speaker;
-  return item.speakers.reduce((sum, sp, i) => {
+  const advisory = item.advisoryMinutes || item.backbenchMinutes || rules.speaker;
+  const list = (item.speakers || []).map((sp, i) => ({ n: sp.n || i + 1, full: sp.full || sp.name || '', name: sp.name || sp.full || '', ld: sp.ld }));
+  const mini = item.minister || '';
+  let mAt = mini ? list.findIndex((sp) => sameName(sp.full, mini)) : -1;
+  let added = false;
+  if (mini && mAt < 0 && list.length) { list.push({ n: list.length + 1, full: mini, name: mini, added: true }); mAt = list.length - 1; added = true; }
+  const front = new Set();
+  if (mAt === 0) { front.add(1); front.add(2); }
+  else if (mAt > 0 && mAt === list.length - 1) { front.add(mAt - 1); front.add(mAt - 2); }
+  else if (mAt < 0 && list.length > 2) { front.add(list.length - 1); front.add(list.length - 2); }   // no Minister to go by: the winding-up pair at the end
+  let offset = 0;
+  const speakers = list.map((sp, i) => {
     const named = limits.byName && limits.byName[sp.full];
-    const own = named ?? limits.default ?? ((i === 0 || i === n - 1) ? rules.openingWinding : backbench);
-    return sum + own;
-  }, 0);
+    let minutes; let role;
+    if (named !== null && named !== undefined) { minutes = named; role = 'limit'; }
+    else if (i === mAt) { minutes = rules.ministerSpeech ?? 15; role = 'minister'; }
+    else if (limits.default !== null && limits.default !== undefined) { minutes = limits.default; role = 'limit'; }   // a limit the list sets for everyone beats the frontbench assumption
+    else if (front.has(i)) { minutes = rules.frontbenchSpeech ?? 15; role = 'frontbench'; }
+    else { minutes = advisory; role = 'backbench'; }
+    const out = { n: sp.n, full: sp.full, name: sp.name, ld: sp.ld, minutes, role, offset, added: !!sp.added };
+    offset += minutes;
+    return out;
+  });
+  return { speakers, total: offset, advisory, ministerAdded: added };
 }
+
+/** Adds up what the speakers in a debate take (see speakerPlan). */
+export function speakersMinutes(item, rules = DEFAULT_RULES) { return speakerPlan(item, rules).total; }
 
 /** The sentence under a start time that says where it comes from. */
 export function explain(est, item) {
@@ -157,7 +202,7 @@ export function explain(est, item) {
     case 'rising': return `${first}Runs to the rising time the list gives.`;
     case 'usualrising': return `${first}Runs to the usual rising time (Companion 3.1), since the list gives none.`;
     case 'grandmax': return `${first}A Grand Committee sitting is at most five hours (Companion 3.18); the list gives no rising time.`;
-    case 'speakers': return `${first}Adds up the speaking limits of the ${item.speakers.length} speakers (Companion 4.42: 20 minutes to open or wind up, 15 for the rest, unless the list sets limits).`;
+    case 'speakers': return `${first}Adds up the ${item.speakers.length} speeches: ${item.advisoryMinutes || item.backbenchMinutes ? `${item.advisoryMinutes || item.backbenchMinutes} minutes each (the advisory time)` : 'the Companion\u2019s 15 minutes each (no advisory time is known)'}, except the Minister and the two frontbench speeches next to theirs (15 minutes each) and any limit the list gives a speaker.`;
     default: return `${first}Estimated at ${len} by the sitting-time rules (nothing in the list times it).`;
   }
 }

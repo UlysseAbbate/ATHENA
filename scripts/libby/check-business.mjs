@@ -1,7 +1,7 @@
 // Checks how stored Lords business rows become a day's sections: the Order Paper, the committees and the What's On merge.
 // Run: node scripts/libby/check-business.mjs
 import fs from 'node:fs';
-import { sectionsFromFB, sectionsFromWhatsOn, committeesFromWhatsOn, mergeWhatsOn, risingFromWhatsOn, enrichSections, itemCount } from '../../lib/libby/business.js';
+import { foldSpeakerLines, sectionsFromFB, sectionsFromWhatsOn, committeesFromWhatsOn, mergeWhatsOn, risingFromWhatsOn, enrichSections, itemCount } from '../../lib/libby/business.js';
 import { dbRowToEvent } from '../../lib/libby/parliament.js';
 
 const read = (f) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${f}`, import.meta.url), 'utf8'));
@@ -82,6 +82,15 @@ ok(analyseDivision({ ...cdiv, content: 100, not_content: 100 }, () => '', 'commo
 const cd = votingData([cdiv], { departmentOf: () => 'DCMS', house: 'commons' });
 ok(cd.house === 'commons' && cd.sides.join('|') === 'Aye|No' && cd.total.divisions === 1 && cd.total.ldAlone === 1, 'the Commons voting data says which House and which sides');
 ok(analyseDivision({ ...cdiv, content: 10, not_content: 5 }, () => '').result === 'Content', 'the Lords calculation is as it was (Content / Not Content)');
+
+
+// "Advisory speaking time" and a line of speaking peers belong to the debate above them, not separate business
+const folded = foldSpeakerLines([{ name: 'Chamber', items: [
+  { kind: 'motion', title: 'Lord Smith to move that this House takes note of housing', detail: '' },
+  { kind: 'other', title: 'Advisory speaking time: 5 minutes', detail: '' },
+  { kind: 'other', title: 'Speakers: Lord Brown, Baroness Green of Foo', detail: '' },
+  { kind: 'oq', title: 'A question', detail: '' }] }]);
+ok(folded[0].items.length === 2 && folded[0].items[0].backbenchMinutes === 5 && folded[0].items[0].speakers.map((x) => x.full).join() === 'Lord Brown,Baroness Green of Foo' && folded[0].items[1].kind === 'oq', 'the advisory time and the speaking peers are folded into the debate, not listed as business');
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll business checks passed.');
 process.exit(failed ? 1 : 0);
