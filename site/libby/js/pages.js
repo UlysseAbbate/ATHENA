@@ -199,7 +199,7 @@ export const PAGES = [
     api: [['concessions', { GET: 'whips', '*': WHIPS_FEATURES }]] },
   { id: 'advisers-office', match: /^\/advisers-office$/, view: 'group-page.js', fn: 'renderGroupPage', params: () => ({ group: 'advisers-office' }), level: 'staff', nav: 'advisers-office', house: 'both' },
   { id: 'advisers', match: /^\/advisers$/, view: 'advisers-page.js', fn: 'renderAdvisers', level: 'staff', group: 'advisers-office', tab: 'advisers', tabLabel: 'Advisers', href: '#/advisers', house: 'both',
-    card: 'Every page the advisers use: Bill advisers, groupings and grids, the bulletin, the duty rota, availability and the Wallace Room.' },
+    card: 'Every page the advisers use: Bill advisers, groupings and grids, the bulletin, the duty rota, availability, the Wallace Room and Room 391.' },
   { id: 'roles', match: /^\/roles$/, view: 'roles-page.js', fn: 'renderRoles', level: BACKCHANNEL, group: 'advisers-office', tab: 'roles', tabLabel: 'Roles', href: '#/roles', house: 'both',
     card: 'Say who is a Backbench or Frontbencher parliamentarian, a Whip, in the Leader’s circle, their Staff, or an Administrator, and add staff who are not on the Members lists.' },
   // Duty Whips: Staff choose the rota (on the Advisers page; the rota itself shows on every day's page)
@@ -242,6 +242,7 @@ export const ADVISER_LINKS = [
   ]],
   ['Office', [
     ['Wallace Room', '#/wallace-room', 'See every booking and book the room. Staff and Admin can cancel anyone\u2019s booking, or a whole repeating series.'],
+    ['Room 391', '#/room-391', 'The same for Room 391: see every booking and book the room. Staff and Admin can cancel anyone\u2019s booking, or a whole repeating series.'],
   ]],
 ];
 
