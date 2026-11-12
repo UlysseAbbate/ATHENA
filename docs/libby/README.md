@@ -165,6 +165,10 @@ Checked by `node scripts/libby/check-grid-doc.mjs`.
 - **Asking for a booked slot.** Click "Booked", write a message, and send it (`room-requests`). The booker (and the Whips and above) see it in a **Requests** box at the top of the room page and answer "I will move it" or "I cannot move it", with an optional reply; the person who asked sees the answer in their own Requests box. If the booking is cancelled or moved, anyone waiting is told the slot is free. Notifications are on the room pages: there is no email (the site has no way to send one yet).
 - **Set in stone.** The booker (when booking, or later) and the Whips can mark a booking, or every future booking in a repeat, as set in stone. Nobody can then ask for it; the booker and the Whips can still change the day, time or note, or cancel it. Migration `20261113100000_room_privacy.sql`.
 
+### Teams (POLD Staff → Teams)
+
+Staff bring people (staff or parliamentarians, by the email of their account) together in teams so that they can share certain things (`functions/api/libby/teams.js`, tables `libby_teams` and `libby_team_members`, migration `20261114100000_libby_teams.sql`). For now the one shared thing is seeing, in full, the Wallace Room and Room 391 bookings that others in the team made (view only: they cannot change them, and the booker, the Whips and above are unchanged). **A team never changes anyone's access level**: membership is a separate list, and what a team shares is named in the code (`maySee` in `room-bookings.js`), never a level, so a person's rights do not move because someone else in their team has more or fewer. To share something else later, add it where it is read, with the check `viewer.team.has(owner)`, and list it on the Teams page.
+
 ## Portfolio tags
 
 Every Bill, every piece of legislation on the day pages and every policy document carries at least one portfolio (department).

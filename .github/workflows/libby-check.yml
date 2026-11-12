@@ -37,7 +37,7 @@ jobs:
         run: node scripts/libby/check-access.mjs
       - name: Check the grid and hymn sheet Word documents
         run: node scripts/libby/check-grid-doc.mjs
-      - name: Check who may see which room bookings
+      - name: Check who may see which room bookings (and teams)
         run: node scripts/libby/check-rooms.mjs
       - name: Check how Lords business rows become a day
         run: node scripts/libby/check-business.mjs

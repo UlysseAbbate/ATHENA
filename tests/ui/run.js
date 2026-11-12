@@ -326,6 +326,10 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
             { number: "1", topic: "Care", minutes: 35, minister: false, noSignatories: false, speakers: [{ name: "Lord A", minutes: 15, role: "opening" }, { name: "Lord B", minutes: 10, role: "speaker" }, { name: "Lord C", minutes: 10, role: "speaker" }] },
             { number: "2", topic: "Cost", minutes: 25, minister: false, noSignatories: false, speakers: [{ name: "Lord D", minutes: 15, role: "opening" }, { name: "Lord B", minutes: 10, role: "speaker" }] }] }] });
           if (u.pathname.includes("/api/libby/day/")) return j({ date: "2026-11-03", sections: [], source: { label: "Lords Business", url: "https://services.lordsbusiness.parliament.uk/" }, rising: {} });
+          if (u.pathname.endsWith("/api/libby/teams")) {
+            if (route.request().method() === "POST") { (globalThis.__teamPosts = globalThis.__teamPosts || []).push(route.request().postData()); return j({ ok: true, id: 2 }); }
+            return j({ teams: [{ id: 1, name: "Leader\u2019s office", members: [{ email: "office@test.invalid", name: "Olive Office", level: "Staff" }, { email: "new.person@test.invalid", name: "", level: "" }] }], people: [{ email: "office@test.invalid", name: "Olive Office", level: "Staff" }, { email: "peer@test.invalid", name: "Pat Peer", level: "Whip" }] });
+          }
           if (u.pathname.endsWith("/api/libby/room-requests")) {
             if (route.request().method() === "POST") { (globalThis.__roomPosts = globalThis.__roomPosts || []).push(route.request().postData()); return j({ ok: true, id: 1 }); }
             return j({ incoming: [], outgoing: [] });
@@ -475,6 +479,15 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.click('[data-booking="9"]'); await page.waitForTimeout(200);
           check("Room bookings: the account that made a booking can change or cancel it", (await page.$("[data-amend-open]")) !== null && (await page.$('[data-cancel="one"]')) !== null);
           maskRooms = false;
+          await page.goto(BASE + "/libby/#/teams"); await page.waitForTimeout(800);
+          const tm = await page.$eval("#app", a => a.innerText);
+          check("Teams: Staff see each team and who is in it, and that a team never changes anyone's level", /Leader.s office/.test(tm) && /Olive Office/.test(tm) && /no LIBBY account yet/.test(tm) && /never changes anyone.s access level/.test(tm), tm.slice(0, 200).replace(/\n/g, " "));
+          globalThis.__teamPosts = [];
+          await page.fill('[data-add] input[name=email]', "peer@test.invalid"); await page.click('[data-add] button[type=submit]'); await page.waitForTimeout(400);
+          const tp = JSON.parse((globalThis.__teamPosts || [])[0] || "{}");
+          check("Teams: adding a person to a team sends their email", tp.action === "add" && tp.id === 1 && tp.email === "peer@test.invalid", JSON.stringify(tp));
+          await page.fill('[data-new] input[name=name]', "Whips' office"); await page.click('[data-new] button[type=submit]'); await page.waitForTimeout(400);
+          check("Teams: a new team can be created", JSON.parse((globalThis.__teamPosts || [])[1] || "{}").action === "create");
           await page.goto(BASE + "/libby/#/issues-tracker"); await page.waitForTimeout(800);
           const pb = await page.$$eval(".iss-portfolios a", as => as.map(a => a.textContent.trim().replace(/\s+/g, " ")));
           check("Issues Tracker: buttons at the top for All and each portfolio, with how many issues each holds", pb[0] === "All 2" && pb.includes("DEFRA 1") && pb.includes("HO 1") && pb.includes("DfT 0"), pb.join("|"));
@@ -591,7 +604,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           }
           lvl = "developer"; await ed("developer"); await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(700); await page.goto(BASE + "/libby/#/advisers"); await page.waitForTimeout(700);
           const adv = await page.$$eval("#app h2, #app .adv-list a.button", es => es.map(e => e.textContent));
-          check("the Advisers page has exactly the Legislation / Whipping / Upload a spreadsheet / Office buttons", adv.join("|") === ["Legislation", "Update Bill advisers and leads", "Upload Groupings, Grids & Hymn Sheets", "Whipping", "Whips\u2019 Office Bulletin", "Duty Whips: choose the rota", "Availability: see who is free", "Upload a spreadsheet", "Import concessions", "Import campaigns and actions", "Import Bulletin messages", "Import roles", "Office", "Wallace Room", "Room 391"].join("|"), adv.join("|"));
+          check("the Advisers page has exactly the Legislation / Whipping / Upload a spreadsheet / Office buttons", adv.join("|") === ["Legislation", "Update Bill advisers and leads", "Upload Groupings, Grids & Hymn Sheets", "Whipping", "Whips\u2019 Office Bulletin", "Duty Whips: choose the rota", "Availability: see who is free", "Upload a spreadsheet", "Import concessions", "Import campaigns and actions", "Import Bulletin messages", "Import roles", "Office", "Wallace Room", "Room 391", "Teams"].join("|"), adv.join("|"));
           await page.goto(BASE + "/libby/#/duty-whips"); await page.waitForTimeout(700);
           check("the Duty Whips page loads from the Advisers page", /Duty Whips/.test(await page.$eval("#app", b => b.innerText)) && !/page could not be loaded|Not available/i.test(await page.$eval("#app", b => b.innerText)));
           await page.goto(BASE + "/libby/#/whips"); await page.waitForTimeout(700);

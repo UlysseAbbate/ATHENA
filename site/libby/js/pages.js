@@ -205,6 +205,9 @@ export const PAGES = [
   // Duty Whips: Staff choose the rota (on the Advisers page; the rota itself shows on every day's page)
   { id: 'duty-whips', match: /^\/duty-whips$/, view: 'duty-page.js', fn: 'renderDuty', level: 'staff', group: 'advisers-office', tab: 'advisers', house: 'both',
     api: [['duty-whips', { GET: 'whips', '*': 'staff' }]] },
+  // Teams: Staff bring people together so they can share certain things (for now, seeing each other's room bookings). Never changes anyone's level.
+  { id: 'teams', match: /^\/teams$/, view: 'teams-page.js', fn: 'renderTeams', level: 'staff', group: 'advisers-office', tab: 'advisers', house: 'both',
+    api: [['teams', { '*': 'staff' }]] },
   { id: 'adviser-editor', match: /^\/adviser-editor$/, view: 'adviser-editor-page.js', fn: 'renderAdviserEditor', level: 'staff', group: 'advisers-office', tab: 'advisers', house: 'both',
     api: [['advisers', { '*': 'staff' }], ['groupings', { GET: WHIPS_FEATURES, '*': 'staff' }]] },
   { id: 'bulletin-editor', match: /^\/bulletin-editor$/, view: 'bulletin-editor-page.js', fn: 'renderBulletinEditor', level: 'staff', group: 'advisers-office', tab: 'advisers', house: 'both',
@@ -243,6 +246,7 @@ export const ADVISER_LINKS = [
   ['Office', [
     ['Wallace Room', '#/wallace-room', 'See every booking and book the room. Staff and Admin can cancel anyone\u2019s booking, or a whole repeating series.'],
     ['Room 391', '#/room-391', 'The same for Room 391: see every booking and book the room. Staff and Admin can cancel anyone\u2019s booking, or a whole repeating series.'],
+    ['Teams', '#/teams', 'Bring people together in teams so that they can share things: for now, seeing each other\u2019s Wallace Room and Room 391 bookings. A team never changes anyone\u2019s access level.'],
   ]],
 ];
 
