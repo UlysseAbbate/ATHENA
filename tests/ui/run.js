@@ -337,7 +337,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           if (u.pathname.endsWith("/api/libby/room-bookings") && u.searchParams.get("room") === "wallace" && route.request().method() === "GET") {
             const mon = (() => { const d = new Date(Date.now() + 7 * 864e5); return iso(new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 864e5)); })();
             const day = n => iso(new Date(Date.parse(mon + "T12:00:00Z") + n * 864e5));
-            const mk = (id, n, start, end, peer, note, extra = {}) => ({ id, seriesId: null, date: day(n), start, end, peer: maskRooms && !extra.mine ? "" : peer, note: maskRooms && !extra.mine ? "" : note, locked: false, mine: false, manage: !maskRooms || !!extra.mine, ...extra });
+            const mk = (id, n, start, end, peer, note, extra = {}) => ({ id, seriesId: null, date: day(n), start, end, peer: maskRooms && !extra.mine ? "" : peer, note: maskRooms && !extra.mine ? "" : note, locked: false, mine: false, manage: !maskRooms || !!extra.mine, visible: !maskRooms || !!extra.mine, ...extra });
             return j({ room: "wallace", bookings: [mk(7, 1, "10:00", "11:00", "Lord Secret", "Budget briefing"), mk(8, 2, "10:00", "11:00", "Lord Fixed", "Away day", { locked: true }), mk(9, 3, "14:00", "15:00", "Baroness Mine", "My meeting", { mine: true })], series: {} });
           }
           if (u.pathname.endsWith("/api/libby/room-bookings")) return j({ room: u.searchParams.get("room"), bookings: [], series: {} });
