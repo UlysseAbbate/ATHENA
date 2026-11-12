@@ -107,11 +107,11 @@ export const GROUPS = {
 // Buttons on the Lib Dems 150 page that open a guide. A link that is not known yet is left empty: the button then says the link is to come.
 export const LD150_LINKS = [
   ['Organogram', 'https://libdemsparli.retool.com/embedded/public/c9c6ad33-7973-479f-b03b-5a5f4f4b53c2/LibDems', 'Who is who across the Liberal Democrats in Parliament.'],
-  ['Rolling Top Lines', '', 'The current top lines, kept up to date.'],
-  ['Parliamentary Best Practice', '', 'How to get the most out of Parliament.'],
-  ['MPs Staff New Starter Guide', '', 'A guide for new members of MPs\u2019 staff.'],
-  ['The Mill', '', 'The Mill.'],
-  ['Campaigns Hub', '', 'The Campaigns Hub.'],
+  ['Rolling Top Lines', 'https://docs.google.com/document/d/1VVIfo4wl5TTxC_Laemh8SpNHL_rlk7cCEYXoB_gH-2g/edit?tab=t.0', 'The current top lines, kept up to date.'],
+  ['Parliamentary Best Practice', 'https://docs.google.com/document/d/1eY_1B7R_doY1W0fcNz7U-aG9evOqslUR5TvZb_Kt5q4/edit?tab=t.0#heading=h.hyjxbekzuzan', 'How to get the most out of Parliament.'],
+  ['MPs Staff New Starter Guide', 'https://docs.google.com/document/d/1F-Q1Nqp8mc8ALR19U6IDMhgid7Q1TMt0ntJ9E9SMTdQ/edit?tab=t.0', 'A guide for new members of MPs\u2019 staff.'],
+  ['The Mill', 'https://the-mill.jericho.ac/home', 'The Mill.'],
+  ['Campaigns Hub', 'https://drive.google.com/drive/folders/1mxKC4eWwXpc4YfOJukLbNqinBmEsafbc', 'The Campaigns Hub.'],
 ];
 
 /* ------------------------------------------------------------------ the pages */
