@@ -130,6 +130,22 @@ underneath. A list is saved per day (`todays_lists`); uploading again replaces i
 - If a list's layout ever defeats the reader, add the list's text as a fixture in `scripts/fixtures` and fix `public/js/docs/list-parser.js`
   until `node scripts/check-list.mjs` passes (it also runs on every commit).
 
+### Lords timings: speakers, predictions and Committee/Report groups
+
+- **Debates with a speakers' list.** The advisory backbench speaking time and the speaking peers are part of the debate, not separate business (if a paper lists
+  them as lines of their own, `foldSpeakerLines` in `lib/libby/business.js` moves them onto the debate). Each peer is timed at the advisory time; the Minister and the two
+  frontbench speeches next to theirs (the pair straight after a Minister who opens, or straight before one who winds up) take 15 minutes. The Speakers section shows a
+  running start time for every peer (`speakerPlan` in `docs/sitting-times.js`). All the figures are rules Staff can change ("How start times are estimated").
+- **Speakers' lists before the Today's List.** Under a debate's Speakers, Staff can upload the list shared about 48 hours ahead (PDF, Excel, CSV, text, or pasted) with the
+  advisory time. The names and time are read in the browser (`docs/speakers-upload.js`), checked by the person, and saved in `debate_speakers`. The Today's List replaces
+  it with the real order as soon as it is uploaded.
+- **Predictions without the Today's List.** A day still to come is estimated from the sitting time and the rules (shown as "predicted"); a debate with an uploaded
+  speakers' list is timed from it. Edits (fixing a start, hiding a time) need the Today's List.
+- **Committee and Report groups (Whips and above only: `legislative-timing`).** From the saved groupings (the Groupings upload) and the signatories of each amendment:
+  the lead signatory of a group's first amendment opens (15 minutes), every other signatory speaks once (10), and a Minister who opens replies once more (10)
+  (`docs/group-timing.js`). Staff press "Started now" (or set a time) when a group begins; a group's real length over its expected length is its pace, and the average
+  pace of the groups so far re-times the groups to come. Notes are kept in `group_actuals`.
+
 ## Portfolio tags
 
 Every Bill, every piece of legislation on the day pages and every policy document carries at least one portfolio (department).

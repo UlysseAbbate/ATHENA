@@ -10,10 +10,11 @@
 import { json, safe, londonToday, addDays, isIsoDate, hansardQuery } from '../../../../lib/libby/util.js';
 import { snapshotted } from '../../../../lib/libby/snapshots.js';
 import { sanitizeList, cleanSettings, listToSections, weekdayOf } from '../../../../lib/libby/list-store.js';
-import { mergeRules } from '../../../../site/libby/js/docs/sitting-times.js';
+import { mergeRules, itemKey } from '../../../../site/libby/js/docs/sitting-times.js';
+import { titleKey } from '../../../../site/libby/js/docs/speakers-upload.js';
 import { SAVED_DAYS_AHEAD } from '../../../../lib/libby/schedule.js'; // today and the coming week have a saved copy; older days are rarely opened
 import { whatsOn, activeLordsBillsTagged, ldPeers, ldMatcher, findCommonsDebate } from '../../../../lib/libby/parliament.js';
-import { sectionsFromWhatsOn, sectionsFromFB, committeesFromWhatsOn, mergeWhatsOn, risingFromWhatsOn, enrichSections, itemCount } from '../../../../lib/libby/business.js';
+import { sectionsFromWhatsOn, sectionsFromFB, foldSpeakerLines, committeesFromWhatsOn, mergeWhatsOn, risingFromWhatsOn, enrichSections, itemCount } from '../../../../lib/libby/business.js';
 import { fbRows, orderPaperRows, sbSelect, supabaseConfigured } from '../../../../lib/libby/supabase.js';
 import { liveOrderPaper, liveFutureBusiness } from '../../../../lib/libby/lordsbusiness.js';
 
@@ -53,6 +54,7 @@ async function buildDay(ctx, date, today) {
   const committees = committeesFromWhatsOn(events);
   if (committees && !chosen.sections.some((s) => s.name === 'Committees')) chosen.sections.push(committees);
 
+  foldSpeakerLines(chosen.sections);
   const isLD = ldMatcher(peers);
   await enrichSections(chosen.sections, { date, bills, isLD, findDebate: findCommonsDebate });
 
@@ -93,6 +95,27 @@ async function uploadedDay(ctx, date, row, rulesRow) {
   };
 }
 
+/**
+ * Every item gets its key (the same one the Today's List uses), and a debate with a speakers' list uploaded for it ahead of the Today's List takes that list
+ * and its advisory speaking time, unless the day's own Today's List already gives speakers. `uploadedSpeakers` says where they came from.
+ */
+async function withSpeakers(out, rows, ctx) {
+  const isLD = ldMatcher(await safe(ldPeers(ctx), []));
+  const byTitle = new Map((rows || []).map((r) => [r.title_key, r]));
+  for (const sec of out.sections || []) {
+    const seen = new Map();
+    for (const item of sec.items) {
+      if (!item.key) item.key = itemKey(sec.name, item, seen);
+      const up = byTitle.get(titleKey(item.title));
+      if (up && !(item.speakers && item.speakers.length)) {
+        item.speakers = (up.speakers || []).map((sp, i) => ({ n: i + 1, name: sp.name, full: sp.name, ld: isLD({ name: sp.name }) }));
+        if (up.advisory_minutes) { item.backbenchMinutes = up.advisory_minutes; item.noLimit = true; }
+        item.uploadedSpeakers = { by: up.uploaded_by || '', at: up.uploaded_at, ordered: false };
+      } else if (up) item.uploadedSpeakers = { by: up.uploaded_by || '', at: up.uploaded_at, ordered: true, unused: true };
+    }
+  }
+}
+
 export async function onRequestGet(ctx) {
   const { params, env } = ctx;
   const today = londonToday();
@@ -101,15 +124,16 @@ export async function onRequestGet(ctx) {
 
   const saved = date >= today && date <= addDays(today, SAVED_DAYS_AHEAD);
   const db = supabaseConfigured(env);
-  const [day, uploaded, duty, rules] = await Promise.all([
+  const [day, uploaded, duty, rules, upSpeakers] = await Promise.all([
     saved ? snapshotted(ctx, `day:${date}`, 300, () => buildDay(ctx, date, today)) : buildDay(ctx, date, today),
     db ? safe(sbSelect(env, 'todays_lists', `select=data,settings,uploaded_by,uploaded_at,updated_at&list_date=eq.${date}`), []) : [],
     db ? safe(sbSelect(env, 'duty_whips', `select=slot,whip&duty_date=eq.${date}&order=slot.asc`), []) : [],
     db ? safe(sbSelect(env, 'site_settings', 'select=value&key=eq.sitting_rules'), []) : [],
+    db ? safe(sbSelect(env, 'debate_speakers', `select=title_key,title,speakers,advisory_minutes,uploaded_by,uploaded_at&list_date=eq.${date}`), []) : [],
   ]);
 
   // isToday is worked out now, not kept in the saved copy: tomorrow's copy is made today but read tomorrow.
-  const out = { ...day, isToday: date === today, weekday: weekdayOf(date), dutyWhips: duty.map((r) => r.whip).filter(Boolean), list: null, settings: null };
+  const out = { ...day, rules: mergeRules(rules[0] && rules[0].value), isToday: date === today, weekday: weekdayOf(date), dutyWhips: duty.map((r) => r.whip).filter(Boolean), list: null, settings: null };
   if (uploaded[0]) {
     try {
       const up = await uploadedDay(ctx, date, uploaded[0], rules[0]);
@@ -120,6 +144,7 @@ export async function onRequestGet(ctx) {
       out.listProblem = 'The uploaded list for this day could not be read, so the business below comes from the other sources.';
     }
   }
+  await withSpeakers(out, upSpeakers, ctx);
   // Staff change this and expect to see it at once, and the duty Whips come from the Whips page: nothing here is kept by the browser.
   return json(out, { maxAge: 0 });
 }

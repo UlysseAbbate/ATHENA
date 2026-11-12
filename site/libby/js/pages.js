@@ -136,7 +136,10 @@ export const PAGES = [
 
   // Today: the Commons or the Lords, by the buttons at the top (the day pages are the same two views for any date)
   { id: 'today', match: /^\/today$/, view: 'today-page.js', fn: 'renderToday', params: (m, c) => ({ date: c.today }), nav: 'today', beta: true, house: 'both', switch: true,
-    api: [['oq-suggest', { '*': WHIPS_FEATURES }], ['todays-list', { '*': WHIPS_FEATURES }]] },
+    api: [['oq-suggest', { '*': WHIPS_FEATURES }], ['todays-list', { '*': WHIPS_FEATURES }],
+      ['debate-speakers', { '*': WHIPS_FEATURES }],
+      // The Committee and Report group timings are for Whips and above to read; Staff note when a group really started.
+      ['legislative-timing', { GET: 'whips', '*': WHIPS_FEATURES }]] },
   { id: 'day', match: /^\/day\/(\d{4}-\d{2}-\d{2})$/, view: 'day-page.js', fn: 'renderDay', params: (m) => ({ date: m[1] }),
     nav: (m, c) => (m[1] === c.today ? 'today' : ''), group: 'business', tab: 'future', beta: true, house: 'lords', switch: true },
   { id: 'c-day', match: /^\/c\/day\/(\d{4}-\d{2}-\d{2})$/, view: 'commons-day-page.js', fn: 'renderCommonsDay', params: (m) => ({ date: m[1] }),
