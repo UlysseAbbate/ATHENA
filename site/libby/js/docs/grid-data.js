@@ -62,6 +62,24 @@ export async function getDescriptions({ api, billId, stageId, items, passcode = 
   return { descriptions: out, generated, fallbacks, warning };
 }
 
+/**
+ * Where an amendment sits in the Bill, as the lines of the Place in Bill cell:
+ *   Clause 1 / Page 1, line 6      Schedule 1 / Page 134, line 36      After Clause 1 (a new clause)      Clause 2 stand part
+ * Taken from what the Bills API publishes for the amendment; never guessed (anything unreadable says so).
+ */
+export function placeLines(a) {
+  if (!a) return ['[location unclear]'];
+  const clause = a.clause !== null && a.clause !== undefined && a.clause !== '' ? String(a.clause) : '';
+  const schedule = a.schedule !== null && a.schedule !== undefined && a.schedule !== '' ? String(a.schedule) : '';
+  const where = clause ? `Clause ${clause}` : schedule ? `Schedule ${schedule}` : '';
+  const text = `${a.place || ''} ${a.type || ''}`;
+  if (/stand part|leave out clause|leave out schedule/i.test(text) && /stand part/i.test(a.place || '')) return where ? [`${where} stand part`] : ['[location unclear]'];
+  if (/new (clause|schedule)|^add|insert/i.test(text) && /new (clause|schedule)/i.test(a.place || '')) return where ? [`After ${where}`] : ['[location unclear]'];
+  if (!where) return ['[location unclear]'];
+  const page = a.page ? `Page ${a.page}${a.line ? `, line ${a.line}` : ''}` : '';
+  return page ? [where, page] : [where];
+}
+
 const shownNum = (r, a) => (r.kind === 'number' ? (a?.number || r.ref.replace(/^g/, '')) : r.ref);
 
 /**
@@ -76,16 +94,21 @@ export async function assembleDay({ api, billId, stageId, grouping, amendments, 
   groups.forEach((g, gi) => g.refs.forEach((r) => {
     if (r.debated) return; // "already debated" amendments never appear in the grid
     if (!r.matches.length) {
-      outGroups[gi].rows.push({ num: r.ref.replace(/^g/, ''), peers: [], text: 'Not found in the amendments published for this stage: check the marshalled list.', id: null });
+      outGroups[gi].rows.push({ num: r.ref.replace(/^g/, ''), place: ['[location unclear]'], peers: [], text: 'Not found in the amendments published for this stage: check the marshalled list.', id: null });
       return;
     }
     for (const a of r.matches) {
       unique.set(a.id, a);
-      outGroups[gi].rows.push({ num: shownNum(r, a), peers: a.sponsors.map((s) => ({ name: s.name, ld: !!s.ld })), id: a.id });
+      outGroups[gi].rows.push({ num: shownNum(r, a), place: placeLines(a), peers: a.sponsors.map((s) => ({ name: s.name, ld: !!s.ld })), id: a.id });
     }
   }));
   const d = await getDescriptions({ api, billId, stageId, items: [...unique.values()], passcode, refresh, onProgress });
-  for (const g of outGroups) for (const row of g.rows) if (row.id) row.text = d.descriptions[row.id] || '';
+  for (const g of outGroups) {
+    for (const row of g.rows) if (row.id) row.text = d.descriptions[row.id] || '';
+    // the Liberal Democrat peers who sponsor an amendment in the group, once each, in the order they first appear
+    const seen = new Set();
+    g.ldSpeakers = g.rows.flatMap((row) => row.peers.filter((pe) => pe.ld)).map((pe) => pe.name).filter((n) => !seen.has(n) && seen.add(n));
+  }
   return { groups: outGroups, unmatched, generated: d.generated, fallbacks: d.fallbacks, warning: d.warning };
 }
 

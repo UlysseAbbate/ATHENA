@@ -1,15 +1,18 @@
 // Builds the Whips' Office Word documents (following the "DOCUMENTS" instructions):
-//   - Committee Stage Grid / Report Stage Grid
-//   - Report Stage Hymn Sheet
-// Measurements match the Whips' Office example grid: A4, 1.27 cm margins, a 10,465-wide table split
-// 934 / 2149 / 6354 / 1028 (Am# : Peer(s) : Member's Explanatory Statement : Notes), 0.75pt borders.
+//   - Committee Stage Grid / Report Stage Grid: A4 landscape, 1.27 cm margins, one table per group (each group on its own page), five columns of
+//     1.3 / 3.2 / 4.6 / 13.3 / 4.7 cm (Am# : Place in Bill : Peer(s) : Member's Explanatory Statement : Briefings), 0.75pt light grey borders
+//   - Report Stage Hymn Sheet: A4 portrait, 1.27 cm margins
+// All in Arial, with the Lords Legislation Adviser header on every page. File names: "[Bill Code] [Stage Code] [Document Title]" (see docFileName).
 // `D` is the docx library (window.docx in the browser, require('docx') in tests).
 
 export const NAVY = '1F3864';
 export const RED = 'C00000';
 export const ORANGE = 'E97132';
-const TABLE_W = 10465;
-const COLS = [934, 2149, 6354, 1028];
+const TABLE_W = 10465;          // portrait: the Hymn Sheet's box
+const GRID_COLS = [737, 1814, 2608, 7541, 2665];   // 1.3, 3.2, 4.6, 13.3 and 4.7 cm in twentieths of a point
+const GRID_W = GRID_COLS.reduce((a, b) => a + b, 0);
+const GREY = 'BFBFBF';
+const CREAM = 'FFF2CC';
 export const FONT = 'Arial';
 
 export function header(D) {
@@ -38,11 +41,11 @@ function titleBlock(D, title, subtitle) {
   ];
 }
 
-export function makeDocument(D, children) {
+export function makeDocument(D, children, { landscape = false } = {}) {
   return new D.Document({
     styles: { default: { document: { run: { font: FONT, size: 20 } } } },
     sections: [{
-      properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 720, right: 720, bottom: 720, left: 720, header: 720, footer: 720 } } },
+      properties: { page: { size: { width: 11906, height: 16838, ...(landscape ? { orientation: D.PageOrientation.LANDSCAPE } : {}) }, margin: { top: 720, right: 720, bottom: 720, left: 720, header: 720, footer: 720 } } },
       headers: { default: header(D) },
       children,
     }],
@@ -54,60 +57,68 @@ const allBorders = (D, color) => ({ top: border(D, color), bottom: border(D, col
 
 /* ------------------------------------------------------------------ Grid */
 
-function groupTable(D, group, firstColLabel) {
+const GRID_LABELS = ['Am#', 'Place in Bill', 'Peer(s)', "Member's Explanatory Statement", 'Briefings'];
+
+function groupTable(D, group) {
   const navyCell = (children, extra = {}) => new D.TableCell({
-    children, shading: { fill: NAVY, type: D.ShadingType.CLEAR, color: 'auto' }, verticalAlign: D.VerticalAlign.CENTER, borders: allBorders(D), ...extra,
+    children, shading: { fill: NAVY, type: D.ShadingType.CLEAR, color: 'auto' }, verticalAlign: D.VerticalAlign.CENTER, borders: allBorders(D, GREY), ...extra,
   });
   const white = (text, size) => new D.TextRun({ text, bold: true, color: 'FFFFFF', size, font: FONT });
-  const centred = (children, after = 40) => new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after }, children });
+  const centred = (children, after = 0) => new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after }, children });
+  const run = (text, size, opts = {}) => new D.TextRun({ text, size, font: FONT, color: '000000', ...opts });
 
+  const speakers = group.ldSpeakers || [];
   const headingRow = new D.TableRow({
     children: [navyCell([
-      centred([white(`Group ${group.number} – ${group.topic}`, 28)]),
-      centred([white('', 22)]), // blank line for the lead speaker's name, completed by hand
-    ], { columnSpan: 4, width: { size: TABLE_W, type: D.WidthType.DXA } })],
+      centred([white(`Group ${group.number} – ${group.topic}`, 24)], 40),
+      centred([white(`LD Speakers:${speakers.length ? ` ${speakers.join(', ')}` : ''}`, 18)]),
+    ], { columnSpan: 5, width: { size: GRID_W, type: D.WidthType.DXA } })],
   });
-  const labels = [firstColLabel, 'Peer(s)', "Member's Explanatory Statement", 'Notes'];
   const columnRow = new D.TableRow({
-    children: labels.map((label, i) => navyCell([centred([white(label, 22)], 0)], {
-      width: { size: COLS[i], type: D.WidthType.DXA }, margins: { top: 120, bottom: 120 },
+    children: GRID_LABELS.map((label, i) => navyCell([centred([white(label, 18)])], {
+      width: { size: GRID_COLS[i], type: D.WidthType.DXA }, margins: { top: 120, bottom: 120 },
     })),
   });
-  const cell = (children, i, centre) => new D.TableCell({
-    children, width: { size: COLS[i], type: D.WidthType.DXA }, borders: allBorders(D),
+  const cell = (children, i, centre, fill) => new D.TableCell({
+    children, width: { size: GRID_COLS[i], type: D.WidthType.DXA }, borders: allBorders(D, GREY),
+    shading: { fill, type: D.ShadingType.CLEAR, color: 'auto' },
     verticalAlign: centre ? D.VerticalAlign.CENTER : D.VerticalAlign.TOP,
   });
-  const rows = group.rows.map((r) => new D.TableRow({
-    cantSplit: true, // keep each amendment's row on one page
-    children: [
-      cell([centred([new D.TextRun({ text: r.num, bold: true, size: 22, font: FONT })], 0)], 0, true),
-      cell((r.peers.length ? r.peers : [{ name: '' }]).map((p) => centred([new D.TextRun({
-        text: String(p.name).toUpperCase(), bold: true, size: 20, font: FONT, ...(p.ld ? { highlight: 'yellow' } : {}),
-      })], 60)), 1, true),
-      cell([new D.Paragraph({ spacing: { after: 40 }, children: [new D.TextRun({ text: r.text || '', size: 20, font: FONT })] })], 2, false),
-      cell([new D.Paragraph({ children: [] })], 3, false),
-    ],
-  }));
+  const lines = (arr, size, align, opts = {}) => (arr.length ? arr : ['']).map((t) => new D.Paragraph({ alignment: align, spacing: { after: 0 }, children: [run(t, size, opts)] }));
+  const rows = group.rows.map((r, n) => {
+    const fill = n % 2 === 0 ? 'FFFFFF' : CREAM;   // white first, restarting for every group
+    return new D.TableRow({
+      cantSplit: true,
+      children: [
+        cell(lines([r.num], 18, D.AlignmentType.CENTER, { bold: true }), 0, true, fill),
+        cell(lines(r.place || [], 16, D.AlignmentType.CENTER), 1, true, fill),
+        cell((r.peers.length ? r.peers : [{ name: '' }]).map((pe) => new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after: 60 }, children: [run(String(pe.name).toUpperCase(), 16, { bold: true, ...(pe.ld ? { highlight: 'yellow' } : {}) })] })), 2, true, fill),
+        cell([new D.Paragraph({ spacing: { after: 40 }, children: [run(r.text || '', 16)] })], 3, false, fill),
+        cell(lines(r.briefings || [], 16, D.AlignmentType.LEFT), 4, false, fill),
+      ],
+    });
+  });
   return new D.Table({
-    width: { size: TABLE_W, type: D.WidthType.DXA },
-    columnWidths: COLS,
+    width: { size: GRID_W, type: D.WidthType.DXA },
+    columnWidths: GRID_COLS,
     layout: D.TableLayoutType.FIXED,
     alignment: D.AlignmentType.CENTER,
-    rows: [headingRow, columnRow, ...rows],
+    rows: [headingRow, columnRow, ...rows],   // the two heading rows appear once per group: a table that runs onto a new page does not repeat them
   });
 }
 
 /**
- * grid = { billTitle, stageWord: 'Committee'|'Report', day, groups: [ { number, topic, rows: [ { num, peers: [{name, ld}], text } ] } ] }
- * `firstColLabel` is "Am#" (also used for C/AC clause references from a running list).
+ * grid = { billTitle, stageWord: 'Committee'|'Report', day, groups: [ { number, topic, ldSpeakers: [names], rows: [ { num, place: [lines], peers: [{name, ld}], text, briefings: [names] } ] } ] }
+ * `num` is the amendment number, or the C/AC clause reference when the list was a running list.
  */
 export function buildGridDoc(D, grid) {
   const children = [...titleBlock(D, grid.billTitle, `${grid.stageWord} Stage Grid — Day ${grid.day || '[X]'}`)];
   grid.groups.forEach((g, i) => {
-    children.push(groupTable(D, g, 'Am#'));
-    if (i < grid.groups.length - 1) children.push(new D.Paragraph({ children: [] }));
+    // every group starts on a new page (except the first, which follows the title); the marker paragraph is one point high
+    if (i > 0) children.push(new D.Paragraph({ pageBreakBefore: true, spacing: { before: 0, after: 0, line: 20, lineRule: D.LineRuleType.EXACT }, children: [] }));
+    children.push(groupTable(D, g));
   });
-  return makeDocument(D, children);
+  return makeDocument(D, children, { landscape: true });
 }
 
 /* ------------------------------------------------------------------ Hymn sheet */
@@ -152,5 +163,16 @@ export async function downloadDoc(D, doc, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-/** "Financial Services and Markets Bill [HL]" → "Financial_Services_and_Markets_Bill_HL" for file names. */
+/** "Financial Services and Markets Bill [HL]" -> "Financial_Services_and_Markets_Bill_HL" (kept for other documents' file names). */
 export const fileSafe = (s) => String(s || '').replace(/[[\]]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+const MINOR = new Set('a an and as at by for from in of on or the to with'.split(' '));
+/** The Bill Code: the first letter of each major word of the short title, in capitals (minor words left out): "Financial Services and Markets Bill" -> "FSMB". */
+export function billCode(title) {
+  return String(title || '').replace(/\[[^\]]*\]/g, ' ').split(/[^A-Za-z0-9]+/).filter((w) => w && !MINOR.has(w.toLowerCase())).map((w) => w[0].toUpperCase()).join('');
+}
+const STAGE_CODES = { 'Second Reading': '2R', '2nd Reading': '2R', Committee: 'CS', Report: 'RS', 'Ping Pong': 'PP' };
+/** "[Bill Code] [Stage Code] [Document Title].docx", e.g. "FSMB L_CS Grid.docx" (house 'Lords' or 'Commons'; stage 'Committee', 'Report', 'Second Reading' or 'Ping Pong'). */
+export function docFileName({ billTitle, house = 'Lords', stage, title }) {
+  return `${billCode(billTitle)} ${house === 'Commons' ? 'C' : 'L'}_${STAGE_CODES[stage] || ''} ${title}.docx`;
+}
