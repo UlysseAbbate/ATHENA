@@ -27,7 +27,7 @@ window.Shell = (() => {
   function footer() {
     let f = document.getElementById("shell-foot");
     if (!f) { f = document.createElement("footer"); f.id = "shell-foot"; f.className = "foot shell-foot"; document.body.append(f); }
-    f.innerHTML = `<p>${links.map(l => `<button type="button" class="linkish" data-foot="${esc(l.id)}">${esc(l.label)}</button>`).join(" · ")}${links.length ? " · " : ""}${window.RefreshAll ? RefreshAll.html + " · " : ""}${Theme.toggleHtml()}</p>`;
+    f.innerHTML = `<p>${links.map(l => `<button type="button" class="linkish" data-foot="${esc(l.id)}">${esc(l.label)}</button>`).join(" · ")}${links.length ? " · " : ""}${window.RefreshAll ? RefreshAll.html + " · " : ""}${Theme.toggleHtml()} · <a href="/privacy/">Privacy and acceptable use</a></p>`;
     f.querySelectorAll("[data-foot]").forEach(b => { b.onclick = () => links.find(l => l.id === b.dataset.foot)?.run(); });
     Theme.wire(f);
   }

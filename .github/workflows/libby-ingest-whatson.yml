@@ -17,6 +17,10 @@ on:
         type: string
         default: '42'
 
+# the jobs only read the repository; nothing here can push, tag or change settings
+permissions:
+  contents: read
+
 jobs:
   ingest:
     runs-on: ubuntu-latest

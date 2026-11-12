@@ -155,5 +155,12 @@ flagCalls.length = 0;
 r = await setFlag('content', false);
 ok(flagCalls.length === 1 && flagCalls[0].method === 'DELETE', 'clearing Content leaves Voting as it is');
 
+// ---- a request that changes something must come from this site's own pages
+const fromSite = (origin) => middleware({ env, data: {}, next: async () => new Response('{}', { status: 200 }), request: new Request('https://athena.test/api/libby/bulletin', { method: 'POST', headers: { authorization: 'Bearer tok-admin', ...(origin ? { origin } : {}) } }) });
+ok((await fromSite('https://evil.example')).status === 403, 'a change sent from another site is refused');
+ok((await fromSite('https://athena.test')).status !== 403 && (await fromSite('')).status !== 403, 'a change from this site (or from a tool that sends no Origin) is let through to the usual checks');
+const { publicMessage } = await import('../../lib/libby/util.js');
+ok(!/bill_id|23505|Supabase/.test(publicMessage(new Error('Supabase concessions: 409 {"code":"23505","message":"duplicate key value violates unique constraint (bill_id)"}'))) && publicMessage(new Error('Give the Bill.')) === 'Give the Bill.', 'database details never reach the browser; ordinary messages do');
+
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll access checks passed.');
 process.exit(failed ? 1 : 0);

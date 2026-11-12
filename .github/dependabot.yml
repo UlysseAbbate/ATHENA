@@ -1,0 +1,9 @@
+# Weekly pull requests when a GitHub Action or a Python package this repository uses has a newer (often security) release.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+  - package-ecosystem: pip
+    directory: /
+    schedule: { interval: weekly }

@@ -32,6 +32,13 @@ async function gate(ctx) {
   const { request, env } = ctx;
   const path = new URL(request.url).pathname;
 
+  // A request that changes something must come from this site's own pages. (The sign-in cookie is SameSite=Lax, which already stops
+  // another site posting with it; this is a second lock.) Tools that send no Origin header, such as the scheduled jobs, are unaffected.
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
+    const origin = request.headers.get('origin');
+    if (origin && origin !== 'null' && origin !== new URL(request.url).origin) return jsonReply({ error: 'That request did not come from this site.' }, 403);
+  }
+
   let who;
   try { who = await identityFromRequest(request, env); } catch (e) {
     if (e instanceof AuthUnavailable) return jsonReply({ error: 'The sign-in service cannot be reached. Try again in a minute.' }, 503);
