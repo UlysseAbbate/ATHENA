@@ -440,7 +440,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           const spkStarts = await page.$$eval("[data-spk-i]", es => es.map(e => e.textContent.trim()));
           check("Lords timings: each speaker has a running start time (Minister and the frontbench pair 15 minutes, the others the 5-minute advisory time)", spkStarts.join("|") === "2.30pm|2.45pm|3pm|3.15pm", spkStarts.join("|"));
           check("Lords timings: the speakers are under the debate, with the uploaded-list note and an upload form for Staff", /alphabetical order/.test(await page.$eval("[data-spk-key] ", e => e.textContent)) && (await page.$("[data-spk-upload] input[type=file]")) !== null && (await page.$("[data-spk-upload] textarea")) !== null);
-          const gt = await page.$$eval(".group-table tbody tr", rs => rs.map(r => r.innerText.replace(/\s+/g, " ").trim()));
+          const gt = await page.$$eval(".group-table tbody tr", rs => rs.map(r => r.textContent.replace(/\s+/g, " ").trim()));   // (the table sits in a closed details, so textContent)
           check("Lords timings (Whips+): Committee groups are timed from the signatories, a group noted as started keeps its real start and the next follows", gt.length === 2 && /4\.10pm/.test(gt[0]) && /4\.45pm/.test(gt[1]), gt.join(" || "));
           check("Lords timings (Whips+): the pace line says nothing has finished yet", /No group has finished yet/.test(await page.$eval(".group-times [data-pace]", e => e.textContent)));
           await page.goto(BASE + "/libby/#/issues-tracker"); await page.waitForTimeout(800);
