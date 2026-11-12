@@ -54,7 +54,6 @@ async function buildDay(ctx, date, today) {
   const committees = committeesFromWhatsOn(events);
   if (committees && !chosen.sections.some((s) => s.name === 'Committees')) chosen.sections.push(committees);
 
-  foldSpeakerLines(chosen.sections);
   const isLD = ldMatcher(peers);
   await enrichSections(chosen.sections, { date, bills, isLD, findDebate: findCommonsDebate });
 
@@ -101,11 +100,13 @@ async function uploadedDay(ctx, date, row, rulesRow) {
  */
 async function withSpeakers(out, rows, ctx) {
   const isLD = ldMatcher(await safe(ldPeers(ctx), []));
+  if (!out.list) foldSpeakerLines(out.sections || []);   // done here, not when the day is saved, so a copy saved earlier is read the same way
   const byTitle = new Map((rows || []).map((r) => [r.title_key, r]));
   for (const sec of out.sections || []) {
     const seen = new Map();
     for (const item of sec.items) {
       if (!item.key) item.key = itemKey(sec.name, item, seen);
+      for (const sp of item.speakers || []) if (sp.ld === undefined) sp.ld = isLD({ name: sp.full || sp.name });
       const up = byTitle.get(titleKey(item.title));
       if (up && !(item.speakers && item.speakers.length)) {
         item.speakers = (up.speakers || []).map((sp, i) => ({ n: i + 1, name: sp.name, full: sp.name, ld: isLD({ name: sp.name }) }));
