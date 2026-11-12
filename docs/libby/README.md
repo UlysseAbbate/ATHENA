@@ -146,6 +146,19 @@ underneath. A list is saved per day (`todays_lists`); uploading again replaces i
   (`docs/group-timing.js`). Staff press "Started now" (or set a time) when a group begins; a group's real length over its expected length is its pace, and the average
   pace of the groups so far re-times the groups to come. Notes are kept in `group_actuals`.
 
+### Word documents for a sitting day (grids and hymn sheets)
+
+Built in the browser from a saved grouping and the stage's amendments (`site/libby/js/docs/word.js`, `grid-data.js`), following the Whips' Office "DOCUMENTS" guidance:
+Arial throughout, the Lords Legislation Adviser header on every page, the Bill's short title as the title and the stage and day in the subtitle.
+- **Committee / Report Stage Grid**: A4 landscape, 1.27 cm margins; one table per group, each on its own page (the two heading rows appear once per group, not repeated if the table runs on);
+  columns Am# (or the C/AC clause reference from a running list), Place in Bill (clause, then page and line; "After Clause N" for a new clause; "Clause N stand part"; "[location unclear]" if the
+  Bills API does not say), Peer(s) (capitals, Liberal Democrat peers highlighted yellow, from the Members API), Member's Explanatory Statement and Briefings (left blank). The group heading row also lists the
+  Liberal Democrat peers who sponsor an amendment in the group ("LD Speakers:"). Rows alternate white and light orange-yellow.
+- **Report Stage Hymn Sheet**: A4 portrait; WHIP line, VOTE SUMMARY box, then for each group a heading, a short theme line and a placeholder for the voting instructions.
+- **File names**: `[Bill Code] [Stage Code] [Document Title]`, for example `FSMB L_CS Grid.docx` or `FSMB L_RS Hymn Sheet.docx` (Bill Code = first letter of each major word of the short title).
+- Not built yet: the Ping Pong Grid and Hymn Sheet (they need the Marshalled List of Motions and the Grouping of Motions to be read), and the 2nd Reading Briefing.
+Checked by `node scripts/libby/check-grid-doc.mjs`.
+
 ## Portfolio tags
 
 Every Bill, every piece of legislation on the day pages and every policy document carries at least one portfolio (department).

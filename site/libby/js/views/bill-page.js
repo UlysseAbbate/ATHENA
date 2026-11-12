@@ -2,7 +2,7 @@ import { api } from '../api.js';
 import { esc, hl, peer, fmtShort, todayIso, loading, errorBox, empty, extLink, pageHeader, debounce } from '../ui.js';
 import { authFieldsHtml, readAuth, rememberAuth, reopenPasscode, savedPasscode, can, hasLevel } from '../session.js';
 import { loadLib } from '../docs/loader.js';
-import { buildGridDoc, buildHymnDoc, downloadDoc, fileSafe } from '../docs/word.js';
+import { buildGridDoc, buildHymnDoc, downloadDoc, docFileName } from '../docs/word.js';
 import { assembleDay, getThemes } from '../docs/grid-data.js';
 import { groupDocs, rankOfLabel } from '../doc-groups.js';
 import { amendmentsHtml, wireAmendments } from '../amendments-table.js';
@@ -539,7 +539,7 @@ export async function renderBill(el, { id, house }, query = {}) {
           g.themes = t.themes;
           doc = buildHymnDoc(D, { billTitle: docTitle, day: g.day, groups: day.groups.map((x) => ({ number: x.number, refsLabel: x.refsLabel, theme: t.themes[x.number] })) });
         }
-        await downloadDoc(D, doc, `${fileSafe(docTitle)}_${stageWord}_${btn.dataset.dl === 'grid' ? 'Stage_Grid' : 'Hymn_Sheet'}_Day${g.day}.docx`);
+        await downloadDoc(D, doc, docFileName({ billTitle: docTitle, house: 'Lords', stage: stageWord, title: btn.dataset.dl === 'grid' ? 'Grid' : 'Hymn Sheet' }));
         status.textContent = day.unmatched.length ? `Downloaded. Not found in the published amendments: ${day.unmatched.join(', ')}.` : 'Downloaded.';
       } catch (err) { status.textContent = err.message; }
     });
