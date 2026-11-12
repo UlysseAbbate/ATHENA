@@ -162,25 +162,30 @@ const sameName = (a, b) => { const x = nameKey(a), y = nameKey(b); return !!x &&
 export function speakerPlan(item, rules = DEFAULT_RULES) {
   const limits = item.speechLimits || { default: null, byName: {} };
   const advisory = item.advisoryMinutes || item.backbenchMinutes || rules.speaker;
-  const list = (item.speakers || []).map((sp, i) => ({ n: sp.n || i + 1, full: sp.full || sp.name || '', name: sp.name || sp.full || '', ld: sp.ld }));
+  const list = (item.speakers || []).map((sp, i) => ({ n: sp.n || i + 1, full: sp.full || sp.name || '', name: sp.name || sp.full || '', ld: sp.ld, src: i }));
   const mini = item.minister || '';
-  let mAt = mini ? list.findIndex((sp) => sameName(sp.full, mini)) : -1;
+  const opens = item.openingBy && list.length && !sameName(list[0].full, item.openingBy) ? item.openingBy : '';
   let added = false;
-  if (mini && mAt < 0 && list.length) { list.push({ n: list.length + 1, full: mini, name: mini, added: true }); mAt = list.length - 1; added = true; }
+  if (opens) list.unshift({ n: 0, full: opens, name: opens, src: null, opening: true });   // the Minister who moved the debate opens it, and is not in the list of those who follow
+  const ministerAt = (i) => !!mini && sameName(list[i].full, mini);
+  let mAt = -1;
+  for (let i = 0; i < list.length; i++) if (ministerAt(i)) mAt = i;   // the last time the Minister speaks
+  if (mini && mAt < 0 && list.length) { list.push({ n: list.length + 1, full: mini, name: mini, src: null, added: true }); mAt = list.length - 1; added = true; }
   const front = new Set();
-  if (mAt === 0) { front.add(1); front.add(2); }
-  else if (mAt > 0 && mAt === list.length - 1) { front.add(mAt - 1); front.add(mAt - 2); }
+  const firstReal = list.findIndex((sp) => !sp.opening);
+  if (mAt >= 0 && mAt === list.length - 1) { front.add(mAt - 1); front.add(mAt - 2); }   // the Minister winds up: the pair straight before them
+  else if (mAt >= 0 && mAt === firstReal && mAt === 0) { front.add(1); front.add(2); }   // the Minister opens (and is in the list): the pair straight after them
   else if (mAt < 0 && list.length > 2) { front.add(list.length - 1); front.add(list.length - 2); }   // no Minister to go by: the winding-up pair at the end
   let offset = 0;
   const speakers = list.map((sp, i) => {
     const named = limits.byName && limits.byName[sp.full];
     let minutes; let role;
     if (named !== null && named !== undefined) { minutes = named; role = 'limit'; }
-    else if (i === mAt) { minutes = rules.ministerSpeech ?? 15; role = 'minister'; }
+    else if (ministerAt(i) || sp.added) { minutes = rules.ministerSpeech ?? 15; role = 'minister'; }
     else if (limits.default !== null && limits.default !== undefined) { minutes = limits.default; role = 'limit'; }   // a limit the list sets for everyone beats the frontbench assumption
     else if (front.has(i)) { minutes = rules.frontbenchSpeech ?? 15; role = 'frontbench'; }
     else { minutes = advisory; role = 'backbench'; }
-    const out = { n: sp.n, full: sp.full, name: sp.name, ld: sp.ld, minutes, role, offset, added: !!sp.added };
+    const out = { n: sp.n, full: sp.full, name: sp.name, ld: sp.ld, minutes, role, offset, src: sp.src, opening: !!sp.opening, added: !!sp.added };
     offset += minutes;
     return out;
   });

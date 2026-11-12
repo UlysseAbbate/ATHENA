@@ -91,7 +91,7 @@ export function refreshTimes(box, data) {
     s.items.forEach((item, i) => {   // when each peer is expected to rise
       const starts = e.items[i].speakers;
       if (!starts) return;
-      box.querySelectorAll(`[data-spk-key="${item.key}"] [data-spk-i]`).forEach((el) => { const sp = starts[Number(el.dataset.spkI)]; if (sp) el.textContent = estimateText(sp.start); });
+      box.querySelectorAll(`[data-spk-key="${item.key}"] [data-spk-i]`).forEach((el) => { const sp = starts.find((x) => x.src === Number(el.dataset.spkI)); if (sp) el.textContent = estimateText(sp.start); });
     });
     const end = box.querySelector(`[data-est-end="${s.name}"]`);
     if (end) {
@@ -144,9 +144,9 @@ export function speakersHtml(item, est = null) {
     ${listed.length ? `<p class="small muted">${up && !up.ordered ? `Uploaded${up.by ? ` by ${esc(up.by)}` : ''} before the Today\u2019s List, so in alphabetical order for now; the Today\u2019s List will put them in order` : 'From the Whips\u2019 list'}${note ? ` \u00B7 ${esc(note)}` : ''}</p>
       <ol class="spk-list">${listed.map((sp, i) => {
         const lim = limitOf(sp.full);
-        const p = plan && plan[i];
+        const p = plan && plan.find((x) => x.src === i);
         return `<li class="spk${sp.ld ? ' spk-ld' : ''}"><span class="spk-n">${sp.n}</span>${peer(sp.full, sp.ld)}${p ? ` <span class="spk-min" title="Expected to rise at about this time (${esc(Math.round(p.minutes))} minutes${p.role === 'minister' ? ', the Minister' : p.role === 'frontbench' ? ', frontbench' : ''})">from <span data-spk-i="${i}">${esc(estimateText(p.start))}</span></span>` : ''}${lim ? ` <span class="spk-min">${esc(lim)} min</span>` : ''}</li>`;
-      }).join('')}</ol>${plan && plan.length > listed.length ? `<p class="small muted">${esc(plan[plan.length - 1].full)} (the Minister) is expected to speak last, from ${esc(estimateText(plan[plan.length - 1].start))}.</p>` : ''}` : ''}
+      }).join('')}</ol>${(plan || []).filter((x) => x.src === null).map((x) => `<p class="small muted">${esc(x.full)} (the Minister) is expected to ${x.opening ? 'open the debate' : 'speak last'}, from ${esc(estimateText(x.start))}.</p>`).join('')}` : ''}
     <div data-spk-added>${addedHtml(added, staff)}</div>
     ${staff ? `<form class="spk-add" data-spk-add autocomplete="off">
         <label class="sr-only" for="spk-${esc(item.key)}">A peer who is speaking</label>

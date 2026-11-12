@@ -1,7 +1,7 @@
 // Checks how stored Lords business rows become a day's sections: the Order Paper, the committees and the What's On merge.
 // Run: node scripts/libby/check-business.mjs
 import fs from 'node:fs';
-import { foldSpeakerLines, sectionsFromFB, sectionsFromWhatsOn, committeesFromWhatsOn, mergeWhatsOn, risingFromWhatsOn, enrichSections, itemCount } from '../../lib/libby/business.js';
+import { foldSpeakerLines, abbreviatedNames, sectionsFromFB, sectionsFromWhatsOn, committeesFromWhatsOn, mergeWhatsOn, risingFromWhatsOn, enrichSections, itemCount } from '../../lib/libby/business.js';
 import { dbRowToEvent } from '../../lib/libby/parliament.js';
 
 const read = (f) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${f}`, import.meta.url), 'utf8'));
@@ -91,6 +91,19 @@ const folded = foldSpeakerLines([{ name: 'Chamber', items: [
   { kind: 'other', title: 'Speakers: Lord Brown, Baroness Green of Foo', detail: '' },
   { kind: 'oq', title: 'A question', detail: '' }] }]);
 ok(folded[0].items.length === 2 && folded[0].items[0].backbenchMinutes === 5 && folded[0].items[0].speakers.map((x) => x.full).join() === 'Lord Brown,Baroness Green of Foo' && folded[0].items[1].kind === 'oq', 'the advisory time and the speaking peers are folded into the debate, not listed as business');
+
+
+// the Order Paper as printed: the motion, then the advisory time, then the abbreviated list of speakers, then the closing speakers
+const real = foldSpeakerLines([{ name: 'Chamber', items: [
+  { kind: 'motion', title: 'Lord Pitt-Watson to move that this House takes note of the Autumn Budget 2026', detail: '', peers: ['Lord Pitt-Watson'] },
+  { kind: 'other', title: 'Advisory backbench speaking time: 5 minutes', detail: '' },
+  { kind: 'other', title: 'B Ussher (Maiden) L Liddle 10 L Redwood L Barber of Chittlehampton B Bottomley of Nettlestone B Bi L Gadhia 15 E Russell V Stansgate', detail: '' },
+  { kind: 'other', title: 'B Kramer L Altrincham L Pitt-Watson', detail: '' }] }]);
+const rm = real[0].items[0];
+ok(real[0].items.length === 1 && rm.backbenchMinutes === 5, 'the advisory time and both lists of names are folded into the debate (one item, not four)');
+ok(rm.speakers.length === 12 && rm.speakers[0].full === 'Baroness Ussher' && rm.speakers[7].full === 'Earl of Russell' && rm.speakers[8].full === 'Viscount Stansgate' && rm.speakers.slice(-3).map((x) => x.full).join() === 'Baroness Kramer,Lord Altrincham,Lord Pitt-Watson', 'the names are in the order printed, abbreviations written out, counts and (Maiden) dropped');
+ok(rm.minister === 'Lord Pitt-Watson' && rm.openingBy === 'Lord Pitt-Watson', 'the mover who is also the last speaker is the Minister, who opened and replies');
+ok(abbreviatedNames('Lord Pitt-Watson to move that this House takes note').length === 0 && abbreviatedNames('Health Bill Committee').length === 0, 'ordinary business is not mistaken for a list of names');
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll business checks passed.');
 process.exit(failed ? 1 : 0);

@@ -98,4 +98,10 @@ eq(up.advisoryMinutes, 5); eq(up.names, ['Baroness Abbott of Foo', 'Lord Brown',
 eq(parseSpeakersText('nothing here').names, []);
 eq(titleKey('Armed Forces Bill'), titleKey('Armed Forces Bill!'), 'the same debate is found whichever paper names it');
 
+
+/* ---- the Minister who moved the debate opens it and replies last; the frontbench pair speaks before the reply */
+const bud = T.speakerPlan({ minister: 'Lord Pitt-Watson', openingBy: 'Lord Pitt-Watson', backbenchMinutes: 5, speakers: ['Baroness Ussher', 'Lord Liddle', 'Lord Redwood', 'Baroness Kramer', 'Lord Altrincham', 'Lord Pitt-Watson'].map((full) => ({ full })) });
+eq(bud.speakers.map((x) => [x.minutes, x.role[0]]), [[15, 'm'], [5, 'b'], [5, 'b'], [5, 'b'], [15, 'f'], [15, 'f'], [15, 'm']], 'the Minister opens (not in the list), backbenchers at the advisory time, the pair before the reply');
+eq(bud.speakers.map((x) => x.src), [null, 0, 1, 2, 3, 4, 5], 'the opening speech is not one of the listed speakers');
+
 console.log(`Today's List reader: ${checks} checks passed.`);
