@@ -159,6 +159,12 @@ Arial throughout, the Lords Legislation Adviser header on every page, the Bill's
 - Not built yet: the Ping Pong Grid and Hymn Sheet (they need the Marshalled List of Motions and the Grouping of Motions to be read), and the 2nd Reading Briefing.
 Checked by `node scripts/libby/check-grid-doc.mjs`.
 
+### Room bookings (Wallace Room, Room 391): privacy, requests and "set in stone"
+
+- **Who sees who booked.** The Whips and above, and the account that made a booking, see it in full. Everyone else sees only that the slot is **Booked** (the server sends no name, note or repeat to them: `toBooking` in `functions/api/libby/room-bookings.js`, checked by `scripts/libby/check-rooms.mjs`). A booking belongs to the account that made it (`booked_by_email`; everyone using one shared code is one account); bookings made before this was recorded have no owner and are seen in full only by the Whips and above.
+- **Asking for a booked slot.** Click "Booked", write a message, and send it (`room-requests`). The booker (and the Whips and above) see it in a **Requests** box at the top of the room page and answer "I will move it" or "I cannot move it", with an optional reply; the person who asked sees the answer in their own Requests box. If the booking is cancelled or moved, anyone waiting is told the slot is free. Notifications are on the room pages: there is no email (the site has no way to send one yet).
+- **Set in stone.** The booker (when booking, or later) and the Whips can mark a booking, or every future booking in a repeat, as set in stone. Nobody can then ask for it; the booker and the Whips can still change the day, time or note, or cancel it. Migration `20261113100000_room_privacy.sql`.
+
 ## Portfolio tags
 
 Every Bill, every piece of legislation on the day pages and every policy document carries at least one portfolio (department).

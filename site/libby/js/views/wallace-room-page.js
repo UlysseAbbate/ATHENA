@@ -1,9 +1,11 @@
 // The Wallace Room (#/wallace-room) and Room 391 (#/room-391): the same booking calendar for each room, by week or by month, in 30-minute slots.
-// Everyone signed in can see every booking and book the room under their own name; a booking can repeat.
+// Everyone signed in can book the room (a booking can repeat). The Whips and above see who booked and why; everyone else sees only "Booked" on other people's
+// bookings (and their own in full), and can ask for a slot with a message: the booker is told in the "Requests" box on this page and answers there.
+// A booking can be set in stone: nobody can then ask for it, but the booker and the Whips can still change it.
 // The rules (opening hours, limits, how a repeat becomes dates) are in public/js/wallace-rules.js, shared with the server.
 import { api } from '../api.js';
 import { esc, fmtDate, fmtShort, todayIso, loading, errorBox, pageHeader } from '../ui.js';
-import { hasLevel } from '../session.js';
+import { hasLevel, savedName } from '../session.js';
 import { loadPeers } from '../peer-list.js';
 import {
   ROOM_NAME, WEEKDAYS, OPEN_MINUTES, SLOT_MINUTES, MAX_BOOKINGS_PER_SERIES, MAX_NOTE_LENGTH,
@@ -58,8 +60,9 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
     ? fmtDate(first, { month: 'long', year: 'numeric' })
     : `${fmtDate(from, { day: 'numeric', month: 'short' })} to ${fmtDate(isoAddDays(from, 6), { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-  el.innerHTML = `${pageHeader(R.name, 'See who has the room and when. Choose your name, then book a free slot: once, or on a repeat. Everyone can see every booking.')}
+  el.innerHTML = `${pageHeader(R.name, hasLevel('whips') ? 'See who has the room and when. Choose your name, then book a free slot: once, or on a repeat.' : 'See when the room is free. Choose your name, then book a free slot: once, or on a repeat. Other people\u2019s bookings show only as \u201CBooked\u201D: click one to ask for it, with a message. Your own bookings show in full.')}
     <div id="room-root">
+      <div id="room-inbox" aria-live="polite"></div>
       <div class="room-controls">
         <div class="toggle" role="group" aria-label="Show the calendar by">
           <a href="${link('week', anchor)}" ${view === 'week' ? 'aria-current="true"' : ''}>Week</a>
@@ -80,7 +83,7 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
       <p class="small" data-status aria-live="polite"></p>
       <div id="room-panel" aria-live="polite"></div>
       <div id="room-cal">${loading('Loading the bookings')}</div>
-      <p class="small muted">Times are in 30-minute slots, ${esc(toTime(OPEN_MINUTES))} to 21:00. A booking can be cancelled by the name it was made under, or by Staff or an Administrator.</p>
+      <p class="small muted">Times are in 30-minute slots, ${esc(toTime(OPEN_MINUTES))} to 21:00. A booking can be changed or cancelled by the account that made it, or by the Whips and above.</p>
     </div>`;
   const root = el.querySelector('#room-root'); // handlers go on this, which is rebuilt on every visit (the page container is reused)
   const cal = root.querySelector('#room-cal');
@@ -96,6 +99,9 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
   if (!root.isConnected) return;
   let bookings = data.bookings || [];
   let series = data.series || {};
+  const whipsView = hasLevel('whips');   // who booked, and the notes, are for the Whips and above (the server sends nobody else those)
+  let inbox = { incoming: [], outgoing: [] };
+  const inboxEl = root.querySelector('#room-inbox');
 
   let who = store.get(NAME_KEY);
   if (who && !peers.includes(who)) peers = [...peers, who];
@@ -108,6 +114,7 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
     const d = await api(`room-bookings?room=${room}&from=${from}&to=${to}`);
     bookings = d.bookings || [];
     series = d.series || {};
+    await loadInbox();
   };
   const byDate = () => {
     const m = {};
@@ -115,6 +122,9 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
     for (const list of Object.values(m)) list.sort((a, b) => a.start.localeCompare(b.start));
     return m;
   };
+
+  /** What a booking is called in hover text: the Whips and the owner get the name and note, everyone else just that it is booked. */
+  const label = (b) => (b.manage ? `${b.peer}, ${range(b.start, b.end)}${b.note ? `, ${b.note}` : ''}${b.locked ? ' (set in stone)' : ''}` : `Booked, ${range(b.start, b.end)}${b.locked ? ' (fixed: cannot be requested)' : ' (click to ask for it)'}`);
 
   /* ---------------------------------------------------------------- week view */
   const weekHtml = () => {
@@ -131,9 +141,9 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
       const r1 = Math.max(0, (toMinutes(b.start) - OPEN_MINUTES) / SLOT_MINUTES);
       const r2 = Math.min(slots.length, (toMinutes(b.end) - OPEN_MINUTES) / SLOT_MINUTES);
       for (let r = r1; r < r2; r++) taken.add(`${b.date}|${r}`);
-      const text = `${b.peer}, ${range(b.start, b.end)}${b.note ? `, ${b.note}` : ''}`;
-      blocks.push(`<button type="button" class="room-booking ${b.peer === who ? 'room-mine' : ''}" data-booking="${b.id}" style="grid-column:${col + 2};grid-row:${r1 + 2} / ${r2 + 2};--h:${hue(b.peer)}" title="${esc(text)}" aria-label="${esc(text)}. Show details.">
-        <span class="room-b-time">${esc(range(b.start, b.end))}</span><span class="room-b-name">${esc(b.peer)}</span>${b.note ? `<span class="room-b-note">${esc(b.note)}</span>` : ''}</button>`);
+      const text = label(b);
+      blocks.push(`<button type="button" class="room-booking ${b.mine ? 'room-mine' : ''}" data-booking="${b.id}" style="grid-column:${col + 2};grid-row:${r1 + 2} / ${r2 + 2};--h:${b.manage ? hue(b.peer) : 210}" title="${esc(text)}" aria-label="${esc(text)}. Show details.">
+        <span class="room-b-time">${esc(range(b.start, b.end))}</span><span class="room-b-name">${esc(b.manage ? b.peer : b.requested ? 'Booked (you asked)' : 'Booked')}${b.locked ? ' \u00B7 fixed' : ''}</span>${b.manage && b.note ? `<span class="room-b-note">${esc(b.note)}</span>` : ''}</button>`);
     }
     const head = dates.map((d, i) => `<div class="room-dayhead ${d === today ? 'is-today' : ''}" style="grid-column:${i + 2};grid-row:1">${esc(fmtShort(d))}</div>`).join('');
     const times = slots.map((t, r) => `<div class="room-time" style="grid-column:1;grid-row:${r + 2}">${t.endsWith(':00') ? esc(t) : ''}</div>`).join('');
@@ -163,7 +173,7 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
       const shown = list.slice(0, 4);
       cells.push(`<div class="room-month-cell ${d.slice(0, 7) !== first.slice(0, 7) ? 'is-other' : ''} ${d === today ? 'is-today' : ''}">
         <a class="room-month-date" href="${link('week', d)}" title="Show this week by the half hour">${esc(fmtShort(d))}</a>
-        ${shown.map((b) => `<button type="button" class="room-line ${b.peer === who ? 'room-mine' : ''}" data-booking="${b.id}" style="--h:${hue(b.peer)}" title="${esc(`${b.peer}, ${range(b.start, b.end)}${b.note ? `, ${b.note}` : ''}`)}">${esc(b.start)} ${esc(b.peer)}</button>`).join('')}
+        ${shown.map((b) => `<button type="button" class="room-line ${b.mine ? 'room-mine' : ''}" data-booking="${b.id}" style="--h:${b.manage ? hue(b.peer) : 210}" title="${esc(label(b))}">${esc(b.start)} ${esc(b.manage ? b.peer : 'Booked')}${b.locked ? ' \u00B7 fixed' : ''}</button>`).join('')}
         ${list.length > shown.length ? `<a class="small" href="${link('week', d)}">+${list.length - shown.length} more</a>` : ''}</div>`);
     }
     return `<div class="room-month" style="--cols:${cols}">${WEEKDAYS.slice(0, cols).map((w) => `<div class="room-month-head">${w}</div>`).join('')}${cells.join('')}</div>`;
@@ -188,7 +198,8 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
         <label class="field field-narrow"><span>From</span><select name="start">${timeOptions(slotStarts(), start)}</select></label>
         <label class="field field-narrow"><span>To</span><select name="end">${timeOptions(ends, end)}</select></label>
       </div>
-      <label class="field"><span>Note, shown to everyone (optional)</span><input type="text" name="note" maxlength="${MAX_NOTE_LENGTH}" placeholder="e.g. Group meeting"></label>
+      <label class="field"><span>Note, shown to you and the Whips (optional)</span><input type="text" name="note" maxlength="${MAX_NOTE_LENGTH}" placeholder="e.g. Group meeting"></label>
+      <label class="check"><input type="checkbox" name="locked"> Set in stone: nobody can ask for this booking to be moved (you and the Whips can still change it)</label>
       <div class="row">
         <label class="field field-narrow"><span>Repeat</span><select name="repeat">
           <option value="none">Does not repeat</option><option value="weekly">Every week</option><option value="fortnightly">Every two weeks</option>
@@ -253,7 +264,7 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
     formStatus.textContent = 'Booking\u2026';
     const result = await post({
       action: 'book', room, peer, date: field(form, 'date').value, start: field(form, 'start').value, end: field(form, 'end').value,
-      note: field(form, 'note').value, repeat: repeatOf(form), skipConflicts,
+      note: field(form, 'note').value, locked: field(form, 'locked').checked, repeat: repeatOf(form), skipConflicts,
     });
     if (result.ok) {
       who = peer; store.set(NAME_KEY, who);
@@ -267,7 +278,7 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
     formStatus.textContent = result.data.error || `The server returned ${result.status}.`;
     const clashes = result.data.clashes || [];
     if (result.status === 409 && clashes.length) {
-      clashBox.innerHTML = `<ul class="small">${clashes.slice(0, 8).map((c) => `<li>${esc(fmtShort(c.date))}, ${esc(range(c.start, c.end))}: booked by ${esc(c.peer)}</li>`).join('')}${clashes.length > 8 ? `<li>and ${clashes.length - 8} more</li>` : ''}</ul>
+      clashBox.innerHTML = `<ul class="small">${clashes.slice(0, 8).map((c) => `<li>${esc(fmtShort(c.date))}, ${esc(range(c.start, c.end))}: booked${c.peer ? ` by ${esc(c.peer)}` : ''}</li>`).join('')}${clashes.length > 8 ? `<li>and ${clashes.length - 8} more</li>` : ''}</ul>
         ${result.data.free ? `<p><button type="button" class="button" data-skip>Book the other ${result.data.free} date${result.data.free === 1 ? '' : 's'}</button></p>` : ''}`;
     }
     if (result.data.raced) { await reload(); draw(); }
@@ -278,23 +289,79 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
     const b = bookings.find((x) => x.id === id);
     if (!b) { panel.innerHTML = ''; openDetail = null; return; }
     openDetail = id;
+    const when = `${esc(fmtDate(b.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}, ${esc(range(b.start, b.end))}`;
+    const past = b.date < today;
+    if (!b.manage) {
+      // Someone else's booking: only that it is booked. It can be asked for (with a message) unless it is set in stone.
+      const mineReq = inbox.outgoing.find((r) => r.status === 'open' && r.date === b.date && r.start === b.start);
+      panel.innerHTML = `<section class="room-detail"><h2 class="h2-rule">Booked</h2>
+        <p>${when}</p>
+        ${b.locked ? '<p class="small">This booking is fixed, so it cannot be requested.</p>'
+          : past ? '<p class="small muted">This booking has passed.</p>'
+          : (b.requested || mineReq) ? `<p class="small">You have asked for this slot. The booker will answer in the Requests box above.${mineReq ? ` <button type="button" class="linkish" data-withdraw="${mineReq.id}">Withdraw my request</button>` : ''}</p>`
+          : `<form data-ask="${b.id}"><p class="small">Need this slot? Ask for it. The booker is told, with your message, and can choose to move their meeting.</p>
+              <label class="field"><span>Your message (why you need the room)</span><textarea name="message" rows="3" maxlength="500" required placeholder="e.g. A briefing for the Leader that morning: could your meeting move to the afternoon?"></textarea></label>
+              <label class="field field-narrow"><span>Your name</span><input name="as" maxlength="80" value="${esc(who || savedName() || '')}"></label>
+              <p><button class="button" type="submit">Ask for this slot</button> <span class="small" data-askstatus aria-live="polite"></span></p></form>`}
+        <p class="room-actions"><button type="button" class="button button-quiet" data-close>Close</button></p></section>`;
+      return;
+    }
     const s = b.seriesId ? series[b.seriesId] : null;
-    const canCancel = hasLevel('staff') || (who && who === b.peer);
+    const waiting = inbox.incoming.filter((r) => r.date === b.date && r.start === b.start);
     panel.innerHTML = `<section class="room-detail"><h2 class="h2-rule">Booking</h2>
-      <p><strong>${esc(b.peer)}</strong><br>${esc(fmtDate(b.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}, ${esc(range(b.start, b.end))}</p>
+      <p><strong>${esc(b.peer)}</strong>${b.mine ? ' <span class="small muted">(your booking)</span>' : ''}<br>${when}</p>
       ${b.note ? `<p>${esc(b.note)}</p>` : ''}
+      ${b.locked ? '<p class="small"><strong>Set in stone</strong>: nobody can ask for this booking to be moved.</p>' : ''}
       ${s ? `<p class="small muted">${esc(describeRepeat(s.rule))}, until ${esc(fmtDate(s.rule.until, { day: 'numeric', month: 'long', year: 'numeric' }))}.</p>` : ''}
-      <p class="room-actions">${canCancel ? `<button type="button" class="button" data-cancel="one" data-id="${b.id}">Cancel this booking</button>
+      ${waiting.map((r) => `<p class="small state state-warn">${esc(r.requester)} has asked for this slot: \\u201C${esc(r.message)}\\u201D (see the Requests box above to answer).</p>`).join('')}
+      <p class="room-actions">
+        <button type="button" class="button button-quiet" data-lock="${b.locked ? 0 : 1}" data-id="${b.id}">${b.locked ? 'Free it (people can ask for it again)' : 'Set in stone'}</button>
+        ${s ? `<button type="button" class="button button-quiet" data-lock="${b.locked ? 0 : 1}" data-scope="all" data-id="${b.id}">${b.locked ? 'Free' : 'Set in stone'} every future booking in the series</button>` : ''}
+        ${past ? '' : `<button type="button" class="button button-quiet" data-amend-open="${b.id}">Change the day, time or note</button>`}
+        <button type="button" class="button" data-cancel="one" data-id="${b.id}">Cancel this booking</button>
         ${s ? `<button type="button" class="button button-quiet" data-cancel="following" data-id="${b.id}">Cancel this and all later bookings in the series</button>
-        <button type="button" class="button button-quiet" data-cancel="all" data-id="${b.id}">Cancel every future booking in the series</button>` : ''}`
-        : `<span class="small muted">Only ${esc(b.peer)} (choose that name in "Book as") Staff or an Admin can cancel this booking.</span>`}
-        <button type="button" class="button button-quiet" data-close>Close</button></p></section>`;
+        <button type="button" class="button button-quiet" data-cancel="all" data-id="${b.id}">Cancel every future booking in the series</button>` : ''}
+        <button type="button" class="button button-quiet" data-close>Close</button></p>
+      <div data-amend-host></div><p class="small" data-detailstatus aria-live="polite"></p></section>`;
+  };
+
+  const amendForm = (b) => `<form class="room-form" data-amend="${b.id}"><h3>Change this booking</h3>
+    <div class="row"><label class="field field-narrow"><span>Date</span><input type="date" name="date" value="${b.date}" min="${today}" required></label>
+      <label class="field field-narrow"><span>From</span><select name="start">${timeOptions(slotStarts(), b.start)}</select></label>
+      <label class="field field-narrow"><span>To</span><select name="end">${timeOptions(endTimesAfter('08:00'), b.end)}</select></label></div>
+    <label class="field"><span>Note (optional)</span><input name="note" maxlength="${MAX_NOTE_LENGTH}" value="${esc(b.note)}"></label>
+    <p class="small muted">Moving it takes it out of any repeat. Anyone waiting for this slot is told it is free.</p>
+    <p><button class="button" type="submit">Save</button> <button type="button" class="button button-quiet" data-amend-cancel>Cancel</button> <span class="small" data-amendstatus aria-live="polite"></span></p></form>`;
+
+  /* ---------------------------------------------------------------- the Requests box */
+  const STATUS_TEXT = { 'will-move': 'The booker will move their meeting.', 'cannot-move': 'The booker cannot move it.', released: 'The slot is free.', withdrawn: 'You withdrew this request.', open: 'Waiting for an answer.' };
+  const roomName = (r) => (r === '391' ? 'Room 391' : ROOM_NAME);
+  const inboxHtml = () => {
+    const inc = inbox.incoming, out = inbox.outgoing.filter((r) => r.status !== 'withdrawn' && !(r.status === 'open' && r.date < today)).slice(0, 8);
+    if (!inc.length && !out.length) return '';
+    return `<section class="room-inbox"><h2 class="h2-rule">Requests ${inc.length ? `<span class="count">${inc.length}</span>` : ''}</h2>
+      ${inc.length ? `<p class="small muted">${whipsView ? 'Someone has asked for a booked slot.' : 'Someone has asked for a slot you have booked.'} You can say you will move your meeting, or that you cannot.</p>
+        <ul class="room-requests">${inc.map((r) => `<li data-req="${r.id}"><strong>${esc(roomName(r.room))}</strong>, ${esc(fmtDate(r.date, { weekday: 'short', day: 'numeric', month: 'short' }))} ${esc(range(r.start, r.end))}${whipsView && r.booker ? ` <span class="small muted">(booked by ${esc(r.booker)})</span>` : ''}
+          <br><span class="small">${esc(r.requester)} asks: \\u201C${esc(r.message)}\\u201D</span>
+          <br><input class="small" maxlength="300" placeholder="Reply (optional)" aria-label="Reply to ${esc(r.requester)}" data-reply>
+          <button type="button" class="button button-small" data-respond="will-move">I will move it</button> <button type="button" class="button button-quiet button-small" data-respond="cannot-move">I cannot move it</button></li>`).join('')}</ul>` : ''}
+      ${out.length ? `<p class="small muted">Your requests</p><ul class="room-requests small">${out.map((r) => `<li>${esc(roomName(r.room))}, ${esc(fmtShort(r.date))} ${esc(range(r.start, r.end))}: ${esc(STATUS_TEXT[r.status] || r.status)}${r.response ? ` \\u201C${esc(r.response)}\\u201D` : ''}${r.status === 'open' ? ` <button type="button" class="linkish" data-withdraw="${r.id}">withdraw</button>` : ''}</li>`).join('')}</ul>` : ''}</section>`;
+  };
+  async function loadInbox() {
+    try { inbox = await api('room-requests'); } catch { inbox = { incoming: [], outgoing: [] }; }   // (a tester without access simply has no box)
+    inboxEl.innerHTML = inboxHtml();
+  }
+  const answer = async (body) => {
+    const r = await fetch('/api/libby/room-requests', { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => ({}));
+    if (r.status === 401 && d.login) { location.reload(); return new Promise(() => {}); }
+    return { ok: r.ok, status: r.status, data: d };
   };
 
   const cancelBooking = async (id, scope) => {
     const b = bookings.find((x) => x.id === id);
     const what = { one: 'this booking', following: 'this booking and all later bookings in the series', all: 'every future booking in the series' }[scope];
-    if (!window.confirm(`Cancel ${what}${b ? ` (${b.peer}, ${fmtShort(b.date)}, ${range(b.start, b.end)})` : ''}?`)) return;
+    if (!window.confirm(`Cancel ${what}${b ? ` (${b.peer || 'Booked'}, ${fmtShort(b.date)}, ${range(b.start, b.end)})` : ''}?`)) return;
     status.textContent = 'Cancelling\u2026';
     const result = await post({ action: 'cancel', id, as: who, scope });
     if (!result.ok) { status.textContent = result.data.error || `The server returned ${result.status}.`; return; }
@@ -305,6 +372,7 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
 
   /* ---------------------------------------------------------------- events */
   draw();
+  loadInbox();
   whoSelect.addEventListener('change', () => {
     who = whoSelect.value; store.set(NAME_KEY, who);
     draw();
@@ -322,10 +390,62 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
     const cancel = t.closest('[data-cancel]');
     if (cancel) { cancelBooking(Number(cancel.dataset.id), cancel.dataset.cancel); return; }
     if (t.closest('[data-skip]')) submitBooking(panel.querySelector('[data-book]'), true);
+    const lockBtn = t.closest('[data-lock]');
+    if (lockBtn) { setLock(Number(lockBtn.dataset.id), lockBtn.dataset.lock === '1', lockBtn.dataset.scope || 'one'); return; }
+    const amendOpen = t.closest('[data-amend-open]');
+    if (amendOpen) { const b = bookings.find((x) => x.id === Number(amendOpen.dataset.amendOpen)); panel.querySelector('[data-amend-host]').innerHTML = amendForm(b); return; }
+    if (t.closest('[data-amend-cancel]')) { panel.querySelector('[data-amend-host]').innerHTML = ''; return; }
+    const respond = t.closest('[data-respond]');
+    if (respond) { respondTo(respond); return; }
+    const withdraw = t.closest('[data-withdraw]');
+    if (withdraw) { withdrawRequest(Number(withdraw.dataset.withdraw)); }
   });
+  const setLock = async (id, locked, scope) => {
+    const result = await post({ action: 'lock', id, locked, scope });
+    const out = panel.querySelector('[data-detailstatus]') || status;
+    if (!result.ok) { out.textContent = result.data.error || `The server returned ${result.status}.`; return; }
+    status.textContent = locked ? 'Set in stone: nobody can ask for it now.' : 'Freed: people can ask for it again.';
+    await reload(); draw(); showDetail(id);
+  };
+  const respondTo = async (btn) => {
+    const li = btn.closest('[data-req]');
+    const result = await answer({ action: 'respond', id: Number(li.dataset.req), response: btn.dataset.respond, reply: li.querySelector('[data-reply]').value });
+    if (!result.ok) { status.textContent = result.data.error || `The server returned ${result.status}.`; return; }
+    status.textContent = btn.dataset.respond === 'will-move' ? 'Thank you: the person who asked will see that you will move it. Remember to change or cancel your booking.' : 'Thank you: the person who asked will see that you cannot move it.';
+    await loadInbox();
+  };
+  const withdrawRequest = async (id) => {
+    const result = await answer({ action: 'withdraw', id });
+    if (!result.ok) { status.textContent = result.data.error || `The server returned ${result.status}.`; return; }
+    status.textContent = 'Your request was withdrawn.';
+    await reload(); draw(); if (openDetail) showDetail(openDetail);
+  };
   root.addEventListener('change', (e) => { if (e.target.closest('[data-book]')) updateForm(); });
   root.addEventListener('input', (e) => { if (e.target.closest('[data-book]') && e.target.name === 'until') updateForm(); });
-  root.addEventListener('submit', (e) => {
+  root.addEventListener('submit', async (e) => {
+    const ask = e.target.closest('[data-ask]');
+    if (ask) {
+      e.preventDefault();
+      const out = ask.querySelector('[data-askstatus]');
+      out.textContent = 'Sending\u2026';
+      const result = await answer({ action: 'request', bookingId: Number(ask.dataset.ask), message: ask.elements.message.value, as: ask.elements.as.value });
+      if (!result.ok) { out.textContent = result.data.error || `The server returned ${result.status}.`; return; }
+      status.textContent = 'Your request was sent. The booker is told, and will answer in the Requests box on this page.';
+      await reload(); draw(); showDetail(Number(ask.dataset.ask));
+      return;
+    }
+    const amend = e.target.closest('[data-amend]');
+    if (amend) {
+      e.preventDefault();
+      const out = amend.querySelector('[data-amendstatus]');
+      out.textContent = 'Saving\u2026';
+      const result = await post({ action: 'amend', id: Number(amend.dataset.amend), date: amend.elements.date.value, start: amend.elements.start.value, end: amend.elements.end.value, note: amend.elements.note.value });
+      if (!result.ok) { out.textContent = result.data.error || `The server returned ${result.status}.`; return; }
+      status.textContent = result.data.moved ? 'Moved. Anyone waiting for the old slot has been told it is free.' : 'Saved.';
+      panel.innerHTML = ''; openDetail = null;
+      await reload(); draw();
+      return;
+    }
     const form = e.target.closest('[data-book]');
     if (!form) return;
     e.preventDefault();
