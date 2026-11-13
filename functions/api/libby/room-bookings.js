@@ -4,7 +4,8 @@
 //   POST /api/room-bookings { action: 'cancel', id, as, scope: 'one' | 'following' | 'all' }
 //   POST /api/room-bookings { action: 'amend', id, date?, start?, end?, note?, locked? }     change one booking (its owner, or the Whips and above)
 //   POST /api/room-bookings { action: 'lock', id, locked, scope: 'one' | 'following' | 'all' } set a booking "in stone" (or free it again)
-// Who booked, and the note, are seen by the Whips and above and by the account that made the booking; everyone else with access sees only that the
+// Who booked, and the note, are seen by the Whips and above, by the account that made the booking, and by the people in a team with that account (see teams.js: view only);
+// everyone else with access sees only that the
 // slot is booked ("peer" and "note" come back empty), and may ask for it (see room-requests.js) unless it is set in stone.
 // Shared codes cannot prove who someone is, so "as" (the name chosen on the page) is only a record: bookings belong to the ACCOUNT that made them
 // (booked_by_email; everyone using one shared code is one account). A booking made before that was recorded can still be cancelled by the name it was made under.
@@ -31,17 +32,32 @@ async function viewerOf(request, env, data) {
   if (data && data.level !== undefined) return { level: data.level, email: data.email || '' };
   try { const who = await identityFromRequest(request, env); return { level: (who && who.level) || '', email: (who && who.email) || '' }; } catch { return { level: '', email: '' }; }
 }
-/** May this viewer see the details of (and change) the booking? The Whips and above, and the account that made it. */
+/** May this viewer change the booking? The Whips and above, and the account that made it. (Teammates can only look.) */
 export const isOwner = (row, viewer) => !!viewer.email && !!row.booked_by_email && row.booked_by_email === viewer.email;
 export const mayManage = (row, viewer) => atLeast(viewer.level, 'whips') || isOwner(row, viewer);
+/** May this viewer see who booked and the note? Whoever may change it, and the people in a team with the account that made it (viewer.team: the emails of the viewer's teammates). */
+export const maySee = (row, viewer) => mayManage(row, viewer) || (!!row.booked_by_email && !!viewer.team && viewer.team.has(row.booked_by_email));
 
+/** The viewer's teammates (everyone in a team with them) and the names of their teams. Never touches their level. */
+async function withTeam(env, viewer) {
+  if (!viewer.email) return { ...viewer, team: new Set(), teams: [] };
+  const mine = await safe(sbSelect(env, 'libby_team_members', `select=team_id&email=eq.${encodeURIComponent(viewer.email)}`), []);
+  if (!mine.length) return { ...viewer, team: new Set(), teams: [] };
+  const ids = [...new Set(mine.map((m) => m.team_id))];
+  const [others, names] = await Promise.all([
+    safe(sbSelect(env, 'libby_team_members', `select=email&team_id=in.(${ids.join(',')})&limit=2000`), []),
+    safe(sbSelect(env, 'libby_teams', `select=name&id=in.(${ids.join(',')})&order=name.asc`), []),
+  ]);
+  return { ...viewer, team: new Set(others.map((o) => o.email).filter((e) => e !== viewer.email)), teams: names.map((n) => n.name) };
+}
 const timesOf = (r) => ({ date: r.start_at.slice(0, 10), start: r.start_at.slice(11, 16), end: r.end_at.slice(11, 16) });
 /** A booking as this viewer may see it: the whole thing for the Whips and the owner, otherwise only that the slot is taken. */
 export const toBooking = (r, viewer = { level: 'admin', email: '' }) => {
   const manage = mayManage(r, viewer);
+  const visible = maySee(r, viewer);
   return {
-    id: r.id, seriesId: manage ? (r.series_id || null) : null, ...timesOf(r), locked: !!r.locked, mine: isOwner(r, viewer), manage,
-    peer: manage ? r.peer : '', note: manage ? (r.note || '') : '',
+    id: r.id, seriesId: visible ? (r.series_id || null) : null, ...timesOf(r), locked: !!r.locked, mine: isOwner(r, viewer), manage, visible, team: visible && !manage,
+    peer: visible ? r.peer : '', note: visible ? (r.note || '') : '',
   };
 };
 const wHeaders = (env, prefer = 'return=minimal') => ({
@@ -52,7 +68,7 @@ const missingTable = (err) => /room_(bookings|series)/.test(String(err.message))
 const fail = (message, status = 400, extra = {}) => json({ error: message, ...extra }, { status });
 
 export async function onRequestGet({ request, env, data }) {
-  const viewer = await viewerOf(request, env, data);
+  const viewer = await withTeam(env, await viewerOf(request, env, data));
   const q = new URL(request.url).searchParams;
   const room = roomOf(q.get('room'));
   const from = isIsoDate(q.get('from')) ? q.get('from') : londonToday();
@@ -75,7 +91,7 @@ export async function onRequestGet({ request, env, data }) {
       const asked = new Set(mine.map((m) => m.booking_id));
       for (const b of shown) if (asked.has(b.id)) b.requested = true;
     }
-    return json({ room, from, to, bookings: shown, series, level: viewer.level });
+    return json({ room, from, to, bookings: shown, series, level: viewer.level, teams: viewer.teams || [] });
   } catch (err) {
     if (missingTable(err)) return fail('The room booking tables have not been created yet: run schema.sql in Supabase.', 503);
     return errorResponse(err);
@@ -113,7 +129,7 @@ async function book(env, body, viewer) {
   const free = [];
   for (const d of dates) {
     const hit = existing.map((r) => toBooking(r, viewer)).find((b) => b.date === d && overlaps(start, end, b.start, b.end));
-    if (hit) clashes.push({ date: d, start: hit.start, end: hit.end, peer: hit.manage ? hit.peer : '' }); else free.push(d);   // who holds it is not for everyone to know
+    if (hit) clashes.push({ date: d, start: hit.start, end: hit.end, peer: hit.visible ? hit.peer : '' }); else free.push(d);   // who holds it is not for everyone to know
   }
   if (clashes.length && !body.skipConflicts) {
     return fail(dates.length === 1 ? `That time is already booked${clashes[0].peer ? ` by ${clashes[0].peer}` : ''}.` : `${clashes.length} of ${dates.length} dates clash with existing bookings.`, 409, { clashes, total: dates.length, free: free.length });
@@ -227,7 +243,7 @@ export async function onRequestPost({ request, env, data }) {
   try { body = await request.json(); } catch { return fail('Send JSON.'); }
   if (!supabaseConfigured(env)) return fail('Supabase settings are missing in Cloudflare.', 503);
   try {
-    const viewer = await viewerOf(request, env, data);
+    const viewer = await withTeam(env, await viewerOf(request, env, data));
     if (body.action === 'book') return await book(env, body, viewer);
     if (body.action === 'cancel') return await cancel(env, body, viewer);
     if (body.action === 'amend') return await amend(env, body, viewer);

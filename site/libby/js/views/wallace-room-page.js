@@ -1,7 +1,7 @@
 // The Wallace Room (#/wallace-room) and Room 391 (#/room-391): the same booking calendar for each room, by week or by month, in 30-minute slots.
 // Everyone signed in can book the room (a booking can repeat). The Whips and above see who booked and why; everyone else sees only "Booked" on other people's
 // bookings (and their own in full), and can ask for a slot with a message: the booker is told in the "Requests" box on this page and answers there.
-// A booking can be set in stone: nobody can then ask for it, but the booker and the Whips can still change it.
+// People in a team with the booker (set up by Staff on the Teams page) also see it in full, but can only look. A booking can be set in stone: nobody can then ask for it, but the booker and the Whips can still change it.
 // The rules (opening hours, limits, how a repeat becomes dates) are in public/js/wallace-rules.js, shared with the server.
 import { api } from '../api.js';
 import { esc, fmtDate, fmtShort, todayIso, loading, errorBox, pageHeader } from '../ui.js';
@@ -81,6 +81,7 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
         <button type="button" class="button" data-new>Book the room</button>
       </div>
       <p class="small" data-status aria-live="polite"></p>
+      <p class="small muted" data-teamnote hidden></p>
       <div id="room-panel" aria-live="polite"></div>
       <div id="room-cal">${loading('Loading the bookings')}</div>
       <p class="small muted">Times are in 30-minute slots, ${esc(toTime(OPEN_MINUTES))} to 21:00. A booking can be changed or cancelled by the account that made it, or by the Whips and above.</p>
@@ -97,6 +98,8 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
     [data, peers] = await Promise.all([api(`room-bookings?room=${room}&from=${from}&to=${to}`), loadPeers().catch(() => [])]);
   } catch (err) { cal.innerHTML = errorBox(err); return; }
   if (!root.isConnected) return;
+  const teamNote = root.querySelector('[data-teamnote]');
+  if ((data.teams || []).length) { teamNote.hidden = false; teamNote.textContent = `You can see in full the bookings made by people in your team${data.teams.length === 1 ? '' : 's'} (${data.teams.join(', ')}); you cannot change them.`; }
   let bookings = data.bookings || [];
   let series = data.series || {};
   const whipsView = hasLevel('whips');   // who booked, and the notes, are for the Whips and above (the server sends nobody else those)
@@ -124,7 +127,7 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
   };
 
   /** What a booking is called in hover text: the Whips and the owner get the name and note, everyone else just that it is booked. */
-  const label = (b) => (b.manage ? `${b.peer}, ${range(b.start, b.end)}${b.note ? `, ${b.note}` : ''}${b.locked ? ' (set in stone)' : ''}` : `Booked, ${range(b.start, b.end)}${b.locked ? ' (fixed: cannot be requested)' : ' (click to ask for it)'}`);
+  const label = (b) => (b.visible ? `${b.peer}, ${range(b.start, b.end)}${b.note ? `, ${b.note}` : ''}${b.locked ? ' (set in stone)' : ''}${b.team ? ' (your team)' : ''}` : `Booked, ${range(b.start, b.end)}${b.locked ? ' (fixed: cannot be requested)' : ' (click to ask for it)'}`);
 
   /* ---------------------------------------------------------------- week view */
   const weekHtml = () => {
@@ -142,8 +145,8 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
       const r2 = Math.min(slots.length, (toMinutes(b.end) - OPEN_MINUTES) / SLOT_MINUTES);
       for (let r = r1; r < r2; r++) taken.add(`${b.date}|${r}`);
       const text = label(b);
-      blocks.push(`<button type="button" class="room-booking ${b.mine ? 'room-mine' : ''}" data-booking="${b.id}" style="grid-column:${col + 2};grid-row:${r1 + 2} / ${r2 + 2};--h:${b.manage ? hue(b.peer) : 210}" title="${esc(text)}" aria-label="${esc(text)}. Show details.">
-        <span class="room-b-time">${esc(range(b.start, b.end))}</span><span class="room-b-name">${esc(b.manage ? b.peer : b.requested ? 'Booked (you asked)' : 'Booked')}${b.locked ? ' \u00B7 fixed' : ''}</span>${b.manage && b.note ? `<span class="room-b-note">${esc(b.note)}</span>` : ''}</button>`);
+      blocks.push(`<button type="button" class="room-booking ${b.mine ? 'room-mine' : ''}" data-booking="${b.id}" style="grid-column:${col + 2};grid-row:${r1 + 2} / ${r2 + 2};--h:${b.visible ? hue(b.peer) : 210}" title="${esc(text)}" aria-label="${esc(text)}. Show details.">
+        <span class="room-b-time">${esc(range(b.start, b.end))}</span><span class="room-b-name">${esc(b.visible ? b.peer : b.requested ? 'Booked (you asked)' : 'Booked')}${b.locked ? ' \u00B7 fixed' : ''}</span>${b.visible && b.note ? `<span class="room-b-note">${esc(b.note)}</span>` : ''}</button>`);
     }
     const head = dates.map((d, i) => `<div class="room-dayhead ${d === today ? 'is-today' : ''}" style="grid-column:${i + 2};grid-row:1">${esc(fmtShort(d))}</div>`).join('');
     const times = slots.map((t, r) => `<div class="room-time" style="grid-column:1;grid-row:${r + 2}">${t.endsWith(':00') ? esc(t) : ''}</div>`).join('');
@@ -173,7 +176,7 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
       const shown = list.slice(0, 4);
       cells.push(`<div class="room-month-cell ${d.slice(0, 7) !== first.slice(0, 7) ? 'is-other' : ''} ${d === today ? 'is-today' : ''}">
         <a class="room-month-date" href="${link('week', d)}" title="Show this week by the half hour">${esc(fmtShort(d))}</a>
-        ${shown.map((b) => `<button type="button" class="room-line ${b.mine ? 'room-mine' : ''}" data-booking="${b.id}" style="--h:${b.manage ? hue(b.peer) : 210}" title="${esc(label(b))}">${esc(b.start)} ${esc(b.manage ? b.peer : 'Booked')}${b.locked ? ' \u00B7 fixed' : ''}</button>`).join('')}
+        ${shown.map((b) => `<button type="button" class="room-line ${b.mine ? 'room-mine' : ''}" data-booking="${b.id}" style="--h:${b.visible ? hue(b.peer) : 210}" title="${esc(label(b))}">${esc(b.start)} ${esc(b.visible ? b.peer : 'Booked')}${b.locked ? ' \u00B7 fixed' : ''}</button>`).join('')}
         ${list.length > shown.length ? `<a class="small" href="${link('week', d)}">+${list.length - shown.length} more</a>` : ''}</div>`);
     }
     return `<div class="room-month" style="--cols:${cols}">${WEEKDAYS.slice(0, cols).map((w) => `<div class="room-month-head">${w}</div>`).join('')}${cells.join('')}</div>`;
@@ -292,10 +295,11 @@ export async function renderWallaceRoom(el, { room = 'wallace' } = {}, query) {
     const when = `${esc(fmtDate(b.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}, ${esc(range(b.start, b.end))}`;
     const past = b.date < today;
     if (!b.manage) {
-      // Someone else's booking: only that it is booked. It can be asked for (with a message) unless it is set in stone.
+      // Someone else's booking: only that it is booked (unless they are in a team with you, when you see it in full but cannot change it).
+      // It can be asked for (with a message) unless it is set in stone.
       const mineReq = inbox.outgoing.find((r) => r.status === 'open' && r.date === b.date && r.start === b.start);
-      panel.innerHTML = `<section class="room-detail"><h2 class="h2-rule">Booked</h2>
-        <p>${when}</p>
+      panel.innerHTML = `<section class="room-detail"><h2 class="h2-rule">${b.visible ? 'Booking' : 'Booked'}</h2>
+        ${b.visible ? `<p><strong>${esc(b.peer)}</strong> <span class="small muted">(made by someone in your team: you can look but not change it)</span><br>${when}</p>${b.note ? `<p>${esc(b.note)}</p>` : ''}` : `<p>${when}</p>`}
         ${b.locked ? '<p class="small">This booking is fixed, so it cannot be requested.</p>'
           : past ? '<p class="small muted">This booking has passed.</p>'
           : (b.requested || mineReq) ? `<p class="small">You have asked for this slot. The booker will answer in the Requests box above.${mineReq ? ` <button type="button" class="linkish" data-withdraw="${mineReq.id}">Withdraw my request</button>` : ''}</p>`
