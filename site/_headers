@@ -19,6 +19,8 @@
   Cache-Control: no-cache
 /lucien/*
   Cache-Control: no-cache
+/grids/*
+  Cache-Control: no-cache
 /shared/*.js
   Cache-Control: no-cache
 /shared/*.css

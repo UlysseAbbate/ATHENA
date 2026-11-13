@@ -39,6 +39,8 @@ jobs:
         run: node scripts/libby/check-grid-doc.mjs
       - name: Check who may see which room bookings (and teams)
         run: node scripts/libby/check-rooms.mjs
+      - name: Check the public grids page's key and routes
+        run: node scripts/libby/check-public-grids.mjs
       - name: Check how Lords business rows become a day
         run: node scripts/libby/check-business.mjs
       - name: Check the shortened place in the Bill
