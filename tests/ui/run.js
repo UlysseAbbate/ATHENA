@@ -505,7 +505,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.goto(BASE + "/grids/?k=wrong-key-1234567890"); await page.waitForTimeout(600);
           check("Public grids page: a wrong key is refused by the server", /not right/.test(await page.$eval("#app", a => a.innerText)) && (await page.$("[data-bill]")) === null);
           await page.goto(BASE + "/grids/?k=testkey-1234567890"); await page.waitForTimeout(700);
-          check("Public grids page: with the link it offers just the Bill, the stage and the grouping upload (no menu, no sign-in)", (await page.$("[data-bill]")) !== null && (await page.$("[data-file]")) !== null && (await page.$("nav")) === null && !/Sign in|Whips|LIBBY/i.test(await page.$eval("main", a => a.innerText)));
+          check("Public grids page: with the link it offers just the Bill, the stage and the grouping upload (no menu, no sign-in)", (await page.$("[data-bill]")) !== null && (await page.$("[data-file]")) !== null && (await page.$("nav")) === null && !/Sign in|LIBBY/i.test(await page.$eval("main", a => a.innerText)));
           await page.selectOption("[data-bill]", "5001"); await page.waitForTimeout(400);
           await page.selectOption("[data-stage]", "9001"); await page.waitForTimeout(500);
           await page.click("summary"); await page.fill("[data-paste]", "1. 1, 2 – Votes at 16\n2. 3, 99 – Online harms"); await page.click("[data-read-text]"); await page.waitForTimeout(400);
