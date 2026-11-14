@@ -18,7 +18,7 @@ import sys
 import threading
 import time
 import urllib.robotparser
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from urllib.parse import urljoin, urlparse
@@ -498,7 +498,7 @@ def embedded_json_items(page_url: str, html: str, limit: int = 30):
     host = urlparse(page_url).netloc.removeprefix("www.")
     here = urlparse(page_url).path.rstrip("/")
     rows, seen = [], set()
-    for title, url, date in found:
+    for title, url, found_date in found:
         title = re.sub(r"\s+", " ", BeautifulSoup(title, "lxml").get_text(" ", strip=True))
         if len(title) < 25 or len(title.split()) < 4 or not url or url.startswith(("mailto:", "tel:", "#", "javascript:")):
             continue
@@ -509,7 +509,7 @@ def embedded_json_items(page_url: str, html: str, limit: int = 30):
         if NOT_PUBLICATION.search(u.path) or href in seen:
             continue
         seen.add(href)
-        rows.append((title, href, parse_date(date) if date else None))
+        rows.append((title, href, parse_date(found_date) if found_date else None))
         if len(rows) >= limit:
             break
     return rows
@@ -1295,7 +1295,32 @@ def sync_state() -> None:
             print("no stored feed yet: starting fresh")
 
 
-def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None) -> bool:
+def london_data_rows(body: dict, today: date | None = None) -> list[dict]:
+    """The GLA / London data drops in the Stats calendar, for Lovelace's Daily Plan (London Politics > GLA / London Data): what the London Datastore has
+    published or is expected to publish, and London items added by hand. Not the national releases, the police data or the meeting calendar.
+    One row per drop and date: { key, date, title, url, starts }."""
+    today = today or NOW.astimezone(LONDON).date()
+    lo, hi = today - timedelta(days=14), today + timedelta(days=90)
+    out = []
+    for r in body.get("releases", []):
+        if r.get("tier") != "london" or r.get("source_system") not in ("london_datastore", "manual") or r.get("kind") not in ("published", "upcoming") or r.get("cancelled"):
+            continue
+        try:
+            when = date.fromisoformat(str(r.get("date"))[:10])
+        except ValueError:
+            continue
+        if not lo <= when <= hi:
+            continue
+        note = " (published)" if r["kind"] == "published" else (" (date not yet confirmed)" if r.get("date_status") == "estimated" else "")
+        starts = None
+        if r.get("date_precision") == "time" and r.get("datetime"):
+            starts = str(r["datetime"])[11:16] or None
+        out.append({"key": f"statscal:{r.get('id')}:{when.isoformat()}", "date": when.isoformat(), "title": f"{r.get('publisher', 'London')}: {r.get('title', '')}{note}"[:400],
+                    "url": r.get("url") or "", "starts": starts})
+    return out
+
+
+def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None, london_data: list[dict] | None = None) -> bool:
     """Push feed/polls/health (and any new Sarah Olney coverage and social posts) through the ingest function."""
     if not ingest_configured():
         print("INGEST_URL / INGEST_TOKEN not set: data written locally only, not uploaded")
@@ -1316,6 +1341,12 @@ def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None =
         except Exception as e:  # noqa: BLE001
             ok = False
             print(f"coverage upload failed: {e}", file=sys.stderr)
+    if london_data:
+        try:
+            print(f"london: {_ingest({'action': 'london_data', 'rows': london_data}).get('added', 0)} new GLA / London data drops added to Lovelace's Daily Plan")
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            print(f"london data upload failed: {e}", file=sys.stderr)
     if social_posts:
         try:
             print(f"social: {_ingest({'action': 'social_posts', 'rows': social_posts}).get('added', 0)} new posts added to the Social Media Channels Tracker")
@@ -1377,6 +1408,7 @@ def main() -> int:
     items: list[dict] = []
     coverage: list[dict] = []
     social_posts: list[dict] = []
+    london_data: list[dict] = []
     if run("committees"):
         items += collect_committees()
     if run("thinktanks"):
@@ -1401,6 +1433,7 @@ def main() -> int:
             prev = None
         body, got_health = statscal.run(prev)
         write("statscal", body)
+        london_data = london_data_rows(body)
         health.extend(got_health)
         print(f"stats calendar: {len(body['releases'])} releases, {sum(s['ok'] for s in body['sources'])}/{len(body['sources'])} sources ok")
     feed = merge(items)
@@ -1415,7 +1448,7 @@ def main() -> int:
     write("health", {"updated": NOW.isoformat(), "sources": health})
     ok = sum(h["ok"] for h in health)
     print(f"{len(feed)} items stored; {ok}/{len(health)} sources returned data")
-    return 0 if upload(coverage, social_posts) else 1
+    return 0 if upload(coverage, social_posts, london_data) else 1
 
 
 if __name__ == "__main__":

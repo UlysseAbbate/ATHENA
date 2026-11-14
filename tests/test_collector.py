@@ -1,5 +1,6 @@
 """Offline tests for the collector: no network (fetches are stubbed). Run: python -m pytest -q"""
 import json
+from datetime import date
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -361,3 +362,20 @@ def test_update_is_due_since_the_last_6am_or_6pm():
     # nothing stored, or an unreadable time: due
     assert U.update_is_due(None, utc(2026, 11, 9, 14, 6)) is True
     assert U.update_is_due("not a date", utc(2026, 11, 9, 14, 6)) is True
+
+
+# ------------------------------------------------------------------ the GLA / London data drops that go to Lovelace's Daily Plan
+def test_london_data_rows_take_only_london_data_drops():
+    today = date(2026, 11, 16)
+    body = {"releases": [
+        {"id": "lds:1", "tier": "london", "source_system": "london_datastore", "kind": "published", "date": "2026-11-14", "publisher": "GLA", "title": "Housing data", "url": "https://data.london.gov.uk/dataset/h"},
+        {"id": "est:lds:1", "tier": "london", "source_system": "london_datastore", "kind": "upcoming", "date": "2026-12-01", "date_status": "estimated", "publisher": "GLA", "title": "Housing data (next update, estimated)", "url": "https://x"},
+        {"id": "m:1", "tier": "london", "source_system": "manual", "kind": "upcoming", "date": "2026-11-20", "date_precision": "time", "datetime": "2026-11-20T09:30:00+00:00", "publisher": "GLA", "title": "Budget data", "url": ""},
+        {"id": "ons:1", "tier": "national", "source_system": "ons_api", "kind": "upcoming", "date": "2026-11-20", "publisher": "ONS", "title": "National"},
+        {"id": "pol", "tier": "london", "source_system": "police_uk", "kind": "upcoming", "date": "2026-11-20", "publisher": "police", "title": "Crime"},
+        {"id": "mtg", "tier": "london", "source_system": "gla_meetings", "kind": "upcoming", "date": "2026-11-20", "publisher": "GLA", "title": "Assembly meeting"},
+        {"id": "old", "tier": "london", "source_system": "london_datastore", "kind": "published", "date": "2026-09-01", "publisher": "GLA", "title": "Too old"},
+        {"id": "gone", "tier": "london", "source_system": "manual", "kind": "upcoming", "cancelled": True, "date": "2026-11-21", "publisher": "GLA", "title": "Cancelled"}]}
+    rows = U.london_data_rows(body, today)
+    assert [r["key"] for r in rows] == ["statscal:lds:1:2026-11-14", "statscal:est:lds:1:2026-12-01", "statscal:m:1:2026-11-20"]
+    assert rows[0]["title"] == "GLA: Housing data (published)" and "date not yet confirmed" in rows[1]["title"] and rows[2]["starts"] == "09:30"

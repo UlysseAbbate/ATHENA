@@ -86,3 +86,7 @@ td.perm{white-space:nowrap}td.perm label{display:inline-flex;align-items:center;
 .acct h3{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 4px}
 .seg[data-tr]{flex-wrap:wrap}
 @media (max-width:700px){.cal-cell{min-height:4.2rem}.cal-ev:nth-of-type(n+3){display:none}}
+.cal-ev.a-london{border-left-color:var(--accent);border-left-style:dotted}
+.helpform{display:grid;gap:6px;max-width:34rem;margin:10px 0}
+.helpform label{font:600 .85rem var(--head);margin-top:6px}
+.helpform label.chk{display:flex;gap:8px;align-items:center;font-weight:400;font-family:var(--body)}
