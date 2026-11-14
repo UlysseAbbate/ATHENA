@@ -44,14 +44,14 @@ const PEOPLE = { lucien: [{ user_id: "p1", email: "reader@test.invalid", full_na
           { user_id: "p3", email: "bm@test.invalid", full_name: "", level: "staff", is_manager: true, grant_ceiling: 3, expires_at: null, last_sign_in_at: null }],
   lovelace: [{ user_id: "p4", email: "core@test.invalid", full_name: "", level: "core_team", is_manager: true, grant_ceiling: null, expires_at: null, last_sign_in_at: null }] };
 const PERMS = {
-  core_team: ["dayplan_full", "dayplan_volunteer", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit"],
-  member: ["dayplan_volunteer", "volunteers_add", "stakeholders_add", "coverage"],
+  core_team: ["dayplan_full", "dayplan_volunteer", "help_offer", "help_inbox", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit"],
+  member: ["dayplan_volunteer", "help_offer", "volunteers_add", "stakeholders_add", "coverage"],
 };
 const ALLRES = [...PERMS.core_team, "ulysse"];
 const ts = new Date(Date.now() - 3 * 36e5).toISOString();
 const TABLES = {
   profiles: Object.values(USERS).map(u => ({ id: u.id, email: u.email, full_name: u.email.split("@")[0], role: u.role, access_until: u.role === "member" ? plus(20) : null, created_at: ts })),
-  role_permissions: ["core_team", "member"].flatMap(r => ALLRES.map(res => ({ role: r, resource: res, can_read: PERMS[r].includes(res) || (r === "member" && res === "coverage"), can_write: PERMS[r].includes(res) && r === "core_team" || ["volunteers_add", "stakeholders_add"].includes(res) }))),
+  role_permissions: ["core_team", "member"].flatMap(r => ALLRES.map(res => ({ role: r, resource: res, can_read: PERMS[r].includes(res) || (r === "member" && res === "coverage"), can_write: PERMS[r].includes(res) && r === "core_team" || ["volunteers_add", "stakeholders_add", "help_offer"].includes(res) }))),
   day_plan_entries: [
     { id: "d1", plan_date: iso(today), area: "mayor", section: "field", title: "Launch housing pledge", starts: "10:00", place: "Richmond Park", link: "https://example.org/h", detail: "Bring leaflets", created_at: ts, updated_at: ts },
     { id: "d2", plan_date: iso(today), area: "internal", section: "membership", title: "Members' call", starts: "19:00", created_at: ts, updated_at: ts },
@@ -67,6 +67,7 @@ const TABLES = {
     { id: "m4", covered_on: plus(-1), outlet: "Hansard", headline: "Heathrow expansion debated in the Commons", url: "https://example.org/d", source: "manual", kind: "overall", topic: "parliament", updated_at: ts }],
   contacts: [{ id: "vo1", kind: "volunteer", name: "Alex Volunteer", organisation: "Lib Dems", sector: "Lib Dems", email: "alex@test.invalid", phone: "0700", owner: "Louis", notes: "Role: Canvassing", created_by: USERS.member.id, created_at: ts, updated_at: ts },
     { id: "s1", kind: "stakeholder", name: "Jo Bloggs", organisation: "Shelter", sector: "Campaign", email: null, phone: null, owner: "Sarah", notes: null, created_by: USERS.core.id, created_at: ts, updated_at: ts }],
+  campaign_suggestions: [{ id: "cs1", name: "Dana Donor", contact: "dana@test.invalid", ok_to_contact: true, kind: "venue", details: "A hall in Kingston", status: "new", notes: null, created_at: ts, updated_at: ts }],
   budget_items: [{ id: "b1", item: "Leaflets", amount: 1200, category: "Print", updated_at: ts }, { id: "b2", item: "Hall hire", amount: 300, category: "Events", updated_at: ts }],
   policies: [{ id: "po1", policy: "Rent controls", theme: "Housing", updated_at: ts }],
   social_accounts: ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"].map((p, i) => ({ id: "sa" + i, organisation: "Sarah Olney", platform: p, handle: i ? null : "@sarah", url: null, updated_at: ts })),
@@ -827,7 +828,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       {
         const ovd = await page.$$eval(".ovday h3", hs => hs.map(h => h.textContent.trim()));
         const ovt = await page.$eval("#main", m => m.innerText);
-        check(`${who}: the overview is a list of the days ahead that have something planned (a day with nothing is left out)`, ovd.length === 2 && /^Today/.test(ovd[0]) && !/Nothing/.test(await page.$$eval(".ovday", ds => ds.map(d => d.innerText).join(" "))), ovd.join(" | "));
+        check(`${who}: the overview is a list of the days that have something planned (a day with nothing is left out; volunteers see today only)`, ovd.length === (who === "member" ? 1 : 2) && /^Today/.test(ovd[0]) && !/Nothing/.test(await page.$$eval(".ovday", ds => ds.map(d => d.innerText).join(" "))), ovd.join(" | "));
         if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `lovelace-overview-${scheme}.png`) }); await page.emulateMedia({ colorScheme: "light" }); }
         check(`${who}: the overview lists each day's activities under their area`, /Launch housing pledge/.test(ovt) && /Mayor's Activity/i.test(ovt) && /GLA Activity/i.test(ovt) && /Members' call/.test(ovt), ovt.slice(0, 160).replace(/\n/g, " "));
         check(`${who}: ${who === "member" ? "a volunteer does not see donor events or Governance and Legal" : "the overview includes Internal Campaign and Governance and Legal"}`, who === "member" ? !/Donor dinner|File the return|Governance and Legal/i.test(ovt) : /Donor dinner/.test(ovt) && /File the return/.test(ovt));
@@ -846,8 +847,27 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.click('#main [data-fl="1"]');
       const vrows = await page.$$eval("#main tbody tr", rs => rs.map(r => r.innerText));
       check(`${who}: volunteers are filed under Lib Dems`, vrows.length === 1 && /Alex Volunteer/.test(vrows[0]) && (vrows[0].match(/Lib Dems/g) || []).length === 2, vrows.join("|"));
+      // Help the Campaign: a suggestion / offer form for everyone; the campaign team reads what comes in on the People page
+      check(`${who}: Help the Campaign is on the menu`, tabs.includes("Help the Campaign"), tabs.join("|"));
+      if (who === "member") check(`${who}: a volunteer's People page has no suggestions list`, (await page.$("[data-pt]")) === null);
+      else {
+        check(`${who}: the People page has a Suggestions & offers list for the campaign team`, (await page.$$eval("[data-pt] button", bs => bs.map(b => b.textContent.trim()))).join("|") === "Volunteers & stakeholders|Suggestions & offers");
+        await page.click('[data-p="suggestions"]'); await page.waitForTimeout(400);
+        const sg = await page.$eval("#pp", e => e.innerText.replace(/\s+/g, " "));
+        check(`${who}: a suggestion shows who sent it, how to contact them and what they offer`, /Dana Donor/.test(sg) && /dana@test.invalid/.test(sg) && /I know of a venue/.test(sg) && /A hall in Kingston/.test(sg), sg.slice(0, 200));
+        check(`${who}: the campaign team can edit and delete a suggestion`, (await page.$("#pp [data-edit]")) !== null);
+        await page.click('[data-p="people"]'); await page.waitForTimeout(300);
+      }
+      await page.click('#tabs button:text-is("Help the Campaign")'); await page.waitForTimeout(400);
+      const hk = await page.$$eval("#h_kind option", os => os.map(o => o.textContent));
+      check(`${who}: the form asks for a name, a contact (with happy to be contacted), what is offered, and further details`, (await page.$("#h_name")) !== null && (await page.$("#h_contact")) !== null && (await page.$('input[name="ok"]')) !== null && (await page.$("#h_details")) !== null
+        && hk.slice(1).join("|") === "I know of a venue(s) to host events/set pieces|I know of a contact(s) at an organisation|I would like to make a policy suggestion|I can support/have expertise in digital communications (filming)|I can support/have expertise in digital communications (editing)|I can support events and set pieces", hk.join("|"));
+      log.length = 0;
+      await page.fill("#h_name", "Pat Helper"); await page.fill("#h_contact", "pat@test.invalid"); await page.check('input[name="ok"]'); await page.selectOption("#h_kind", "events"); await page.fill("#h_details", "Happy to steward");
+      await page.click("#helpf button[type=submit]"); await page.waitForTimeout(500);
+      check(`${who}: sending the form files the suggestion`, log.includes("POST campaign_suggestions") && /Thank you/.test(await page.$eval("#hmsg", e => e.textContent)), log.join(";"));
       await page.click('#tabs button:text-is("Communications")'); await page.waitForTimeout(450);
-      const trk = await page.$$eval("[data-tr] button", bs => bs.map(b => b.textContent.trim()));
+      const trk =await page.$$eval("[data-tr] button", bs => bs.map(b => b.textContent.trim()));
       check(`${who}: Communications has the media trackers${who === "member" ? "" : " (and the tracked accounts)"}`, trk.join("|") === (who === "member" ? "Overall Media Tracker|Olney Media Tracker" : "Overall Media Tracker|Olney Media Tracker|Social Media Channels Tracker|Tracked accounts"), trk.join("|"));
       check(`${who}: the Overall Media Tracker lists wider political news`, /Heathrow expansion debated/.test(await page.$eval("#cm", m => m.innerText)) && /Overall Media Tracker/.test(await page.$eval("#cm h2", h => h.textContent)));
       await page.click('[data-t="olney"]'); await page.waitForTimeout(350);
@@ -865,8 +885,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       {
         // the Volunteer's Zone: a calendar of the same days; a day shows the activities except Governance and Legal, and only Membership Engagement under Internal Campaign
         await page.click('#tabs button:text-is("Volunteer\'s Zone")'); await page.waitForTimeout(450);
-        check(`${who}: the Volunteer's Zone is a month calendar`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)));
-        await page.click(".cal-cell.today"); await page.waitForTimeout(400);
+        check(`${who}: the Volunteer's Zone shows today only, with no calendar to browse`, (await page.$$(".cal-cell")).length === 0 && (await page.$("[data-n]")) === null && /Launch housing pledge/.test(await page.$eval("#main", c => c.innerText)));
         const zt = await page.$eval("#main", m => m.innerText);
         const zh = await page.$$eval("#main .grp .h2-rule", hs => hs.map(h => h.textContent.trim()));
         check(`${who}: a day in the Volunteer's Zone shows Mayor's, GLA and Membership Engagement only, read-only`, zh.join("|") === "Mayor's Activity|Internal Campaign" && /Launch housing pledge/.test(zt) && /Members' call/.test(zt) && !/Donor dinner|File the return|Governance and Legal|Donor Events/.test(zt) && (await page.$("[data-add]")) === null && (await page.$("[data-e]")) === null, zh.join("|"));
@@ -879,10 +898,10 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.click(".cal-cell.today"); await page.waitForTimeout(450);
         const plan = await page.$eval("#main", m => m.innerText);
         const gh = await page.$$eval("#main .grp .h2-rule", hs => hs.map(h => h.textContent.trim()));
-        check(`${who}: clicking a day gives its daily plan: Mayor's Activity, GLA Activity, Internal Campaign, Governance and Legal`, gh.slice(0, 4).join("|") === "Mayor's Activity|GLA Activity|Internal Campaign|Governance and Legal", gh.join("|"));
+        check(`${who}: clicking a day gives its daily plan: Mayor's Activity, GLA Activity, Internal Campaign, Governance and Legal`, gh.slice(0, 5).join("|") === "Mayor's Activity|GLA Activity|Internal Campaign|Governance and Legal|London Politics", gh.join("|"));
         const secs = await page.$$eval("#main .grp", gs => gs.map(g => [...g.querySelectorAll("h3")].map(h => h.textContent.trim()).join(",")));
-        check(`${who}: each area has its sections`, secs[0] === "Field Campaign,Media,Membership Engagement,Other Activities" && secs[1] === secs[0] && secs[2] === "Membership Engagement,Donor Events,Staff Activities,Other" && secs[3] === "", secs.join(" | "));
-        check(`${who}: an entry shows its time, place, link and notes, and a section can take more entries`, /10:00/.test(plan) && /Richmond Park/.test(plan) && /Bring leaflets/.test(plan) && (await page.$('[data-add="mayor|field"]')) !== null && (await page.$$("[data-add]")).length === 13);
+        check(`${who}: each area has its sections`, secs[0] === "Field Campaign,Media,Membership Engagement,Other Activities" && secs[1] === secs[0] && secs[2] === "Membership Engagement,Donor Events,Staff Activities,Other" && secs[3] === "" && secs[4] === "GLA / London Data,Political Events,London Events", secs.join(" | "));
+        check(`${who}: an entry shows its time, place, link and notes, and a section can take more entries`, /10:00/.test(plan) && /Richmond Park/.test(plan) && /Bring leaflets/.test(plan) && (await page.$('[data-add="mayor|field"]')) !== null && (await page.$$("[data-add]")).length === 16);
         check(`${who}: the day shows a dated visit's details`, /contact Pat 0701/.test(plan) && /taken by Louis/.test(plan), plan.slice(0, 200).replace(/\n/g, " "));
         await page.click("[data-back]"); await page.waitForTimeout(300);
       }
@@ -943,6 +962,17 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: LUCIEN permission editable only by admin`, ulysseLocked === (who !== "admin"));
         const selfLocked = await page.$$eval(`[data-u="${USERS[who].id}"]`, e => e.length === 0);
         check(`${who}: cannot edit own role`, selfLocked);
+        // a drop-down the person is working in stays open when the page redraws after a change
+        await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
+        await page.click('#tabs button:text-is("Overview")'); await page.waitForTimeout(300);
+        await page.click('#shell-foot [data-foot="team"]'); await page.waitForTimeout(500);
+        check(`${who}: the sections of the team page start closed`, (await page.$$("details.dd[open]")).length === 0);
+        await page.click('details.dd > summary:has-text("What each role can do")'); await page.waitForTimeout(200);
+        await page.click('[data-p="member|coverage|write"]'); await page.waitForTimeout(700);
+        const stillOpen = await page.$$eval("details.dd[open] > summary", ss => ss.map(x => x.textContent.trim()));
+        check(`${who}: ticking a permission redraws the page but the section stays open`, stillOpen.length === 1 && /What each role can do/.test(stillOpen[0]), stillOpen.join("|"));
+        check(`${who}: the core team's rights to edit and delete are locked on the grid`, await page.$eval('[data-p="core_team|budget|write"]', e => e.disabled));
+        await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = true; });
       }
 
       await page.goto(BASE + "/lucien/");

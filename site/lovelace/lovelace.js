@@ -8,7 +8,8 @@ const main = $("#main");
 const ROLES = { core_team: "Core team", executive: "Executive", local_party_chair: "Local party chair",
   candidate: "Candidate", support_team: "Support team", member: "Member" };
 const RESOURCES = {
-  dayplan_full: "Daily Plan: everything, including Governance and Legal (read and change)", dayplan_volunteer: "Volunteer's Zone: the day's activities, without Governance and Legal",
+  dayplan_full: "Daily Plan: every day and every area, including Governance and Legal and London Politics (read and change)", dayplan_volunteer: "Volunteer's Zone: today's activities, without Governance and Legal",
+  help_offer: "Help the Campaign: send a suggestion or an offer to help", help_inbox: "Suggestions and offers list (People page)",
   visits: "Local party visit details and contacts (shown under the calendar)", budget: "Budget & governance",
   volunteers_all: "Full volunteer list (People page)", volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies (Communications)",
   social: "Social Media Channels Tracker and tracked accounts (Communications)", coverage: "Media trackers (Communications): news coverage",
@@ -69,13 +70,14 @@ const TABS = [
   ["today", "Overview", () => can("dayplan_full", "read") || can("dayplan_volunteer", "read"), renderToday],
   ["plan", "Calendar", () => can("dayplan_full", "read"), renderPlan],
   ["zone", "Volunteer's Zone", () => can("dayplan_volunteer", "read"), renderZone],
+  ["help", "Help the Campaign", () => can("help_offer", "write") || can("help_inbox", "read"), renderHelp],
   ["budget", "Budget & governance", () => can("budget", "read"), renderBudget],
   ["people", "Volunteers & stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
   ["comms", "Communications", () => can("coverage", "read") || can("social", "read") || can("policies", "read"), renderComms],
   ["team", "Team & access", () => S.admin, renderTeam, true]   // the administrator's alone: its button is in the footer, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
-const ALIAS = { visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people" };
+const ALIAS = { visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people", suggestions: "people", offers: "help" };
 function buildTabs() {
   const vis = TABS.filter(t => t[3] && t[2]());
   const nav = $("#tabs"); nav.hidden = false;
@@ -226,9 +228,11 @@ const AREAS = [
   { id: "mayor", name: "Mayor's Activity", sections: [["field", "Field Campaign"], ["media", "Media"], ["membership", "Membership Engagement"], ["other", "Other Activities"]] },
   { id: "gla", name: "GLA Activity", sections: [["field", "Field Campaign"], ["media", "Media"], ["membership", "Membership Engagement"], ["other", "Other Activities"]] },
   { id: "internal", name: "Internal Campaign", sections: [["membership", "Membership Engagement"], ["donor", "Donor Events"], ["staff", "Staff Activities"], ["other", "Other"]] },
-  { id: "governance", name: "Governance and Legal", sections: [["governance", "Governance and Legal"]] }
+  { id: "governance", name: "Governance and Legal", sections: [["governance", "Governance and Legal"]] },
+  // GLA / London Data fills itself from the Stats calendar's collector (the GLA and London data drops only); the other two are typed in
+  { id: "london", name: "London Politics", sections: [["data", "GLA / London Data"], ["political", "Political Events"], ["events", "London Events"]] }
 ];
-// What volunteers see (the database enforces the same rule): Mayor's and GLA Activity, and Internal Campaign > Membership Engagement; never Governance and Legal.
+// What volunteers see, and only for today (the database enforces the same rule): Mayor's and GLA Activity, and Internal Campaign > Membership Engagement; never Governance and Legal or London Politics.
 const volunteerSees = e => e.area === "mayor" || e.area === "gla" || (e.area === "internal" && e.section === "membership");
 const sectionName = (area, sec) => (AREAS.find(a => a.id === area)?.sections.find(s => s[0] === sec) || [, sec])[1];
 const areaName = id => AREAS.find(a => a.id === id)?.name || id;
@@ -262,14 +266,13 @@ function dayHtml(list, { editable, areas = AREAS }) {
 }
 
 const PLANNERS = {
-  plan: { state: { mode: "month", date: iso(new Date()) }, editable: () => can("dayplan_full", "write"), filter: null, areas: AREAS, visits: true },
-  zone: { state: { mode: "month", date: iso(new Date()) }, editable: () => false, filter: volunteerSees, areas: AREAS.filter(a => a.id !== "governance"), visits: false }
+  plan: { state: { mode: "month", date: iso(new Date()) }, editable: () => can("dayplan_full", "write"), filter: null, areas: AREAS, visits: true }
 };
-const AREA_DOT = { mayor: "a-mayor", gla: "a-gla", internal: "a-internal", governance: "a-gov" };
+const AREA_DOT = { mayor: "a-mayor", gla: "a-gla", internal: "a-internal", governance: "a-gov", london: "a-london" };
 
 async function renderPlanner(kind) {
   const P = PLANNERS[kind], st = P.state, editable = P.editable(), today = iso(new Date());
-  const areas = P.areas.map(a => kind === "zone" && a.id === "internal" ? { ...a, sections: a.sections.filter(s => s[0] === "membership") } : a);
+  const areas = P.areas;
   const reload = () => renderPlanner(kind);
   if (st.mode === "month") {
     const first = monthStartOf(st.date), gridStart = mondayOf(first), lastOfMonth = addDays(addMonths(first, 1), -1);
@@ -279,7 +282,7 @@ async function renderPlanner(kind) {
     const byDay = {}; entries.forEach(e => (byDay[e.plan_date] ||= []).push(e));
     main.innerHTML = `<div class="row"><button class="btn" data-n="-1" aria-label="Earlier month">◀</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Later month">▶</button>
       <b class="cal-title">${esc(parseISO(first).toLocaleDateString("en-GB", { month: "long", year: "numeric" }))}</b></div>
-      <p class="muted">${kind === "zone" ? "Click a day to see what is happening: the Mayor's and GLA activity, and the party's membership engagement." : "Click a day to see and edit its plan."}</p>
+      <p class="muted">Click a day to see and edit its plan.</p>
       <div class="cal" role="grid" aria-label="Calendar"><div class="cal-head">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(w => `<div>${w}</div>`).join("")}</div><div class="cal-body">${days.map(d => {
         const list = byDay[d] || [], inMonth = d.slice(0, 7) === first.slice(0, 7);
         return `<button class="cal-cell${inMonth ? "" : " other"}${d === today ? " today" : ""}" data-day="${d}" aria-label="${esc(fmtDay(d))}${list.length ? `, ${list.length} planned` : ""}"><span class="cal-n">${parseISO(d).getDate()}</span>${
@@ -335,7 +338,15 @@ function visitsPanel(reload) {
   $("#vreq").ontoggle = e => { if (e.target.open && !$("#vreqb").dataset.on) { $("#vreqb").dataset.on = 1; crud(VISITS, $("#vreqb"), reload); } };
 }
 function renderPlan() { return renderPlanner("plan"); }
-function renderZone() { return renderPlanner("zone"); }
+/** The Volunteer's Zone: what is happening today, and nothing else (the database shows volunteers no other day). */
+async function renderZone() {
+  const today = iso(new Date());
+  const areas = AREAS.filter(a => a.id === "mayor" || a.id === "gla" || a.id === "internal").map(a => a.id === "internal" ? { ...a, sections: a.sections.filter(s => s[0] === "membership") } : a);
+  let entries;
+  try { entries = await loadPlan(today, today, volunteerSees); } catch (e) { return showError(e); }
+  main.innerHTML = `<h2 class="cal-day">${esc(fmtDay(today))}</h2><p class="muted">What is happening today: the Mayor's and GLA activity, and the party's membership engagement.</p>${dayHtml(entries, { editable: false, areas })}`;
+  main.onclick = null;
+}
 
 /* ------------------------------------------------------------------ entity configs */
 const T = (k, label, type = "text", extra = {}) => ({ k, label, type, ...extra });
@@ -383,9 +394,20 @@ const SECTORS = ["Lib Dems", "Media", "Think tank", "Campaign", "Donor", "Electe
 const KIND = { volunteer: "Volunteer", stakeholder: "Stakeholder" };
 const mayAdd = k => can(k === "volunteer" ? "volunteers_add" : "stakeholders_add", "write");
 const mayEditAll = k => can(k === "volunteer" ? "volunteers_all" : "stakeholders_all", "write");
+const peopleState = { tab: "people" };
 async function renderPeople() {
+  if (can("help_inbox", "read")) {   // the campaign team also sees the suggestions and offers that come in from Help the Campaign
+    const t = peopleState.tab === "suggestions" ? "suggestions" : "people";
+    main.innerHTML = `<div class="row"><div class="seg" data-pt><button data-p="people" class="${t === "people" ? "on" : ""}">Volunteers &amp; stakeholders</button><button data-p="suggestions" class="${t === "suggestions" ? "on" : ""}">Suggestions &amp; offers</button></div></div><div id="pp"></div>`;
+    main.onclick = e => { const b = e.target.closest("[data-p]"); if (b) { peopleState.tab = b.dataset.p; renderPeople(); } };
+    if (t === "suggestions") return crud(SUGGESTIONS, $("#pp"), renderPeople);
+    return renderPeopleList($("#pp"));
+  }
+  return renderPeopleList(main);
+}
+async function renderPeopleList(host) {
   const seeAll = can("volunteers_all", "read") || can("stakeholders_all", "read");
-  await crud({ table: "contacts", title: "Volunteers & stakeholders", owned: true, order: ["name", true],
+  await crud({ table: "contacts", title: "Volunteers & stakeholders", owned: true, order: ["name", true], key: "contacts",
     canEdit: () => can("volunteers_all", "write") || can("stakeholders_all", "write"), canAdd: () => mayAdd("volunteer") || mayAdd("stakeholder"),
     canEditRow: r => r.created_by === S.user.id || mayEditAll(r.kind),
     note: seeAll ? "One list for everyone we work with. Volunteers are filed under Lib Dems. The point of contact is the person on our side who owns the relationship. Anyone can add; you can always see and edit your own entries."
@@ -394,7 +416,38 @@ async function renderPeople() {
     transform: v => { if (v.kind === "volunteer") { v.organisation ||= "Lib Dems"; v.sector ||= "Lib Dems"; } },
     fields: [T("name", "Full name", "text", { req: true }), T("organisation", "Organisation"), T("sector", "Sector", "text", { list: SECTORS }), T("email", "Email"), T("phone", "Phone"),
       T("owner", "Point of contact"), T("notes", "Notes", "textarea"),
-      T("kind", "Type", "select", { req: true, hidden: true, options: () => Object.entries(KIND).filter(([k]) => mayAdd(k)) })] });
+      T("kind", "Type", "select", { req: true, hidden: true, options: () => Object.entries(KIND).filter(([k]) => mayAdd(k)) })] }, host, renderPeople);
+}
+
+/* ------------------------------------------------------------------ Help the Campaign: anyone can send a suggestion or an offer; the campaign team reads them on the People page */
+const HELP_KINDS = [["venue", "I know of a venue(s) to host events/set pieces"], ["contact", "I know of a contact(s) at an organisation"], ["policy", "I would like to make a policy suggestion"],
+  ["digital_filming", "I can support/have expertise in digital communications (filming)"], ["digital_editing", "I can support/have expertise in digital communications (editing)"], ["events", "I can support events and set pieces"]];
+const SUGGESTIONS = { table: "campaign_suggestions", key: "suggestions", title: "Suggestions & offers", order: ["created_at", false], owned: true, canEdit: () => can("help_inbox", "write"),
+  note: "What people have sent through Help the Campaign. Say who is dealing with each one in the notes, and set its status.",
+  transform: v => { v.status ||= "new"; if (v.ok_to_contact === null || v.ok_to_contact === undefined) v.ok_to_contact = false; },
+  fields: [T("created_at", "Received", "date", { noForm: true, render: r => esc(fmtShort(String(r.created_at).slice(0, 10))) }), T("name", "Name", "text", { req: true }), T("contact", "Contact"),
+    T("ok_to_contact", "Happy to be contacted", "bool"), T("kind", "Suggesting / offering", "select", { req: true, options: HELP_KINDS, render: r => esc(Object.fromEntries(HELP_KINDS)[r.kind] || r.kind) }),
+    T("details", "Further details", "textarea"), T("status", "Status", "select", { options: ["new", "in progress", "done"] }), T("notes", "Team notes", "textarea")] };
+async function renderHelp() {
+  main.innerHTML = `<h2>Make a suggestion / offer to help</h2>
+    <p class="muted">Know a venue for an event, someone at an organisation we should talk to, or have a policy idea? Can you help with filming, editing or events? Tell the campaign team here.</p>
+    <form id="helpf" class="helpform">
+      <label for="h_name">Your name *</label><input id="h_name" name="name" required maxlength="120" autocomplete="name" value="${esc(S.profile?.full_name || "")}">
+      <label for="h_contact">Your contact (email or phone)</label><input id="h_contact" name="contact" maxlength="200" autocomplete="email">
+      <label class="chk"><input type="checkbox" name="ok"> I am happy to be contacted about this</label>
+      <label for="h_kind">What are you suggesting or offering? *</label><select id="h_kind" name="kind" required><option value="">Choose…</option>${HELP_KINDS.map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join("")}</select>
+      <label for="h_details">Further details</label><textarea id="h_details" name="details" maxlength="1500" rows="4" placeholder="A few words are enough"></textarea>
+      <p><button class="btn primary" type="submit">Send</button> <span class="muted" id="hmsg" role="status" aria-live="polite"></span></p></form>`;
+  $("#helpf").onsubmit = async e => {
+    e.preventDefault();
+    const f = e.target.elements, msg = $("#hmsg"), btn = $("button", e.target);
+    btn.disabled = true; msg.textContent = "Sending…";
+    const { error } = await sb.from("campaign_suggestions").insert({ name: f.name.value.trim(), contact: f.contact.value.trim() || null, ok_to_contact: f.ok.checked, kind: f.kind.value,
+      details: f.details.value.trim() || null, created_by: S.user.id });
+    btn.disabled = false;
+    if (error) { msg.textContent = `It did not send: ${error.message}`; return; }
+    e.target.reset(); f.name.value = S.profile?.full_name || ""; msg.textContent = "Thank you: the campaign team has your message.";
+  };
 }
 
 /* ------------------------------------------------------------------ Communications: Media (three trackers) and Policies */
@@ -504,10 +557,12 @@ async function renderAccounts(host) {
 }
 
 /* ------------------------------------------------------------------ team & access */
-const TABLE_LABEL = { day_plan_entries: "Daily Plan", plan_entries: "Plan (old)", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
+const TABLE_LABEL = { campaign_suggestions: "Suggestions and offers", day_plan_entries: "Daily Plan", plan_entries: "Plan (old)", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
   policies: "Policies", social_accounts: "Social accounts", social_posts: "Social outputs", content_items: "Content", media_coverage: "Coverage",
   volunteers: "Volunteers", stakeholders: "Stakeholders", contacts: "Volunteers & stakeholders", profiles: "People", role_permissions: "Permissions" };
-const READ_ONLY = new Set(["audit", "ulysse"]);   // only "can see" means anything for these
+const READ_ONLY = new Set(["audit", "ulysse"]);
+// the core team can always see, edit and delete these (the database refuses to take it away): their boxes are locked on the grid
+const CORE_KEEPS = new Set(["dayplan_full", "dayplan_volunteer", "budget", "volunteers_all", "volunteers_add", "stakeholders_all", "stakeholders_add", "policies", "social", "coverage", "visits", "help_offer", "help_inbox"]);   // only "can see" means anything for these
 async function renderTeam() {
   const [{ data: profs, error }, { data: perms, error: pe }, seen, log] = await Promise.all([
     sb.from("profiles").select("*").order("created_at"), sb.from("role_permissions").select("*"), sb.rpc("team_last_seen"),
@@ -526,10 +581,10 @@ async function renderTeam() {
         `<select data-u="${p.id}"><option value="">(no access)</option>${Object.entries(ROLES).map(([k, l]) => `<option value="${k}" ${p.role === k ? "selected" : ""}>${l}</option>`).join("")}</select>` : esc(ROLES[p.role] || "none")}</td>
         <td>${!lock ? `<input type="date" data-until="${p.id}" value="${esc(p.access_until || "")}" style="width:auto">` : esc(p.access_until ? fmtShort(p.access_until) : "no end date")}${ended(p) ? ' <span class="pill">ended</span>' : ""}</td>
         <td class="muted">${esc(last[p.id] ? Athena.ago(last[p.id]) : "never")}</td></tr>`; }).join("")}</tbody></table></div>
-    <h2 class="h2-rule">What each role can do</h2><p class="muted">R = read, W = write. The core team's own "Team &amp; access" rights are locked so nobody can be locked out, and only the admin can open LUCIEN to a role.</p>
+    <h2 class="h2-rule">What each role can do</h2><p class="muted">R = read, W = write. The core team's own "Team &amp; access" rights are locked so nobody can be locked out, the core team always keeps the right to edit and delete everything here (those boxes are locked too), and only the admin can open LUCIEN to a role.</p>
     <div class="tablewrap"><table><thead><tr><th>Area</th>${Object.values(ROLES).map(l => `<th>${l}</th>`).join("")}</tr></thead><tbody>${Object.entries(RESOURCES).map(([res, label]) =>
       `<tr><td>${esc(label)}</td>${Object.keys(ROLES).map(role => { const p = perms.find(x => x.role === role && x.resource === res) || {};
-        const locked = !canPerm || (role === "core_team" && (res === "users" || res === "permissions")) || (res === "ulysse" && !S.admin);
+        const locked = !canPerm || (role === "core_team" && (res === "users" || res === "permissions" || CORE_KEEPS.has(res))) || (res === "ulysse" && !S.admin);
         return `<td class="perm">${(READ_ONLY.has(res) ? ["read"] : ["read", "write"]).map(a => `<label><input type="checkbox" data-p="${role}|${res}|${a}" ${p["can_" + a] ? "checked" : ""} ${locked ? "disabled" : ""}> ${a === "read" ? "R" : "W"}</label>`).join("")}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div>
     ${log.data ? `<h2 class="h2-rule">Recent activity</h2><p class="muted">Who changed what (values are not stored here). Last 60 changes.</p>
     <div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>${log.data.map(l => `<tr><td>${esc(new Date(l.at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" }))}</td>
@@ -546,13 +601,14 @@ async function renderTeam() {
 /* ------------------------------------------------------------------ overview: what is coming up, day by day */
 // A list of the days ahead that have something planned. A day with nothing is left out, and so is an area or section with nothing in it.
 async function renderToday() {
-  const today = iso(new Date()), end = addDays(today, 20);
+  const today = iso(new Date());
   const full = can("dayplan_full", "read"), zone = can("dayplan_volunteer", "read");
+  const end = full ? addDays(today, 20) : today;   // volunteers see today only
   if (!full && !zone) { main.innerHTML = `<h2>${esc(fmtDay(today))}</h2><p class="muted">The plan is not open to your role yet.</p>`; return; }
   let entries;
   try { entries = await loadPlan(today, end, full ? null : volunteerSees); } catch (e) { return showError(e); }
   const days = [...new Set(entries.map(e => e.plan_date))].sort();
-  main.innerHTML = `<div class="ov-head"><div><p class="ov-kicker">Coming up</p><h2>${esc(fmtShort(today))} – ${esc(fmtShort(end))}</h2></div>
+  main.innerHTML = `<div class="ov-head"><div><p class="ov-kicker">${full ? "Coming up" : "Today"}</p><h2>${esc(full ? `${fmtShort(today)} – ${fmtShort(end)}` : fmtShort(today))}</h2></div>
       <a class="btn primary" href="#${full ? "plan" : "zone"}" data-go="${full ? "plan" : "zone"}">${full ? "Open the calendar" : "Open the Volunteer's Zone"} ›</a></div>
     ${days.length ? days.map(d => {
       const list = entries.filter(e => e.plan_date === d);
@@ -560,11 +616,12 @@ async function renderToday() {
         const mine = list.filter(e => e.area === a.id);
         if (!mine.length) return "";
         return `<div class="ovarea"><h4>${esc(a.name)}</h4>${a.sections.map(([sid, sname]) => { const m = mine.filter(e => e.section === sid);
-          return m.length ? `<div class="ovsec">${a.sections.length > 1 ? `<span class="ovtag">${esc(sname)}</span>` : ""}${m.map(e => entryHtml(e, false)).join("")}</div>` : ""; }).join("")}</div>`; }).join("")}</section>`; }).join("") : '<p class="muted">Nothing is planned in the next three weeks.</p>'}`;
+          return m.length ? `<div class="ovsec">${a.sections.length > 1 ? `<span class="ovtag">${esc(sname)}</span>` : ""}${m.map(e => entryHtml(e, false)).join("")}</div>` : ""; }).join("")}</div>`; }).join("")}</section>`; }).join("") : '<p class="muted">${full ? "Nothing is planned in the next three weeks." : "Nothing is planned for today."}</p>'}`;
   main.onclick = e => {
     const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); return go(g.dataset.go); }
     const d = e.target.closest("[data-day]");
-    if (d) { e.preventDefault(); const k = full ? "plan" : "zone"; PLANNERS[k].state.mode = "day"; PLANNERS[k].state.date = d.dataset.day; go(k); }
+    if (d && full) { e.preventDefault(); PLANNERS.plan.state.mode = "day"; PLANNERS.plan.state.date = d.dataset.day; go("plan"); }
+    else if (d) e.preventDefault();
   };
 }
 
