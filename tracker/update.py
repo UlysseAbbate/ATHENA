@@ -844,22 +844,55 @@ def bsky_rows(org: str, handle: str, data: dict, since: datetime) -> list[dict]:
     return rows
 
 
-def substack_rows(org: str, entries: list, since: datetime) -> list[dict]:
+def feed_post_rows(org: str, platform: str, entries: list, since: datetime) -> list[dict]:
+    """Posts from an open feed (Substack, YouTube, Mastodon), as rows for the Social Media Channels Tracker: { organisation, platform, posted_on, summary, url }."""
     rows = []
     for e in entries:
         date = parse_date(e.get("published") or e.get("updated"))
-        title, link = clean(e.get("title", ""), 300), e.get("link", "")
-        if not title or not link or (date and date < since):
+        text, link = clean(e.get("title", "") or e.get("summary", ""), 300), e.get("link", "")
+        if not text or not link or (date and date < since):
             continue
-        rows.append({"organisation": org, "platform": "Substack", "posted_on": (date or NOW).astimezone(LONDON).date().isoformat(),
-                     "summary": first_line(title), "url": link})
+        rows.append({"organisation": org, "platform": platform, "posted_on": (date or NOW).astimezone(LONDON).date().isoformat(),
+                     "summary": first_line(text), "url": link})
     return rows
+
+
+def substack_rows(org: str, entries: list, since: datetime) -> list[dict]:
+    return feed_post_rows(org, "Substack", entries, since)
+
+
+YOUTUBE_FEED = "https://www.youtube.com/feeds/videos.xml?channel_id="
+
+
+def youtube_feed_url(handle: str) -> str | None:
+    """The channel's own video feed (YouTube publishes one for every channel). A channel id (UC...) gives it directly; a @handle, /user/ or /c/ name is
+    looked up on the channel's public page (robots.txt respected), which names the channel id."""
+    h = handle.strip()
+    m = re.search(r"(UC[\w-]{22})", h)
+    if m:
+        return YOUTUBE_FEED + m.group(1)
+    path = h.removeprefix("https://www.youtube.com/").removeprefix("youtube.com/")
+    path = path if path.startswith(("@", "user/", "c/", "channel/")) else "@" + path.lstrip("@")
+    page = fetch(f"https://www.youtube.com/{path}", timeout=(6, 15))
+    m = re.search(r'"(?:channelId|externalId)":"(UC[\w-]{22})"|youtube\.com/channel/(UC[\w-]{22})', page.text)
+    return YOUTUBE_FEED + (m.group(1) or m.group(2)) if m else None
+
+
+def mastodon_feed_url(handle: str) -> str | None:
+    """A Mastodon account's own RSS feed: user@instance (or the profile link) gives https://instance/@user.rss."""
+    h = handle.strip().removeprefix("https://").removeprefix("http://").lstrip("@")
+    m = re.match(r"^([\w.-]+)@([\w.-]+\.[a-z]{2,})$", h, re.I) or re.match(r"^([\w.-]+\.[a-z]{2,})/@([\w.-]+)", h, re.I)
+    if not m:
+        return None
+    user, host = (m.group(1), m.group(2)) if "@" in h.split("/")[0] else (m.group(2), m.group(1))
+    return f"https://{host}/@{user}.rss"
 
 
 def collect_social() -> list[dict]:
     """Posts from the accounts on Lovelace's Tracked accounts page that can be read openly: BlueSky (public API) and Substack (RSS).
     Each row is { organisation, platform, posted_on, summary, url }: the ingest function files it against its account in the Social Media Channels Tracker.
-    Instagram, Facebook, X, TikTok and LinkedIn do not offer an open feed and forbid scraping, so they are not read."""
+    Also YouTube (the channel's own feed) and Mastodon (the account's RSS feed): all of these are published for exactly this use.
+    Instagram, Facebook, X, TikTok and LinkedIn do not offer an open feed and forbid scraping in their terms, so they are not read."""
     if not ingest_configured():
         print("social: INGEST_URL / INGEST_TOKEN not set, skipping")
         return []
@@ -872,7 +905,7 @@ def collect_social() -> list[dict]:
     rows: list[dict] = []
     for a in accounts:
         org, plat, handle = a["organisation"], a["platform"], (a.get("handle") or "").strip().lstrip("@")
-        if plat not in ("BlueSky", "Substack") or not handle:
+        if plat not in ("BlueSky", "Substack", "YouTube", "Mastodon") or not handle:
             continue
         name = f"{org} on {plat}"
         try:
@@ -881,11 +914,19 @@ def collect_social() -> list[dict]:
                         params={"actor": handle, "limit": 30, "filter": "posts_no_replies"})
                 got = bsky_rows(org, handle, r.json(), since)
             else:
-                host = handle if "." in handle else f"{handle}.substack.com"
-                entries, why = _feed_entries(f"https://{host}/feed")
+                if plat == "Substack":
+                    host = handle if "." in handle else f"{handle}.substack.com"
+                    feed = f"https://{host}/feed"
+                elif plat == "YouTube":
+                    feed = youtube_feed_url(handle)
+                else:
+                    feed = mastodon_feed_url(handle)
+                if not feed:
+                    raise RuntimeError("could not work out the feed address from the handle")
+                entries, why = _feed_entries(feed)
                 if not entries:
                     raise RuntimeError(why)
-                got = substack_rows(org, entries, since)
+                got = feed_post_rows(org, plat, entries, since)
             rows += got
             record("media", name, True, len(got), "" if got else "no posts in the last fortnight")
         except Exception as e:  # noqa: BLE001
