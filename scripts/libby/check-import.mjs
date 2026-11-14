@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { readWorkbook, matchColumns, parseDate, headerScore } from '../../site/shared/import/sheet.js';
-import { IMPORTERS, analyse, readWithAll, kindOf, roleOf, portfolioOf, whenOf } from '../../site/shared/import/importers.js';
+import { IMPORTERS, analyse, readWithAll, kindOf, roleOf, portfolioOf, whenOf, platformOf, handleOf } from '../../site/shared/import/importers.js';
 import { PORTFOLIOS } from '../../lib/libby/portfolios.js';
 import { ROLE_ORDER, LEVEL_NAMES } from '../../lib/libby/access.js';
 
@@ -106,6 +106,14 @@ const ce = cc[0].result.entries;
 ok(ce[0].entry.bill === 'Armed Forces Commissioner Bill' && ce[0].entry.name === 'Kinship care' && ce[0].entry.portfolio.join() === 'MOD,DHSC' && ce[0].entry.period === 'Summer 2025' && ce[0].entry.wonAt === '2025-06-01' && /pressed/.test(ce[0].entry.notes), 'a concession is read: Bill, name, several portfolios, the season as a date and as the words, the details as notes');
 ok(!ce[2].fatal && ce[2].entry.portfolio.join() === 'DFE' && /Narnia/.test(ce[2].problems.join()) && !ce[3].fatal && ce[3].entry.wonAt === '' && /not a date/.test(ce[3].problems.join()), 'an unknown portfolio or date is left out with a warning; the row is still added');
 ok(whenOf('Autumn 2025').date === '2025-09-01' && whenOf('5 Oct 2026').date === '2026-10-05' && whenOf('5 Oct 2026').period === '' && whenOf('') .date === '' && whenOf('later') === null, 'seasons and dates are read for "date won"');
+
+
+// LOVELACE tracked accounts: an owner and a link; the platform and handle come from the link
+ok(platformOf('https://bsky.app/profile/sarah.bsky.social') === 'BlueSky' && platformOf('www.instagram.com/londonlibdems/') === 'Instagram' && platformOf('https://x.com/sarahjolney1') === 'Twitter' && platformOf('https://example.org/x') === '', 'a profile link gives its platform');
+ok(handleOf('BlueSky', 'https://bsky.app/profile/sarah.bsky.social') === 'sarah.bsky.social' && handleOf('Instagram', 'https://www.instagram.com/londonlibdems/') === 'londonlibdems' && handleOf('Substack', 'https://sarah.substack.com/') === 'sarah.substack.com' && handleOf('Twitter', 'https://x.com/a', '@given') === 'given', 'and its handle');
+const acBook = csv('Account owner,Link\nSarah Olney MP,https://bsky.app/profile/sarah.bsky.social\nLondon Lib Dems,https://www.instagram.com/londonlibdems/\nHina Bokhari AM,https://example.org/hina\n,');
+const ac = readWithAll(acBook.sheets[0], LOOKUPS);
+ok(ac[0].importer.id === 'accounts' && ac[0].result.entries[0].entry.platform === 'BlueSky' && ac[0].result.entries[0].entry.handle === 'sarah.bsky.social' && ac[0].result.entries[1].entry.platform === 'Instagram' && ac[0].result.entries[2].fatal, 'a sheet of owners and links is recognised as tracked accounts; a link to an unknown site is refused with the reason');
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll spreadsheet import checks passed.');
 process.exit(failed ? 1 : 0);

@@ -179,7 +179,56 @@ const invites = {
   },
 };
 
-export const IMPORTERS = { issues, concessions, roles, bulletin, invites };
+/* ------------------------------------------------------------------ LOVELACE social accounts: who is followed, from links */
+const SOCIAL_HOSTS = [['instagram.com', 'Instagram'], ['facebook.com', 'Facebook'], ['fb.com', 'Facebook'], ['twitter.com', 'Twitter'], ['x.com', 'Twitter'], ['bsky.app', 'BlueSky'], ['substack.com', 'Substack'],
+  ['tiktok.com', 'TikTok'], ['linkedin.com', 'LinkedIn'], ['youtube.com', 'YouTube'], ['youtu.be', 'YouTube'], ['threads.net', 'Threads'], ['mastodon.social', 'Mastodon']];
+const PLATFORM_NAMES = { instagram: 'Instagram', insta: 'Instagram', ig: 'Instagram', facebook: 'Facebook', fb: 'Facebook', twitter: 'Twitter', x: 'Twitter', 'twitter x': 'Twitter', bluesky: 'BlueSky', bsky: 'BlueSky',
+  substack: 'Substack', tiktok: 'TikTok', linkedin: 'LinkedIn', youtube: 'YouTube', threads: 'Threads', mastodon: 'Mastodon', other: 'Other' };
+const urlParts = (u) => { try { const x = new URL(/^https?:\/\//i.test(u) ? u : `https://${u}`); return { host: x.hostname.toLowerCase().replace(/^www\./, ''), path: x.pathname.split('/').filter(Boolean) }; } catch { return null; } };
+/** The platform a profile link belongs to ("https://bsky.app/profile/x.bsky.social" -> "BlueSky"), or '' if it is not one the tracker knows. */
+export function platformOf(url) {
+  const p = urlParts(String(url || '').trim());
+  if (!p) return '';
+  const hit = SOCIAL_HOSTS.find(([h]) => p.host === h || p.host.endsWith(`.${h}`));
+  return hit ? hit[1] : '';
+}
+/** The platform named in a cell ("X", "Insta", "BlueSky"), or ''. */
+export const platformName = (text) => PLATFORM_NAMES[String(text || '').toLowerCase().replace(/[^a-z]+/g, ' ').trim()] || '';
+/** The account's handle: the one given, or taken from the link (for BlueSky the full handle, for Substack the publication's address). */
+export function handleOf(platform, url, given = '') {
+  const g = String(given || '').trim().replace(/^@/, '');
+  if (g) return g;
+  const p = urlParts(String(url || '').trim());
+  if (!p) return '';
+  if (platform === 'BlueSky') return p.path[0] === 'profile' ? (p.path[1] || '') : '';
+  if (platform === 'Substack') return p.host;
+  if (platform === 'LinkedIn') return p.path[1] ? `${p.path[0]}/${p.path[1]}` : '';
+  if (platform === 'YouTube') return (p.path[0] || '').startsWith('@') ? p.path[0] : p.path.slice(0, 2).join('/');
+  return (p.path[0] || '').replace(/^@/, '');   // Instagram, Facebook, Twitter, TikTok, Threads, Mastodon: the first part of the path
+}
+const accounts = {
+  id: 'accounts', title: 'Tracked accounts', noun: 'account',
+  blurb: 'One row for each account: who it belongs to and a link to its profile (the platform and handle are worked out from the link). An account already on the list has its link and handle updated.',
+  fields: [
+    f('organisation', 'Account owner', ['account owner', 'owner', 'organisation', 'organization', 'account', 'account name', 'org', 'channel owner', 'whose', 'who'], { required: true }),
+    f('url', 'Link to the profile', ['link', 'url', 'profile', 'profile link', 'link to account', 'link to the account', 'address', 'web address', 'page', 'channel link'], { type: 'url' }),
+    f('platform', 'Platform', ['platform', 'network', 'channel', 'site', 'social network', 'social media']),
+    f('handle', 'Handle', ['handle', 'username', 'user name', 'account handle', 'screen name']),
+  ],
+  resolve(v) {
+    if (!v.organisation && !v.url && !v.handle) return { skip: true };
+    const problems = [];
+    const platform = platformName(v.platform) || platformOf(v.url);
+    if (!v.organisation) problems.push('No account owner');
+    if (!platform) problems.push(v.platform ? `"${v.platform}" is not a platform I know` : 'Could not tell the platform from the link (add a Platform column)');
+    if (!v.url && !v.handle) problems.push('No link');
+    if (v.url_bad) problems.push(`"${v.url_bad}" is not a web address`);
+    const handle = handleOf(platform, v.url, v.handle);
+    return { entry: { organisation: v.organisation, platform, handle, url: v.url || '' }, problems, fatal: problems.length > 0, summary: `${v.organisation || '?'} · ${platform || '?'}${handle ? ` · ${handle}` : ''}` };
+  },
+};
+
+export const IMPORTERS = { issues, concessions, accounts, roles, bulletin, invites };
 
 /* ------------------------------------------------------------------ putting a sheet through an importer */
 

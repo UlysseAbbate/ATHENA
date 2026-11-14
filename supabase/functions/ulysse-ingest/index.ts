@@ -3,7 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 // Called by the GitHub Actions collector. Authenticates with a shared secret (INGEST_TOKEN), not a user JWT.
 //   {name, body}                       store one of the three Ulysse blobs
 //   {action: "get", name}              read one back (the collector's memory of first-seen times between runs)
-//   {action: "coverage", rows: [...]}  add new Sarah Olney coverage and social posts to Lovelace's Media page (existing URLs are left untouched)
+//   {action: "coverage", rows: [...]}  add new Sarah Olney coverage to Lovelace's Media trackers (existing URLs are left untouched)
+//   {action: "social_posts", rows: [...]}  add posts found on the tracked social accounts to the Social Media Channels Tracker (rows: organisation, platform, posted_on, summary, url)
 //   {action: "social_accounts"}        the tracked social accounts that have a handle set, for the collector to follow
 const ALLOWED = new Set(["feed", "polls", "health", "statscal"]);
 const MAX_BYTES = 5_000_000;
@@ -46,6 +47,23 @@ Deno.serve(async (req: Request) => {
     const { data, error } = await sb.from("social_accounts").select("organisation,platform,handle,url").not("handle", "is", null);
     if (error) return json({ error: error.message }, 500);
     return json({ ok: true, accounts: data ?? [] });
+  }
+
+  // Posts found on the tracked social accounts: kept against their account (Lovelace's Social Media Channels Tracker); a post is stored once per address.
+  if (payload.action === "social_posts") {
+    if (!Array.isArray(payload.rows)) return json({ error: "bad request" }, 400);
+    const { data: accts, error: ae } = await sb.from("social_accounts").select("id,organisation,platform");
+    if (ae) return json({ error: ae.message }, 500);
+    const idOf = new Map((accts ?? []).map(a => [`${String(a.organisation).toLowerCase()}|${a.platform}`, a.id]));
+    const rows = payload.rows.slice(0, MAX_COVERAGE).map((r: Record<string, unknown>) => ({
+      account_id: idOf.get(`${str(r?.organisation, 200).toLowerCase()}|${str(r?.platform, 40)}`),
+      posted_at: /^\d{4}-\d{2}-\d{2}$/.test(String(r?.posted_on)) ? `${r.posted_on}T12:00:00Z` : null,
+      summary: str(r?.summary, 400), url: str(r?.url, 1000),
+    })).filter(r => r.account_id && r.posted_at && r.summary && /^https?:\/\//.test(r.url));
+    if (!rows.length) return json({ ok: true, added: 0 });
+    const { data, error } = await sb.from("social_posts").upsert(rows, { onConflict: "url", ignoreDuplicates: true }).select("id");
+    if (error) return json({ error: error.message }, 500);
+    return json({ ok: true, added: data?.length ?? 0 });
   }
 
   if (payload.action === "coverage") {

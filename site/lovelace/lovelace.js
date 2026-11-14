@@ -8,10 +8,10 @@ const main = $("#main");
 const ROLES = { core_team: "Core team", executive: "Executive", local_party_chair: "Local party chair",
   candidate: "Candidate", support_team: "Support team", member: "Member" };
 const RESOURCES = {
-  plan_full: "Full campaign plan (all rows)", plan_shared: "Shared plan sections (campaigning and constituency activity)", plan_constituency: "Edit the Constituency Activity sections of the plan",
-  visits: "Local party visit details and contacts (shown on the Campaign plan)", budget: "Budget & governance",
-  volunteers_all: "Full volunteer list (People page)", volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies",
-  social: "Tracked social accounts (Media page)", coverage: "Media page: news coverage and social posts",
+  dayplan_full: "Daily Plan: everything, including Governance and Legal (read and change)", dayplan_volunteer: "Volunteer's Zone: the day's activities, without Governance and Legal",
+  visits: "Local party visit details and contacts (shown under the calendar)", budget: "Budget & governance",
+  volunteers_all: "Full volunteer list (People page)", volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies (Communications)",
+  social: "Social Media Channels Tracker and tracked accounts (Communications)", coverage: "Media trackers (Communications): news coverage",
   stakeholders_all: "Full stakeholder list (People page)", stakeholders_add: "Add stakeholders (own entries visible to the adder)",
   users: "Team & access: see users / change roles", permissions: "Edit this permissions table",
   audit: "Activity log (who changed what)", ulysse: "LUCIEN policy tracker (only the admin can change this row)" };
@@ -66,16 +66,16 @@ async function boot() {
 }
 
 const TABS = [
-  ["today", "Overview", () => true, renderToday],
-  ["plan", "This Week", () => can("plan_full", "read") || can("plan_shared", "read"), renderPlan],
+  ["today", "Overview", () => can("dayplan_full", "read") || can("dayplan_volunteer", "read"), renderToday],
+  ["plan", "Calendar", () => can("dayplan_full", "read"), renderPlan],
+  ["zone", "Volunteer's Zone", () => can("dayplan_volunteer", "read"), renderZone],
   ["budget", "Budget & governance", () => can("budget", "read"), renderBudget],
   ["people", "Volunteers & stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
-  ["policies", "Policies", () => can("policies", "read"), () => crud(POLICIES)],
-  ["media", "Media", () => can("coverage", "read") || can("social", "read"), renderMedia],
+  ["comms", "Communications", () => can("coverage", "read") || can("social", "read") || can("policies", "read"), renderComms],
   ["team", "Team & access", () => S.admin, renderTeam, true]   // the administrator's alone: its button is in the footer, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
-const ALIAS = { visits: "plan", social: "media", coverage: "media", volunteers: "people", stakeholders: "people" };
+const ALIAS = { visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people" };
 function buildTabs() {
   const vis = TABS.filter(t => t[3] && t[2]());
   const nav = $("#tabs"); nav.hidden = false;
@@ -220,106 +220,122 @@ async function crud(cfg, host = main, after) {
   };
 }
 
-/* ------------------------------------------------------------------ plan */
-const planState = { mode: "day", date: iso(new Date()) };
-// The plan's sections sit under five headings (plan_categories.grp). A heading with one section (Main News) is shown as that section.
-const PLAN_GROUPS = ["Main News", "Across London", "Campaigning", "Media", "Internal Actions"];
-const grpOf = c => c.grp || (c.constituency ? "Across London" : c.name);
-const subName = c => c.name.replace(/^Constituency Activity: /, "");
-const isConsSec = c => /^Constituency Activity: /.test(c.name);
-function planGroups(cats) {
-  const names = [...new Set([...PLAN_GROUPS, ...cats.map(grpOf)])];
-  return names.map(n => ({ name: n, cats: cats.filter(c => grpOf(c) === n) })).filter(g => g.cats.length);
-}
-// the Media subsections that show the latest coverage of their topic (the full coverage is on the Media page)
-const NEWS_TOPIC = { "Parliamentary News": "parliament", "GLA News": "gla", "Council News": "council" };
-const newsLines = (list, n = 3) => list.slice(0, n).map(c => { const u = safeUrl(c.url);
-  return `<div class="ovline news"><b>${esc(fmtShort(c.covered_on))}</b> ${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(c.headline)}</a>` : esc(c.headline)} <span class="muted">· ${esc(c.outlet)}</span></div>`; }).join("");
+/* ------------------------------------------------------------------ the Daily Plan, as a calendar (and the Volunteer's Zone, the same calendar for volunteers) */
+// Each day has four areas. Every section can hold several entries (what, time, place, link, notes), like the Issues Tracker in LIBBY.
+const AREAS = [
+  { id: "mayor", name: "Mayor's Activity", sections: [["field", "Field Campaign"], ["media", "Media"], ["membership", "Membership Engagement"], ["other", "Other Activities"]] },
+  { id: "gla", name: "GLA Activity", sections: [["field", "Field Campaign"], ["media", "Media"], ["membership", "Membership Engagement"], ["other", "Other Activities"]] },
+  { id: "internal", name: "Internal Campaign", sections: [["membership", "Membership Engagement"], ["donor", "Donor Events"], ["staff", "Staff Activities"], ["other", "Other"]] },
+  { id: "governance", name: "Governance and Legal", sections: [["governance", "Governance and Legal"]] }
+];
+// What volunteers see (the database enforces the same rule): Mayor's and GLA Activity, and Internal Campaign > Membership Engagement; never Governance and Legal.
+const volunteerSees = e => e.area === "mayor" || e.area === "gla" || (e.area === "internal" && e.section === "membership");
+const sectionName = (area, sec) => (AREAS.find(a => a.id === area)?.sections.find(s => s[0] === sec) || [, sec])[1];
+const areaName = id => AREAS.find(a => a.id === id)?.name || id;
+const byTime = (a, b) => String(a.starts || "~").localeCompare(String(b.starts || "~"), "en-GB", { numeric: true }) || String(a.created_at || "").localeCompare(String(b.created_at || ""));
+const monthStartOf = s => s.slice(0, 7) + "-01";
+const addMonths = (s, n) => { const d = parseISO(monthStartOf(s)); d.setMonth(d.getMonth() + n); return iso(d); };
 
-async function renderPlan() {
-  const { mode, date } = planState;
-  const start = mode === "day" ? date : mondayOf(date), end = mode === "day" ? date : addDays(start, 6);
-  const canVisits = can("visits", "read"), canNews = can("coverage", "read");
-  const [cats, ents, vis, allVis, news] = await Promise.all([
-    sb.from("plan_categories").select("*").order("sort"),
-    sb.from("plan_entries").select("*").gte("plan_date", start).lte("plan_date", end).order("updated_at"),
-    canVisits ? sb.from("local_party_visits").select("*").gte("visit_date", start).lte("visit_date", end).order("visit_date") : Promise.resolve({ data: [] }),
-    canVisits ? sb.from("local_party_visits").select("id,visit_date") : Promise.resolve({ data: [] }),
-    canNews ? sb.from("media_coverage").select("covered_on,outlet,headline,url,topic").not("topic", "is", null).order("covered_on", { ascending: false }).limit(60) : Promise.resolve({ data: [] })
-  ]);
-  if (cats.error || ents.error || vis.error || allVis.error || news.error) return showError(cats.error || ents.error || vis.error || allVis.error || news.error);
-  // visit details (who asked, contact, who is actioning) sit under Local Party Activity on the visit's date
-  const vcat = cats.data.find(c => c.name === "Local Party Activity");
-  const partyKey = v => String(v.local_party || "").toLowerCase().replace(/ and /g, " ").split(/\s+/)[0];
-  const visitDetail = v => [v.request, v.contact_name && `contact ${v.contact_name}${v.contact_phone ? " " + v.contact_phone : ""}`, v.taken_by && `taken by ${v.taken_by}`,
-    v.actioning && `actioning ${v.actioning}`, v.notes].filter(Boolean).join(" · ");
-  const visitsOn = d => vis.data.filter(v => v.visit_date === d);
-  const matched = (v, entries) => entries.some(e => e.content.toLowerCase().includes(partyKey(v)));
-  const canCat = c => can("plan_full", "write") || (can("plan_shared", "write") && c.shared) || (c.constituency && can("plan_constituency", "write"));
-  const today = iso(new Date());
-  main.innerHTML = `<div class="row"><div class="seg"><button data-m="day" class="${mode === "day" ? "on" : ""}">Day</button><button data-m="week" class="${mode === "week" ? "on" : ""}">Week</button></div>
-    <button class="btn" data-n="-1">◀</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1">▶</button>
-    <input type="date" value="${esc(date)}" style="width:auto" data-d><b>${esc(mode === "day" ? fmtDay(date) : `${fmtShort(start)} – ${fmtShort(end)}`)}</b></div><div id="pv"></div>`;
-  main.onclick = null;
-  const move = n => { planState.date = addDays(date, n * (mode === "day" ? 1 : 7)); renderPlan(); };
-  main.querySelectorAll("[data-n]").forEach(b => b.onclick = () => b.dataset.n === "0" ? (planState.date = iso(new Date()), renderPlan()) : move(+b.dataset.n));
-  main.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { planState.mode = b.dataset.m; renderPlan(); });
-  $("[data-d]").onchange = e => { if (e.target.value) { planState.date = e.target.value; renderPlan(); } };
-  const byKey = {}; ents.data.forEach(e => (byKey[e.category_id + "|" + e.plan_date] ||= []).push(e));
-  const edit = (entry, cat, d) => openForm({
-    title: `${subName(cat)}: ${fmtShort(entry?.plan_date || d)}`, fields: [{ k: "content", label: "Entry", type: "textarea", req: true }, { k: "plan_date", label: "Date", type: "date", req: true }],
-    values: entry || { plan_date: d },
-    meta: edited(entry),
-    onSubmit: async v => { const error = entry ? await guardedUpdate("plan_entries", entry, v)
-      : (await sb.from("plan_entries").insert({ ...v, category_id: cat.id })).error; if (!error || error.message === CONFLICT) renderPlan(); return error; },
-    onDelete: entry ? async () => { const { error } = await sb.from("plan_entries").delete().eq("id", entry.id); if (!error) renderPlan(); return error; } : null
-  });
-  const pv = $("#pv");
-  if (!cats.data.length) { pv.append(notice("No plan rows are available to your role.", "ok")); return; }
-  if (canVisits) {
-    const undated = allVis.data.filter(v => !v.visit_date).length;
-    main.insertAdjacentHTML("beforeend", `<details class="card" id="vreq" style="margin-top:18px"><summary><b>Local party visit requests</b> <span class="muted">· ${allVis.data.length} on the sheet${undated ? `, ${undated} without a date yet` : ""}</span></summary><div id="vreqb"></div></details>`);
-    $("#vreq").ontoggle = e => { if (e.target.open && !$("#vreqb").dataset.on) { $("#vreqb").dataset.on = 1; crud(VISITS, $("#vreqb"), renderPlan); } };
-  }
-  const groups = planGroups(cats.data);
-  if (mode === "day") {
-    const addBtn = c => canCat(c) ? `<button class="btn sm" data-add="${c.id}">+ Add</button>` : "";
-    const entryHtml = c => (byKey[c.id + "|" + date] || []).map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>`).join("");
-    const section = (c, titled = true) => {
-      const list = byKey[c.id + "|" + date] || [];
-      const isV = vcat && c.id === vcat.id, vday = isV ? visitsOn(date) : [];
-      const vline = (v, own) => `<div class="${own ? "entry" : "ovline muted"}"><span>${own ? "" : "↳ "}<b>${esc(v.local_party)}</b>${visitDetail(v) ? ": " + esc(visitDetail(v)) : ""}</span>${can("visits", "write") ? `<span class="acts"><button class="btn sm" data-v="${v.id}">Edit visit</button></span>` : ""}</div>`;
-      const body = isV ? list.map(e => `<div class="entry"><span>${esc(e.content)}</span>${canCat(c) ? `<span class="acts"><button class="btn sm" data-e="${e.id}">Edit</button></span>` : ""}</div>` +
-          vday.filter(v => e.content.toLowerCase().includes(partyKey(v))).map(v => vline(v, false)).join("")).join("") + vday.filter(v => !matched(v, list)).map(v => vline(v, true)).join("") : entryHtml(c);
-      const topic = NEWS_TOPIC[c.name], latest = topic ? news.data.filter(n => n.topic === topic) : [];
-      const hl = topic && canNews ? `<div class="hl"><h4>Latest ${esc(subName(c).replace(/ News$/, ""))} news <a href="#media" data-go="media" class="muted">all coverage in Media ›</a></h4>${newsLines(latest) || '<span class="muted">Nothing logged yet.</span>'}</div>` : "";
-      return `<div class="sec ${c.shared ? "shared" : ""}">${titled ? `<h3 class="h3-section">${esc(subName(c))} ${addBtn(c)}</h3>` : ""}${body || '<span class="muted">Nothing planned.</span>'}${hl}</div>`;
-    };
-    pv.innerHTML = groups.map(g => {
-      const single = g.cats.length === 1 && subName(g.cats[0]) === g.name;
-      // the constituency sections sit together in one fold, open when any of them has something on this day
-      const cons = g.cats.filter(isConsSec), consAt = g.cats.findIndex(isConsSec);
-      const inner = single ? section(g.cats[0], false) : g.cats.map((c, i) => !isConsSec(c) ? section(c) : i !== consAt ? "" :
-        `<details class="card cons"><summary><b>Constituency Activity</b> <span class="muted">· ${cons.length} sections, one per GLA constituency</span></summary>${cons.map(c => section(c)).join("")}</details>`).join("");
-      return `<section class="grp"><h2 class="h2-rule">${esc(g.name)} ${single ? addBtn(g.cats[0]) : ""}</h2>${inner}</section>`;
-    }).join("");
-    pv.onclick = e => {
-      const gm = e.target.closest("[data-go]"); if (gm) { e.preventDefault(); return go(gm.dataset.go); }
-      const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]"), vb = e.target.closest("[data-v]");
-      if (vb) return visitForm(vis.data.find(v => v.id === vb.dataset.v));
-      if (a) edit(null, cats.data.find(c => c.id == a.dataset.add), date);
-      if (x) { const en = ents.data.find(z => z.id === x.dataset.e); edit(en, cats.data.find(c => c.id === en.category_id), date); }
-    };
-  } else {
-    const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
-    const row = c => { const list0 = days.map(d => byKey[c.id + "|" + d] || []);
-      return `<tr><td>${esc(subName(c))}</td>${days.map((d, i) => { const list = list0[i], extra = vcat && c.id === vcat.id ? visitsOn(d).filter(v => !matched(v, list)).map(v => `${v.local_party}${v.request ? ": " + v.request : ""}`) : [];
-        return `<td class="${d === today ? "today" : ""}">${[...list.map(e => esc(e.content)), ...extra.map(esc)].join("\n\n")}</td>`; }).join("")}</tr>`; };
-    pv.innerHTML = `<div class="tablewrap"><table class="grid"><tr><th>Section</th>${days.map(d => `<th class="${d === today ? "today" : ""}"><a href="#" data-day="${d}">${esc(fmtShort(d))}</a></th>`).join("")}</tr>` +
-      groups.map(g => `<tr class="grprow"><td colspan="8">${esc(g.name)}</td></tr>` + g.cats.map(row).join("")).join("") + "</table></div>";
-    pv.onclick = e => { const a = e.target.closest("[data-day]"); if (a) { e.preventDefault(); planState.mode = "day"; planState.date = a.dataset.day; renderPlan(); } };
-  }
+async function loadPlan(from, to, filter) {
+  const { data, error } = await sb.from("day_plan_entries").select("*").gte("plan_date", from).lte("plan_date", to).order("plan_date");
+  if (error) throw error;
+  const inRange = data.filter(e => e.plan_date >= from && e.plan_date <= to);   // (the database already limits it: this keeps the page right whatever it is sent)
+  return (filter ? inRange.filter(filter) : inRange).sort(byTime);
 }
+/** One entry, as a line: time, what, where, link, notes. */
+function entryHtml(e, editable) {
+  const u = e.link && safeUrl(e.link);
+  return `<div class="pe"><div class="pe-main">${e.starts ? `<span class="pe-time">${esc(e.starts)}</span>` : ""}<span class="pe-title">${esc(e.title)}</span>${e.place ? ` <span class="muted">· ${esc(e.place)}</span>` : ""}${u ? ` <a href="${esc(u)}" target="_blank" rel="noopener noreferrer">link</a>` : ""}${editable ? ` <button class="btn sm" data-e="${e.id}">Edit</button>` : ""}</div>${e.detail ? `<div class="pe-detail muted">${esc(e.detail)}</div>` : ""}</div>`;
+}
+/** A day's plan. Editors see every section, with a button to add to it; everyone else sees only what is planned (nothing is shown for an empty section). */
+function dayHtml(list, { editable, areas = AREAS }) {
+  const out = areas.map(a => {
+    const secs = a.sections.map(([sid, sname]) => {
+      const mine = list.filter(e => e.area === a.id && e.section === sid);
+      if (!mine.length && !editable) return "";
+      const single = a.sections.length === 1;
+      return `<div class="sec">${single ? "" : `<h3 class="h3-section">${esc(sname)}</h3>`}${mine.map(e => entryHtml(e, editable)).join("")}${editable ? `<button class="btn sm" data-add="${a.id}|${sid}">+ Add${single ? "" : ` to ${esc(sname)}`}</button>` : ""}</div>`;
+    }).join("");
+    return secs ? `<section class="grp"><h2 class="h2-rule">${esc(a.name)}</h2>${secs}</section>` : "";
+  }).join("");
+  return out || '<p class="muted">Nothing is planned for this day.</p>';
+}
+
+const PLANNERS = {
+  plan: { state: { mode: "month", date: iso(new Date()) }, editable: () => can("dayplan_full", "write"), filter: null, areas: AREAS, visits: true },
+  zone: { state: { mode: "month", date: iso(new Date()) }, editable: () => false, filter: volunteerSees, areas: AREAS.filter(a => a.id !== "governance"), visits: false }
+};
+const AREA_DOT = { mayor: "a-mayor", gla: "a-gla", internal: "a-internal", governance: "a-gov" };
+
+async function renderPlanner(kind) {
+  const P = PLANNERS[kind], st = P.state, editable = P.editable(), today = iso(new Date());
+  const areas = P.areas.map(a => kind === "zone" && a.id === "internal" ? { ...a, sections: a.sections.filter(s => s[0] === "membership") } : a);
+  const reload = () => renderPlanner(kind);
+  if (st.mode === "month") {
+    const first = monthStartOf(st.date), gridStart = mondayOf(first), lastOfMonth = addDays(addMonths(first, 1), -1);
+    const days = []; for (let d = gridStart; ; d = addDays(d, 1)) { days.push(d); if (d >= lastOfMonth && parseISO(d).getDay() === 0) break; }   // whole weeks, Monday to Sunday
+    let entries;
+    try { entries = await loadPlan(gridStart, days[days.length - 1], P.filter); } catch (e) { return showError(e); }
+    const byDay = {}; entries.forEach(e => (byDay[e.plan_date] ||= []).push(e));
+    main.innerHTML = `<div class="row"><button class="btn" data-n="-1" aria-label="Earlier month">◀</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Later month">▶</button>
+      <b class="cal-title">${esc(parseISO(first).toLocaleDateString("en-GB", { month: "long", year: "numeric" }))}</b></div>
+      <p class="muted">${kind === "zone" ? "Click a day to see what is happening: the Mayor's and GLA activity, and the party's membership engagement." : "Click a day to see and edit its plan."}</p>
+      <div class="cal" role="grid" aria-label="Calendar"><div class="cal-head">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(w => `<div>${w}</div>`).join("")}</div><div class="cal-body">${days.map(d => {
+        const list = byDay[d] || [], inMonth = d.slice(0, 7) === first.slice(0, 7);
+        return `<button class="cal-cell${inMonth ? "" : " other"}${d === today ? " today" : ""}" data-day="${d}" aria-label="${esc(fmtDay(d))}${list.length ? `, ${list.length} planned` : ""}"><span class="cal-n">${parseISO(d).getDate()}</span>${
+          list.slice(0, 3).map(e => `<span class="cal-ev ${AREA_DOT[e.area] || ""}">${esc((e.starts ? e.starts + " " : "") + e.title)}</span>`).join("")}${list.length > 3 ? `<span class="cal-more">+${list.length - 3} more</span>` : ""}</button>`; }).join("")}</div></div>`;
+    main.onclick = e => {
+      const n = e.target.closest("[data-n]"), d = e.target.closest("[data-day]");
+      if (n) { st.date = n.dataset.n === "0" ? iso(new Date()) : addMonths(first, +n.dataset.n); return reload(); }
+      if (d) { st.mode = "day"; st.date = d.dataset.day; reload(); }
+    };
+    if (P.visits && can("visits", "read")) visitsPanel(reload);
+    return;
+  }
+  // one day: the daily plan
+  const date = st.date;
+  const canVisits = P.visits && can("visits", "read");
+  let entries, vis = { data: [] };
+  try {
+    [entries, vis] = await Promise.all([loadPlan(date, date, P.filter), canVisits ? sb.from("local_party_visits").select("*").eq("visit_date", date) : Promise.resolve({ data: [] })]);
+  } catch (e) { return showError(e); }
+  if (vis.error) return showError(vis.error);
+  const visitLine = v => [v.request, v.contact_name && `contact ${v.contact_name}${v.contact_phone ? " " + v.contact_phone : ""}`, v.taken_by && `taken by ${v.taken_by}`, v.actioning && `actioning ${v.actioning}`, v.notes].filter(Boolean).join(" · ");
+  main.innerHTML = `<div class="row"><button class="btn" data-back>◀ Calendar</button><button class="btn" data-n="-1" aria-label="Previous day">‹ Previous day</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Next day">Next day ›</button>
+      <input type="date" value="${esc(date)}" style="width:auto" data-d></div>
+    <h2 class="cal-day">${esc(fmtDay(date))}</h2>${dayHtml(entries, { editable, areas })}
+    ${vis.data.length ? `<section class="grp"><h2 class="h2-rule">Local party visits</h2>${vis.data.map(v => `<div class="pe"><div class="pe-main"><span class="pe-title">${esc(v.local_party)}</span>${visitLine(v) ? ` <span class="muted">· ${esc(visitLine(v))}</span>` : ""}${can("visits", "write") ? ` <button class="btn sm" data-v="${v.id}">Edit visit</button>` : ""}</div></div>`).join("")}</section>` : ""}`;
+  const go_ = d => { st.date = d; reload(); };
+  main.onclick = e => {
+    if (e.target.closest("[data-back]")) { st.mode = "month"; return reload(); }
+    const n = e.target.closest("[data-n]");
+    if (n) return go_(n.dataset.n === "0" ? iso(new Date()) : addDays(date, +n.dataset.n));
+    const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]"), vb = e.target.closest("[data-v]");
+    if (vb) return visitForm(vis.data.find(v => v.id === vb.dataset.v));
+    if (a) { const [area, sec] = a.dataset.add.split("|"); return entryForm(null, area, sec, date, reload); }
+    if (x) { const en = entries.find(z => z.id === x.dataset.e); return entryForm(en, en.area, en.section, date, reload); }
+  };
+  main.onchange = e => { if (e.target.matches("[data-d]") && e.target.value) go_(e.target.value); };
+}
+function entryForm(entry, area, sec, date, after) {
+  openForm({
+    title: `${areaName(area)}${areaName(area) === sectionName(area, sec) ? "" : ` · ${sectionName(area, sec)}`}: ${fmtShort(entry?.plan_date || date)}`,
+    fields: [T("title", "What", "text", { req: true }), T("starts", "Time (for example 10:00, or all day)"), T("place", "Where"), T("link", "Link"), T("detail", "Notes", "textarea"), T("plan_date", "Date", "date", { req: true })],
+    values: entry || { plan_date: date }, meta: edited(entry),
+    onSubmit: async v => {
+      const error = entry ? await guardedUpdate("day_plan_entries", entry, v) : (await sb.from("day_plan_entries").insert({ ...v, area, section: sec })).error;
+      if (!error || error.message === CONFLICT) after(); return error;
+    },
+    onDelete: entry ? async () => { const { error } = await sb.from("day_plan_entries").delete().eq("id", entry.id); if (!error) after(); return error; } : null
+  });
+}
+/** Local party visit requests (the sheet), under the calendar for those who may see them. */
+function visitsPanel(reload) {
+  main.insertAdjacentHTML("beforeend", `<details class="card" id="vreq" style="margin-top:18px"><summary><b>Local party visit requests</b> <span class="muted">· requests from local parties and who is handling them</span></summary><div id="vreqb"></div></details>`);
+  $("#vreq").ontoggle = e => { if (e.target.open && !$("#vreqb").dataset.on) { $("#vreqb").dataset.on = 1; crud(VISITS, $("#vreqb"), reload); } };
+}
+function renderPlan() { return renderPlanner("plan"); }
+function renderZone() { return renderPlanner("zone"); }
 
 /* ------------------------------------------------------------------ entity configs */
 const T = (k, label, type = "text", extra = {}) => ({ k, label, type, ...extra });
@@ -329,26 +345,25 @@ function visitForm(row) {
     onDelete: async () => { const { error: e } = await sb.from("local_party_visits").delete().eq("id", row.id); if (!e) renderPlan(); return e; } });
 }
 const VISITS = { table: "local_party_visits", title: "", order: ["visit_date", true], canEdit: () => can("visits", "write"),
-  note: "Requests from local parties and who is handling them. A visit with a date shows its details on the plan for that day, under Campaigning (add a line there too, so everyone who sees the plan sees the visit). Contains contact details.",
+  note: "Requests from local parties and who is handling them. A visit with a date shows its details on the calendar for that day. Contains contact details.",
   fields: [T("local_party", "Local party", "text", { req: true }), T("request", "Request"), T("taken_by", "Who took it"), T("actioning", "Who actioning"),
     T("happening", "When happening"), T("visit_date", "Date (if fixed)", "date"), T("contact_name", "Contact"), T("contact_phone", "Number"), T("notes", "Notes", "textarea")] };
 const POLICIES = { table: "policies", title: "Policies", order: ["theme", true], canEdit: () => can("policies", "write"),
   fields: [T("policy", "Policy", "text", { req: true }), T("theme", "Theme"), T("briefing", "Briefing"), T("actions", "Actions", "textarea"),
     T("interested_parties", "Interested parties", "textarea"), T("comms", "Comms", "textarea"), T("notes", "Notes", "textarea")] };
 const PLATFORMS = ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"];
-const isSocial = r => r.source === "social" || PLATFORMS.some(p => p.toLowerCase() === String(r.outlet).toLowerCase()) || /^(X|Twitter)\b/i.test(r.outlet);
 const TOPICS = [["parliament", "Parliament"], ["gla", "GLA"], ["council", "Council"]];
 const MEDIA_FIELDS = [T("covered_on", "Date", "date", { req: true }), T("outlet", "Outlet / platform", "text", { req: true, list: [...PLATFORMS, "BBC News", "The Guardian", "Evening Standard", "MyLondon"] }),
     T("headline", "Headline / first line of the caption", "text", { req: true, render: r => {
       const u = safeUrl(r.url); return (u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(r.headline)}</a>` : esc(r.headline)) +
         (r.source === "auto" ? ' <span class="pill" title="Found automatically in the outlet\'s news feed or pages">auto</span>' : r.source === "social" ? ' <span class="pill" title="Found automatically on the account">auto</span>' : ""); } }),
-    T("topic", "Topic (shown on This Week)", "select", { options: TOPICS, render: r => esc(Object.fromEntries(TOPICS)[r.topic] || "") }),
+    T("topic", "Topic", "select", { options: TOPICS, render: r => esc(Object.fromEntries(TOPICS)[r.topic] || "") }),
     T("url", "URL", "url", { hidden: true }), T("notes", "Notes", "textarea")];
-const MEDIA = { table: "media_coverage", key: "media_libdem", where: { kind: "libdem" }, title: "Lib Dem Media", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
-  note: "Sarah Olney in the news (any article that mentions her, found at 6am and 6pm) and what our tracked social accounts post. For a social post the outlet is the platform and the headline is the start of the caption.",
-  filters: [{ label: "All", test: () => true }, { label: "News", test: r => !isSocial(r) }, { label: "Social media", test: isSocial }], fields: MEDIA_FIELDS };
-const MEDIA_ALL = { table: "media_coverage", key: "media_overall", where: { kind: "overall" }, title: "Overall Media", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
-  note: "Wider political news that matters to the campaign: Parliament, the GLA and the councils. Give a story a topic and the latest ones show under the matching section on This Week.",
+const MEDIA = { table: "media_coverage", key: "media_libdem", where: { kind: "libdem" }, title: "Olney Media Tracker", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
+  note: "Sarah Olney in the news: any article that mentions her, found automatically at 6am and 6pm, and anything added by hand. What our social accounts post is on the Social Media Channels Tracker.",
+  fields: MEDIA_FIELDS };
+const MEDIA_ALL = { table: "media_coverage", key: "media_overall", where: { kind: "overall" }, title: "Overall Media Tracker", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
+  note: "Wider political news that matters to the campaign: Parliament, the GLA and the councils.",
   fields: MEDIA_FIELDS };
 const BUDGET = { table: "budget_items", title: "Budget", order: ["created_at", true], canEdit: () => can("budget", "write"),
   fields: [T("item", "Item", "text", { req: true }), T("amount", "Amount (£)", "number"), T("category", "Category"), T("notes", "Notes", "textarea")],
@@ -382,39 +397,114 @@ async function renderPeople() {
       T("kind", "Type", "select", { req: true, hidden: true, options: () => Object.entries(KIND).filter(([k]) => mayAdd(k)) })] });
 }
 
-/* ------------------------------------------------------------------ media: news coverage and social posts, plus the tracked accounts */
-async function renderMedia() {
-  main.innerHTML = `<div id="m0"></div><div id="m1" style="margin-top:26px"></div>${can("social", "read") ? '<details class="card" id="m2" style="margin-top:18px"><summary><b>Tracked social accounts</b> <span class="muted">· London Lib Dems, London Young Liberals, Sarah Olney MP, Hina Bokhari AM, City Hall Lib Dems</span></summary><div id="m2b"></div></details>' : ""}`;
-  await crud(MEDIA_ALL, $("#m0"), renderMedia);
-  await crud(MEDIA, $("#m1"), renderMedia);
-  if (!can("social", "read")) return;
-  const open = (id, fn) => { const d = $(id); d.ontoggle = () => { if (d.open && !d.dataset.on) { d.dataset.on = 1; fn(); } }; };
-  open("#m2", () => renderAccounts($("#m2b")));
+/* ------------------------------------------------------------------ Communications: Media (three trackers) and Policies */
+const commsState = { section: null, tracker: null };
+const TRACKERS = [
+  ["overall", "Overall Media Tracker", () => can("coverage", "read")],
+  ["olney", "Olney Media Tracker", () => can("coverage", "read")],
+  ["social", "Social Media Channels Tracker", () => can("social", "read")],
+  ["accounts", "Tracked accounts", () => can("social", "read")]
+];
+async function renderComms() {
+  const sections = [["media", "Media", () => can("coverage", "read") || can("social", "read")], ["policies", "Policies", () => can("policies", "read")]].filter(s => s[2]());
+  if (!sections.length) { main.innerHTML = '<p class="muted">Communications is not open to your role yet.</p>'; return; }
+  const sec = sections.some(s => s[0] === commsState.section) ? commsState.section : sections[0][0];
+  const trackers = TRACKERS.filter(t => t[2]());
+  const tr = trackers.some(t => t[0] === commsState.tracker) ? commsState.tracker : trackers[0]?.[0];
+  main.innerHTML = `<div class="row">${sections.length > 1 ? `<div class="seg" data-sec>${sections.map(s => `<button data-s="${s[0]}" class="${s[0] === sec ? "on" : ""}">${esc(s[1])}</button>`).join("")}</div>` : ""}</div>
+    ${sec === "media" ? `<h2 class="h2-rule">Media</h2><div class="row"><div class="seg" data-tr>${trackers.map(t => `<button data-t="${t[0]}" class="${t[0] === tr ? "on" : ""}">${esc(t[1])}</button>`).join("")}</div></div>` : ""}<div id="cm"></div>`;
+  main.onclick = e => {
+    const s = e.target.closest("[data-s]"), t = e.target.closest("[data-t]");
+    if (s) { commsState.section = s.dataset.s; renderComms(); }
+    if (t) { commsState.tracker = t.dataset.t; renderComms(); }
+  };
+  const host = $("#cm");
+  if (sec === "policies") return crud(POLICIES, host, renderComms);
+  if (tr === "overall") return crud(MEDIA_ALL, host, renderComms);
+  if (tr === "olney") return crud(MEDIA, host, renderComms);
+  if (tr === "social") return renderSocialTracker(host);
+  if (tr === "accounts") return renderAccounts(host);
 }
+
+/* ---- the Social Media Channels Tracker: the accounts being followed, and their posts */
+const POST_SHOWN = 6;
+async function renderSocialTracker(host) {
+  const w = can("social", "write");
+  const [accts, posts] = await Promise.all([sb.from("social_accounts").select("*").order("organisation").order("platform"), sb.from("social_posts").select("*").order("posted_at", { ascending: false }).limit(2000)]);
+  if (accts.error || posts.error) return showError(accts.error || posts.error);
+  const tracked = accts.data.filter(a => a.handle || a.url || posts.data.some(p => p.account_id === a.id));
+  const auto = a => a.platform === "BlueSky" || a.platform === "Substack";
+  const fmtPost = p => `<div class="pe"><div class="pe-main"><span class="pe-time">${esc(fmtShort(String(p.posted_at).slice(0, 10)))}</span>${(() => { const u = safeUrl(p.url); return u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(p.summary || "post")}</a>` : esc(p.summary || "post"); })()}${w ? ` <button class="btn sm" data-pe="${p.id}">Edit</button>` : ""}</div></div>`;
+  host.innerHTML = `<p class="muted">Every account we follow, with its latest posts. <b>BlueSky</b> and <b>Substack</b> posts are found automatically at 6am and 6pm; the other platforms do not allow automatic reading, so add their posts by hand. The list of accounts is kept on the <a href="#" data-acc>Tracked accounts</a> page, where you can upload links.</p>
+    <div class="row"><input class="grow" type="search" placeholder="Search accounts and posts…" data-q></div><div id="acc-list"></div>`;
+  const draw = () => {
+    const q = $("[data-q]", host).value.toLowerCase();
+    const items = tracked.map(a => ({ a, ps: posts.data.filter(p => p.account_id === a.id) })).filter(({ a, ps }) => !q || `${a.organisation} ${a.platform} ${a.handle || ""}`.toLowerCase().includes(q) || ps.some(p => String(p.summary || "").toLowerCase().includes(q)));
+    $("#acc-list", host).innerHTML = items.length ? items.map(({ a, ps }) => { const u = safeUrl(a.url);
+      return `<section class="acct"><h3>${esc(a.organisation)} <span class="muted">· ${esc(a.platform)}${a.handle ? ` · ${esc(a.handle)}` : ""}</span> ${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer" aria-label="Open the account">↗</a>` : ""} <span class="pill">${auto(a) && a.handle ? "automatic" : "by hand"}</span>
+        ${w ? `<button class="btn sm" data-addp="${a.id}">+ Add a post</button>` : ""}</h3>
+        ${ps.length ? ps.slice(0, POST_SHOWN).map(fmtPost).join("") + (ps.length > POST_SHOWN ? `<details><summary class="muted">${ps.length - POST_SHOWN} older post${ps.length - POST_SHOWN === 1 ? "" : "s"}</summary>${ps.slice(POST_SHOWN).map(fmtPost).join("")}</details>` : "") : '<p class="muted small">No posts yet.</p>'}</section>`; }).join("")
+      : `<p class="muted">${tracked.length ? "Nothing matches the search." : "No accounts are being tracked yet. Add their links on the Tracked accounts page."}</p>`;
+  };
+  draw();
+  $("[data-q]", host).oninput = draw;
+  const postForm = (a, row) => openForm({ title: `${a.organisation} · ${a.platform}`, fields: [T("posted_at", "Date posted", "date", { req: true }), T("summary", "What it says (the first line is enough)", "text", { req: true }), T("url", "Link to the post"), T("topic", "Topic")],
+    values: row ? { ...row, posted_at: String(row.posted_at).slice(0, 10) } : { posted_at: iso(new Date()) }, meta: edited(row),
+    onSubmit: async v => { v.posted_at = `${v.posted_at}T12:00:00Z`; const e = row ? await guardedUpdate("social_posts", row, v) : (await sb.from("social_posts").insert({ ...v, account_id: a.id })).error;
+      if (!e || e.message === CONFLICT) renderSocialTracker(host); return e; },
+    onDelete: row ? async () => { const { error: e } = await sb.from("social_posts").delete().eq("id", row.id); if (!e) renderSocialTracker(host); return e; } : null });
+  host.onclick = e => {
+    if (e.target.closest("[data-acc]")) { e.preventDefault(); commsState.tracker = "accounts"; return renderComms(); }
+    const ap = e.target.closest("[data-addp]"), pe = e.target.closest("[data-pe]");
+    if (ap) postForm(tracked.find(a => a.id === ap.dataset.addp));
+    if (pe) { const p = posts.data.find(x => x.id === pe.dataset.pe); postForm(accts.data.find(a => a.id === p.account_id), p); }
+  };
+}
+
+/* ---- Tracked accounts: the list of accounts the tracker follows. Links can be uploaded from a spreadsheet, or added one at a time. */
 async function renderAccounts(host) {
   const w = can("social", "write");
   const { data: accts, error } = await sb.from("social_accounts").select("*").order("organisation");
   if (error) return showError(error);
-  const orgs = [...new Set(accts.map(a => a.organisation))];
-  host.innerHTML = `<p class="muted">What we follow. <b>BlueSky</b> and <b>Substack</b> accounts are read automatically at 6am and 6pm: put the handle in (for BlueSky, the full handle such as <code>name.bsky.social</code>).
-    The other platforms do not allow automated reading without their approved access, so add their posts to the table above by hand. ${w ? "Click a cell to set its handle and link." : ""}</p>
-    ${w ? '<div class="row"><button class="btn primary" data-org>+ Add organisation</button></div>' : ""}
-    <div class="tablewrap"><table class="grid"><tr><th>Account</th>${PLATFORMS.map(p => `<th>${p}</th>`).join("")}</tr>` +
-    orgs.map(o => `<tr><td>${esc(o)}</td>${PLATFORMS.map(p => { const a = accts.find(x => x.organisation === o && x.platform === p);
-      const u = a && safeUrl(a.url); const label = a?.handle ? esc(a.handle) : '<span class="muted">—</span>';
-      return `<td>${a ? (w ? `<a href="#" data-a="${a.id}">${label}</a>` : label) : ""}${u ? ` <a href="${esc(u)}" target="_blank" rel="noopener noreferrer">↗</a>` : ""}</td>`; }).join("")}</tr>`).join("") + "</table></div>";
+  const known = accts.filter(a => a.handle || a.url);
+  host.innerHTML = `<p class="muted">The accounts the Social Media Channels Tracker follows. ${w ? "Upload a spreadsheet of links (an account owner and a link to each profile), or add one below: the platform and handle are worked out from the link. " : ""}<b>BlueSky</b> and <b>Substack</b> accounts are read automatically at 6am and 6pm; for the other platforms add the posts by hand.</p>
+    ${w ? '<div id="acc-import"></div><form class="row" data-one><input name="organisation" placeholder="Account owner, e.g. Sarah Olney MP" required style="width:22rem"><input name="url" placeholder="Link to the profile" required style="width:24rem"><button class="btn primary" type="submit">Add this account</button><span class="muted small" data-onemsg role="status" aria-live="polite"></span></form>' : ""}
+    <div class="tablewrap"><table class="grid"><thead><tr><th>Account owner</th><th>Platform</th><th>Handle</th><th>Link</th>${w ? "<th></th>" : ""}</tr></thead><tbody>${known.map(a => { const u = safeUrl(a.url);
+      return `<tr><td>${esc(a.organisation)}</td><td>${esc(a.platform)}</td><td>${esc(a.handle || "")}</td><td>${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">link</a>` : ""}</td>${w ? `<td><button class="btn sm" data-a="${a.id}">Edit</button></td>` : ""}</tr>`; }).join("") || `<tr><td colspan="${w ? 5 : 4}" class="muted">No accounts yet.</td></tr>`}</tbody></table></div>`;
+  if (!w) return;
+  const { mountImport } = await import("../shared/import/panel.js"), { IMPORTERS, platformOf, handleOf } = await import("../shared/import/importers.js");
+  mountImport($("#acc-import", host), {
+    importer: IMPORTERS.accounts,
+    after: () => renderAccounts(host),
+    commit: async (entries, progress) => {
+      let added = 0, done = 0; const failed = [];
+      for (const e of entries) {
+        const { error: er } = await sb.from("social_accounts").upsert({ organisation: e.organisation, platform: e.platform, handle: e.handle || null, url: e.url || null }, { onConflict: "organisation,platform" });
+        if (er) failed.push({ summary: `${e.organisation} · ${e.platform}`, error: er.message }); else added++;
+        progress(++done, entries.length);
+      }
+      return { added, skipped: 0, failed };
+    }
+  });
+  host.querySelector("[data-one]").onsubmit = async ev => {
+    ev.preventDefault();
+    const f = ev.target.elements, msg = host.querySelector("[data-onemsg]"), url = f.url.value.trim(), platform = platformOf(url);
+    if (!platform) { msg.textContent = "I could not tell the platform from that link."; return; }
+    const { error: er } = await sb.from("social_accounts").upsert({ organisation: f.organisation.value.trim(), platform, handle: handleOf(platform, url) || null, url }, { onConflict: "organisation,platform" });
+    if (er) { msg.textContent = er.message; return; }
+    renderAccounts(host);
+  };
   host.onclick = e => {
-    const c = e.target.closest("[data-a]"), o = e.target.closest("[data-org]");
-    if (c) { e.preventDefault(); const a = accts.find(x => x.id === c.dataset.a);
-      openForm({ title: `${a.organisation} · ${a.platform}`, fields: [T("handle", "Handle"), T("url", "Profile URL", "url"), T("notes", "Notes", "textarea")], values: a,
-        meta: edited(a), onSubmit: async v => { const er = await guardedUpdate("social_accounts", a, v); if (!er || er.message === CONFLICT) renderAccounts(host); return er; } }); }
-    if (o) openForm({ title: "Add organisation", fields: [T("organisation", "Organisation or account owner", "text", { req: true })],
-      onSubmit: async v => { const { error: er } = await sb.from("social_accounts").insert(PLATFORMS.map(p => ({ organisation: v.organisation, platform: p }))); if (!er) renderAccounts(host); return er; } });
+    const c = e.target.closest("[data-a]"); if (!c) return;
+    const a = accts.find(x => x.id === c.dataset.a);
+    openForm({ title: `${a.organisation} · ${a.platform}`, fields: [T("handle", "Handle"), T("url", "Profile link", "url"), T("notes", "Notes", "textarea")], values: a, meta: edited(a),
+      onSubmit: async v => { const er = await guardedUpdate("social_accounts", a, v); if (!er || er.message === CONFLICT) renderAccounts(host); return er; },
+      onDelete: async () => { const { error: er } = await sb.from("social_accounts").delete().eq("id", a.id); if (!er) renderAccounts(host); return er; } });
   };
 }
 
 /* ------------------------------------------------------------------ team & access */
-const TABLE_LABEL = { plan_entries: "Plan", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
+const TABLE_LABEL = { day_plan_entries: "Daily Plan", plan_entries: "Plan (old)", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
   policies: "Policies", social_accounts: "Social accounts", social_posts: "Social outputs", content_items: "Content", media_coverage: "Coverage",
   volunteers: "Volunteers", stakeholders: "Stakeholders", contacts: "Volunteers & stakeholders", profiles: "People", role_permissions: "Permissions" };
 const READ_ONLY = new Set(["audit", "ulysse"]);   // only "can see" means anything for these
@@ -453,19 +543,29 @@ async function renderTeam() {
   };
 }
 
-/* ------------------------------------------------------------------ overview: the campaign plan, to read */
+/* ------------------------------------------------------------------ overview: what is coming up, day by day */
+// A list of the days ahead that have something planned. A day with nothing is left out, and so is an area or section with nothing in it.
 async function renderToday() {
-  const today = iso(new Date()), start = mondayOf(today), end = addDays(start, 6);
-  if (!(can("plan_full", "read") || can("plan_shared", "read"))) { main.innerHTML = `<h2>${esc(fmtDay(today))}</h2><p class="muted">The campaign plan is not open to your role yet.</p>`; return; }
-  const [cats, ents] = await Promise.all([sb.from("plan_categories").select("*").order("sort"), sb.from("plan_entries").select("*").gte("plan_date", start).lte("plan_date", end).order("plan_date")]);
-  if (cats.error || ents.error) return showError(cats.error || ents.error);
-  const by = {}; ents.data.forEach(e => (by[e.category_id] ||= []).push(e));
-  const groups = planGroups(cats.data).map(g => ({ ...g, subs: g.cats.filter(c => (by[c.id] || []).length) }));
-  const total = ents.data.length;
-  main.innerHTML = `<div class="ov-head"><div><p class="ov-kicker">Campaign plan</p><h2>${esc(fmtShort(start))} – ${esc(fmtShort(end))}</h2><p class="muted">${total ? `${total} item${total === 1 ? "" : "s"} planned this week.` : "Nothing planned yet this week."}</p></div>
-    <a class="btn primary" href="#plan" data-go="plan">Open This Week ›</a></div>
-    <div class="ovplan">${groups.map(g => `<section class="ovg"><h3>${esc(g.name)}</h3>${g.subs.length ? g.subs.map(c => `<div class="ovsub">${g.cats.length > 1 ? `<h4>${esc(subName(c))}</h4>` : ""}${by[c.id].map(e => `<div class="ovitem${e.plan_date === today ? " now" : ""}"><span class="ovdate">${esc(e.plan_date === today ? "Today" : fmtShort(e.plan_date))}</span><span>${esc(e.content)}</span></div>`).join("")}</div>`).join("") : '<p class="muted">Nothing planned.</p>'}</section>`).join("")}</div>`;
-  main.onclick = e => { const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); go(g.dataset.go); } };
+  const today = iso(new Date()), end = addDays(today, 20);
+  const full = can("dayplan_full", "read"), zone = can("dayplan_volunteer", "read");
+  if (!full && !zone) { main.innerHTML = `<h2>${esc(fmtDay(today))}</h2><p class="muted">The plan is not open to your role yet.</p>`; return; }
+  let entries;
+  try { entries = await loadPlan(today, end, full ? null : volunteerSees); } catch (e) { return showError(e); }
+  const days = [...new Set(entries.map(e => e.plan_date))].sort();
+  main.innerHTML = `<div class="ov-head"><div><p class="ov-kicker">Coming up</p><h2>${esc(fmtShort(today))} – ${esc(fmtShort(end))}</h2></div>
+      <a class="btn primary" href="#${full ? "plan" : "zone"}" data-go="${full ? "plan" : "zone"}">${full ? "Open the calendar" : "Open the Volunteer's Zone"} ›</a></div>
+    ${days.length ? days.map(d => {
+      const list = entries.filter(e => e.plan_date === d);
+      return `<section class="ovday${d === today ? " now" : ""}"><h3><a href="#" data-day="${d}">${esc(d === today ? "Today · " : "")}${esc(fmtDay(d))}</a></h3>${AREAS.map(a => {
+        const mine = list.filter(e => e.area === a.id);
+        if (!mine.length) return "";
+        return `<div class="ovarea"><h4>${esc(a.name)}</h4>${a.sections.map(([sid, sname]) => { const m = mine.filter(e => e.section === sid);
+          return m.length ? `<div class="ovsec">${a.sections.length > 1 ? `<span class="ovtag">${esc(sname)}</span>` : ""}${m.map(e => entryHtml(e, false)).join("")}</div>` : ""; }).join("")}</div>`; }).join("")}</section>`; }).join("") : '<p class="muted">Nothing is planned in the next three weeks.</p>'}`;
+  main.onclick = e => {
+    const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); return go(g.dataset.go); }
+    const d = e.target.closest("[data-day]");
+    if (d) { e.preventDefault(); const k = full ? "plan" : "zone"; PLANNERS[k].state.mode = "day"; PLANNERS[k].state.date = d.dataset.day; go(k); }
+  };
 }
 
 AuthUI.watchRecovery(sb, main);
