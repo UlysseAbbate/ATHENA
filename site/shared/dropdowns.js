@@ -1,6 +1,6 @@
 /* Drop-downs: every section heading (h2.h2-rule) and sub-heading (h3.h3-section) on every page opens and closes, in the same way.
  * The heading becomes the summary of a <details> and everything after it, up to the next heading of its kind, goes inside. Pages just write
- * the headings; this runs after each page draws (a MutationObserver), so no page needs to know about it. Every drop-down starts CLOSED.
+ * the headings; this runs after each page draws (a MutationObserver), so no page needs to know about it. Every drop-down starts CLOSED, except a heading marked data-open (the page's own title when it is the only thing on the page, as for a tracker the person has just chosen).
  * (A day's business sections in LIBBY, .chamber-head, work the same way.) Headings are left alone inside a dialog, a panel that sets data-flat, or when they are already in a summary.
  * A page that redraws itself after a change (ticking a permission, saving an entry) makes new drop-downs: so that the section a person is working in does not close under them,
  * a drop-down that was open before the redraw opens again when its heading comes back (matched by the headings, from the outside in, within a few seconds). */
@@ -37,7 +37,7 @@
     h.dataset.dd = "1";
     const det = document.createElement("details");
     det.className = kind === 2 ? "dd" : "dd-sub";
-    det.open = window.ATHENA_DROPDOWNS_OPEN === true || reopen(h);   // closed to start with; the browser tests set this to read whole pages
+    det.open = window.ATHENA_DROPDOWNS_OPEN === true || h.hasAttribute("data-open") || reopen(h);   // closed to start with; the browser tests set this to read whole pages
     const sum = document.createElement("summary");
     const body = document.createElement("div");
     body.className = "dd-body";

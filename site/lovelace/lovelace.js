@@ -70,8 +70,7 @@ async function boot() {
 const TABS = [
   ["today", "Overview", () => can("dayplan_full", "read") || can("dayplan_volunteer", "read"), renderToday],
   ["plan", "Calendar", () => can("dayplan_full", "read"), renderPlan],
-  ["zone", "Volunteer's Zone", () => can("dayplan_volunteer", "read"), renderZone],
-  ["help", "Help the Campaign", () => can("help_offer", "write") || can("help_inbox", "read"), renderHelp],
+  ["zone", "Volunteer's Zone", () => can("dayplan_volunteer", "read") || can("help_offer", "write") || can("help_inbox", "read"), renderZone],
   ["todo", "Mayor's To-Do List", () => can("mayor_todo", "read"), renderTodos],
   ["budget", "Budget & governance", () => can("budget", "read"), renderBudget],
   ["people", "Volunteers & stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
@@ -79,7 +78,7 @@ const TABS = [
   ["team", "Team & access", () => S.admin, renderTeam, true]   // the administrator's alone: its button is in the footer, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
-const ALIAS = { visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people", suggestions: "people", offers: "help" };
+const ALIAS = { visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people", suggestions: "people", offers: "zone", help: "zone" };
 function buildTabs() {
   const vis = TABS.filter(t => t[3] && t[2]());
   const nav = $("#tabs"); nav.hidden = false;
@@ -166,7 +165,7 @@ async function crud(cfg, host = main, after) {
   const canAdd = cfg.canAdd ? cfg.canAdd() : cfg.canEdit();
   const canEdit = cfg.canEdit();
   const reload = after || (() => crud(cfg, host, after));
-  host.innerHTML = `${cfg.title ? `<h2 class="h2-rule">${esc(cfg.title)}</h2>` : ""}${cfg.note ? `<p class="muted">${esc(cfg.note)}</p>` : ""}
+  host.innerHTML = `${cfg.title ? `<h2 class="h2-rule"${cfg.open ? " data-open" : ""}>${esc(cfg.title)}</h2>` : ""}${cfg.note ? `<p class="muted">${esc(cfg.note)}</p>` : ""}
     <div class="row"><input class="grow" type="search" placeholder="Search…" data-q>${canAdd ? '<button class="btn primary" data-add>+ Add</button>' : ""}<button class="btn" data-csv title="Download what is shown as a spreadsheet">CSV</button></div>
     ${cfg.filters ? `<div class="row"><div class="seg">${cfg.filters.map((f, i) => `<button data-fl="${i}">${esc(f.label)}</button>`).join("")}</div></div>` : ""}
     ${cfg.beforeTable ? cfg.beforeTable : ""}<div class="tablewrap"><table></table></div><div data-foot></div>`;
@@ -341,13 +340,21 @@ function visitsPanel(reload) {
 }
 function renderPlan() { return renderPlanner("plan"); }
 /** The Volunteer's Zone: what is happening today, and nothing else (the database shows volunteers no other day). */
+const zoneState = { section: null };
 async function renderZone() {
+  const sections = [["today", "Today", () => can("dayplan_volunteer", "read")], ["help", "Help the Campaign", () => can("help_offer", "write") || can("help_inbox", "read")]].filter(x => x[2]());
+  const sec = sections.some(x => x[0] === zoneState.section) ? zoneState.section : sections[0][0];
+  main.innerHTML = `${sections.length > 1 ? `<div class="row"><div class="seg" data-zs>${sections.map(x => `<button data-z="${x[0]}" class="${x[0] === sec ? "on" : ""}">${esc(x[1])}</button>`).join("")}</div></div>` : ""}<div id="zb"></div>`;
+  const pick = e => { const b = e.target.closest("[data-z]"); if (b) { zoneState.section = b.dataset.z; renderZone(); } };
+  if (sec === "help") { await renderHelp($("#zb")); main.onclick = pick; return; }
+  await renderZoneToday($("#zb")); main.onclick = pick;
+}
+async function renderZoneToday(host) {
   const today = iso(new Date());
   const areas = AREAS.filter(a => a.id === "mayor" || a.id === "gla" || a.id === "internal").map(a => a.id === "internal" ? { ...a, sections: a.sections.filter(s => s[0] === "membership") } : a);
   let entries;
   try { entries = await loadPlan(today, today, volunteerSees); } catch (e) { return showError(e); }
-  main.innerHTML = `<h2 class="cal-day">${esc(fmtDay(today))}</h2><p class="muted">What is happening today: the Mayor's and GLA activity, and the party's membership engagement.</p>${dayHtml(entries, { editable: false, areas })}`;
-  main.onclick = null;
+  host.innerHTML = `<h2 class="cal-day">${esc(fmtDay(today))}</h2><p class="muted">What is happening today: the Mayor's and GLA activity, and the party's membership engagement.</p>${dayHtml(entries, { editable: false, areas })}`;
 }
 
 /* ------------------------------------------------------------------ entity configs */
@@ -466,8 +473,8 @@ async function renderTodos() {
   };
 }
 
-async function renderHelp() {
-  main.innerHTML = `<h2>Make a suggestion / offer to help</h2>
+async function renderHelp(host = main) {
+  host.innerHTML = `<h2>Make a suggestion / offer to help</h2>
     <p class="muted">Know a venue for an event, someone at an organisation we should talk to, or have a policy idea? Can you help with filming, editing or events? Tell the campaign team here.</p>
     <form id="helpf" class="helpform">
       <label for="h_name">Your name *</label><input id="h_name" name="name" required maxlength="120" autocomplete="name" value="${esc(S.profile?.full_name || "")}">
@@ -476,7 +483,7 @@ async function renderHelp() {
       <label for="h_kind">What are you suggesting or offering? *</label><select id="h_kind" name="kind" required><option value="">Choose…</option>${HELP_KINDS.map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join("")}</select>
       <label for="h_details">Further details</label><textarea id="h_details" name="details" maxlength="1500" rows="4" placeholder="A few words are enough"></textarea>
       <p><button class="btn primary" type="submit">Send</button> <span class="muted" id="hmsg" role="status" aria-live="polite"></span></p></form>`;
-  $("#helpf").onsubmit = async e => {
+  $("#helpf", host).onsubmit = async e => {
     e.preventDefault();
     const f = e.target.elements, msg = $("#hmsg"), btn = $("button", e.target);
     btn.disabled = true; msg.textContent = "Sending…";
@@ -503,16 +510,16 @@ async function renderComms() {
   const trackers = TRACKERS.filter(t => t[2]());
   const tr = trackers.some(t => t[0] === commsState.tracker) ? commsState.tracker : trackers[0]?.[0];
   main.innerHTML = `<div class="row">${sections.length > 1 ? `<div class="seg" data-sec>${sections.map(s => `<button data-s="${s[0]}" class="${s[0] === sec ? "on" : ""}">${esc(s[1])}</button>`).join("")}</div>` : ""}</div>
-    ${sec === "media" ? `<h2 class="h2-rule">Media</h2><div class="row"><div class="seg" data-tr>${trackers.map(t => `<button data-t="${t[0]}" class="${t[0] === tr ? "on" : ""}">${esc(t[1])}</button>`).join("")}</div></div>` : ""}<div id="cm"></div>`;
+    ${sec === "media" ? `<h2 class="h2-rule" data-open>Media</h2><div class="row"><div class="seg" data-tr>${trackers.map(t => `<button data-t="${t[0]}" class="${t[0] === tr ? "on" : ""}">${esc(t[1])}</button>`).join("")}</div></div>` : ""}<div id="cm"></div>`;
   main.onclick = e => {
     const s = e.target.closest("[data-s]"), t = e.target.closest("[data-t]");
     if (s) { commsState.section = s.dataset.s; renderComms(); }
     if (t) { commsState.tracker = t.dataset.t; renderComms(); }
   };
   const host = $("#cm");
-  if (sec === "policies") return crud(POLICIES, host, renderComms);
-  if (tr === "overall") return crud(MEDIA_ALL, host, renderComms);
-  if (tr === "olney") return crud(MEDIA, host, renderComms);
+  if (sec === "policies") return crud({ ...POLICIES, open: true }, host, renderComms);
+  if (tr === "overall") return crud({ ...MEDIA_ALL, open: true }, host, renderComms);
+  if (tr === "olney") return crud({ ...MEDIA, open: true }, host, renderComms);
   if (tr === "social") return renderSocialTracker(host);
   if (tr === "accounts") return renderAccounts(host);
 }
