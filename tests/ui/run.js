@@ -862,6 +862,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: ticking an item saves it as done`, log.some(l => l.startsWith("PATCH mayor_todos")), log.join(";"));
         await page.click('[data-s="done"]'); await page.waitForTimeout(250);
         check(`${who}: the Done view lists what has been signed off`, /Sign off the leaflet/.test(await page.$eval("#main tbody", b => b.innerText)));
+        await page.click('#tabs button:text-is("Volunteers & stakeholders")'); await page.waitForTimeout(350);   // (back to the page the next checks are about)
       }
       check(`${who}: Help the Campaign is on the menu`, tabs.includes("Help the Campaign"), tabs.join("|"));
       if (who === "member") check(`${who}: a volunteer's People page has no suggestions list`, (await page.$("[data-pt]")) === null);
