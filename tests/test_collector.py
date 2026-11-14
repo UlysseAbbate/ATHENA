@@ -379,3 +379,30 @@ def test_london_data_rows_take_only_london_data_drops():
     rows = U.london_data_rows(body, today)
     assert [r["key"] for r in rows] == ["statscal:lds:1:2026-11-14", "statscal:est:lds:1:2026-12-01", "statscal:m:1:2026-11-20"]
     assert rows[0]["title"] == "GLA: Housing data (published)" and "date not yet confirmed" in rows[1]["title"] and rows[2]["starts"] == "09:30"
+
+
+# ------------------------------------------------------------------ open feeds for the Social Media Channels Tracker: YouTube and Mastodon
+def test_open_feed_addresses():
+    assert U.youtube_feed_url("UCabcdefghijklmnopqrstuv") == "https://www.youtube.com/feeds/videos.xml?channel_id=UCabcdefghijklmnopqrstuv"
+    assert U.youtube_feed_url("channel/UC0123456789abcdefghijkl").endswith("channel_id=UC0123456789abcdefghijkl")
+    assert U.mastodon_feed_url("sarah@mastodon.social") == "https://mastodon.social/@sarah.rss"
+    assert U.mastodon_feed_url("@sarah@mastodon.social") == "https://mastodon.social/@sarah.rss"
+    assert U.mastodon_feed_url("https://mastodon.social/@sarah") == "https://mastodon.social/@sarah.rss"
+    assert U.mastodon_feed_url("not a handle") is None
+
+
+def test_youtube_handle_is_looked_up_on_the_public_page(monkeypatch):
+    seen = []
+    monkeypatch.setattr(U, "fetch", lambda url, **kw: (seen.append(url), Resp('<html>..."channelId":"UCzzzzzzzzzzzzzzzzzzzzzz"...</html>'))[1])
+    assert U.youtube_feed_url("londonlibdems") == "https://www.youtube.com/feeds/videos.xml?channel_id=UCzzzzzzzzzzzzzzzzzzzzzz"
+    assert seen == ["https://www.youtube.com/@londonlibdems"]
+
+
+def test_feed_posts_become_social_post_rows():
+    entries = [{"title": "Our new film\n on housing", "link": "https://youtu.be/x", "published": U.NOW.isoformat()},
+               {"title": "ancient", "link": "https://youtu.be/old", "published": "2020-01-01T00:00:00Z"},
+               {"title": "", "summary": "<p>Only a summary</p>", "link": "https://m.test/1", "published": U.NOW.isoformat()},
+               {"title": "no link", "link": "", "published": U.NOW.isoformat()}]
+    rows = U.feed_post_rows("London Lib Dems", "YouTube", entries, U.NOW - timedelta(days=14))
+    assert [r["url"] for r in rows] == ["https://youtu.be/x", "https://m.test/1"]
+    assert rows[0]["platform"] == "YouTube" and rows[0]["organisation"] == "London Lib Dems" and rows[0]["summary"] == "Our new film on housing"

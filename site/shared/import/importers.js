@@ -202,6 +202,7 @@ export function handleOf(platform, url, given = '') {
   if (!p) return '';
   if (platform === 'BlueSky') return p.path[0] === 'profile' ? (p.path[1] || '') : '';
   if (platform === 'Substack') return p.host;
+  if (platform === 'Mastodon') return p.path[0] ? `${p.path[0].replace(/^@/, '')}@${p.host}` : '';   // user@instance, which is how the feed address is built
   if (platform === 'LinkedIn') return p.path[1] ? `${p.path[0]}/${p.path[1]}` : '';
   if (platform === 'YouTube') return (p.path[0] || '').startsWith('@') ? p.path[0] : p.path.slice(0, 2).join('/');
   return (p.path[0] || '').replace(/^@/, '');   // Instagram, Facebook, Twitter, TikTok, Threads, Mastodon: the first part of the path
