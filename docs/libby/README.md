@@ -169,6 +169,13 @@ Checked by `node scripts/libby/check-grid-doc.mjs`.
 
 Staff bring people (staff or parliamentarians, by the email of their account) together in teams so that they can share certain things (`functions/api/libby/teams.js`, tables `libby_teams` and `libby_team_members`, migration `20261114100000_libby_teams.sql`). For now the one shared thing is seeing, in full, the Wallace Room and Room 391 bookings that others in the team made (view only: they cannot change them, and the booker, the Whips and above are unchanged). **A team never changes anyone's access level**: membership is a separate list, and what a team shares is named in the code (`maySee` in `room-bookings.js`), never a level, so a person's rights do not move because someone else in their team has more or fewer. To share something else later, add it where it is read, with the check `viewer.team.has(owner)`, and list it on the Teams page.
 
+### The public Groupings and grids page (`/grids/`)
+
+One page for people who are not signed in: choose a live Lords Bill and its Committee or Report stage, upload the Government Whips' Office grouping (Word, or pasted text), check what was read, and download the grid (Word, in the format above). Nothing else, and nothing is saved: the file is read in the browser.
+- **Reached only by its link.** The link is `https://<the site>/grids/?k=<key>`. The key is the `GRID_LINK_KEY` setting in Cloudflare Pages (Settings → Variables, at least 16 characters; the page is off until it is set). The server (`functions/api/grids/index.js`) checks the key on every request, slows wrong guesses down like wrong access codes, never caches its answers, and the page is `noindex` with no referrer sent. To cut off everyone who has the link, change the key.
+- **What it reads:** only public Parliament data (the Bills API) through that one route. It calls no paid service, so the grid's middle column is each amendment's own Member's Explanatory Statement, trimmed.
+- Checked by `node scripts/libby/check-public-grids.mjs` and the browser tests.
+
 ## Portfolio tags
 
 Every Bill, every piece of legislation on the day pages and every policy document carries at least one portfolio (department).
