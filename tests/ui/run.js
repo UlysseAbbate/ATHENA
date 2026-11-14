@@ -44,7 +44,7 @@ const PEOPLE = { lucien: [{ user_id: "p1", email: "reader@test.invalid", full_na
           { user_id: "p3", email: "bm@test.invalid", full_name: "", level: "staff", is_manager: true, grant_ceiling: 3, expires_at: null, last_sign_in_at: null }],
   lovelace: [{ user_id: "p4", email: "core@test.invalid", full_name: "", level: "core_team", is_manager: true, grant_ceiling: null, expires_at: null, last_sign_in_at: null }] };
 const PERMS = {
-  core_team: ["dayplan_full", "dayplan_volunteer", "help_offer", "help_inbox", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit"],
+  core_team: ["dayplan_full", "dayplan_volunteer", "help_offer", "help_inbox", "mayor_todo", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit"],
   member: ["dayplan_volunteer", "help_offer", "volunteers_add", "stakeholders_add", "coverage"],
 };
 const ALLRES = [...PERMS.core_team, "ulysse"];
@@ -67,6 +67,8 @@ const TABLES = {
     { id: "m4", covered_on: plus(-1), outlet: "Hansard", headline: "Heathrow expansion debated in the Commons", url: "https://example.org/d", source: "manual", kind: "overall", topic: "parliament", updated_at: ts }],
   contacts: [{ id: "vo1", kind: "volunteer", name: "Alex Volunteer", organisation: "Lib Dems", sector: "Lib Dems", email: "alex@test.invalid", phone: "0700", owner: "Louis", notes: "Role: Canvassing", created_by: USERS.member.id, created_at: ts, updated_at: ts },
     { id: "s1", kind: "stakeholder", name: "Jo Bloggs", organisation: "Shelter", sector: "Campaign", email: null, phone: null, owner: "Sarah", notes: null, created_by: USERS.core.id, created_at: ts, updated_at: ts }],
+  mayor_todos: [{ id: "mt1", action: "Approve the housing speech", responsible: "Sam Speechwriter", link: "https://example.org/speech", notes: "Needs a final read", done: false, created_at: ts, updated_at: ts },
+    { id: "mt2", action: "Sign off the leaflet", responsible: "Pat Print", link: null, notes: null, done: true, done_at: ts, created_at: ts, updated_at: ts }],
   campaign_suggestions: [{ id: "cs1", name: "Dana Donor", contact: "dana@test.invalid", ok_to_contact: true, kind: "venue", details: "A hall in Kingston", status: "new", notes: null, created_at: ts, updated_at: ts }],
   budget_items: [{ id: "b1", item: "Leaflets", amount: 1200, category: "Print", updated_at: ts }, { id: "b2", item: "Hall hire", amount: 300, category: "Events", updated_at: ts }],
   policies: [{ id: "po1", policy: "Rent controls", theme: "Housing", updated_at: ts }],
@@ -848,6 +850,19 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       const vrows = await page.$$eval("#main tbody tr", rs => rs.map(r => r.innerText));
       check(`${who}: volunteers are filed under Lib Dems`, vrows.length === 1 && /Alex Volunteer/.test(vrows[0]) && (vrows[0].match(/Lib Dems/g) || []).length === 2, vrows.join("|"));
       // Help the Campaign: a suggestion / offer form for everyone; the campaign team reads what comes in on the People page
+      // the Mayor's To-Do List: for the core team (who fill it) and those who sign off; a volunteer does not see it
+      check(`${who}: the Mayor's To-Do List is ${who === "member" ? "not on a volunteer's menu" : "on the menu"}`, tabs.includes("Mayor's To-Do List") === (who !== "member"), tabs.join("|"));
+      if (who !== "member") {
+        await page.click('#tabs button:text-is("Mayor\'s To-Do List")'); await page.waitForTimeout(400);
+        const th = await page.$$eval("#main thead th", hs => hs.map(h => h.textContent.trim()).filter(Boolean));
+        check(`${who}: the To-Do List has Done, Action, Responsible, Link and Further notes, with the open items first`, th.join("|") === "Done|Action|Responsible|Link|Further notes" && /Approve the housing speech/.test(await page.$eval("#main tbody", b => b.innerText)) && !/Sign off the leaflet/.test(await page.$eval("#main tbody", b => b.innerText)));
+        check(`${who}: the core team can add, edit and delete an item`, (await page.$("[data-add]")) !== null && (await page.$("[data-edit]")) !== null);
+        log.length = 0;
+        await page.check('[data-tick="mt1"]'); await page.waitForTimeout(400);
+        check(`${who}: ticking an item saves it as done`, log.some(l => l.startsWith("PATCH mayor_todos")), log.join(";"));
+        await page.click('[data-s="done"]'); await page.waitForTimeout(250);
+        check(`${who}: the Done view lists what has been signed off`, /Sign off the leaflet/.test(await page.$eval("#main tbody", b => b.innerText)));
+      }
       check(`${who}: Help the Campaign is on the menu`, tabs.includes("Help the Campaign"), tabs.join("|"));
       if (who === "member") check(`${who}: a volunteer's People page has no suggestions list`, (await page.$("[data-pt]")) === null);
       else {

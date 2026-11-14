@@ -90,3 +90,8 @@ td.perm{white-space:nowrap}td.perm label{display:inline-flex;align-items:center;
 .helpform{display:grid;gap:6px;max-width:34rem;margin:10px 0}
 .helpform label{font:600 .85rem var(--head);margin-top:6px}
 .helpform label.chk{display:flex;gap:8px;align-items:center;font-weight:400;font-family:var(--body)}
+/* the Mayor's To-Do List */
+td.todo-tick{width:3rem;text-align:center}
+td.todo-tick input{width:1.15rem;height:1.15rem}
+tr.todo-done td:not(.todo-tick){opacity:.6}
+tr.todo-done td.wrapcell{text-decoration:line-through}

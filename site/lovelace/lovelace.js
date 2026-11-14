@@ -10,6 +10,7 @@ const ROLES = { core_team: "Core team", executive: "Executive", local_party_chai
 const RESOURCES = {
   dayplan_full: "Daily Plan: every day and every area, including Governance and Legal and London Politics (read and change)", dayplan_volunteer: "Volunteer's Zone: today's activities, without Governance and Legal",
   help_offer: "Help the Campaign: send a suggestion or an offer to help", help_inbox: "Suggestions and offers list (People page)",
+  mayor_todo: "Mayor's To-Do List: read and tick done (write: add, edit, delete items)",
   visits: "Local party visit details and contacts (shown under the calendar)", budget: "Budget & governance",
   volunteers_all: "Full volunteer list (People page)", volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies (Communications)",
   social: "Social Media Channels Tracker and tracked accounts (Communications)", coverage: "Media trackers (Communications): news coverage",
@@ -71,6 +72,7 @@ const TABS = [
   ["plan", "Calendar", () => can("dayplan_full", "read"), renderPlan],
   ["zone", "Volunteer's Zone", () => can("dayplan_volunteer", "read"), renderZone],
   ["help", "Help the Campaign", () => can("help_offer", "write") || can("help_inbox", "read"), renderHelp],
+  ["todo", "Mayor's To-Do List", () => can("mayor_todo", "read"), renderTodos],
   ["budget", "Budget & governance", () => can("budget", "read"), renderBudget],
   ["people", "Volunteers & stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
   ["comms", "Communications", () => can("coverage", "read") || can("social", "read") || can("policies", "read"), renderComms],
@@ -428,6 +430,42 @@ const SUGGESTIONS = { table: "campaign_suggestions", key: "suggestions", title: 
   fields: [T("created_at", "Received", "date", { noForm: true, render: r => esc(fmtShort(String(r.created_at).slice(0, 10))) }), T("name", "Name", "text", { req: true }), T("contact", "Contact"),
     T("ok_to_contact", "Happy to be contacted", "bool"), T("kind", "Suggesting / offering", "select", { req: true, options: HELP_KINDS, render: r => esc(Object.fromEntries(HELP_KINDS)[r.kind] || r.kind) }),
     T("details", "Further details", "textarea"), T("status", "Status", "select", { options: ["new", "in progress", "done"] }), T("notes", "Team notes", "textarea")] };
+/* ------------------------------------------------------------------ the Mayor's To-Do List: things for the Mayoral candidate to sign off */
+// The core team fills it: action, responsible, link, notes. Anyone who can see the list can tick an item done (the database lets them change only the tick).
+const todoState = { show: "todo" };
+async function renderTodos() {
+  const manage = can("mayor_todo", "write");
+  const { data, error } = await sb.from("mayor_todos").select("*").order("created_at");
+  if (error) return showError(error);
+  const open = data.filter(r => !r.done), done = data.filter(r => r.done);
+  const shown = todoState.show === "done" ? done : todoState.show === "all" ? [...open, ...done] : open;
+  const row = r => { const u = r.link && safeUrl(r.link);
+    return `<tr class="${r.done ? "todo-done" : ""}"><td class="todo-tick"><input type="checkbox" data-tick="${r.id}" ${r.done ? "checked" : ""} aria-label="Done: ${esc(r.action)}"></td>
+      <td class="wrapcell">${esc(r.action)}${r.done && r.done_at ? `<div class="muted small">Done ${esc(Athena.ago(r.done_at))}</div>` : ""}</td><td>${esc(r.responsible || "")}</td>
+      <td>${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">link</a>` : ""}</td><td class="wrapcell">${esc(r.notes || "")}</td>${manage ? `<td><button class="btn sm" data-edit="${r.id}">Edit</button></td>` : ""}</tr>`; };
+  main.innerHTML = `<h2>Mayor's To-Do List</h2><p class="muted">Things for the Mayoral candidate to sign off. Tick an item when it is done.</p>
+    <div class="row"><div class="seg" data-ts>${[["todo", `To do (${open.length})`], ["done", `Done (${done.length})`], ["all", "All"]].map(([k, l]) => `<button data-s="${k}" class="${todoState.show === k ? "on" : ""}">${esc(l)}</button>`).join("")}</div>${manage ? '<button class="btn primary" data-add>+ Add an item</button>' : ""}</div>
+    <div class="tablewrap"><table class="grid"><thead><tr><th>Done</th><th>Action</th><th>Responsible</th><th>Link</th><th>Further notes</th>${manage ? "<th></th>" : ""}</tr></thead>
+      <tbody>${shown.map(row).join("") || `<tr><td colspan="${manage ? 6 : 5}" class="muted">${todoState.show === "done" ? "Nothing is done yet." : "Nothing to sign off."}</td></tr>`}</tbody></table></div>`;
+  const form = r => openForm({ title: r ? "Edit item" : "Add an item", values: r || {}, meta: edited(r),
+    fields: [T("action", "Action (what the candidate is to sign off)", "textarea", { req: true }), T("responsible", "Responsible"), T("link", "Link"), T("notes", "Further notes", "textarea")],
+    onSubmit: async v => { const e = r ? await guardedUpdate("mayor_todos", r, v) : (await sb.from("mayor_todos").insert({ ...v, created_by: S.user.id })).error; if (!e || e.message === CONFLICT) renderTodos(); return e; },
+    onDelete: r ? async () => { const { error: e } = await sb.from("mayor_todos").delete().eq("id", r.id); if (!e) renderTodos(); return e; } : null });
+  main.onclick = e => {
+    const s = e.target.closest("[data-s]"), ed = e.target.closest("[data-edit]");
+    if (s) { todoState.show = s.dataset.s; return renderTodos(); }
+    if (ed) return form(data.find(r => r.id === ed.dataset.edit));
+    if (e.target.closest("[data-add]")) form(null);
+  };
+  main.onchange = async e => {
+    const t = e.target.closest("[data-tick]"); if (!t) return;
+    t.disabled = true;
+    const { error: er } = await sb.from("mayor_todos").update({ done: t.checked }).eq("id", t.dataset.tick);
+    if (er) { t.checked = !t.checked; t.disabled = false; return showError(er); }
+    renderTodos();
+  };
+}
+
 async function renderHelp() {
   main.innerHTML = `<h2>Make a suggestion / offer to help</h2>
     <p class="muted">Know a venue for an event, someone at an organisation we should talk to, or have a policy idea? Can you help with filming, editing or events? Tell the campaign team here.</p>
@@ -557,12 +595,12 @@ async function renderAccounts(host) {
 }
 
 /* ------------------------------------------------------------------ team & access */
-const TABLE_LABEL = { campaign_suggestions: "Suggestions and offers", day_plan_entries: "Daily Plan", plan_entries: "Plan (old)", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
+const TABLE_LABEL = { mayor_todos: "Mayor's To-Do List", campaign_suggestions: "Suggestions and offers", day_plan_entries: "Daily Plan", plan_entries: "Plan (old)", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
   policies: "Policies", social_accounts: "Social accounts", social_posts: "Social outputs", content_items: "Content", media_coverage: "Coverage",
   volunteers: "Volunteers", stakeholders: "Stakeholders", contacts: "Volunteers & stakeholders", profiles: "People", role_permissions: "Permissions" };
 const READ_ONLY = new Set(["audit", "ulysse"]);
 // the core team can always see, edit and delete these (the database refuses to take it away): their boxes are locked on the grid
-const CORE_KEEPS = new Set(["dayplan_full", "dayplan_volunteer", "budget", "volunteers_all", "volunteers_add", "stakeholders_all", "stakeholders_add", "policies", "social", "coverage", "visits", "help_offer", "help_inbox"]);   // only "can see" means anything for these
+const CORE_KEEPS = new Set(["dayplan_full", "dayplan_volunteer", "budget", "volunteers_all", "volunteers_add", "stakeholders_all", "stakeholders_add", "policies", "social", "coverage", "visits", "help_offer", "help_inbox", "mayor_todo"]);   // only "can see" means anything for these
 async function renderTeam() {
   const [{ data: profs, error }, { data: perms, error: pe }, seen, log] = await Promise.all([
     sb.from("profiles").select("*").order("created_at"), sb.from("role_permissions").select("*"), sb.rpc("team_last_seen"),
