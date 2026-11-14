@@ -169,7 +169,7 @@ def test_first_line_cuts_at_a_word():
     assert out.endswith("…") and len(out) <= 112 and "  " not in out
 
 
-def test_bluesky_posts_become_media_rows():
+def test_bluesky_posts_become_social_post_rows():
     data = {"feed": [
         {"post": {"uri": "at://did:plc:x/app.bsky.feed.post/3abc", "author": {"handle": "sarah.bsky.social"},
                   "record": {"text": "Proud to back\nlocal schools today", "createdAt": U.NOW.isoformat()}}},
@@ -180,8 +180,8 @@ def test_bluesky_posts_become_media_rows():
     rows = U.bsky_rows("Sarah Olney MP", "sarah.bsky.social", data, U.NOW - timedelta(days=14))
     assert len(rows) == 1
     r = rows[0]
-    assert r["outlet"] == "BlueSky" and r["source"] == "social" and r["headline"] == "Proud to back local schools today"
-    assert r["url"] == "https://bsky.app/profile/sarah.bsky.social/post/3abc" and r["notes"].startswith("Sarah Olney MP:")
+    assert r["platform"] == "BlueSky" and r["organisation"] == "Sarah Olney MP" and r["summary"] == "Proud to back local schools today"
+    assert r["url"] == "https://bsky.app/profile/sarah.bsky.social/post/3abc" and r["posted_on"] == U.NOW.astimezone(U.LONDON).date().isoformat()
 
 
 def test_collect_social_reads_only_open_platforms(monkeypatch):

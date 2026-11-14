@@ -839,9 +839,8 @@ def bsky_rows(org: str, handle: str, data: dict, since: datetime) -> list[dict]:
         rkey = (post.get("uri") or "").rsplit("/", 1)[-1]
         if not text.strip() or not rkey or (date and date < since):
             continue
-        rows.append({"covered_on": (date or NOW).astimezone(LONDON).date().isoformat(), "outlet": "BlueSky", "source": "social",
-                     "headline": first_line(text), "url": f"https://bsky.app/profile/{handle}/post/{rkey}",
-                     "notes": f"{org}: {text}"[:600]})
+        rows.append({"organisation": org, "platform": "BlueSky", "posted_on": (date or NOW).astimezone(LONDON).date().isoformat(),
+                     "summary": first_line(text), "url": f"https://bsky.app/profile/{handle}/post/{rkey}"})
     return rows
 
 
@@ -852,13 +851,14 @@ def substack_rows(org: str, entries: list, since: datetime) -> list[dict]:
         title, link = clean(e.get("title", ""), 300), e.get("link", "")
         if not title or not link or (date and date < since):
             continue
-        rows.append({"covered_on": (date or NOW).astimezone(LONDON).date().isoformat(), "outlet": "Substack", "source": "social",
-                     "headline": first_line(title), "url": link, "notes": f"{org}: {clean(e.get('summary', ''), 500)}"[:600]})
+        rows.append({"organisation": org, "platform": "Substack", "posted_on": (date or NOW).astimezone(LONDON).date().isoformat(),
+                     "summary": first_line(title), "url": link})
     return rows
 
 
 def collect_social() -> list[dict]:
-    """Posts from the accounts listed on Lovelace's Media page that can be read openly: BlueSky (public API) and Substack (RSS).
+    """Posts from the accounts on Lovelace's Tracked accounts page that can be read openly: BlueSky (public API) and Substack (RSS).
+    Each row is { organisation, platform, posted_on, summary, url }: the ingest function files it against its account in the Social Media Channels Tracker.
     Instagram, Facebook, X, TikTok and LinkedIn do not offer an open feed and forbid scraping, so they are not read."""
     if not ingest_configured():
         print("social: INGEST_URL / INGEST_TOKEN not set, skipping")
@@ -1295,8 +1295,8 @@ def sync_state() -> None:
             print("no stored feed yet: starting fresh")
 
 
-def upload(coverage: list[dict] | None = None) -> bool:
-    """Push feed/polls/health (and any new Sarah Olney coverage) through the ingest function."""
+def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None) -> bool:
+    """Push feed/polls/health (and any new Sarah Olney coverage and social posts) through the ingest function."""
     if not ingest_configured():
         print("INGEST_URL / INGEST_TOKEN not set: data written locally only, not uploaded")
         return True
@@ -1312,10 +1312,16 @@ def upload(coverage: list[dict] | None = None) -> bool:
             print(f"upload of {name} failed: {e}", file=sys.stderr)
     if coverage:
         try:
-            print(f"coverage: {_ingest({'action': 'coverage', 'rows': coverage}).get('added', 0)} new stories and posts added to Lovelace's Media page")
+            print(f"coverage: {_ingest({'action': 'coverage', 'rows': coverage}).get('added', 0)} new stories added to Lovelace's Media trackers")
         except Exception as e:  # noqa: BLE001
             ok = False
             print(f"coverage upload failed: {e}", file=sys.stderr)
+    if social_posts:
+        try:
+            print(f"social: {_ingest({'action': 'social_posts', 'rows': social_posts}).get('added', 0)} new posts added to the Social Media Channels Tracker")
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            print(f"social post upload failed: {e}", file=sys.stderr)
     return ok
 
 
@@ -1370,6 +1376,7 @@ def main() -> int:
     run = lambda k: not only or k in only  # noqa: E731
     items: list[dict] = []
     coverage: list[dict] = []
+    social_posts: list[dict] = []
     if run("committees"):
         items += collect_committees()
     if run("thinktanks"):
@@ -1381,7 +1388,7 @@ def main() -> int:
     if run("media"):
         got, coverage = collect_media()
         items += got
-        coverage += collect_social()
+        social_posts = collect_social()
     if run("polling"):
         poll_items, pollsters = collect_polling()
         items += poll_items
@@ -1408,7 +1415,7 @@ def main() -> int:
     write("health", {"updated": NOW.isoformat(), "sources": health})
     ok = sum(h["ok"] for h in health)
     print(f"{len(feed)} items stored; {ok}/{len(health)} sources returned data")
-    return 0 if upload(coverage) else 1
+    return 0 if upload(coverage, social_posts) else 1
 
 
 if __name__ == "__main__":
