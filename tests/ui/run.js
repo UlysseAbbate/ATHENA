@@ -830,7 +830,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         const ovt = await page.$eval("#main", m => m.innerText);
         check(`${who}: the overview is a list of the days that have something planned (a day with nothing is left out; volunteers see today only)`, ovd.length === (who === "member" ? 1 : 2) && /^Today/.test(ovd[0]) && !/Nothing/.test(await page.$$eval(".ovday", ds => ds.map(d => d.innerText).join(" "))), ovd.join(" | "));
         if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `lovelace-overview-${scheme}.png`) }); await page.emulateMedia({ colorScheme: "light" }); }
-        check(`${who}: the overview lists each day's activities under their area`, /Launch housing pledge/.test(ovt) && /Mayor's Activity/i.test(ovt) && /GLA Activity/i.test(ovt) && /Members' call/.test(ovt), ovt.slice(0, 160).replace(/\n/g, " "));
+        check(`${who}: the overview lists each day's activities under their area`, /Launch housing pledge/.test(ovt) && /Mayor's Activity/i.test(ovt) && (who === "member" ? !/GLA Activity/i.test(ovt) : /GLA Activity/i.test(ovt)) && /Members' call/.test(ovt), ovt.slice(0, 160).replace(/\n/g, " "));
         check(`${who}: ${who === "member" ? "a volunteer does not see donor events or Governance and Legal" : "the overview includes Internal Campaign and Governance and Legal"}`, who === "member" ? !/Donor dinner|File the return|Governance and Legal/i.test(ovt) : /Donor dinner/.test(ovt) && /File the return/.test(ovt));
       }
       for (const t of tabs) {
