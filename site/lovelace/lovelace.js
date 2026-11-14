@@ -239,7 +239,8 @@ const addMonths = (s, n) => { const d = parseISO(monthStartOf(s)); d.setMonth(d.
 async function loadPlan(from, to, filter) {
   const { data, error } = await sb.from("day_plan_entries").select("*").gte("plan_date", from).lte("plan_date", to).order("plan_date");
   if (error) throw error;
-  return (filter ? data.filter(filter) : data).sort(byTime);
+  const inRange = data.filter(e => e.plan_date >= from && e.plan_date <= to);   // (the database already limits it: this keeps the page right whatever it is sent)
+  return (filter ? inRange.filter(filter) : inRange).sort(byTime);
 }
 /** One entry, as a line: time, what, where, link, notes. */
 function entryHtml(e, editable) {
