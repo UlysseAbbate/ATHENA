@@ -55,6 +55,15 @@
   }
   let queued = false;
   const queue = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; enhance(); }); };
-  const start = () => { enhance(); new MutationObserver((records) => { noteOpen(records); queue(); }).observe(document.body, { childList: true, subtree: true }); };
+  let lastPage = location.pathname + location.hash;
+  const start = () => {
+    enhance();
+    new MutationObserver((records) => {
+      const here = location.pathname + location.hash;
+      if (here !== lastPage) { lastPage = here; wasOpen.clear(); }   // another page, not a redraw of this one: nothing carries over
+      else noteOpen(records);
+      queue();
+    }).observe(document.body, { childList: true, subtree: true });
+  };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();
