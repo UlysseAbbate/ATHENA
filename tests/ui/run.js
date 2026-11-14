@@ -864,7 +864,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: the Done view lists what has been signed off`, /Sign off the leaflet/.test(await page.$eval("#main tbody", b => b.innerText)));
         await page.click('#tabs button:text-is("Volunteers & stakeholders")'); await page.waitForTimeout(350);   // (back to the page the next checks are about)
       }
-      check(`${who}: Help the Campaign is on the menu`, tabs.includes("Help the Campaign"), tabs.join("|"));
+      check(`${who}: Help the Campaign is a part of the Volunteer's Zone, not a separate page`, !tabs.includes("Help the Campaign") && tabs.includes("Volunteer's Zone"), tabs.join("|"));
       if (who === "member") check(`${who}: a volunteer's People page has no suggestions list`, (await page.$("[data-pt]")) === null);
       else {
         check(`${who}: the People page has a Suggestions & offers list for the campaign team`, (await page.$$eval("[data-pt] button", bs => bs.map(b => b.textContent.trim()))).join("|") === "Volunteers & stakeholders|Suggestions & offers");
@@ -874,7 +874,8 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: the campaign team can edit and delete a suggestion`, (await page.$("#pp [data-edit]")) !== null);
         await page.click('[data-p="people"]'); await page.waitForTimeout(300);
       }
-      await page.click('#tabs button:text-is("Help the Campaign")'); await page.waitForTimeout(400);
+      await page.click('#tabs button:text-is("Volunteer\'s Zone")'); await page.waitForTimeout(300);
+      await page.click('[data-zs] button:text-is("Help the Campaign")'); await page.waitForTimeout(400);
       const hk = await page.$$eval("#h_kind option", os => os.map(o => o.textContent));
       check(`${who}: the form asks for a name, a contact (with happy to be contacted), what is offered, and further details`, (await page.$("#h_name")) !== null && (await page.$("#h_contact")) !== null && (await page.$('input[name="ok"]')) !== null && (await page.$("#h_details")) !== null
         && hk.slice(1).join("|") === "I know of a venue(s) to host events/set pieces|I know of a contact(s) at an organisation|I would like to make a policy suggestion|I can support/have expertise in digital communications (filming)|I can support/have expertise in digital communications (editing)|I can support events and set pieces", hk.join("|"));
@@ -901,6 +902,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       {
         // the Volunteer's Zone: a calendar of the same days; a day shows the activities except Governance and Legal, and only Membership Engagement under Internal Campaign
         await page.click('#tabs button:text-is("Volunteer\'s Zone")'); await page.waitForTimeout(450);
+        await page.click('[data-zs] button:text-is("Today")'); await page.waitForTimeout(400);
         check(`${who}: the Volunteer's Zone shows today only, with no calendar to browse`, (await page.$$(".cal-cell")).length === 0 && (await page.$("[data-n]")) === null && /Launch housing pledge/.test(await page.$eval("#main", c => c.innerText)));
         const zt = await page.$eval("#main", m => m.innerText);
         const zh = await page.$$eval("#main .grp .h2-rule", hs => hs.map(h => h.textContent.trim()));
@@ -978,6 +980,13 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: LUCIEN permission editable only by admin`, ulysseLocked === (who !== "admin"));
         const selfLocked = await page.$$eval(`[data-u="${USERS[who].id}"]`, e => e.length === 0);
         check(`${who}: cannot edit own role`, selfLocked);
+        // Communications: choosing another tracker keeps Media and the tracker open
+        await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
+        await page.click('#tabs button:text-is("Communications")'); await page.waitForTimeout(450);
+        await page.click('[data-t="olney"]'); await page.waitForTimeout(700);
+        const cmOpen = await page.$$eval("details.dd[open] > summary", ss => ss.map(x => x.textContent.trim()));
+        check(`${who}: choosing another tracker leaves Media and the tracker open`, cmOpen.includes("Media") && cmOpen.some(x => /Olney Media Tracker/.test(x)), cmOpen.join("|"));
+        await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = true; });
         // a drop-down the person is working in stays open when the page redraws after a change
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
         await page.click('#tabs button:text-is("Overview")'); await page.waitForTimeout(300);
