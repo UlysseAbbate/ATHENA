@@ -33,6 +33,8 @@ jobs:
         run: node scripts/libby/check-process.mjs
       - name: Check the spreadsheet import (headings, dates, roles, the rows it accepts and refuses)
         run: node scripts/libby/check-import.mjs
+      - name: Check LUCIEN's economic data profiles (closest age bands, shares, the question reader)
+        run: node scripts/lucien/check-econ.mjs
       - name: Check sign-in, the guessing throttle and the security headers
         run: node scripts/libby/check-access.mjs
       - name: Check the grid and hymn sheet Word documents

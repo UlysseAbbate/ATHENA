@@ -90,6 +90,8 @@ def _robots_for(url: str) -> urllib.robotparser.RobotFileParser:
 
 
 def allowed(url: str) -> bool:
+    if any(url.startswith(e["prefix"]) for e in (CONFIG.get("robots_exceptions") or [])):   # an open API that invites programs (config/sources.yml says which and why)
+        return True
     return _robots_for(url).can_fetch(ROBOTS_AGENT, url)
 
 
@@ -1560,6 +1562,39 @@ def upload_archive(items: list[dict]) -> bool:
     return ok
 
 
+def econ_due() -> bool:
+    """The economic statistics change monthly or less, so they are loaded about weekly (ECON_FORCE=1 loads them now)."""
+    if os.environ.get("ECON_FORCE"):
+        return True
+    if not ingest_configured():
+        return False
+    try:
+        last = _ingest({"action": "econ_status"}).get("last_fetched")
+    except Exception as e:  # noqa: BLE001
+        print(f"economic data status failed: {e}", file=sys.stderr)
+        return False
+    if not last:
+        return True
+    return NOW - parse_date(last) > timedelta(days=ECON_EVERY_DAYS)
+
+
+ECON_EVERY_DAYS = 6
+
+
+def upload_econ(rows: list[dict]) -> bool:
+    if not rows or not ingest_configured():
+        return True
+    ok, stored = True, 0
+    for i in range(0, len(rows), 1000):
+        try:
+            stored += int(_ingest({"action": "econ_data", "rows": rows[i:i + 1000]}).get("stored", 0))
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            print(f"economic data upload failed: {e}", file=sys.stderr)
+    print(f"economic data: {stored} figures stored")
+    return ok
+
+
 def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None, london_data: list[dict] | None = None, events: list[dict] | None = None, parliament: list[dict] | None = None) -> bool:
     """Push feed/polls/health (and any new Sarah Olney coverage and social posts) through the ingest function."""
     if not ingest_configured():
@@ -1655,7 +1690,7 @@ def main() -> int:
         write("feed", {"updated": NOW.isoformat(), "items": feed})
         print(f"{len(feed)} items re-classified")
         return 0 if upload() else 1
-    groups = {"committees", "thinktanks", "media", "polling", "statscal", "events", "parliament"}
+    groups = {"committees", "thinktanks", "media", "polling", "statscal", "events", "parliament", "economic"}
     run = lambda k: not only or k in only  # noqa: E731
     items: list[dict] = []
     coverage: list[dict] = []
@@ -1697,6 +1732,10 @@ def main() -> int:
     feed = merge(items)
     write("feed", {"updated": NOW.isoformat(), "items": feed})
     history: list[dict] = []
+    econ: list[dict] = []
+    if run("economic") and econ_due():   # Nomis: labour market and census figures by age, sex and region (tracker/econdata.py)
+        import econdata
+        econ = econdata.collect(get, lambda name, ok, n, err: record("economic", f"Nomis: {name}", ok, n, err))
     start_year = archive_history_start() if run("committees") else None
     if start_year:   # a new archive is filled with every committee report since 2010, newest first, a few years per run
         history = collect_committee_history(start_year)
@@ -1714,7 +1753,7 @@ def main() -> int:
     write("health", {"updated": NOW.isoformat(), "sources": health})
     ok = sum(h["ok"] for h in health)
     print(f"{len(feed)} items stored; {ok}/{len(health)} sources returned data")
-    return 0 if upload(coverage, social_posts, london_data, events, parliament) and upload_archive(list({i["id"]: i for i in history + feed}.values())) else 1
+    return 0 if upload(coverage, social_posts, london_data, events, parliament) and upload_archive(list({i["id"]: i for i in history + feed}.values())) and upload_econ(econ) else 1
 
 
 if __name__ == "__main__":

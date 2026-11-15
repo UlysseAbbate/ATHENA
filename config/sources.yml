@@ -21,6 +21,12 @@
 # are spaced at least 1 second apart (longer if its Crawl-delay says so).
 # ---------------------------------------------------------------------------
 
+# Official open data APIs that publish themselves for programmes to read, though their robots.txt (written for web crawlers) keeps bots off the path.
+# Only a request that starts with one of these addresses skips the robots.txt check; the polite spacing and the identifying User-Agent still apply. Everything else obeys robots.txt.
+robots_exceptions:
+  - prefix: "https://www.nomisweb.co.uk/api/v01/dataset/"
+    reason: "Nomis (ONS) provides this API, free and without a key, for programmes to read labour market and census tables (https://www.nomisweb.co.uk/api)."
+
 committees:
   # Parliament Committees API (https://committees-api.parliament.uk)
   api: https://committees-api.parliament.uk/api/Publications

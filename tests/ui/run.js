@@ -81,6 +81,18 @@ const TABLES = {
   audit_log: [{ id: 1, at: ts, user_email: "core@test.invalid", table_name: "day_plan_entries", label: "Launch housing pledge", action: "update", changed: ["content"] }],
   ulysse_data: [{ name: "statscal", body: STATSCAL, updated_at: new Date().toISOString() }, { name: "feed", body: FEED, updated_at: new Date().toISOString() }, { name: "polls", body: { rows: [] } }, { name: "health", body: { sources: [{ group: "media", name: "BBC News", ok: true, items: 3 }, { group: "thinktanks", name: "IFS", ok: false, items: 0, error: "site refuses bots" }] } }],
   ulysse_read: [],
+  econ_data: (() => {
+    const rows = [];
+    const row = (geo, name, ds, sex, a, cat, value, x = {}) => ({ dataset: ds, geography_code: geo, geography_name: name, geography_level: "region", sex, age_from: a ? a[0] : null, age_to: a ? a[1] : null, age_label: a ? `${a[0]}-${a[1]}` : null, category: cat, measure: x.measure || "Count", unit: x.unit || "people", value, period: x.period || "Jul 2025-Jun 2026" });
+    for (const [geo, name, k] of [["E12000007", "London", 1], ["K02000001", "United Kingdom", 10]]) {
+      for (const [a, pop, act, emp, self, un, inact, ft, pt] of [[[16, 24], 100, 70, 60, 5, 10, 30, 35, 25], [[25, 49], 400, 360, 340, 50, 20, 40, 300, 40], [[16, 64], 700, 560, 530, 90, 30, 140, 430, 100]])
+        for (const [cat, v] of [["All persons", pop], ["Economically Active", act], ["Employed", emp], ["Self Employed", self], ["Unemployed", un], ["Economically inactive", inact], ["Total Full-time", ft], ["Total Part-time", pt]]) rows.push(row(geo, name, "aps_labour", "all", a, cat, v * k * 100));
+      rows.push(row(geo, name, "ashe", "male", null, "All workers", 700 + k, { measure: "Median weekly pay - gross", unit: "£", period: "2025" }));
+      rows.push(row(geo, name, "ashe", "female", null, "All workers", 600 + k, { measure: "Median weekly pay - gross", unit: "£", period: "2025" }));
+      rows.push(row(geo, name, "gdhi", "all", null, "GDHI", 25000 + k * 1000, { measure: "GDHI per head (£)", unit: "£", period: "2024" }));
+    }
+    return rows;
+  })(),
   lucien_archive: [{ id: "a1", category: "committee", source: "Health Committee", title: "Report on waiting lists (2011)", url: "https://committees.parliament.uk/publications/1/", published: "2011-03-01T10:00:00Z", first_seen: "2011-03-01T10:00:00Z", summary: "Old report", tags: ["Report", "Commons"], item: { areas: ["Health"], kind: "Report" } },
     { id: "a2", category: "thinktank", source: "IFS", title: "Archived IFS briefing", url: "https://ifs.org.uk/x", published: "2026-02-01T10:00:00Z", first_seen: "2026-02-01T10:00:00Z", summary: "", tags: [], item: {} }],
   program_levels: LEVELS,
@@ -1054,6 +1066,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check("archive: Older shows the next page", /range|offset=50/.test((log.filter(l => l.startsWith("GET lucien_archive")).pop() || "")) || /Page 2 of 3/.test(await page.$eval("#arc-pager", e => e.innerText)));
         await page.click('#tabs button[data-tab="all"]'); await page.waitForTimeout(300);
         check("archive: the other tabs are unchanged (Everything shows its own list, not the archive)", (await page.$eval("#archivepanel", e => e.hidden)) && !(await page.$eval("#list", e => e.hidden)));
+        await page.click('#tabs button[data-tab="economy"]'); await page.waitForTimeout(400);
+        check("economy: the Economic policy tab has Data profiles and Costings", (await page.$$eval("#eco-tabs button", bs => bs.map(b => b.textContent))).join("|") === "Data profiles|Costings" && (await page.$("#eco-q")) !== null);
+        await page.fill("#eco-q", "create a data profile, compared to the average, of Londoners aged 18-25"); await page.click("#eco-ask button"); await page.waitForTimeout(600);
+        const eco = await page.$eval("#economypanel", e => e.innerText);
+        check("economy: a question in words is read (London, 18-25) and answered with the closest age band", /London, aged 18-25/.test(eco) && /closest it can give is\s+16-24/.test(eco.replace(/\s+/g, " ")) && /Employment rate/.test(eco) && /60\.0%/.test(eco) && /75\.7%/.test(eco), eco.slice(0, 300).replace(/\n/g, " "));
+        check("economy: the difference is in percentage points, pay and household income are included with their limits", /−15\.7 points|-15\.7 points/.test(eco) && /Median weekly pay/.test(eco) && /not available by age/.test(eco) && /Household income per head/.test(eco));
+        await page.click('#eco-tabs [data-et="costings"]'); await page.waitForTimeout(150);
+        check("economy: the Costings tab says it is the next stage and not an official costing", /next stage/.test(await page.$eval("#economypanel", e => e.innerText)) && /not be an official/.test(await page.$eval("#economypanel", e => e.innerText)));
         await page.click('#tabs button[data-tab="statscal"]'); await page.waitForTimeout(300);
         check("stats calendar: it opens as a calendar (a month grid with weekday headings)", (await page.$$(".sc-grid .sc-dow")).length === 7 && (await page.$$(".sc-cell")).length >= 28);
         await page.click('[data-sc-day="' + plus(2) + '"]'); await page.waitForTimeout(200);
