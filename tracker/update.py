@@ -1481,7 +1481,7 @@ def collect_whatson_events() -> list[dict]:
 
 
 # -------------------------------------------------- the permanent archive (LUCIEN > Archive)
-ARCHIVE_FROM_YEAR = 2010
+ARCHIVE_FROM_YEAR = 1995   # the earliest year the Parliament Committees API holds publications for (checked: nothing before 1995)
 ARCHIVE_CHUNK = 500
 
 

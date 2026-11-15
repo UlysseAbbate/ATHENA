@@ -223,7 +223,7 @@ function renderHealth() {
 
 /* ---------------------------------------------------------------- render + events */
 function render(keepControls) {
-  const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", stats = tab === "statscal", arch = tab === "archive", eco = tab === "economy", other = health || team || stats || arch || eco;
+  const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", stats = tab === "statscal", arch = tab === "archive" || tab === "committee", eco = tab === "economy", other = health || team || stats || arch || eco;
   saveView();
   { const b = document.querySelector(`#tabs button[data-tab="${tab}"]`); $("pt").querySelector("h1").textContent = tab === "team" ? "Team & access" : (b ? b.textContent : "Everything"); }
   $("healthpanel").hidden = !health; $("teampanel").hidden = !team; $("list").hidden = other; $("controls").hidden = other; $("overview").hidden = other || poll;
@@ -232,7 +232,7 @@ function render(keepControls) {
   if (!arch) delete $("archivepanel").dataset.on;
   if (!eco) delete $("economypanel").dataset.on;
   if (eco) { if (!$("economypanel").dataset.on) { $("economypanel").dataset.on = "1"; Economy.render($("economypanel")); } return; }   // drawn once per visit, like the archive
-  if (arch) { if (!$("archivepanel").dataset.on) { $("archivepanel").dataset.on = "1"; Archive.render($("archivepanel"), cardHtml); } return; }   // drawn once per visit: a redraw would lose the page and search
+  if (arch) { if ($("archivepanel").dataset.on !== tab) { $("archivepanel").dataset.on = tab; Archive.render($("archivepanel"), cardHtml, { category: tab === "committee" ? "committee" : "" }); } return; }   // drawn once per visit: a redraw would lose the page and search
   if (stats) return StatsCal.render($("statspanel"), state.statscal);
   if (team) return TeamPage.render($("teampanel"), { program: "lucien", name: "LUCIEN" });
   if (health) return renderHealth();

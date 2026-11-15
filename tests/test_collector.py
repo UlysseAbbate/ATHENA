@@ -482,7 +482,7 @@ def test_committee_history_reads_year_by_year_newest_first(monkeypatch):
 def test_archive_history_start(monkeypatch):
     monkeypatch.setattr(U, "ingest_configured", lambda: True)
     monkeypatch.delenv("ARCHIVE_HISTORY", raising=False)
-    for oldest, want in ((None, U.NOW.year), ("2019-05-02T00:00:00+00:00", 2019), ("2010-02-01T00:00:00+00:00", None)):
+    for oldest, want in ((None, U.NOW.year), ("2019-05-02T00:00:00+00:00", 2019), ("2010-01-01T00:00:00+00:00", 2010), ("1995-03-01T00:00:00+00:00", None)):
         monkeypatch.setattr(U, "_ingest", lambda payload, timeout=90, o=oldest: {"ok": True, "committees": 5, "oldest_committee": o})
         assert U.archive_history_start() == want
     monkeypatch.setenv("ARCHIVE_HISTORY", "1")
