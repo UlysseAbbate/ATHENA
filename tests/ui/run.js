@@ -926,6 +926,18 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: each area has its sections`, secs[0] === "Field Campaign,Media,Membership Engagement,Other Activities" && secs[1] === secs[0] && secs[2] === "Membership Engagement,Donor Events,Staff Activities,Other" && secs[3] === "" && secs[4] === "Data & Statistics,Political Events,London Events", secs.join(" | "));
         check(`${who}: an entry shows its time, place, link and notes, and a section can take more entries`, /10:00/.test(plan) && /Richmond Park/.test(plan) && /Bring leaflets/.test(plan) && (await page.$('[data-add="mayor|field"]')) !== null && (await page.$$("[data-add]")).length === 16);
         check(`${who}: the day has no local party visits section`, !/[Ll]ocal party visit/.test(plan) && !/contact Pat 0701/.test(plan));
+        // the sections of a day are open, each with its Add button on the title's line, to the right; an entry can be moved to another section
+        await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
+        await page.click("[data-back]"); await page.waitForTimeout(300);
+        await page.click(".cal-cell.today"); await page.waitForTimeout(450);
+        const heads = await page.$$eval("#main .sec-head", hs => hs.map(h => { const t = h.querySelector(".sec-title"), b = h.querySelector("[data-add]"); const r1 = t && t.getBoundingClientRect(), r2 = b && b.getBoundingClientRect();
+          return { open: !h.closest("details:not([open])"), same: !!(r2 && (!r1 || Math.abs((r1.top + r1.bottom) / 2 - (r2.top + r2.bottom) / 2) < 12)), right: !!(r2 && (!r1 || r2.left > r1.right)) }; }));
+        check(`${who}: every section of a day is open, with its Add button on the title's line, to the right`, heads.length >= 10 && heads.every(h => h.open && h.same && h.right), JSON.stringify(heads.slice(0, 3)));
+        await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = true; });
+        await page.click("[data-e]"); await page.waitForTimeout(250);
+        const wopts = await page.$$eval("#f_where option", os => os.map(o => o.textContent));
+        check(`${who}: an entry has a Section drop-down to move it (for example to Internal Campaign: Donor Events)`, wopts.includes("Mayor's Activity: Field Campaign") && wopts.includes("Internal Campaign: Donor Events"), wopts.join("|"));
+        await page.click("#cx"); await page.waitForTimeout(150);
         await page.click("[data-back]"); await page.waitForTimeout(300);
       }
       if (who !== "member") {

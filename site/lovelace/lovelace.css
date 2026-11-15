@@ -95,3 +95,7 @@ td.todo-tick{width:3rem;text-align:center}
 td.todo-tick input{width:1.15rem;height:1.15rem}
 tr.todo-done td:not(.todo-tick){opacity:.6}
 tr.todo-done td.wrapcell{text-decoration:line-through}
+
+/* a section of a day's plan: its title with its Add button on the same line, to the right; always open */
+.sec{margin:0 0 14px}.sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 6px;border-bottom:1px solid var(--line, #e3d9d2);padding-bottom:4px}
+.sec-title{margin:0;font:700 1rem var(--head);letter-spacing:-.02em}.sec-head .btn{margin-left:auto}
