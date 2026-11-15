@@ -1337,14 +1337,22 @@ def sync_state() -> None:
 
 
 def london_data_rows(body: dict, today: date | None = None) -> list[dict]:
-    """The GLA / London data drops in the Stats calendar, for Lovelace's Daily Plan (London Politics > GLA / London Data): what the London Datastore has
-    published or is expected to publish, and London items added by hand. Not the national releases, the police data or the meeting calendar.
-    One row per drop and date: { key, date, title, url, starts }."""
+    """What the Stats calendar holds, for Lovelace's Daily Plan (London Politics): the London data drops (London Datastore, police data, items added by hand)
+    and the Office for National Statistics releases go to "Data & Statistics"; the GLA's meetings go to "Political Events". The other national releases stay on LUCIEN's calendar.
+    One row per item and date: { key, date, title, url, starts, section }."""
     today = today or NOW.astimezone(LONDON).date()
-    lo, hi = today - timedelta(days=14), today + timedelta(days=90)
     out = []
     for r in body.get("releases", []):
-        if r.get("tier") != "london" or r.get("source_system") not in ("london_datastore", "manual") or r.get("kind") not in ("published", "upcoming") or r.get("cancelled"):
+        tier, system = r.get("tier"), r.get("source_system")
+        if r.get("kind") not in ("published", "upcoming") or r.get("cancelled"):
+            continue
+        if tier == "london" and system in ("london_datastore", "police_uk", "manual"):
+            section, lo, hi = "data", today - timedelta(days=30), today + timedelta(days=90)
+        elif tier == "london" and system == "gla_meetings":
+            section, lo, hi = "political", today - timedelta(days=7), today + timedelta(days=90)
+        elif tier == "ons":
+            section, lo, hi = "data", today - timedelta(days=7), today + timedelta(days=45)
+        else:
             continue
         try:
             when = date.fromisoformat(str(r.get("date"))[:10])
@@ -1356,9 +1364,10 @@ def london_data_rows(body: dict, today: date | None = None) -> list[dict]:
         starts = None
         if r.get("date_precision") == "time" and r.get("datetime"):
             starts = str(r["datetime"])[11:16] or None
-        out.append({"key": f"statscal:{r.get('id')}:{when.isoformat()}", "date": when.isoformat(), "title": f"{r.get('publisher', 'London')}: {r.get('title', '')}{note}"[:400],
-                    "url": r.get("url") or "", "starts": starts})
-    return out
+        out.append({"key": f"statscal:{r.get('id')}:{when.isoformat()}", "date": when.isoformat(), "section": section,
+                    "title": f"{r.get('publisher', 'London')}: {r.get('title', '')}{note}"[:400], "url": r.get("url") or "", "starts": starts})
+    out.sort(key=lambda x: x["date"])
+    return out[:600]
 
 
 def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None, london_data: list[dict] | None = None) -> bool:

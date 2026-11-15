@@ -824,7 +824,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.goto(BASE + "/lovelace/");
       await page.waitForSelector("#tabs button", { timeout: 5000 });
       const tabs = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent));
-      check(`${who}: lovelace tabs`, who === "member" ? !tabs.includes("Budget & governance") && tabs.includes("Overview") && tabs.includes("Volunteer's Zone") && !tabs.includes("Calendar") : tabs.includes("Budget & governance") && tabs.includes("Calendar") && tabs.includes("Volunteer's Zone") && tabs.includes("Communications") && !tabs.includes("This Week") && !tabs.includes("Team & access") && ((await page.$('#shell-foot [data-foot="team"]')) !== null) === (who === "admin"), tabs.join(" | "));
+      check(`${who}: lovelace tabs`, who === "member" ? !tabs.includes("Governance") && tabs.includes("Summary") && tabs.includes("Member's Zone") && !tabs.includes("Full Plan") : tabs.includes("Governance") && tabs.includes("Full Plan") && tabs.includes("Member's Zone") && tabs.includes("Comms") && !tabs.includes("This Week") && !tabs.includes("Team & access") && ((await page.$('#shell-foot [data-foot="team"]')) !== null) === (who === "admin"), tabs.join(" | "));
       check(`${who}: the Theme button is in the foot, not the masthead`, (await page.$(".masthead [data-theme-btn]")) === null && (await page.$("#shell-foot [data-theme-btn]")) !== null);
       await page.waitForSelector(".ovday, #main .muted", { timeout: 5000 });
       {
@@ -842,8 +842,8 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: tab ${t} renders`, txt.length > 20 && !/Loading…$/.test(txt.trim()), txt.slice(0, 60).replace(/\n/g, " "));
       }
       // the merged pages: Communications (media trackers, policies) and Volunteers & stakeholders; visits live under the calendar
-      check(`${who}: old pages are merged away`, !tabs.some(t => ["Local party visits", "Social media", "Coverage", "Volunteers", "Stakeholders"].includes(t)) && !tabs.includes("Media") && !tabs.includes("Policies") && tabs.includes("Communications") && tabs.includes("Volunteers & stakeholders"), tabs.join("|"));
-      await page.click('#tabs button:text-is("Volunteers & stakeholders")'); await page.waitForTimeout(350);
+      check(`${who}: old pages are merged away`, !tabs.some(t => ["Local party visits", "Social media", "Coverage", "Volunteers"].includes(t)) && !tabs.includes("Media") && !tabs.includes("Policies") && tabs.includes("Comms") && tabs.includes("Stakeholders"), tabs.join("|"));
+      await page.click('#tabs button:text-is("Stakeholders")'); await page.waitForTimeout(350);
       const heads = await page.$$eval("#main table th", hs => hs.map(h => h.textContent.replace(/[▲▼]/g, "").trim()));
       check(`${who}: people columns are Full name / Organisation / Sector / Email / Phone / Point of contact / Notes`, heads.slice(0, 7).join("|") === "Full name|Organisation|Sector|Email|Phone|Point of contact|Notes", heads.join("|"));
       await page.click('#main [data-fl="1"]');
@@ -851,9 +851,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       check(`${who}: volunteers are filed under Lib Dems`, vrows.length === 1 && /Alex Volunteer/.test(vrows[0]) && (vrows[0].match(/Lib Dems/g) || []).length === 2, vrows.join("|"));
       // Help the Campaign: a suggestion / offer form for everyone; the campaign team reads what comes in on the People page
       // the Mayor's To-Do List: for the core team (who fill it) and those who sign off; a volunteer does not see it
-      check(`${who}: the Mayor's To-Do List is ${who === "member" ? "not on a volunteer's menu" : "on the menu"}`, tabs.includes("Mayor's To-Do List") === (who !== "member"), tabs.join("|"));
+      check(`${who}: the Mayor's To-Do List is ${who === "member" ? "not on a volunteer's menu" : "on the menu"}`, tabs.includes("To-Do-List") === (who !== "member"), tabs.join("|"));
       if (who !== "member") {
-        await page.click('#tabs button:text-is("Mayor\'s To-Do List")'); await page.waitForTimeout(400);
+        await page.click('#tabs button:text-is("To-Do-List")'); await page.waitForTimeout(400);
         const th = await page.$$eval("#main thead th", hs => hs.map(h => h.textContent.trim()).filter(Boolean));
         check(`${who}: the To-Do List has Done, Action, Responsible, Link and Further notes, with the open items first`, th.join("|") === "Done|Action|Responsible|Link|Further notes" && /Approve the housing speech/.test(await page.$eval("#main tbody", b => b.innerText)) && !/Sign off the leaflet/.test(await page.$eval("#main tbody", b => b.innerText)));
         check(`${who}: the core team can add, edit and delete an item`, (await page.$("[data-add]")) !== null && (await page.$("[data-edit]")) !== null);
@@ -862,9 +862,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: ticking an item saves it as done`, log.some(l => l.startsWith("PATCH mayor_todos")), log.join(";"));
         await page.click('[data-s="done"]'); await page.waitForTimeout(250);
         check(`${who}: the Done view lists what has been signed off`, /Sign off the leaflet/.test(await page.$eval("#main tbody", b => b.innerText)));
-        await page.click('#tabs button:text-is("Volunteers & stakeholders")'); await page.waitForTimeout(350);   // (back to the page the next checks are about)
+        const lists = await page.$$eval("[data-tl] button", bs => bs.map(b => b.textContent.replace(/\s*\(\d+\)/, "").trim()));
+        check(`${who}: the To-Do-List has a list each for the Mayor, the campaign, the staff and the volunteers`, lists.join("|") === "Mayor's list|Campaign's list|Staff's list|Volunteers' list", lists.join("|"));
+        await page.click('[data-l="staff"]'); await page.waitForTimeout(300);
+        check(`${who}: another list shows only its own items`, /Nothing/.test(await page.$eval("#main tbody", b => b.innerText)) && !/Sign off the leaflet|Approve the housing/.test(await page.$eval("#main tbody", b => b.innerText)));
+        await page.click('[data-l="mayor"]'); await page.waitForTimeout(200);
+        await page.click('#tabs button:text-is("Stakeholders")'); await page.waitForTimeout(350);   // (back to the page the next checks are about)
       }
-      check(`${who}: Help the Campaign is a part of the Volunteer's Zone, not a separate page`, !tabs.includes("Help the Campaign") && tabs.includes("Volunteer's Zone"), tabs.join("|"));
+      check(`${who}: Help the Campaign is a part of the Member's Zone, not a separate page`, !tabs.includes("Help the Campaign") && tabs.includes("Member's Zone"), tabs.join("|"));
       if (who === "member") check(`${who}: a volunteer's People page has no suggestions list`, (await page.$("[data-pt]")) === null);
       else {
         check(`${who}: the People page has a Suggestions & offers list for the campaign team`, (await page.$$eval("[data-pt] button", bs => bs.map(b => b.textContent.trim()))).join("|") === "Volunteers & stakeholders|Suggestions & offers");
@@ -874,7 +879,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: the campaign team can edit and delete a suggestion`, (await page.$("#pp [data-edit]")) !== null);
         await page.click('[data-p="people"]'); await page.waitForTimeout(300);
       }
-      await page.click('#tabs button:text-is("Volunteer\'s Zone")'); await page.waitForTimeout(300);
+      await page.click('#tabs button:text-is("Member\'s Zone")'); await page.waitForTimeout(300);
       await page.click('[data-zs] button:text-is("Help the Campaign")'); await page.waitForTimeout(400);
       const hk = await page.$$eval("#h_kind option", os => os.map(o => o.textContent));
       check(`${who}: the form asks for a name, a contact (with happy to be contacted), what is offered, and further details`, (await page.$("#h_name")) !== null && (await page.$("#h_contact")) !== null && (await page.$('input[name="ok"]')) !== null && (await page.$("#h_details")) !== null
@@ -883,7 +888,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.fill("#h_name", "Pat Helper"); await page.fill("#h_contact", "pat@test.invalid"); await page.check('input[name="ok"]'); await page.selectOption("#h_kind", "events"); await page.fill("#h_details", "Happy to steward");
       await page.click("#helpf button[type=submit]"); await page.waitForTimeout(500);
       check(`${who}: sending the form files the suggestion`, log.includes("POST campaign_suggestions") && /Thank you/.test(await page.$eval("#hmsg", e => e.textContent)), log.join(";"));
-      await page.click('#tabs button:text-is("Communications")'); await page.waitForTimeout(450);
+      await page.click('#tabs button:text-is("Comms")'); await page.waitForTimeout(450);
       const trk =await page.$$eval("[data-tr] button", bs => bs.map(b => b.textContent.trim()));
       check(`${who}: Communications has the media trackers${who === "member" ? "" : " (and the tracked accounts)"}`, trk.join("|") === (who === "member" ? "Overall Media Tracker|Olney Media Tracker" : "Overall Media Tracker|Olney Media Tracker|Social Media Channels Tracker|Tracked accounts"), trk.join("|"));
       check(`${who}: the Overall Media Tracker lists wider political news`, /Heathrow expansion debated/.test(await page.$eval("#cm", m => m.innerText)) && /Overall Media Tracker/.test(await page.$eval("#cm h2", h => h.textContent)));
@@ -898,18 +903,18 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       }
       await page.goto(BASE + "/lovelace/#coverage"); await page.waitForTimeout(600);
       check(`${who}: media has no content pipeline`, !/content pipeline/i.test(await page.$eval("#main", m => m.innerText)));
-      check(`${who}: the old #coverage address opens Communications`, (await page.$eval("#tabs button.on", b => b.textContent)) === "Communications");
+      check(`${who}: the old #coverage address opens Communications`, (await page.$eval("#tabs button.on", b => b.textContent)) === "Comms");
       {
-        // the Volunteer's Zone: a calendar of the same days; a day shows the activities except Governance and Legal, and only Membership Engagement under Internal Campaign
-        await page.click('#tabs button:text-is("Volunteer\'s Zone")'); await page.waitForTimeout(450);
+        // the Member's Zone: a calendar of the same days; a day shows the activities except Governance and Legal, and only Membership Engagement under Internal Campaign
+        await page.click('#tabs button:text-is("Member\'s Zone")'); await page.waitForTimeout(450);
         await page.click('[data-zs] button:text-is("Today")'); await page.waitForTimeout(400);
-        check(`${who}: the Volunteer's Zone shows today only, with no calendar to browse`, (await page.$$(".cal-cell")).length === 0 && (await page.$("[data-n]")) === null && /Launch housing pledge/.test(await page.$eval("#main", c => c.innerText)));
+        check(`${who}: the Member's Zone shows today only, with no calendar to browse`, (await page.$$(".cal-cell")).length === 0 && (await page.$("[data-n]")) === null && /Launch housing pledge/.test(await page.$eval("#main", c => c.innerText)));
         const zt = await page.$eval("#main", m => m.innerText);
         const zh = await page.$$eval("#main .grp .h2-rule", hs => hs.map(h => h.textContent.trim()));
-        check(`${who}: a day in the Volunteer's Zone shows Mayor's, GLA and Membership Engagement only, read-only`, zh.join("|") === "Mayor's Activity|Internal Campaign" && /Launch housing pledge/.test(zt) && /Members' call/.test(zt) && !/Donor dinner|File the return|Governance and Legal|Donor Events/.test(zt) && (await page.$("[data-add]")) === null && (await page.$("[data-e]")) === null, zh.join("|"));
+        check(`${who}: a day in the Member's Zone shows Mayor's, GLA and Membership Engagement only, read-only`, zh.join("|") === "Mayor's Activity|Internal Campaign" && /Launch housing pledge/.test(zt) && /Members' call/.test(zt) && !/Donor dinner|File the return|Governance and Legal|Donor Events/.test(zt) && (await page.$("[data-add]")) === null && (await page.$("[data-e]")) === null, zh.join("|"));
       }
       if (who !== "member") {
-        await page.click('#tabs button:text-is("Calendar")'); await page.waitForTimeout(450);
+        await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(450);
         const cal = await page.$eval("#main", m => m.innerText);
         check(`${who}: the Calendar is a month calendar with the day's entries in their cells, and the visit requests under it`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && /Local party visit requests/.test(cal), cal.slice(0, 120).replace(/\n/g, " "));
         if (process.env.SHOTS && who === "admin") await page.screenshot({ path: path.join(process.env.SHOTS, "lovelace-calendar.png"), fullPage: true });
@@ -918,7 +923,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         const gh = await page.$$eval("#main .grp .h2-rule", hs => hs.map(h => h.textContent.trim()));
         check(`${who}: clicking a day gives its daily plan: Mayor's Activity, GLA Activity, Internal Campaign, Governance and Legal`, gh.slice(0, 5).join("|") === "Mayor's Activity|GLA Activity|Internal Campaign|Governance and Legal|London Politics", gh.join("|"));
         const secs = await page.$$eval("#main .grp", gs => gs.map(g => [...g.querySelectorAll("h3")].map(h => h.textContent.trim()).join(",")));
-        check(`${who}: each area has its sections`, secs[0] === "Field Campaign,Media,Membership Engagement,Other Activities" && secs[1] === secs[0] && secs[2] === "Membership Engagement,Donor Events,Staff Activities,Other" && secs[3] === "" && secs[4] === "GLA / London Data,Political Events,London Events", secs.join(" | "));
+        check(`${who}: each area has its sections`, secs[0] === "Field Campaign,Media,Membership Engagement,Other Activities" && secs[1] === secs[0] && secs[2] === "Membership Engagement,Donor Events,Staff Activities,Other" && secs[3] === "" && secs[4] === "Data & Statistics,Political Events,London Events", secs.join(" | "));
         check(`${who}: an entry shows its time, place, link and notes, and a section can take more entries`, /10:00/.test(plan) && /Richmond Park/.test(plan) && /Bring leaflets/.test(plan) && (await page.$('[data-add="mayor|field"]')) !== null && (await page.$$("[data-add]")).length === 16);
         check(`${who}: the day shows a dated visit's details`, /contact Pat 0701/.test(plan) && /taken by Louis/.test(plan), plan.slice(0, 200).replace(/\n/g, " "));
         await page.click("[data-back]"); await page.waitForTimeout(300);
@@ -926,14 +931,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       if (who !== "member") {
         // every drop-down starts closed
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
-        await page.click('#tabs button:text-is("Budget & governance")'); await page.waitForTimeout(500);
+        await page.click('#tabs button:text-is("Governance")'); await page.waitForTimeout(500);
         const dd = await page.$$eval("details.dd", ds => ({ n: ds.length, open: ds.filter(d => d.open).length }));
         check(`${who}: drop-down sections start closed`, dd.n >= 1 && dd.open === 0, JSON.stringify(dd));
         await page.click("details.dd > summary"); await page.waitForTimeout(200);
         check(`${who}: a section opens when its heading is clicked`, (await page.$$("details.dd[open]")).length === 1);
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = true; });
         // sorting + CSV on the budget table
-        await page.click('#tabs button:text-is("Budget & governance")'); await page.waitForTimeout(300);
+        await page.click('#tabs button:text-is("Governance")'); await page.waitForTimeout(300);
         await page.click('#b1 [data-sort="amount"]');
         const first = await page.$eval("#b1 tbody tr td", td => td.textContent);
         check(`${who}: sort budget by amount`, first === "Hall hire", first);
@@ -961,7 +966,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.fill("#b1 [data-q]", ""); await page.click(".tf-bar [data-clear]"); await page.waitForTimeout(200);
         check(`${who}: Clear filters brings every row back`, (await page.$$("#b1 tbody tr:not(.tf-off)")).length === 2 && (await page.$$(".tf-bar")).length === 0);
         // conflict protection on plan entries (mock returns 0 rows updated)
-        await page.click('#tabs button:text-is("Calendar")'); await page.waitForTimeout(300);
+        await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(300);
         await page.click(".cal-cell.today"); await page.waitForTimeout(300);
         await page.click("[data-e=d1]");
         await page.fill("#f_title", "Changed");
@@ -982,14 +987,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: cannot edit own role`, selfLocked);
         // Communications: choosing another tracker keeps Media and the tracker open
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
-        await page.click('#tabs button:text-is("Communications")'); await page.waitForTimeout(450);
+        await page.click('#tabs button:text-is("Comms")'); await page.waitForTimeout(450);
         await page.click('[data-t="olney"]'); await page.waitForTimeout(700);
         const cmOpen = await page.$$eval("details.dd[open] > summary", ss => ss.map(x => x.textContent.trim()));
         check(`${who}: choosing another tracker leaves Media and the tracker open`, cmOpen.includes("Media") && cmOpen.some(x => /Olney Media Tracker/.test(x)), cmOpen.join("|"));
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = true; });
         // a drop-down the person is working in stays open when the page redraws after a change
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
-        await page.click('#tabs button:text-is("Overview")'); await page.waitForTimeout(300);
+        await page.click('#tabs button:text-is("Summary")'); await page.waitForTimeout(300);
         await page.click('#shell-foot [data-foot="team"]'); await page.waitForTimeout(500);
         check(`${who}: the sections of the team page start closed`, (await page.$$("details.dd[open]")).length === 0);
         await page.click('details.dd > summary:has-text("What each role can do")'); await page.waitForTimeout(200);
