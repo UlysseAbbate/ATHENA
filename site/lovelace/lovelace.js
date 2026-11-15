@@ -262,7 +262,7 @@ function dayHtml(list, { editable, areas = AREAS }) {
       const add = editable ? `<button class="btn sm" data-add="${a.id}|${sid}">+ Add${single ? "" : ` to ${esc(sname)}`}</button>` : "";
       return `<div class="sec">${single ? (add ? `<div class="sec-head">${add}</div>` : "") : `<div class="sec-head"><h3 class="sec-title">${esc(sname)}</h3>${add}</div>`}${mine.map(e => entryHtml(e, editable)).join("")}</div>`;
     }).join("");
-    return secs ? `<section class="grp"><h2 class="h2-rule" data-open>${esc(a.name)}</h2>${secs}</section>` : "";
+    return secs ? `<section class="grp"><h2 class="h2-rule">${esc(a.name)}</h2>${secs}</section>` : "";
   }).join("");
   return out || '<p class="muted">Nothing is planned for this day.</p>';
 }
@@ -270,6 +270,7 @@ function dayHtml(list, { editable, areas = AREAS }) {
 const PLANNERS = {
   plan: { state: { mode: "month", date: iso(new Date()) }, editable: () => can("dayplan_full", "write"), filter: null, areas: AREAS }
 };
+const CAL_AREAS = new Set(["mayor", "gla", "internal"]);
 const AREA_DOT = { mayor: "a-mayor", gla: "a-gla", internal: "a-internal", governance: "a-gov", london: "a-london" };
 
 async function renderPlanner(kind) {
@@ -281,7 +282,7 @@ async function renderPlanner(kind) {
     const days = []; for (let d = gridStart; ; d = addDays(d, 1)) { days.push(d); if (d >= lastOfMonth && parseISO(d).getDay() === 0) break; }   // whole weeks, Monday to Sunday
     let entries;
     try { entries = await loadPlan(gridStart, days[days.length - 1], P.filter); } catch (e) { return showError(e); }
-    const byDay = {}; entries.forEach(e => (byDay[e.plan_date] ||= []).push(e));
+    const byDay = {}; entries.filter(e => CAL_AREAS.has(e.area)).forEach(e => (byDay[e.plan_date] ||= []).push(e));   // the boxes show the Mayor's, GLA and Internal Campaign activity only
     main.innerHTML = `<div class="row"><button class="btn" data-n="-1" aria-label="Earlier month">◀</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Later month">▶</button>
       <b class="cal-title">${esc(parseISO(first).toLocaleDateString("en-GB", { month: "long", year: "numeric" }))}</b></div>
       <p class="muted">Click a day to see and edit its plan.</p>

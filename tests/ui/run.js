@@ -926,7 +926,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       if (who !== "member") {
         await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(450);
         const cal = await page.$eval("#main", m => m.innerText);
-        check(`${who}: the Calendar is a month calendar with the day's entries in their cells, with no visit requests under it`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && !/[Ll]ocal party visit/.test(cal), cal.slice(0, 120).replace(/\n/g, " "));
+        check(`${who}: the Calendar is a month calendar with the day's entries in their cells, with no visit requests under it`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && !/File the return/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && !/[Ll]ocal party visit/.test(cal), cal.slice(0, 120).replace(/\n/g, " "));
         if (process.env.SHOTS && who === "admin") await page.screenshot({ path: path.join(process.env.SHOTS, "lovelace-calendar.png"), fullPage: true });
         await page.click(".cal-cell.today"); await page.waitForTimeout(450);
         const plan = await page.$eval("#main", m => m.innerText);
@@ -938,13 +938,17 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: the day has no local party visits section`, !/[Ll]ocal party visit/.test(plan) && !/contact Pat 0701/.test(plan));
         // the sections of a day are open, each with its Add button on the title's line, to the right; an entry can be moved to another section
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
-        await page.click("[data-back]"); await page.waitForTimeout(300);
-        await page.click(".cal-cell.today"); await page.waitForTimeout(450);
-        const heads = await page.$$eval("#main .sec-head", hs => hs.map(h => { const t = h.querySelector(".sec-title"), b = h.querySelector("[data-add]"); const r1 = t && t.getBoundingClientRect(), r2 = b && b.getBoundingClientRect();
-          return { open: !h.closest("details:not([open])"), same: !!(r2 && (!r1 || Math.abs((r1.top + r1.bottom) / 2 - (r2.top + r2.bottom) / 2) < 12)), right: !!(r2 && (!r1 || r2.left > r1.right)) }; }));
-        check(`${who}: every section of a day is open, with its Add button on the title's line, to the right`, heads.length >= 10 && heads.every(h => h.open && h.same && h.right), JSON.stringify(heads.slice(0, 3)));
+        await page.click('#tabs button:text-is("Summary")'); await page.waitForTimeout(300);   // another page and back: nothing is remembered as open
+        await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(450);
+        if (await page.$(".cal-cell.today")) { await page.click(".cal-cell.today"); await page.waitForTimeout(450); }
+        const openAreas = await page.$$eval("#main details.dd[open]", ds => ds.length);
+        check(`${who}: the areas of a day (Mayor's Activity and so on) are closed until clicked`, openAreas === 0 && (await page.$$("#main details.dd")).length >= 4, String(openAreas));
+        await page.click('#main details.dd > summary:has-text("Mayor\'s Activity")'); await page.waitForTimeout(200);
+        const heads = await page.$$eval("#main details.dd[open] .sec-head", hs => hs.map(h => { const t = h.querySelector(".sec-title"), b = h.querySelector("[data-add]"); const r1 = t && t.getBoundingClientRect(), r2 = b && b.getBoundingClientRect();
+          return { open: !h.closest("details.dd-sub:not([open])"), same: !!(r2 && (!r1 || Math.abs((r1.top + r1.bottom) / 2 - (r2.top + r2.bottom) / 2) < 12)), right: !!(r2 && (!r1 || r2.left > r1.right)) }; }));
+        check(`${who}: once an area is opened, its sections are open, each with its Add button on the title's line, to the right`, heads.length === 4 && heads.every(h => h.open && h.same && h.right), JSON.stringify(heads.slice(0, 3)));
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = true; });
-        await page.click("[data-e]"); await page.waitForTimeout(250);
+        await page.click("[data-e=d1]"); await page.waitForTimeout(250);
         const wopts = await page.$$eval("#f_where option", os => os.map(o => o.textContent));
         check(`${who}: an entry has a Section drop-down to move it (for example to Internal Campaign: Donor Events)`, wopts.includes("Mayor's Activity: Field Campaign") && wopts.includes("Internal Campaign: Donor Events"), wopts.join("|"));
         await page.click("#cx"); await page.waitForTimeout(150);
