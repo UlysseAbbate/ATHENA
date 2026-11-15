@@ -2,6 +2,7 @@
 // Run: node scripts/libby/check-business.mjs
 import fs from 'node:fs';
 import { foldSpeakerLines, abbreviatedNames, sectionsFromFB, sectionsFromWhatsOn, committeesFromWhatsOn, mergeWhatsOn, risingFromWhatsOn, enrichSections, itemCount } from '../../lib/libby/business.js';
+import { deadlineNotes } from '../../lib/libby/lordsbusiness.js';
 import { dbRowToEvent } from '../../lib/libby/parliament.js';
 
 const read = (f) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${f}`, import.meta.url), 'utf8'));
@@ -104,6 +105,14 @@ ok(real[0].items.length === 1 && rm.backbenchMinutes === 5, 'the advisory time a
 ok(rm.speakers.length === 12 && rm.speakers[0].full === 'Baroness Ussher' && rm.speakers[7].full === 'Earl of Russell' && rm.speakers[8].full === 'Viscount Stansgate' && rm.speakers.slice(-3).map((x) => x.full).join() === 'Baroness Kramer,Lord Altrincham,Lord Pitt-Watson', 'the names are in the order printed, abbreviations written out, counts and (Maiden) dropped');
 ok(rm.minister === 'Lord Pitt-Watson' && rm.openingBy === 'Lord Pitt-Watson', 'the mover who is also the last speaker is the Minister, who opened and replies');
 ok(abbreviatedNames('Lord Pitt-Watson to move that this House takes note').length === 0 && abbreviatedNames('Health Bill Committee').length === 0, 'ordinary business is not mistaken for a list of names');
+
+// Deadlines: the italic notes that say when a ballot is drawn (they are not items of business, so they never reach the day's items).
+const note = (t) => ({ DisplayTextPlain: t, DisplayTextFormatted: `<em>${t}</em>` });
+const dl = deadlineNotes({ ChamberContent: { ItemsOfBusiness: [note('Topical oral question. Ballot to be drawn at 1pm on Friday 13 November.'), note('Oral questions (40 minutes)'),
+  { DisplayTextPlain: 'Lord X to move that the ballot results be noted', DisplayTextFormatted: '<strong>Lord X</strong> to move that the ballot results be noted' }, note('Topical oral question. Ballot to be drawn at 1pm on Friday 13 November.')],
+  SubSections: [{ ItemsOfBusiness: [note('Ballot opens at 3pm on Friday 13 November, to be drawn at 1pm on Tuesday 17 November')] }] }, GrandCommitteeContent: [{ ItemsOfBusiness: [note('Questions must be tabled by noon on Monday')] }] });
+ok(dl.length === 3 && dl[0].section === 'Chamber' && /1pm on Friday 13 November/.test(dl[0].text) && /opens at 3pm/.test(dl[1].text) && dl[2].section === 'Grand Committee', 'ballot and tabling deadlines are picked out of the notes (once each; not items of business)');
+ok(deadlineNotes({}).length === 0 && deadlineNotes(null).length === 0, 'a day with no notes has no deadlines');
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll business checks passed.');
 process.exit(failed ? 1 : 0);

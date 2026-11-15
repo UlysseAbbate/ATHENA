@@ -433,3 +433,18 @@ def test_libdem_event_rows():
     assert [r["key"] for r in rows] == ["libdemev:10:2026-11-15", "libdemev:11:2026-11-16", "libdemev:12:2026-11-17", "libdemev:13:2026-11-21"]
     assert rows[0]["title"] == "Canada Water — Sunday Campaigning" and rows[0]["starts"] == "15:00" and rows[1]["starts"] == "19:30" and rows[2]["starts"] == "00:00"
     assert rows[3]["date"] == "2026-11-21" and rows[0]["url"].startswith("https://events.libdems.org.uk/events/")
+
+
+# ------------------------------------------------------------------ the UK Parliament What's On calendar for the Daily Plan (London Politics > Political Events)
+def test_whatson_event_rows():
+    today = date(2026, 11, 16)
+    ev = lambda i, d, **k: {"Id": str(i), "StartDate": f"{d}T00:00:00", "StartTime": "14:30", "House": "Commons", "Type": "Main Chamber", "Category": "Oral questions", "Description": None, "Committee": None, "CancelledDate": None, **k}  # noqa: E731
+    rows = U.whatson_event_rows([
+        ev(1, "2026-11-17", Description="Oral questions"),
+        ev(2, "2026-11-17", House="Lords", Type="Select & Joint Committees", Category="Oral evidence", Committee={"Description": "Home Affairs Committee"}, StartTime="09:15"),
+        ev(3, "2026-11-17", Category="Private Meeting", Type="Select & Joint Committees", Committee={"Description": "Procedure Committee"}),
+        ev(4, "2026-11-18", CancelledDate="2026-11-10T00:00:00"),
+        ev(5, "2026-11-10"), ev(6, "2027-03-01"), {"StartDate": "2026-11-18T00:00:00"}], today)
+    assert [r["key"] for r in rows] == ["whatson:2", "whatson:1"]
+    assert rows[0]["title"] == "Lords Committee: Home Affairs Committee (Oral evidence)" and rows[0]["starts"] == "09:15" and rows[0]["url"] == "https://whatson.parliament.uk/event/cal2"
+    assert rows[1]["title"] == "Commons Chamber: Oral questions"

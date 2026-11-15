@@ -235,16 +235,18 @@ export async function renderDay(el, { date }) {
     adminBox.innerHTML = can('whips') ? listAdminHtml(state) : '';
     if (can('whips')) wireListAdmin(adminBox.firstElementChild, state, hooks); // a new element each time, so its handlers never pile up
 
+    const deadlines = data.deadlines && data.deadlines.length
+      ? `<aside class="deadlines" aria-label="Deadlines"><h2 class="h2-rule" data-open>Deadlines</h2><ul>${data.deadlines.map((d) => `<li>${esc(d.text)} <span class="muted small">(${esc(d.section)})</span></li>`).join('')}</ul></aside>` : '';
     const problem = data.listProblem ? `<p class="state state-warn">${esc(data.listProblem)}</p>` : '';
     if (!data.sections.length) {
-      box.innerHTML = `${problem}<p class="state">No Lords business is published for this day yet. It may be a non-sitting day, or the business has not been announced. Check the <a href="#/future">calendar</a>${can('whips') ? ', or upload the Today\u2019s List above' : ''}.</p>`;
+      box.innerHTML = `${problem}${deadlines}<p class="state">No Lords business is published for this day yet. It may be a non-sitting day, or the business has not been announced. Check the <a href="#/future">calendar</a>${can('whips') ? ', or upload the Today\u2019s List above' : ''}.</p>`;
       return;
     }
 
     const estimates = computeEstimates(data);
     const all = [];
     box.innerHTML = `
-      ${problem}
+      ${problem}${deadlines}
       ${data.source ? `<p class="source small muted">Source: ${data.source.url ? extLink(data.source.url, data.source.label) : esc(data.source.label)}${data.otherSources?.length ? ` \u00B7 also: ${data.otherSources.map((o) => extLink(o.url, o.label)).join(', ')}` : ''}</p>` : ''}
       ${data.sections.map((s) => {
         const est = estimates.get(s.name);
