@@ -270,6 +270,7 @@ function dayHtml(list, { editable, areas = AREAS }) {
 const PLANNERS = {
   plan: { state: { mode: "month", date: iso(new Date()) }, editable: () => can("dayplan_full", "write"), filter: null, areas: AREAS }
 };
+const CAL_SHOWN = 4;   // entries shown in a calendar box
 const CAL_AREAS = new Set(["mayor", "gla", "internal"]);
 const AREA_DOT = { mayor: "a-mayor", gla: "a-gla", internal: "a-internal", governance: "a-gov", london: "a-london" };
 
@@ -282,14 +283,14 @@ async function renderPlanner(kind) {
     const days = []; for (let d = gridStart; ; d = addDays(d, 1)) { days.push(d); if (d >= lastOfMonth && parseISO(d).getDay() === 0) break; }   // whole weeks, Monday to Sunday
     let entries;
     try { entries = await loadPlan(gridStart, days[days.length - 1], P.filter); } catch (e) { return showError(e); }
-    const byDay = {}; entries.filter(e => CAL_AREAS.has(e.area)).forEach(e => (byDay[e.plan_date] ||= []).push(e));   // the boxes show the Mayor's, GLA and Internal Campaign activity only
+    const byDay = {}; entries.filter(e => CAL_AREAS.has(e.area)).sort((a, b) => AREAS.findIndex(x => x.id === a.area) - AREAS.findIndex(x => x.id === b.area)).forEach(e => (byDay[e.plan_date] ||= []).push(e));   // in the order of the day's areas (the sort keeps time order within an area); the boxes show the Mayor's, GLA and Internal Campaign activity only
     main.innerHTML = `<div class="row"><button class="btn" data-n="-1" aria-label="Earlier month">◀</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Later month">▶</button>
       <b class="cal-title">${esc(parseISO(first).toLocaleDateString("en-GB", { month: "long", year: "numeric" }))}</b></div>
       <p class="muted">Click a day to see and edit its plan.</p>
       <div class="cal" role="grid" aria-label="Calendar"><div class="cal-head">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(w => `<div>${w}</div>`).join("")}</div><div class="cal-body">${days.map(d => {
         const list = byDay[d] || [], inMonth = d.slice(0, 7) === first.slice(0, 7);
         return `<button class="cal-cell${inMonth ? "" : " other"}${d === today ? " today" : ""}" data-day="${d}" aria-label="${esc(fmtDay(d))}${list.length ? `, ${list.length} planned` : ""}"><span class="cal-n">${parseISO(d).getDate()}</span>${
-          list.slice(0, 3).map(e => `<span class="cal-ev ${AREA_DOT[e.area] || ""}">${esc((e.starts ? e.starts + " " : "") + e.title)}</span>`).join("")}${list.length > 3 ? `<span class="cal-more">+${list.length - 3} more</span>` : ""}</button>`; }).join("")}</div></div>`;
+          list.slice(0, CAL_SHOWN).map(e => `<span class="cal-ev ${AREA_DOT[e.area] || ""}">${esc((e.starts ? e.starts + " " : "") + e.title)}</span>`).join("")}${list.length > CAL_SHOWN ? `<span class="cal-more">+${list.length - CAL_SHOWN} more</span>` : ""}</button>`; }).join("")}</div></div>`;
     main.onclick = e => {
       const n = e.target.closest("[data-n]"), d = e.target.closest("[data-day]");
       if (n) { st.date = n.dataset.n === "0" ? iso(new Date()) : addMonths(first, +n.dataset.n); return reload(); }

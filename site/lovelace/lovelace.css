@@ -60,7 +60,7 @@ td.perm{white-space:nowrap}td.perm label{display:inline-flex;align-items:center;
 .cal-title{font:800 1.15rem var(--head);letter-spacing:-.03em;margin-left:6px}
 .cal-head,.cal-body{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .cal-head div{font:700 .7rem var(--head);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:2px 4px}
-.cal-cell{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:6.4rem;padding:4px 6px;background:var(--card);border:1px solid var(--band-line);border-radius:6px;overflow:hidden}
+.cal-cell{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:8rem;padding:4px 6px;background:var(--card);border:1px solid var(--band-line);border-radius:6px;overflow:hidden}
 .cal-cell:hover{border-color:var(--accent);background:var(--accent-tint)}
 .cal-cell:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .cal-cell.other{opacity:.55}

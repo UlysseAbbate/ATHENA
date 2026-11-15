@@ -58,6 +58,8 @@ const TABLES = {
     { id: "d3", plan_date: iso(today), area: "internal", section: "donor", title: "Donor dinner", starts: "20:00", created_at: ts, updated_at: ts },
     { id: "d4", plan_date: iso(today), area: "governance", section: "governance", title: "File the return", created_at: ts, updated_at: ts },
     { id: "d5", plan_date: plus(2), area: "gla", section: "media", title: "Op-ed in the Standard", created_at: ts, updated_at: ts },
+    { id: "d8", plan_date: iso(today), area: "mayor", section: "media", title: "Press briefing", starts: "09:00", created_at: ts, updated_at: ts },
+    { id: "d9", plan_date: iso(today), area: "mayor", section: "media", title: "Mayor's interview", starts: "08:00", created_at: ts, updated_at: ts },
     { id: "d6", plan_date: plus(2), area: "gla", section: "media", title: "Radio interview", starts: "08:00", created_at: ts, updated_at: ts },
     { id: "d7", plan_date: plus(2), area: "gla", section: "media", title: "Podcast recording", starts: "16:00", created_at: ts, updated_at: ts }],
   local_party_visits: [{ id: "v1", local_party: "Richmond Park", request: "Street stall", contact_name: "Pat", contact_phone: "0701", taken_by: "Louis", actioning: "Sarah", visit_date: iso(today), updated_at: ts },
@@ -926,7 +928,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       if (who !== "member") {
         await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(450);
         const cal = await page.$eval("#main", m => m.innerText);
-        check(`${who}: the Calendar is a month calendar with the day's entries in their cells, with no visit requests under it`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && !/File the return/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && !/[Ll]ocal party visit/.test(cal), cal.slice(0, 120).replace(/\n/g, " "));
+        check(`${who}: the Calendar is a month calendar with the day's entries in their cells, with no visit requests under it`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && !/File the return/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && (await (async () => { const evs = await page.$$eval(".cal-cell.today .cal-ev", e => e.map(x => x.textContent)); const more = await page.$eval(".cal-cell.today", c => c.innerText); return evs.length === 4 && /interview/.test(evs[0]) && /Press briefing/.test(evs[1]) && /Launch housing pledge/.test(evs[2]) && /Members' call/.test(evs[3]) && /\+1 more/.test(more); })()) && !/[Ll]ocal party visit/.test(cal), cal.slice(0, 120).replace(/\n/g, " "));
         if (process.env.SHOTS && who === "admin") await page.screenshot({ path: path.join(process.env.SHOTS, "lovelace-calendar.png"), fullPage: true });
         await page.click(".cal-cell.today"); await page.waitForTimeout(450);
         const plan = await page.$eval("#main", m => m.innerText);
