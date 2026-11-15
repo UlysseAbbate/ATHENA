@@ -57,7 +57,9 @@ const TABLES = {
     { id: "d2", plan_date: iso(today), area: "internal", section: "membership", title: "Members' call", starts: "19:00", created_at: ts, updated_at: ts },
     { id: "d3", plan_date: iso(today), area: "internal", section: "donor", title: "Donor dinner", starts: "20:00", created_at: ts, updated_at: ts },
     { id: "d4", plan_date: iso(today), area: "governance", section: "governance", title: "File the return", created_at: ts, updated_at: ts },
-    { id: "d5", plan_date: plus(2), area: "gla", section: "media", title: "Op-ed in the Standard", created_at: ts, updated_at: ts }],
+    { id: "d5", plan_date: plus(2), area: "gla", section: "media", title: "Op-ed in the Standard", created_at: ts, updated_at: ts },
+    { id: "d6", plan_date: plus(2), area: "gla", section: "media", title: "Radio interview", starts: "08:00", created_at: ts, updated_at: ts },
+    { id: "d7", plan_date: plus(2), area: "gla", section: "media", title: "Podcast recording", starts: "16:00", created_at: ts, updated_at: ts }],
   local_party_visits: [{ id: "v1", local_party: "Richmond Park", request: "Street stall", contact_name: "Pat", contact_phone: "0701", taken_by: "Louis", actioning: "Sarah", visit_date: iso(today), updated_at: ts },
     { id: "v2", local_party: "Hounslow", request: "AGM", visit_date: null, updated_at: ts }],
   governance_items: [{ id: "g1", title: "Register with Electoral Commission", area: "Legal", status: "To do", due_date: plus(-1), updated_at: ts }],
@@ -832,6 +834,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         const ovt = await page.$eval("#main", m => m.innerText);
         check(`${who}: the overview is a list of the days that have something planned (a day with nothing is left out; volunteers see today only)`, ovd.length === (who === "member" ? 1 : 2) && /^Today/.test(ovd[0]) && !/Nothing/.test(await page.$$eval(".ovday", ds => ds.map(d => d.innerText).join(" "))), ovd.join(" | "));
         if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `lovelace-overview-${scheme}.png`) }); await page.emulateMedia({ colorScheme: "light" }); }
+        if (who !== "member") {
+          const more = await page.$$eval(".ov-more", bs => bs.map(b => b.textContent.trim()));
+          const hid = await page.$$eval(".ov-rest", r => r.map(x => x.hidden));
+          check(`${who}: three or more entries in a section show two and "+1 more"`, more.join("|") === "+1 more" && hid.join("|") === "true" && /Op-ed in the Standard/.test(ovt) && !(await page.$eval(".ov-rest", r => r.offsetParent !== null)));
+          await page.click(".ov-more"); await page.waitForTimeout(100);
+          check(`${who}: "+1 more" shows the rest, and "Show fewer" hides them again`, (await page.$eval(".ov-rest", r => r.offsetParent !== null)) && /Show fewer/.test(await page.$eval(".ov-more", b => b.textContent)));
+          await page.click(".ov-more"); await page.waitForTimeout(100);
+        }
         check(`${who}: the overview lists each day's activities under their area`, /Launch housing pledge/.test(ovt) && /Mayor's Activity/i.test(ovt) && (who === "member" ? !/GLA Activity/i.test(ovt) : /GLA Activity/i.test(ovt)) && /Members' call/.test(ovt), ovt.slice(0, 160).replace(/\n/g, " "));
         check(`${who}: ${who === "member" ? "a volunteer does not see donor events or Governance and Legal" : "the overview includes Internal Campaign and Governance and Legal"}`, who === "member" ? !/Donor dinner|File the return|Governance and Legal/i.test(ovt) : /Donor dinner/.test(ovt) && /File the return/.test(ovt));
       }

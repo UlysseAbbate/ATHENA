@@ -632,6 +632,14 @@ async function renderTeam() {
 
 /* ------------------------------------------------------------------ overview: what is coming up, day by day */
 // A list of the days ahead that have something planned. A day with nothing is left out, and so is an area or section with nothing in it.
+/** The Summary shows two entries of a section and hides the rest behind "+N more" when there are three or more. */
+const OV_SHOWN = 2;
+function ovList(m) {
+  if (m.length <= OV_SHOWN) return m.map(e => entryHtml(e, false)).join("");
+  const rest = m.length - OV_SHOWN;
+  return m.slice(0, OV_SHOWN).map(e => entryHtml(e, false)).join("") + `<div class="ov-rest" hidden>${m.slice(OV_SHOWN).map(e => entryHtml(e, false)).join("")}</div>`
+    + `<button type="button" class="ov-more" data-more="${rest}" aria-expanded="false">+${rest} more</button>`;
+}
 async function renderToday() {
   const today = iso(new Date());
   const full = can("dayplan_full", "read"), zone = can("dayplan_volunteer", "read");
@@ -648,9 +656,11 @@ async function renderToday() {
         const mine = list.filter(e => e.area === a.id);
         if (!mine.length) return "";
         return `<div class="ovarea"><h4>${esc(a.name)}</h4>${a.sections.map(([sid, sname]) => { const m = mine.filter(e => e.section === sid);
-          return m.length ? `<div class="ovsec">${a.sections.length > 1 ? `<span class="ovtag">${esc(sname)}</span>` : ""}${m.map(e => entryHtml(e, false)).join("")}</div>` : ""; }).join("")}</div>`; }).join("")}</section>`; }).join("") : '<p class="muted">${full ? "Nothing is planned in the next three weeks." : "Nothing is planned for today."}</p>'}`;
+          return m.length ? `<div class="ovsec">${a.sections.length > 1 ? `<span class="ovtag">${esc(sname)}</span>` : ""}${ovList(m)}</div>` : ""; }).join("")}</div>`; }).join("")}</section>`; }).join("") : '<p class="muted">${full ? "Nothing is planned in the next three weeks." : "Nothing is planned for today."}</p>'}`;
   main.onclick = e => {
     const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); return go(g.dataset.go); }
+    const mb = e.target.closest("[data-more]");
+    if (mb) { const rest = mb.previousElementSibling, open = rest.hidden; rest.hidden = !open; mb.setAttribute("aria-expanded", String(open)); mb.textContent = open ? "Show fewer" : `+${mb.dataset.more} more`; return; }
     const d = e.target.closest("[data-day]");
     if (d && full) { e.preventDefault(); PLANNERS.plan.state.mode = "day"; PLANNERS.plan.state.date = d.dataset.day; go("plan"); }
     else if (d) e.preventDefault();
