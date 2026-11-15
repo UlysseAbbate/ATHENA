@@ -11,7 +11,7 @@ const RESOURCES = {
   dayplan_full: "Daily Plan: every day and every area, including Governance and Legal and London Politics (read and change)", dayplan_volunteer: "Volunteer's Zone: today's activities, without Governance and Legal",
   help_offer: "Help the Campaign: send a suggestion or an offer to help", help_inbox: "Suggestions and offers list (People page)",
   mayor_todo: "Mayor's To-Do List: read and tick done (write: add, edit, delete items)",
-  visits: "Local party visit details and contacts (shown under the calendar)", budget: "Budget & governance",
+  budget: "Budget & governance",
   volunteers_all: "Full volunteer list (People page)", volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies (Communications)",
   social: "Social Media Channels Tracker and tracked accounts (Communications)", coverage: "Media trackers (Communications): news coverage",
   stakeholders_all: "Full stakeholder list (People page)", stakeholders_add: "Add stakeholders (own entries visible to the adder)",
@@ -267,7 +267,7 @@ function dayHtml(list, { editable, areas = AREAS }) {
 }
 
 const PLANNERS = {
-  plan: { state: { mode: "month", date: iso(new Date()) }, editable: () => can("dayplan_full", "write"), filter: null, areas: AREAS, visits: true }
+  plan: { state: { mode: "month", date: iso(new Date()) }, editable: () => can("dayplan_full", "write"), filter: null, areas: AREAS }
 };
 const AREA_DOT = { mayor: "a-mayor", gla: "a-gla", internal: "a-internal", governance: "a-gov", london: "a-london" };
 
@@ -293,29 +293,21 @@ async function renderPlanner(kind) {
       if (n) { st.date = n.dataset.n === "0" ? iso(new Date()) : addMonths(first, +n.dataset.n); return reload(); }
       if (d) { st.mode = "day"; st.date = d.dataset.day; reload(); }
     };
-    if (P.visits && can("visits", "read")) visitsPanel(reload);
     return;
   }
   // one day: the daily plan
   const date = st.date;
-  const canVisits = P.visits && can("visits", "read");
-  let entries, vis = { data: [] };
-  try {
-    [entries, vis] = await Promise.all([loadPlan(date, date, P.filter), canVisits ? sb.from("local_party_visits").select("*").eq("visit_date", date) : Promise.resolve({ data: [] })]);
-  } catch (e) { return showError(e); }
-  if (vis.error) return showError(vis.error);
-  const visitLine = v => [v.request, v.contact_name && `contact ${v.contact_name}${v.contact_phone ? " " + v.contact_phone : ""}`, v.taken_by && `taken by ${v.taken_by}`, v.actioning && `actioning ${v.actioning}`, v.notes].filter(Boolean).join(" · ");
+  let entries;
+  try { entries = await loadPlan(date, date, P.filter); } catch (e) { return showError(e); }
   main.innerHTML = `<div class="row"><button class="btn" data-back>◀ Full Plan</button><button class="btn" data-n="-1" aria-label="Previous day">‹ Previous day</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Next day">Next day ›</button>
       <input type="date" value="${esc(date)}" style="width:auto" data-d></div>
-    <h2 class="cal-day">${esc(fmtDay(date))}</h2>${dayHtml(entries, { editable, areas })}
-    ${vis.data.length ? `<section class="grp"><h2 class="h2-rule">Local party visits</h2>${vis.data.map(v => `<div class="pe"><div class="pe-main"><span class="pe-title">${esc(v.local_party)}</span>${visitLine(v) ? ` <span class="muted">· ${esc(visitLine(v))}</span>` : ""}${can("visits", "write") ? ` <button class="btn sm" data-v="${v.id}">Edit visit</button>` : ""}</div></div>`).join("")}</section>` : ""}`;
+    <h2 class="cal-day">${esc(fmtDay(date))}</h2>${dayHtml(entries, { editable, areas })}`;
   const go_ = d => { st.date = d; reload(); };
   main.onclick = e => {
     if (e.target.closest("[data-back]")) { st.mode = "month"; return reload(); }
     const n = e.target.closest("[data-n]");
     if (n) return go_(n.dataset.n === "0" ? iso(new Date()) : addDays(date, +n.dataset.n));
-    const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]"), vb = e.target.closest("[data-v]");
-    if (vb) return visitForm(vis.data.find(v => v.id === vb.dataset.v));
+    const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]");
     if (a) { const [area, sec] = a.dataset.add.split("|"); return entryForm(null, area, sec, date, reload); }
     if (x) { const en = entries.find(z => z.id === x.dataset.e); return entryForm(en, en.area, en.section, date, reload); }
   };
@@ -332,11 +324,6 @@ function entryForm(entry, area, sec, date, after) {
     },
     onDelete: entry ? async () => { const { error } = await sb.from("day_plan_entries").delete().eq("id", entry.id); if (!error) after(); return error; } : null
   });
-}
-/** Local party visit requests (the sheet), under the calendar for those who may see them. */
-function visitsPanel(reload) {
-  main.insertAdjacentHTML("beforeend", `<details class="card" id="vreq" style="margin-top:18px"><summary><b>Local party visit requests</b> <span class="muted">· requests from local parties and who is handling them</span></summary><div id="vreqb"></div></details>`);
-  $("#vreq").ontoggle = e => { if (e.target.open && !$("#vreqb").dataset.on) { $("#vreqb").dataset.on = 1; crud(VISITS, $("#vreqb"), reload); } };
 }
 function renderPlan() { return renderPlanner("plan"); }
 /** The Volunteer's Zone: what is happening today, and nothing else (the database shows volunteers no other day). */
@@ -359,15 +346,6 @@ async function renderZoneToday(host) {
 
 /* ------------------------------------------------------------------ entity configs */
 const T = (k, label, type = "text", extra = {}) => ({ k, label, type, ...extra });
-function visitForm(row) {
-  openForm({ title: `Visit: ${row.local_party}`, fields: VISITS.fields.filter(f => !f.noForm), values: row, meta: edited(row),
-    onSubmit: async v => { const e = await guardedUpdate("local_party_visits", row, v); if (!e || e.message === CONFLICT) renderPlan(); return e; },
-    onDelete: async () => { const { error: e } = await sb.from("local_party_visits").delete().eq("id", row.id); if (!e) renderPlan(); return e; } });
-}
-const VISITS = { table: "local_party_visits", title: "", order: ["visit_date", true], canEdit: () => can("visits", "write"),
-  note: "Requests from local parties and who is handling them. A visit with a date shows its details on the calendar for that day. Contains contact details.",
-  fields: [T("local_party", "Local party", "text", { req: true }), T("request", "Request"), T("taken_by", "Who took it"), T("actioning", "Who actioning"),
-    T("happening", "When happening"), T("visit_date", "Date (if fixed)", "date"), T("contact_name", "Contact"), T("contact_phone", "Number"), T("notes", "Notes", "textarea")] };
 const POLICIES = { table: "policies", title: "Policies", order: ["theme", true], canEdit: () => can("policies", "write"),
   fields: [T("policy", "Policy", "text", { req: true }), T("theme", "Theme"), T("briefing", "Briefing"), T("actions", "Actions", "textarea"),
     T("interested_parties", "Interested parties", "textarea"), T("comms", "Comms", "textarea"), T("notes", "Notes", "textarea")] };
