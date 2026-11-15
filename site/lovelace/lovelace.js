@@ -68,13 +68,13 @@ async function boot() {
 }
 
 const TABS = [
-  ["today", "Overview", () => can("dayplan_full", "read") || can("dayplan_volunteer", "read"), renderToday],
-  ["plan", "Calendar", () => can("dayplan_full", "read"), renderPlan],
-  ["zone", "Volunteer's Zone", () => can("dayplan_volunteer", "read") || can("help_offer", "write") || can("help_inbox", "read"), renderZone],
-  ["todo", "Mayor's To-Do List", () => can("mayor_todo", "read"), renderTodos],
-  ["budget", "Budget & governance", () => can("budget", "read"), renderBudget],
-  ["people", "Volunteers & stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
-  ["comms", "Communications", () => can("coverage", "read") || can("social", "read") || can("policies", "read"), renderComms],
+  ["today", "Summary", () => can("dayplan_full", "read") || can("dayplan_volunteer", "read"), renderToday],
+  ["plan", "Full Plan", () => can("dayplan_full", "read"), renderPlan],
+  ["zone", "Member's Zone", () => can("dayplan_volunteer", "read") || can("help_offer", "write") || can("help_inbox", "read"), renderZone],
+  ["todo", "To-Do-List", () => can("mayor_todo", "read"), renderTodos],
+  ["budget", "Governance", () => can("budget", "read"), renderBudget],
+  ["people", "Stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
+  ["comms", "Comms", () => can("coverage", "read") || can("social", "read") || can("policies", "read"), renderComms],
   ["team", "Team & access", () => S.admin, renderTeam, true]   // the administrator's alone: its button is in the footer, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
@@ -231,7 +231,7 @@ const AREAS = [
   { id: "internal", name: "Internal Campaign", sections: [["membership", "Membership Engagement"], ["donor", "Donor Events"], ["staff", "Staff Activities"], ["other", "Other"]] },
   { id: "governance", name: "Governance and Legal", sections: [["governance", "Governance and Legal"]] },
   // GLA / London Data fills itself from the Stats calendar's collector (the GLA and London data drops only); the other two are typed in
-  { id: "london", name: "London Politics", sections: [["data", "GLA / London Data"], ["political", "Political Events"], ["events", "London Events"]] }
+  { id: "london", name: "London Politics", sections: [["data", "Data & Statistics"], ["political", "Political Events"], ["events", "London Events"]] }
 ];
 // What volunteers see, and only for today (the database enforces the same rule): Mayor's and GLA Activity, and Internal Campaign > Membership Engagement; never Governance and Legal or London Politics.
 const volunteerSees = e => e.area === "mayor" || e.area === "gla" || (e.area === "internal" && e.section === "membership");
@@ -305,7 +305,7 @@ async function renderPlanner(kind) {
   } catch (e) { return showError(e); }
   if (vis.error) return showError(vis.error);
   const visitLine = v => [v.request, v.contact_name && `contact ${v.contact_name}${v.contact_phone ? " " + v.contact_phone : ""}`, v.taken_by && `taken by ${v.taken_by}`, v.actioning && `actioning ${v.actioning}`, v.notes].filter(Boolean).join(" · ");
-  main.innerHTML = `<div class="row"><button class="btn" data-back>◀ Calendar</button><button class="btn" data-n="-1" aria-label="Previous day">‹ Previous day</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Next day">Next day ›</button>
+  main.innerHTML = `<div class="row"><button class="btn" data-back>◀ Full Plan</button><button class="btn" data-n="-1" aria-label="Previous day">‹ Previous day</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Next day">Next day ›</button>
       <input type="date" value="${esc(date)}" style="width:auto" data-d></div>
     <h2 class="cal-day">${esc(fmtDay(date))}</h2>${dayHtml(entries, { editable, areas })}
     ${vis.data.length ? `<section class="grp"><h2 class="h2-rule">Local party visits</h2>${vis.data.map(v => `<div class="pe"><div class="pe-main"><span class="pe-title">${esc(v.local_party)}</span>${visitLine(v) ? ` <span class="muted">· ${esc(visitLine(v))}</span>` : ""}${can("visits", "write") ? ` <button class="btn sm" data-v="${v.id}">Edit visit</button>` : ""}</div></div>`).join("")}</section>` : ""}`;
@@ -439,27 +439,33 @@ const SUGGESTIONS = { table: "campaign_suggestions", key: "suggestions", title: 
     T("details", "Further details", "textarea"), T("status", "Status", "select", { options: ["new", "in progress", "done"] }), T("notes", "Team notes", "textarea")] };
 /* ------------------------------------------------------------------ the Mayor's To-Do List: things for the Mayoral candidate to sign off */
 // The core team fills it: action, responsible, link, notes. Anyone who can see the list can tick an item done (the database lets them change only the tick).
-const todoState = { show: "todo" };
+const todoState = { show: "todo", list: "mayor" };
+const TODO_LISTS = [["mayor", "Mayor's list", "Things for the Mayoral candidate to sign off."], ["campaign", "Campaign's list", "Things the campaign has to get done."],
+  ["staff", "Staff's list", "Things for the staff to get done."], ["volunteers", "Volunteers' list", "Things for the volunteers to get done."]];
 async function renderTodos() {
   const manage = can("mayor_todo", "write");
-  const { data, error } = await sb.from("mayor_todos").select("*").order("created_at");
+  const { data: all, error } = await sb.from("mayor_todos").select("*").order("created_at");
   if (error) return showError(error);
+  const L = TODO_LISTS.find(l => l[0] === todoState.list) || TODO_LISTS[0];
+  const data = all.filter(r => (r.list || "mayor") === L[0]);
   const open = data.filter(r => !r.done), done = data.filter(r => r.done);
   const shown = todoState.show === "done" ? done : todoState.show === "all" ? [...open, ...done] : open;
   const row = r => { const u = r.link && safeUrl(r.link);
     return `<tr class="${r.done ? "todo-done" : ""}"><td class="todo-tick"><input type="checkbox" data-tick="${r.id}" ${r.done ? "checked" : ""} aria-label="Done: ${esc(r.action)}"></td>
       <td class="wrapcell">${esc(r.action)}${r.done && r.done_at ? `<div class="muted small">Done ${esc(Athena.ago(r.done_at))}</div>` : ""}</td><td>${esc(r.responsible || "")}</td>
       <td>${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">link</a>` : ""}</td><td class="wrapcell">${esc(r.notes || "")}</td>${manage ? `<td><button class="btn sm" data-edit="${r.id}">Edit</button></td>` : ""}</tr>`; };
-  main.innerHTML = `<h2>Mayor's To-Do List</h2><p class="muted">Things for the Mayoral candidate to sign off. Tick an item when it is done.</p>
+  main.innerHTML = `<div class="row"><div class="seg" data-tl>${TODO_LISTS.map(([k, l]) => `<button data-l="${k}" class="${k === L[0] ? "on" : ""}">${esc(l)} (${all.filter(r => (r.list || "mayor") === k && !r.done).length})</button>`).join("")}</div></div>
+    <h2>${esc(L[1])}</h2><p class="muted">${esc(L[2])} Tick an item when it is done.</p>
     <div class="row"><div class="seg" data-ts>${[["todo", `To do (${open.length})`], ["done", `Done (${done.length})`], ["all", "All"]].map(([k, l]) => `<button data-s="${k}" class="${todoState.show === k ? "on" : ""}">${esc(l)}</button>`).join("")}</div>${manage ? '<button class="btn primary" data-add>+ Add an item</button>' : ""}</div>
     <div class="tablewrap"><table class="grid"><thead><tr><th>Done</th><th>Action</th><th>Responsible</th><th>Link</th><th>Further notes</th>${manage ? "<th></th>" : ""}</tr></thead>
-      <tbody>${shown.map(row).join("") || `<tr><td colspan="${manage ? 6 : 5}" class="muted">${todoState.show === "done" ? "Nothing is done yet." : "Nothing to sign off."}</td></tr>`}</tbody></table></div>`;
+      <tbody>${shown.map(row).join("") || `<tr><td colspan="${manage ? 6 : 5}" class="muted">${todoState.show === "done" ? "Nothing is done yet." : "Nothing on this list."}</td></tr>`}</tbody></table></div>`;
   const form = r => openForm({ title: r ? "Edit item" : "Add an item", values: r || {}, meta: edited(r),
-    fields: [T("action", "Action (what the candidate is to sign off)", "textarea", { req: true }), T("responsible", "Responsible"), T("link", "Link"), T("notes", "Further notes", "textarea")],
-    onSubmit: async v => { const e = r ? await guardedUpdate("mayor_todos", r, v) : (await sb.from("mayor_todos").insert({ ...v, created_by: S.user.id })).error; if (!e || e.message === CONFLICT) renderTodos(); return e; },
+    fields: [T("action", "Action (what is to be done)", "textarea", { req: true }), T("responsible", "Responsible"), T("link", "Link"), T("notes", "Further notes", "textarea")],
+    onSubmit: async v => { const e = r ? await guardedUpdate("mayor_todos", r, v) : (await sb.from("mayor_todos").insert({ ...v, list: L[0], created_by: S.user.id })).error; if (!e || e.message === CONFLICT) renderTodos(); return e; },
     onDelete: r ? async () => { const { error: e } = await sb.from("mayor_todos").delete().eq("id", r.id); if (!e) renderTodos(); return e; } : null });
   main.onclick = e => {
-    const s = e.target.closest("[data-s]"), ed = e.target.closest("[data-edit]");
+    const s = e.target.closest("[data-s]"), ed = e.target.closest("[data-edit]"), tl = e.target.closest("[data-l]");
+    if (tl) { todoState.list = tl.dataset.l; return renderTodos(); }
     if (s) { todoState.show = s.dataset.s; return renderTodos(); }
     if (ed) return form(data.find(r => r.id === ed.dataset.edit));
     if (e.target.closest("[data-add]")) form(null);

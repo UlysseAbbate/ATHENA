@@ -5,7 +5,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   {action: "get", name}              read one back (the collector's memory of first-seen times between runs)
 //   {action: "coverage", rows: [...]}  add new Sarah Olney coverage to Lovelace's Media trackers (existing URLs are left untouched)
 //   {action: "social_posts", rows: [...]}  add posts found on the tracked social accounts to the Social Media Channels Tracker (rows: organisation, platform, posted_on, summary, url)
-//   {action: "london_data", rows: [...]}  add the GLA / London data drops to Lovelace's Daily Plan (rows: key, date, title, url, starts)
+//   {action: "london_data", rows: [...]}  add the London data drops, ONS releases and GLA meetings to Lovelace's Daily Plan (rows: key, date, title, url, starts, section)
 //   {action: "social_accounts"}        the tracked social accounts that have a handle set, for the collector to follow
 const ALLOWED = new Set(["feed", "polls", "health", "statscal"]);
 const MAX_BYTES = 5_000_000;
@@ -50,12 +50,12 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true, accounts: data ?? [] });
   }
 
-  // GLA / London data drops from the Stats calendar's collector: filed on the day in Lovelace's Daily Plan (London Politics > GLA / London Data), once each.
+  // Data, statistics and GLA meetings from the Stats calendar's collector: filed on the day in Lovelace's Daily Plan (London Politics > Data & Statistics, or Political Events), once each.
   // An entry nobody has edited and that the feed no longer carries (a date moved, a drop cancelled) is removed; one a person has edited stays.
   if (payload.action === "london_data") {
     if (!Array.isArray(payload.rows)) return json({ error: "bad request" }, 400);
     const rows = payload.rows.slice(0, MAX_COVERAGE).map((r: Record<string, unknown>) => ({
-      plan_date: /^\d{4}-\d{2}-\d{2}$/.test(String(r?.date)) ? String(r.date) : null, area: "london", section: "data",
+      plan_date: /^\d{4}-\d{2}-\d{2}$/.test(String(r?.date)) ? String(r.date) : null, area: "london", section: ["data", "political", "events"].includes(String(r?.section)) ? String(r.section) : "data",
       title: str(r?.title, 400), starts: str(r?.starts, 40) || null, link: /^https?:\/\//.test(str(r?.url, 1000)) ? str(r?.url, 1000) : null, auto_key: str(r?.key, 160),
     })).filter(r => r.plan_date && r.title && r.auto_key.startsWith("statscal:"));
     if (!rows.length) return json({ ok: true, added: 0 });
