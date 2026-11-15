@@ -499,3 +499,54 @@ def test_upload_archive_sends_everything_in_chunks(monkeypatch):
     assert U.upload_archive([{"id": str(i)} for i in range(1200)]) is True
     assert [len(p["rows"]) for p in sent] == [500, 500, 200] and all(p["action"] == "archive" for p in sent)
     assert U.upload_archive([]) is True
+
+
+# ------------------------------------------------------------------ economic data (Nomis) for LUCIEN > Economic policy
+def test_econdata_age_bands_and_sexes():
+    import econdata as E
+    assert E.parse_age("Age 16 to 24") == (16, 24, "16-24")
+    assert E.parse_age("Aged 18-24") == (18, 24, "18-24")
+    assert E.parse_age("Aged 65 years and over") == (65, 120, "65+")
+    assert E.parse_age("Aged 15 years and under") == (0, 15, "0-15")
+    assert E.parse_age("All categories: Age 16+") == (16, 120, "16+")
+    assert E.parse_age("All ages") == (0, 120, "All ages") and E.parse_age("Total") == (0, 120, "All ages")
+    assert E.sex_of("All persons") == "all" and E.sex_of("Males") == "male" and E.sex_of("Female") == "female"
+    assert E.level_of("K02000001", "United Kingdom") == "uk" and E.level_of("E92000001", "England") == "country" and E.level_of("E12000007", "London") == "region"
+
+
+def test_econdata_rows_from_nomis_csv():
+    import econdata as E
+    csv_text = ('"DATE_NAME","GEOGRAPHY_NAME","GEOGRAPHY_CODE","C_SEX_NAME","C_AGE_NAME","C_AGE","C_ECOPUK11_NAME","MEASURE_NAME","OBS_VALUE","OBS_STATUS_NAME"\n'
+                '"Jul 2025-Jun 2026","London","E12000007","Females","Age 16 to 24","22","Employed","Count",512300,"Normal Value"\n'
+                '"Jul 2025-Jun 2026","London","E12000007","Females","Age 16 to 24","22","Unemployed","Count",,"Normal Value"\n')
+
+    class R:
+        text = csv_text
+        encoding = None
+    seen = []
+    rows = E.aps_labour(lambda url, **kw: seen.append(url) or R())
+    assert len(rows) == 1 and rows[0]["sex"] == "female" and rows[0]["age_label"] == "16-24" and rows[0]["category"] == "Employed" and rows[0]["value"] == 512300.0
+    assert rows[0]["geography_level"] == "region" and rows[0]["period"] == "Jul 2025-Jun 2026" and rows[0]["dataset"] == "aps_labour" and len(rows[0]["id"]) == 20
+    assert "NM_170_1.data.csv" in seen[0] and "measure=1" in seen[0]
+
+
+def test_econdata_one_failing_dataset_does_not_stop_the_rest():
+    import econdata as E
+    log = []
+
+    class R:
+        text = '"DATE_NAME","GEOGRAPHY_NAME","GEOGRAPHY_CODE","MEASURE_NAME","OBS_VALUE"\n"2024","North East","E12000001","GDHI per head (£)",20562\n'
+        encoding = None
+
+    def fetch(url, **kw):
+        if "NM_185_1" in url:
+            return R()
+        raise RuntimeError("boom")
+    rows = E.collect(fetch, lambda name, ok, n, err: log.append((name, ok, n)))
+    assert [r["dataset"] for r in rows] == ["gdhi"] and rows[0]["unit"] == "£"
+    assert ("gdhi", True, 1) in log and ("aps_labour", False, 0) in log
+
+
+def test_nomis_api_is_the_one_robots_exception():
+    assert U.allowed("https://www.nomisweb.co.uk/api/v01/dataset/NM_170_1.data.csv?x=1") is True
+    assert any(e["prefix"].startswith("https://www.nomisweb.co.uk/api/") for e in U.CONFIG["robots_exceptions"]) and len(U.CONFIG["robots_exceptions"]) == 1
