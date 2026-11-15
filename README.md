@@ -96,6 +96,8 @@ Pages refresh themselves when you come back to the browser tab, so you see other
 
 ## LUCIEN (policy tracker, formerly Ulysse)
 
+**Archive** (a tab): the other tabs show the last 180 days (the live feed is pruned to that). Every item the collector finds is also kept for good in the table `lucien_archive` (migration `20261119100000`), which the **Archive** tab searches (words, kind, source, dates, pages, CSV download of up to 5,000). A new archive is filled with every select committee report, special report and government response since 2010 (read from the Parliament Committees API a year at a time, newest first, at most about 20 minutes per run, so it completes over a few runs; set `ARCHIVE_HISTORY=1` to load it again). Think tank, media and polling items are archived from the day the archive began: their feeds and sitemaps only show recent items, so there is no history to fetch. Only the collector writes to the archive (ingest action `archive`).
+
 Refreshed automatically at 6am and 6pm London time by GitHub Actions (`.github/workflows/update.yml`, or *Run workflow* by hand). It tracks:
 
 1. **Select committees:** reports, special reports and government responses (Parliament Committees API).

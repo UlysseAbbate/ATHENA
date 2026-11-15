@@ -113,3 +113,10 @@ select{cursor:pointer;padding-right:8px}
 .sc-daypanel{margin-top:14px}.sc-daypanel h3{font:700 .95rem var(--head);margin:0 0 8px}
 .sc-agenda{margin-top:6px;font-size:13.5px}.sc-agenda summary{cursor:pointer;color:var(--muted);font-weight:600}.sc-agenda ol{margin:6px 0 0 1.2rem;padding:0;color:var(--muted)}
 .sc-links a{font-weight:600}
+
+/* Archive tab */
+.arc-note{margin:.2rem 0 .8rem}
+.arc-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.arc-form input[type=search]{flex:1 1 16rem;min-width:0}.arc-form input[type=text]{flex:1 1 12rem;min-width:0}
+.arc-d{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted)}
+.arc-pager{display:flex;align-items:center;justify-content:center;gap:14px;margin:14px 0 24px}

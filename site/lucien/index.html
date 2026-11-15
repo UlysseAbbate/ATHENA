@@ -22,6 +22,7 @@
   <button data-tab="thinktank">Think tanks</button>
   <button data-tab="media">Lib Dems in the media</button>
   <button data-tab="polling">Polling</button>
+  <button data-tab="archive">Archive</button>
   <button data-tab="statscal">Stats calendar</button>
   <button data-tab="health">Source health</button>
 </nav>
@@ -51,7 +52,7 @@
       <option value="2">Last 2 days</option>
       <option value="7" selected>Last 7 days</option>
       <option value="30">Last 30 days</option>
-      <option value="180">All stored</option>
+      <option value="180">Last 180 days (older: Archive)</option>
     </select>
     <select id="status" aria-label="Read status">
       <option value="">All</option>
@@ -66,6 +67,7 @@
   <div class="listhead"><span id="count" class="muted"></span><button id="markall" class="ghost" type="button">Mark all shown as read</button></div>
   <div id="list" class="list"></div>
   <section id="statspanel" hidden></section>
+  <section id="archivepanel" hidden></section>
   <section id="healthpanel" hidden></section>
   <section id="teampanel" hidden></section>
 </main>
@@ -80,6 +82,7 @@
 <script src="../shared/teampage.js"></script>
 <script src="header.js"></script>
 <script src="statscal.js"></script>
+<script src="archive.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

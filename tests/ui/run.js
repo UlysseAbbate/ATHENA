@@ -81,6 +81,8 @@ const TABLES = {
   audit_log: [{ id: 1, at: ts, user_email: "core@test.invalid", table_name: "day_plan_entries", label: "Launch housing pledge", action: "update", changed: ["content"] }],
   ulysse_data: [{ name: "statscal", body: STATSCAL, updated_at: new Date().toISOString() }, { name: "feed", body: FEED, updated_at: new Date().toISOString() }, { name: "polls", body: { rows: [] } }, { name: "health", body: { sources: [{ group: "media", name: "BBC News", ok: true, items: 3 }, { group: "thinktanks", name: "IFS", ok: false, items: 0, error: "site refuses bots" }] } }],
   ulysse_read: [],
+  lucien_archive: [{ id: "a1", category: "committee", source: "Health Committee", title: "Report on waiting lists (2011)", url: "https://committees.parliament.uk/publications/1/", published: "2011-03-01T10:00:00Z", first_seen: "2011-03-01T10:00:00Z", summary: "Old report", tags: ["Report", "Commons"], item: { areas: ["Health"], kind: "Report" } },
+    { id: "a2", category: "thinktank", source: "IFS", title: "Archived IFS briefing", url: "https://ifs.org.uk/x", published: "2026-02-01T10:00:00Z", first_seen: "2026-02-01T10:00:00Z", summary: "", tags: [], item: {} }],
   program_levels: LEVELS,
   access_grants: [],
   access_codes: [{ id: "k1", label: "Peers", program: "libby", level: "peers", code_text: "Peers2026-test", expires_at: null, max_uses: null, uses: 3, revoked_at: null, created_at: ts }],
@@ -118,6 +120,7 @@ async function mock(page, who, log) {
     const t = url.pathname.replace("/rest/v1/", "");
     if (!(t in TABLES)) { log.push(`unmocked ${m} ${url.pathname}`); return json({ message: "not mocked" }, 404); }
     if (m === "HEAD") return route.fulfill({ status: 200, headers: { "content-range": `0-0/${TABLES[t].length}`, "access-control-allow-origin": "*", "access-control-expose-headers": "content-range" } });
+    if (m === "GET" && t === "lucien_archive") { log.push(`GET lucien_archive ${decodeURIComponent(url.search)}`); return json(TABLES[t], 200, { "content-range": `0-${TABLES[t].length - 1}/${TABLES[t].length * 60}` }); }
     if (m === "PATCH") { log.push(`PATCH ${t} ${url.search}`); return json(t === "day_plan_entries" ? [] : [{ id: "x" }]); }   // plan edits simulate a conflict
     if (m === "POST" || m === "DELETE") { log.push(`${m} ${t}`); return json([]); }
     let rows = TABLES[t];
@@ -1041,6 +1044,16 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       if (who === "admin") {
         await page.click('#tabs button[data-tab="health"]'); await page.waitForTimeout(200);
         check("admin: lucien health tab", /sources returning data/.test(await page.$eval("#healthpanel", e => e.innerText)));
+        await page.click('#tabs button[data-tab="archive"]'); await page.waitForTimeout(400);
+        check("archive: the Archive tab lists what is stored, with a count and pages", /120 items/.test(await page.$eval("#arc-count", e => e.textContent)) && (await page.$$("#arc-list .card")).length === 2 && /Report on waiting lists/.test(await page.$eval("#arc-list", e => e.innerText)) && /Page 1 of 3/.test(await page.$eval("#arc-pager", e => e.innerText)));
+        log.length = 0;
+        await page.fill("#arc-q", "waiting lists"); await page.selectOption("#arc-cat", "committee"); await page.fill("#arc-src", "Health"); await page.fill("#arc-from", "2010-01-01"); await page.click('#arc-form button[type=submit]'); await page.waitForTimeout(400);
+        const aq = log.filter(l => l.startsWith("GET lucien_archive")).pop() || "";
+        check("archive: a search asks for the words, the kind, the source and the dates, newest first", /category=eq\.committee/.test(aq) && /search=wfts\(english\)\.waiting\+lists/.test(aq) && /source=ilike\.%Health%/.test(aq) && /published=gte\.2010-01-01/.test(aq) && /order=published\.desc\.nullslast/.test(aq), aq);
+        await page.click("#arc-pager [data-pg='1']"); await page.waitForTimeout(300);
+        check("archive: Older shows the next page", /range|offset=50/.test((log.filter(l => l.startsWith("GET lucien_archive")).pop() || "")) || /Page 2 of 3/.test(await page.$eval("#arc-pager", e => e.innerText)));
+        await page.click('#tabs button[data-tab="all"]'); await page.waitForTimeout(300);
+        check("archive: the other tabs are unchanged (Everything shows its own list, not the archive)", (await page.$eval("#archivepanel", e => e.hidden)) && !(await page.$eval("#list", e => e.hidden)));
         await page.click('#tabs button[data-tab="statscal"]'); await page.waitForTimeout(300);
         check("stats calendar: it opens as a calendar (a month grid with weekday headings)", (await page.$$(".sc-grid .sc-dow")).length === 7 && (await page.$$(".sc-cell")).length >= 28);
         await page.click('[data-sc-day="' + plus(2) + '"]'); await page.waitForTimeout(200);

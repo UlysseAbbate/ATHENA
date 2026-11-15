@@ -8,6 +8,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   {action: "london_data", rows: [...]}  add the London data drops, ONS releases and GLA meetings to Lovelace's Daily Plan (rows: key, date, title, url, starts, section)
 //   {action: "membership_events", rows: [...]}  add the Lib Dem London events to Lovelace's Daily Plan, under Internal Campaign > Membership Engagement (rows: key, date, title, url, starts)
 //   {action: "parliament_events", rows: [...]}  add the UK Parliament What's On events to Lovelace's Daily Plan, under London Politics > Political Events (rows: key, date, title, url, starts)
+//   {action: "archive", rows: [...]}   keep items in LUCIEN's permanent archive (table lucien_archive); {action: "archive_status"} says how many committee items it holds
 //   {action: "social_accounts"}        the tracked social accounts that have a handle set, for the collector to follow
 const ALLOWED = new Set(["feed", "polls", "health", "statscal"]);
 const MAX_BYTES = 5_000_000;
@@ -95,6 +96,32 @@ Deno.serve(async (req: Request) => {
     if (error) return json({ error: error.message }, 500);
     await dropStale(sb, feed.prefix, new Set(rows.map(r => r.auto_key)));
     return json({ ok: true, added: data?.length ?? 0 });
+  }
+
+  // LUCIEN's permanent archive: everything the collector finds is kept here for good (the live feed keeps 180 days). Rows are stored once per id; a later run refreshes the title, summary and date.
+  if (payload.action === "archive") {
+    if (!Array.isArray(payload.rows)) return json({ error: "bad request" }, 400);
+    const CATS = new Set(["committee", "thinktank", "media", "polling"]);
+    const rows = payload.rows.slice(0, 1000).map((r: Record<string, unknown>) => {
+      const { id, category, source, title, url, published, first_seen, summary, tags, ...rest } = (r ?? {}) as Record<string, unknown>;
+      return {
+        id: str(id, 64), category: str(category, 20), source: str(source, 200), title: str(title, 400), url: str(url, 1000),
+        published: typeof published === "string" && !isNaN(Date.parse(published)) ? new Date(published).toISOString() : null,
+        first_seen: typeof first_seen === "string" && !isNaN(Date.parse(first_seen)) ? new Date(first_seen).toISOString() : new Date().toISOString(),
+        summary: str(summary, 2000) || null, tags: Array.isArray(tags) ? tags.slice(0, 20).map((t) => str(t, 80)).filter(Boolean) : [], item: rest,
+      };
+    }).filter((r) => r.id && CATS.has(r.category) && r.source && r.title && /^https?:\/\//.test(r.url));
+    if (!rows.length) return json({ ok: true, stored: 0 });
+    const { error } = await sb.from("lucien_archive").upsert(rows, { onConflict: "id" });
+    if (error) return json({ error: error.message }, 500);
+    return json({ ok: true, stored: rows.length });
+  }
+  // What the archive holds, so the collector knows whether the committees' history still has to be loaded.
+  if (payload.action === "archive_status") {
+    const { count, error } = await sb.from("lucien_archive").select("id", { count: "exact", head: true }).eq("category", "committee");
+    if (error) return json({ error: error.message }, 500);
+    const { data } = await sb.from("lucien_archive").select("published").eq("category", "committee").not("published", "is", null).order("published", { ascending: true }).limit(1);
+    return json({ ok: true, committees: count ?? 0, oldest_committee: data?.[0]?.published ?? null });
   }
 
   // Posts found on the tracked social accounts: kept against their account (Lovelace's Social Media Channels Tracker); a post is stored once per address.
