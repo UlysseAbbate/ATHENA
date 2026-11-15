@@ -6,6 +6,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   {action: "coverage", rows: [...]}  add new Sarah Olney coverage to Lovelace's Media trackers (existing URLs are left untouched)
 //   {action: "social_posts", rows: [...]}  add posts found on the tracked social accounts to the Social Media Channels Tracker (rows: organisation, platform, posted_on, summary, url)
 //   {action: "london_data", rows: [...]}  add the London data drops, ONS releases and GLA meetings to Lovelace's Daily Plan (rows: key, date, title, url, starts, section)
+//   {action: "membership_events", rows: [...]}  add the Lib Dem London events to Lovelace's Daily Plan, under Internal Campaign > Membership Engagement (rows: key, date, title, url, starts)
 //   {action: "social_accounts"}        the tracked social accounts that have a handle set, for the collector to follow
 const ALLOWED = new Set(["feed", "polls", "health", "statscal"]);
 const MAX_BYTES = 5_000_000;
@@ -63,6 +64,22 @@ Deno.serve(async (req: Request) => {
     if (error) return json({ error: error.message }, 500);
     const today = new Date().toISOString().slice(0, 10);
     await sb.from("day_plan_entries").delete().like("auto_key", "statscal:%").gte("plan_date", today).is("updated_by", null)
+      .not("auto_key", "in", `(${rows.map(r => `"${r.auto_key}"`).join(",")})`);
+    return json({ ok: true, added: data?.length ?? 0 });
+  }
+
+  // The Liberal Democrats' London events (events.libdems.org.uk): filed on their day under Internal Campaign > Membership Engagement, once each; same rule for stale entries as above.
+  if (payload.action === "membership_events") {
+    if (!Array.isArray(payload.rows)) return json({ error: "bad request" }, 400);
+    const rows = payload.rows.slice(0, MAX_COVERAGE).map((r: Record<string, unknown>) => ({
+      plan_date: /^\d{4}-\d{2}-\d{2}$/.test(String(r?.date)) ? String(r.date) : null, area: "internal", section: "membership",
+      title: str(r?.title, 400), starts: str(r?.starts, 40) || null, link: /^https:\/\/events\.libdems\.org\.uk\//.test(str(r?.url, 1000)) ? str(r?.url, 1000) : null, auto_key: str(r?.key, 160),
+    })).filter(r => r.plan_date && r.title && r.auto_key.startsWith("libdemev:"));
+    if (!rows.length) return json({ ok: true, added: 0 });
+    const { data, error } = await sb.from("day_plan_entries").upsert(rows, { onConflict: "auto_key", ignoreDuplicates: true }).select("id");
+    if (error) return json({ error: error.message }, 500);
+    const today = new Date().toISOString().slice(0, 10);
+    await sb.from("day_plan_entries").delete().like("auto_key", "libdemev:%").gte("plan_date", today).is("updated_by", null)
       .not("auto_key", "in", `(${rows.map(r => `"${r.auto_key}"`).join(",")})`);
     return json({ ok: true, added: data?.length ?? 0 });
   }

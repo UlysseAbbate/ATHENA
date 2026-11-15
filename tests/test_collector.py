@@ -410,3 +410,26 @@ def test_feed_posts_become_social_post_rows():
     rows = U.feed_post_rows("London Lib Dems", "YouTube", entries, U.NOW - timedelta(days=14))
     assert [r["url"] for r in rows] == ["https://youtu.be/x", "https://m.test/1"]
     assert rows[0]["platform"] == "YouTube" and rows[0]["organisation"] == "London Lib Dems" and rows[0]["summary"] == "Our new film on housing"
+
+
+# ------------------------------------------------------------------ the Lib Dem London events (events.libdems.org.uk) for the Daily Plan
+def _ev(title, when, eid="1", extra=""):
+    return (f'<article class="event quarter "><div class="card"><div class="event-content"><h2 class="event-title font-custom">'
+            f'<a href="https://events.libdems.org.uk/events/{eid}/x" title="t">\n  {title}\n </a></h2><div class="event-date"><div><span>{when}</span>{extra} <br/>'
+            f'<span class="event-date-timezone">Greenwich Mean Time</span></div></div></div></div></article>')
+
+
+def test_libdem_event_rows():
+    html = "".join([
+        _ev("Canada Water — Sunday Campaigning", "15th Nov 2026 3pm - 5pm", "10"),
+        _ev("Ealing AGM", "16th Nov 2026 7:30pm - 11pm", "11"),
+        _ev("Late start", "17th Nov 2026 12am", "12"),
+        _ev("Weekend away", "21st Nov 2026 9am", "13", " - <span>22nd Nov 2026 1pm</span>"),
+        _ev("Membership year", "2nd Jan 2026 12am", "14", " - <span>31st Dec 2026 12am</span>"),
+        _ev("Already over", "1st Nov 2026 3pm - 5pm", "15"),
+        _ev("Not ours", "20th Nov 2026 3pm - 5pm", "16").replace("https://events.libdems.org.uk", "https://evil.example"),
+    ])
+    rows = U.libdem_event_rows(html, date(2026, 11, 15))
+    assert [r["key"] for r in rows] == ["libdemev:10:2026-11-15", "libdemev:11:2026-11-16", "libdemev:12:2026-11-17", "libdemev:13:2026-11-21"]
+    assert rows[0]["title"] == "Canada Water — Sunday Campaigning" and rows[0]["starts"] == "15:00" and rows[1]["starts"] == "19:30" and rows[2]["starts"] == "00:00"
+    assert rows[3]["date"] == "2026-11-21" and rows[0]["url"].startswith("https://events.libdems.org.uk/events/")

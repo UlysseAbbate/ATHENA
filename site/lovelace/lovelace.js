@@ -259,9 +259,10 @@ function dayHtml(list, { editable, areas = AREAS }) {
       const mine = list.filter(e => e.area === a.id && e.section === sid);
       if (!mine.length && !editable) return "";
       const single = a.sections.length === 1;
-      return `<div class="sec">${single ? "" : `<h3 class="h3-section">${esc(sname)}</h3>`}${mine.map(e => entryHtml(e, editable)).join("")}${editable ? `<button class="btn sm" data-add="${a.id}|${sid}">+ Add${single ? "" : ` to ${esc(sname)}`}</button>` : ""}</div>`;
+      const add = editable ? `<button class="btn sm" data-add="${a.id}|${sid}">+ Add${single ? "" : ` to ${esc(sname)}`}</button>` : "";
+      return `<div class="sec">${single ? (add ? `<div class="sec-head">${add}</div>` : "") : `<div class="sec-head"><h3 class="sec-title">${esc(sname)}</h3>${add}</div>`}${mine.map(e => entryHtml(e, editable)).join("")}</div>`;
     }).join("");
-    return secs ? `<section class="grp"><h2 class="h2-rule">${esc(a.name)}</h2>${secs}</section>` : "";
+    return secs ? `<section class="grp"><h2 class="h2-rule" data-open>${esc(a.name)}</h2>${secs}</section>` : "";
   }).join("");
   return out || '<p class="muted">Nothing is planned for this day.</p>';
 }
@@ -316,10 +317,12 @@ async function renderPlanner(kind) {
 function entryForm(entry, area, sec, date, after) {
   openForm({
     title: `${areaName(area)}${areaName(area) === sectionName(area, sec) ? "" : ` · ${sectionName(area, sec)}`}: ${fmtShort(entry?.plan_date || date)}`,
-    fields: [T("title", "What", "text", { req: true }), T("starts", "Time (for example 10:00, or all day)"), T("place", "Where"), T("link", "Link"), T("detail", "Notes", "textarea"), T("plan_date", "Date", "date", { req: true })],
-    values: entry || { plan_date: date }, meta: edited(entry),
+    fields: [T("title", "What", "text", { req: true }), T("starts", "Time (for example 10:00, or all day)"), T("place", "Where"), T("link", "Link"), T("detail", "Notes", "textarea"), T("plan_date", "Date", "date", { req: true }),
+      T("where", "Section (change it to move the entry)", "select", { req: true, options: AREAS.flatMap(a => a.sections.map(([sid, sname]) => [`${a.id}|${sid}`, a.sections.length === 1 || a.name === sname ? a.name : `${a.name}: ${sname}`])) })],
+    values: { ...(entry || { plan_date: date }), where: `${area}|${sec}` }, meta: edited(entry),
     onSubmit: async v => {
-      const error = entry ? await guardedUpdate("day_plan_entries", entry, v) : (await sb.from("day_plan_entries").insert({ ...v, area, section: sec })).error;
+      const [na, ns] = String(v.where || `${area}|${sec}`).split("|"); delete v.where;
+      const error = entry ? await guardedUpdate("day_plan_entries", entry, { ...v, area: na, section: ns }) : (await sb.from("day_plan_entries").insert({ ...v, area: na, section: ns })).error;
       if (!error || error.message === CONFLICT) after(); return error;
     },
     onDelete: entry ? async () => { const { error } = await sb.from("day_plan_entries").delete().eq("id", entry.id); if (!error) after(); return error; } : null
@@ -629,6 +632,14 @@ async function renderTeam() {
 
 /* ------------------------------------------------------------------ overview: what is coming up, day by day */
 // A list of the days ahead that have something planned. A day with nothing is left out, and so is an area or section with nothing in it.
+/** The Summary shows two entries of a section and hides the rest behind "+N more" when there are three or more. */
+const OV_SHOWN = 2;
+function ovList(m) {
+  if (m.length <= OV_SHOWN) return m.map(e => entryHtml(e, false)).join("");
+  const rest = m.length - OV_SHOWN;
+  return m.slice(0, OV_SHOWN).map(e => entryHtml(e, false)).join("") + `<div class="ov-rest" hidden>${m.slice(OV_SHOWN).map(e => entryHtml(e, false)).join("")}</div>`
+    + `<button type="button" class="ov-more" data-more="${rest}" aria-expanded="false">+${rest} more</button>`;
+}
 async function renderToday() {
   const today = iso(new Date());
   const full = can("dayplan_full", "read"), zone = can("dayplan_volunteer", "read");
@@ -645,9 +656,11 @@ async function renderToday() {
         const mine = list.filter(e => e.area === a.id);
         if (!mine.length) return "";
         return `<div class="ovarea"><h4>${esc(a.name)}</h4>${a.sections.map(([sid, sname]) => { const m = mine.filter(e => e.section === sid);
-          return m.length ? `<div class="ovsec">${a.sections.length > 1 ? `<span class="ovtag">${esc(sname)}</span>` : ""}${m.map(e => entryHtml(e, false)).join("")}</div>` : ""; }).join("")}</div>`; }).join("")}</section>`; }).join("") : '<p class="muted">${full ? "Nothing is planned in the next three weeks." : "Nothing is planned for today."}</p>'}`;
+          return m.length ? `<div class="ovsec">${a.sections.length > 1 ? `<span class="ovtag">${esc(sname)}</span>` : ""}${ovList(m)}</div>` : ""; }).join("")}</div>`; }).join("")}</section>`; }).join("") : '<p class="muted">${full ? "Nothing is planned in the next three weeks." : "Nothing is planned for today."}</p>'}`;
   main.onclick = e => {
     const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); return go(g.dataset.go); }
+    const mb = e.target.closest("[data-more]");
+    if (mb) { const rest = mb.previousElementSibling, open = rest.hidden; rest.hidden = !open; mb.setAttribute("aria-expanded", String(open)); mb.textContent = open ? "Show fewer" : `+${mb.dataset.more} more`; return; }
     const d = e.target.closest("[data-day]");
     if (d && full) { e.preventDefault(); PLANNERS.plan.state.mode = "day"; PLANNERS.plan.state.date = d.dataset.day; go("plan"); }
     else if (d) e.preventDefault();

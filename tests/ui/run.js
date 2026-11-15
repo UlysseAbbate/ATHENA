@@ -57,7 +57,9 @@ const TABLES = {
     { id: "d2", plan_date: iso(today), area: "internal", section: "membership", title: "Members' call", starts: "19:00", created_at: ts, updated_at: ts },
     { id: "d3", plan_date: iso(today), area: "internal", section: "donor", title: "Donor dinner", starts: "20:00", created_at: ts, updated_at: ts },
     { id: "d4", plan_date: iso(today), area: "governance", section: "governance", title: "File the return", created_at: ts, updated_at: ts },
-    { id: "d5", plan_date: plus(2), area: "gla", section: "media", title: "Op-ed in the Standard", created_at: ts, updated_at: ts }],
+    { id: "d5", plan_date: plus(2), area: "gla", section: "media", title: "Op-ed in the Standard", created_at: ts, updated_at: ts },
+    { id: "d6", plan_date: plus(2), area: "gla", section: "media", title: "Radio interview", starts: "08:00", created_at: ts, updated_at: ts },
+    { id: "d7", plan_date: plus(2), area: "gla", section: "media", title: "Podcast recording", starts: "16:00", created_at: ts, updated_at: ts }],
   local_party_visits: [{ id: "v1", local_party: "Richmond Park", request: "Street stall", contact_name: "Pat", contact_phone: "0701", taken_by: "Louis", actioning: "Sarah", visit_date: iso(today), updated_at: ts },
     { id: "v2", local_party: "Hounslow", request: "AGM", visit_date: null, updated_at: ts }],
   governance_items: [{ id: "g1", title: "Register with Electoral Commission", area: "Legal", status: "To do", due_date: plus(-1), updated_at: ts }],
@@ -832,6 +834,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         const ovt = await page.$eval("#main", m => m.innerText);
         check(`${who}: the overview is a list of the days that have something planned (a day with nothing is left out; volunteers see today only)`, ovd.length === (who === "member" ? 1 : 2) && /^Today/.test(ovd[0]) && !/Nothing/.test(await page.$$eval(".ovday", ds => ds.map(d => d.innerText).join(" "))), ovd.join(" | "));
         if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `lovelace-overview-${scheme}.png`) }); await page.emulateMedia({ colorScheme: "light" }); }
+        if (who !== "member") {
+          const more = await page.$$eval(".ov-more", bs => bs.map(b => b.textContent.trim()));
+          const hid = await page.$$eval(".ov-rest", r => r.map(x => x.hidden));
+          check(`${who}: three or more entries in a section show two and "+1 more"`, more.join("|") === "+1 more" && hid.join("|") === "true" && /Op-ed in the Standard/.test(ovt) && !(await page.$eval(".ov-rest", r => r.offsetParent !== null)));
+          await page.click(".ov-more"); await page.waitForTimeout(100);
+          check(`${who}: "+1 more" shows the rest, and "Show fewer" hides them again`, (await page.$eval(".ov-rest", r => r.offsetParent !== null)) && /Show fewer/.test(await page.$eval(".ov-more", b => b.textContent)));
+          await page.click(".ov-more"); await page.waitForTimeout(100);
+        }
         check(`${who}: the overview lists each day's activities under their area`, /Launch housing pledge/.test(ovt) && /Mayor's Activity/i.test(ovt) && (who === "member" ? !/GLA Activity/i.test(ovt) : /GLA Activity/i.test(ovt)) && /Members' call/.test(ovt), ovt.slice(0, 160).replace(/\n/g, " "));
         check(`${who}: ${who === "member" ? "a volunteer does not see donor events or Governance and Legal" : "the overview includes Internal Campaign and Governance and Legal"}`, who === "member" ? !/Donor dinner|File the return|Governance and Legal/i.test(ovt) : /Donor dinner/.test(ovt) && /File the return/.test(ovt));
       }
@@ -926,6 +936,18 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: each area has its sections`, secs[0] === "Field Campaign,Media,Membership Engagement,Other Activities" && secs[1] === secs[0] && secs[2] === "Membership Engagement,Donor Events,Staff Activities,Other" && secs[3] === "" && secs[4] === "Data & Statistics,Political Events,London Events", secs.join(" | "));
         check(`${who}: an entry shows its time, place, link and notes, and a section can take more entries`, /10:00/.test(plan) && /Richmond Park/.test(plan) && /Bring leaflets/.test(plan) && (await page.$('[data-add="mayor|field"]')) !== null && (await page.$$("[data-add]")).length === 16);
         check(`${who}: the day has no local party visits section`, !/[Ll]ocal party visit/.test(plan) && !/contact Pat 0701/.test(plan));
+        // the sections of a day are open, each with its Add button on the title's line, to the right; an entry can be moved to another section
+        await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
+        await page.click("[data-back]"); await page.waitForTimeout(300);
+        await page.click(".cal-cell.today"); await page.waitForTimeout(450);
+        const heads = await page.$$eval("#main .sec-head", hs => hs.map(h => { const t = h.querySelector(".sec-title"), b = h.querySelector("[data-add]"); const r1 = t && t.getBoundingClientRect(), r2 = b && b.getBoundingClientRect();
+          return { open: !h.closest("details:not([open])"), same: !!(r2 && (!r1 || Math.abs((r1.top + r1.bottom) / 2 - (r2.top + r2.bottom) / 2) < 12)), right: !!(r2 && (!r1 || r2.left > r1.right)) }; }));
+        check(`${who}: every section of a day is open, with its Add button on the title's line, to the right`, heads.length >= 10 && heads.every(h => h.open && h.same && h.right), JSON.stringify(heads.slice(0, 3)));
+        await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = true; });
+        await page.click("[data-e]"); await page.waitForTimeout(250);
+        const wopts = await page.$$eval("#f_where option", os => os.map(o => o.textContent));
+        check(`${who}: an entry has a Section drop-down to move it (for example to Internal Campaign: Donor Events)`, wopts.includes("Mayor's Activity: Field Campaign") && wopts.includes("Internal Campaign: Donor Events"), wopts.join("|"));
+        await page.click("#cx"); await page.waitForTimeout(150);
         await page.click("[data-back]"); await page.waitForTimeout(300);
       }
       if (who !== "member") {
