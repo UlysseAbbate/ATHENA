@@ -7,6 +7,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   {action: "social_posts", rows: [...]}  add posts found on the tracked social accounts to the Social Media Channels Tracker (rows: organisation, platform, posted_on, summary, url)
 //   {action: "london_data", rows: [...]}  add the London data drops, ONS releases and GLA meetings to Lovelace's Daily Plan (rows: key, date, title, url, starts, section)
 //   {action: "membership_events", rows: [...]}  add the Lib Dem London events to Lovelace's Daily Plan, under Internal Campaign > Membership Engagement (rows: key, date, title, url, starts)
+//   {action: "parliament_events", rows: [...]}  add the UK Parliament What's On events to Lovelace's Daily Plan, under London Politics > Political Events (rows: key, date, title, url, starts)
 //   {action: "social_accounts"}        the tracked social accounts that have a handle set, for the collector to follow
 const ALLOWED = new Set(["feed", "polls", "health", "statscal"]);
 const MAX_BYTES = 5_000_000;
@@ -23,6 +24,14 @@ function safeEqual(a: string, b: string): boolean {
 const json = (o: unknown, status = 200) =>
   new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json" } });
 const str = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+// Removes the untouched entries (nobody has edited them) of one feed from today on that the feed no longer carries. Done by id, in small groups, so long lists never make a long web address.
+// deno-lint-ignore no-explicit-any
+async function dropStale(sb: any, prefix: string, keep: Set<string>) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await sb.from("day_plan_entries").select("id,auto_key").like("auto_key", `${prefix}%`).gte("plan_date", today).is("updated_by", null).limit(5000);
+  const stale = (data ?? []).filter((r: { id: string; auto_key: string }) => !keep.has(r.auto_key)).map((r: { id: string }) => r.id);
+  for (let i = 0; i < stale.length; i += 100) await sb.from("day_plan_entries").delete().in("id", stale.slice(i, i + 100));
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
@@ -62,25 +71,29 @@ Deno.serve(async (req: Request) => {
     if (!rows.length) return json({ ok: true, added: 0 });
     const { data, error } = await sb.from("day_plan_entries").upsert(rows, { onConflict: "auto_key", ignoreDuplicates: true }).select("id");
     if (error) return json({ error: error.message }, 500);
-    const today = new Date().toISOString().slice(0, 10);
-    await sb.from("day_plan_entries").delete().like("auto_key", "statscal:%").gte("plan_date", today).is("updated_by", null)
-      .not("auto_key", "in", `(${rows.map(r => `"${r.auto_key}"`).join(",")})`);
+    await dropStale(sb, "statscal:", new Set(rows.map(r => r.auto_key)));
     return json({ ok: true, added: data?.length ?? 0 });
   }
 
-  // The Liberal Democrats' London events (events.libdems.org.uk): filed on their day under Internal Campaign > Membership Engagement, once each; same rule for stale entries as above.
-  if (payload.action === "membership_events") {
+  // Events the collector reads from public calendars, filed on their day in Lovelace's Daily Plan, once each. An entry nobody has edited that the calendar no longer carries
+  // (a date moved, an event cancelled) is removed; one a person has edited (or moved to another section) stays.
+  //   membership_events: the Liberal Democrats' London events (events.libdems.org.uk)   -> Internal Campaign > Membership Engagement
+  //   parliament_events: the UK Parliament What's On calendar (whatson-api.parliament.uk) -> London Politics > Political Events
+  const DAY_EVENTS: Record<string, { area: string; section: string; prefix: string; link: RegExp }> = {
+    membership_events: { area: "internal", section: "membership", prefix: "libdemev:", link: /^https:\/\/events\.libdems\.org\.uk\// },
+    parliament_events: { area: "london", section: "political", prefix: "whatson:", link: /^https:\/\/whatson\.parliament\.uk\// },
+  };
+  const feed = payload.action ? DAY_EVENTS[payload.action] : undefined;
+  if (feed) {
     if (!Array.isArray(payload.rows)) return json({ error: "bad request" }, 400);
     const rows = payload.rows.slice(0, MAX_COVERAGE).map((r: Record<string, unknown>) => ({
-      plan_date: /^\d{4}-\d{2}-\d{2}$/.test(String(r?.date)) ? String(r.date) : null, area: "internal", section: "membership",
-      title: str(r?.title, 400), starts: str(r?.starts, 40) || null, link: /^https:\/\/events\.libdems\.org\.uk\//.test(str(r?.url, 1000)) ? str(r?.url, 1000) : null, auto_key: str(r?.key, 160),
-    })).filter(r => r.plan_date && r.title && r.auto_key.startsWith("libdemev:"));
+      plan_date: /^\d{4}-\d{2}-\d{2}$/.test(String(r?.date)) ? String(r.date) : null, area: feed.area, section: feed.section,
+      title: str(r?.title, 400), starts: str(r?.starts, 40) || null, link: feed.link.test(str(r?.url, 1000)) ? str(r?.url, 1000) : null, auto_key: str(r?.key, 160),
+    })).filter(r => r.plan_date && r.title && r.auto_key.startsWith(feed.prefix));
     if (!rows.length) return json({ ok: true, added: 0 });
     const { data, error } = await sb.from("day_plan_entries").upsert(rows, { onConflict: "auto_key", ignoreDuplicates: true }).select("id");
     if (error) return json({ error: error.message }, 500);
-    const today = new Date().toISOString().slice(0, 10);
-    await sb.from("day_plan_entries").delete().like("auto_key", "libdemev:%").gte("plan_date", today).is("updated_by", null)
-      .not("auto_key", "in", `(${rows.map(r => `"${r.auto_key}"`).join(",")})`);
+    await dropStale(sb, feed.prefix, new Set(rows.map(r => r.auto_key)));
     return json({ ok: true, added: data?.length ?? 0 });
   }
 

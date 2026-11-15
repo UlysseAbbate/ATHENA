@@ -170,6 +170,7 @@ code,.code{font:600 .92rem ui-monospace,Menlo,Consolas,monospace;background:var(
 .state-error,.state-warn,.state-ok{padding:.65rem .9rem;margin:1rem 0;border-radius:6px;border:1px solid var(--rule);border-left:3px solid}
 .state-error{background:var(--err-bg);border-left-color:var(--red)}
 .state-warn{background:var(--warn-bg);border-left-color:var(--accent)}
+.deadlines{margin:1rem 0}.deadlines ul{margin:.3rem 0 0;padding-left:1.1rem}.deadlines li{margin:.2rem 0}
 .state-ok{background:var(--ok-bg);border-left-color:var(--green)}
 .err{color:var(--err);font-weight:700}
 .state{color:var(--muted);padding:.8rem 0}

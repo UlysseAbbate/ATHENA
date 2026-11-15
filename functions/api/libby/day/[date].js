@@ -16,7 +16,7 @@ import { SAVED_DAYS_AHEAD } from '../../../../lib/libby/schedule.js'; // today a
 import { whatsOn, activeLordsBillsTagged, ldPeers, ldMatcher, findCommonsDebate } from '../../../../lib/libby/parliament.js';
 import { sectionsFromWhatsOn, sectionsFromFB, foldSpeakerLines, committeesFromWhatsOn, mergeWhatsOn, risingFromWhatsOn, enrichSections, itemCount } from '../../../../lib/libby/business.js';
 import { fbRows, orderPaperRows, sbSelect, supabaseConfigured } from '../../../../lib/libby/supabase.js';
-import { liveOrderPaper, liveFutureBusiness } from '../../../../lib/libby/lordsbusiness.js';
+import { liveOrderPaper, liveFutureBusiness, liveDeadlines } from '../../../../lib/libby/lordsbusiness.js';
 
 const SOURCES = {
   whatson: { label: "UK Parliament — What's On", url: 'https://whatson.parliament.uk/lords/' },
@@ -145,6 +145,7 @@ export async function onRequestGet(ctx) {
       out.listProblem = 'The uploaded list for this day could not be read, so the business below comes from the other sources.';
     }
   }
+  out.deadlines = date >= today ? await liveDeadlines(ctx, date) : [];   // ballot and tabling deadlines the papers print for the day
   await withSpeakers(out, upSpeakers, ctx);
   // Staff change this and expect to see it at once, and the duty Whips come from the Whips page: nothing here is kept by the browser.
   return json(out, { maxAge: 0 });

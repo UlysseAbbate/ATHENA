@@ -1428,7 +1428,57 @@ def collect_libdem_events() -> list[dict]:
         return []
 
 
-def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None, london_data: list[dict] | None = None, events: list[dict] | None = None) -> bool:
+WHATSON_API = "https://whatson-api.parliament.uk/calendar/events/list.json"
+WHATSON_DAYS = 28
+_WO_TYPE = {"main chamber": "Chamber", "select & joint committees": "Committee", "general committee": "General Committee", "grand committee": "Grand Committee",
+            "westminster hall": "Westminster Hall"}
+
+
+def whatson_event_rows(events: list[dict], today: date | None = None) -> list[dict]:
+    """The UK Parliament's What's On calendar (both Houses and joint committees), for Lovelace's Daily Plan (London Politics > Political Events).
+    Cancelled events and committees' private meetings are left out. One row per event: { key, date, title, url, starts }."""
+    today = today or NOW.astimezone(LONDON).date()
+    hi = today + timedelta(days=WHATSON_DAYS)
+    out = []
+    for e in events or []:
+        if e.get("CancelledDate") or str(e.get("Category") or "").strip().lower() == "private meeting" or not e.get("Id"):
+            continue
+        try:
+            day = date.fromisoformat(str(e.get("StartDate") or "")[:10])
+        except ValueError:
+            continue
+        if not today <= day <= hi:
+            continue
+        what = re.sub(r"\s+", " ", str(e.get("Description") or "")).strip() or ((e.get("Committee") or {}).get("Description") or "") or str(e.get("Category") or "").strip()
+        cat = str(e.get("Category") or "").strip()
+        if cat and cat.lower() not in what.lower():
+            what = f"{what} ({cat})"
+        house = {"Commons": "Commons", "Lords": "Lords", "Joint": "Joint"}.get(str(e.get("House") or ""), "")
+        kind = _WO_TYPE.get(str(e.get("Type") or "").strip().lower(), str(e.get("Type") or "").strip())
+        title = f"{' '.join(x for x in (house, kind) if x)}: {what}"[:400]
+        starts = str(e.get("StartTime") or "")[:5] or None
+        out.append({"key": f"whatson:{e['Id']}", "date": day.isoformat(), "title": title, "starts": starts, "url": f"https://whatson.parliament.uk/event/cal{e['Id']}"})
+    out.sort(key=lambda x: (x["date"], x["starts"] or ""))
+    return out[:600]
+
+
+def collect_whatson_events() -> list[dict]:
+    today = NOW.astimezone(LONDON).date()
+    events: list[dict] = []
+    try:
+        for first in range(0, WHATSON_DAYS + 1, 14):   # a fortnight at a time keeps each reply small
+            start = today + timedelta(days=first)
+            end = min(start + timedelta(days=13), today + timedelta(days=WHATSON_DAYS))
+            events += get(WHATSON_API, params={"queryParameters.startDate": start.isoformat(), "queryParameters.endDate": end.isoformat()}, headers={"Accept": "application/json"}).json()
+        rows = whatson_event_rows({str(e.get("Id")): e for e in events}.values(), today)
+        print(f"parliament what's on: {len(rows)} events in the next {WHATSON_DAYS} days")
+        return rows
+    except Exception as e:  # noqa: BLE001
+        print(f"parliament what's on failed: {e}", file=sys.stderr)
+        return []
+
+
+def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None, london_data: list[dict] | None = None, events: list[dict] | None = None, parliament: list[dict] | None = None) -> bool:
     """Push feed/polls/health (and any new Sarah Olney coverage and social posts) through the ingest function."""
     if not ingest_configured():
         print("INGEST_URL / INGEST_TOKEN not set: data written locally only, not uploaded")
@@ -1461,6 +1511,12 @@ def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None =
         except Exception as e:  # noqa: BLE001
             ok = False
             print(f"events upload failed: {e}", file=sys.stderr)
+    if parliament:
+        try:
+            print(f"parliament: {_ingest({'action': 'parliament_events', 'rows': parliament}).get('added', 0)} new Parliament events added to London Politics")
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            print(f"parliament events upload failed: {e}", file=sys.stderr)
     if social_posts:
         try:
             print(f"social: {_ingest({'action': 'social_posts', 'rows': social_posts}).get('added', 0)} new posts added to the Social Media Channels Tracker")
@@ -1517,13 +1573,16 @@ def main() -> int:
         write("feed", {"updated": NOW.isoformat(), "items": feed})
         print(f"{len(feed)} items re-classified")
         return 0 if upload() else 1
-    groups = {"committees", "thinktanks", "media", "polling", "statscal", "events"}
+    groups = {"committees", "thinktanks", "media", "polling", "statscal", "events", "parliament"}
     run = lambda k: not only or k in only  # noqa: E731
     items: list[dict] = []
     coverage: list[dict] = []
     social_posts: list[dict] = []
     london_data: list[dict] = []
     events: list[dict] = []
+    parliament: list[dict] = []
+    if run("parliament"):
+        parliament = collect_whatson_events()
     if run("events"):
         events = collect_libdem_events()
     if run("committees"):
@@ -1565,7 +1624,7 @@ def main() -> int:
     write("health", {"updated": NOW.isoformat(), "sources": health})
     ok = sum(h["ok"] for h in health)
     print(f"{len(feed)} items stored; {ok}/{len(health)} sources returned data")
-    return 0 if upload(coverage, social_posts, london_data, events) else 1
+    return 0 if upload(coverage, social_posts, london_data, events, parliament) else 1
 
 
 if __name__ == "__main__":

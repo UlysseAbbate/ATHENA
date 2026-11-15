@@ -219,3 +219,7 @@ Both pages are built from two official Parliament APIs (read by `scripts/libby/i
 The APIs are the only automatic sources. For one day the page uses a Today's List that Staff have uploaded, if there is one (an optional extra that carries the groupings of amendments); otherwise the Order Paper, then Future Business, then the calendar alone, with the calendar added on top for the Bill, the speakers, the room and the Committees section. Each is read from the copy in Supabase (renewed by the ingest workflows) and, for a day the copy does not hold, straight from the API. The Whips' Office website and PDF are not read at all.
 
 > Updated for the Whips Hub: the roles are now Backbench parliamentarian, Frontbencher parliamentarian, Whip, Leader's circle, each one's Staff (same access as their principal) and Administrator. The older rows above (Peer, Spokesperson, Staff) are the previous names; see `site/libby/js/pages.js` for the current ranks.
+
+## Deadlines on the day page
+
+The Lords' Future Business and Order Paper print italic notes under some items, such as "Topical oral question. Ballot to be drawn at 1pm on Friday 13 November." or "Ballot opens at 3pm on Friday 13 November, to be drawn at 1pm on Tuesday 17 November." These are not items of business, so they are left out of the day's items; `deadlineNotes` (`lib/libby/lordsbusiness.js`) picks them out and the day page shows them in a **Deadlines** box above the business. The Deposited Papers API holds papers laid in the House libraries, with no submission deadlines, so it is not used for this.
