@@ -916,7 +916,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       if (who !== "member") {
         await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(450);
         const cal = await page.$eval("#main", m => m.innerText);
-        check(`${who}: the Calendar is a month calendar with the day's entries in their cells, and the visit requests under it`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && /Local party visit requests/.test(cal), cal.slice(0, 120).replace(/\n/g, " "));
+        check(`${who}: the Calendar is a month calendar with the day's entries in their cells, with no visit requests under it`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && !/[Ll]ocal party visit/.test(cal), cal.slice(0, 120).replace(/\n/g, " "));
         if (process.env.SHOTS && who === "admin") await page.screenshot({ path: path.join(process.env.SHOTS, "lovelace-calendar.png"), fullPage: true });
         await page.click(".cal-cell.today"); await page.waitForTimeout(450);
         const plan = await page.$eval("#main", m => m.innerText);
@@ -925,7 +925,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         const secs = await page.$$eval("#main .grp", gs => gs.map(g => [...g.querySelectorAll("h3")].map(h => h.textContent.trim()).join(",")));
         check(`${who}: each area has its sections`, secs[0] === "Field Campaign,Media,Membership Engagement,Other Activities" && secs[1] === secs[0] && secs[2] === "Membership Engagement,Donor Events,Staff Activities,Other" && secs[3] === "" && secs[4] === "Data & Statistics,Political Events,London Events", secs.join(" | "));
         check(`${who}: an entry shows its time, place, link and notes, and a section can take more entries`, /10:00/.test(plan) && /Richmond Park/.test(plan) && /Bring leaflets/.test(plan) && (await page.$('[data-add="mayor|field"]')) !== null && (await page.$$("[data-add]")).length === 16);
-        check(`${who}: the day shows a dated visit's details`, /contact Pat 0701/.test(plan) && /taken by Louis/.test(plan), plan.slice(0, 200).replace(/\n/g, " "));
+        check(`${who}: the day has no local party visits section`, !/[Ll]ocal party visit/.test(plan) && !/contact Pat 0701/.test(plan));
         await page.click("[data-back]"); await page.waitForTimeout(300);
       }
       if (who !== "member") {
