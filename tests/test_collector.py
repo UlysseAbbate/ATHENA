@@ -448,3 +448,54 @@ def test_whatson_event_rows():
     assert [r["key"] for r in rows] == ["whatson:2", "whatson:1"]
     assert rows[0]["title"] == "Lords Committee: Home Affairs Committee (Oral evidence)" and rows[0]["starts"] == "09:15" and rows[0]["url"] == "https://whatson.parliament.uk/event/cal2"
     assert rows[1]["title"] == "Commons Chamber: Oral questions"
+
+
+# ------------------------------------------------------------------ LUCIEN's permanent archive
+class _Resp:
+    def __init__(self, data):
+        self._d = data
+
+    def json(self):
+        return self._d
+
+
+def test_committee_history_reads_year_by_year_newest_first(monkeypatch):
+    calls = []
+
+    def fake_get(url, **kw):
+        if url.endswith("/PublicationType"):
+            return _Resp([{"id": 1, "name": "Report"}, {"id": 2, "name": "Correspondence"}, {"id": 4, "name": "Government Response"}, {"id": 6, "name": "Special Report"}])
+        p = kw["params"]
+        calls.append((p["StartDate"][:4], p["PublicationTypeIds"], p["Skip"]))
+        yr = p["StartDate"][:4]
+        n = 100 if (yr == "2025" and p["Skip"] == 0) else 3
+        return _Resp({"items": [{"id": int(yr) * 1000 + p["Skip"] + i, "type": {"name": "Report"}, "committee": {"name": "Health Committee", "house": "Commons"},
+                                 "description": f"Report {yr}-{i}", "publicationStartDate": f"{yr}-03-01T10:00:00"} for i in range(n)]})
+    monkeypatch.setattr(U, "get", fake_get)
+    items = U.collect_committee_history(2025, first_year=2024)
+    assert [c[0] for c in calls] == ["2025", "2025", "2024"] and calls[0][1] == [1, 4, 6]   # the year with a full page is read again; Correspondence is not asked for
+    assert len(items) == 100 + 3 + 3 and items[0]["category"] == "committee" and items[0]["source"] == "Health Committee"
+    monkeypatch.setattr(U, "HISTORY_BUDGET_S", -1)   # out of time: nothing is read, and the next run carries on
+    assert U.collect_committee_history(2025, first_year=2024) == []
+
+
+def test_archive_history_start(monkeypatch):
+    monkeypatch.setattr(U, "ingest_configured", lambda: True)
+    monkeypatch.delenv("ARCHIVE_HISTORY", raising=False)
+    for oldest, want in ((None, U.NOW.year), ("2019-05-02T00:00:00+00:00", 2019), ("2010-02-01T00:00:00+00:00", None)):
+        monkeypatch.setattr(U, "_ingest", lambda payload, timeout=90, o=oldest: {"ok": True, "committees": 5, "oldest_committee": o})
+        assert U.archive_history_start() == want
+    monkeypatch.setenv("ARCHIVE_HISTORY", "1")
+    assert U.archive_history_start() == U.NOW.year
+    monkeypatch.delenv("ARCHIVE_HISTORY")
+    monkeypatch.setattr(U, "ingest_configured", lambda: False)
+    assert U.archive_history_start() is None
+
+
+def test_upload_archive_sends_everything_in_chunks(monkeypatch):
+    sent = []
+    monkeypatch.setattr(U, "ingest_configured", lambda: True)
+    monkeypatch.setattr(U, "_ingest", lambda payload, timeout=90: sent.append(payload) or {"ok": True, "stored": len(payload["rows"])})
+    assert U.upload_archive([{"id": str(i)} for i in range(1200)]) is True
+    assert [len(p["rows"]) for p in sent] == [500, 500, 200] and all(p["action"] == "archive" for p in sent)
+    assert U.upload_archive([]) is True

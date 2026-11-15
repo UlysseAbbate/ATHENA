@@ -1478,6 +1478,88 @@ def collect_whatson_events() -> list[dict]:
         return []
 
 
+# -------------------------------------------------- the permanent archive (LUCIEN > Archive)
+ARCHIVE_FROM_YEAR = 2010
+ARCHIVE_CHUNK = 500
+
+
+def committee_type_ids() -> list[int]:
+    """The ids of the publication types the feed keeps (reports, special reports, government responses), read from the API's own list."""
+    cfg = CONFIG["committees"]
+    url = cfg["api"].rsplit("/", 1)[0] + "/PublicationType"
+    rows = get(url).json()
+    return [t["id"] for t in rows if any(k in str(t.get("name", "")).lower() for k in cfg["keep_types"])]
+
+
+HISTORY_BUDGET_S = 20 * 60   # one run loads as many years as fit in this; the next run carries on from where the archive stops
+
+
+def collect_committee_history(start_year: int | None = None, first_year: int = ARCHIVE_FROM_YEAR) -> list[dict]:
+    """Every select committee report and government response from `start_year` back to `first_year`, newest year first, from the Parliament Committees API.
+    It stops when the time budget is used up; the archive then holds the newest years and the next run carries on with the older ones."""
+    cfg = CONFIG["committees"]
+    items: list[dict] = []
+    try:
+        ids = committee_type_ids()
+    except Exception as e:  # noqa: BLE001
+        print(f"committee history: could not read the publication types: {e}", file=sys.stderr)
+        return items
+    began = time.time()
+    for year in range((start_year or NOW.year), first_year - 1, -1):
+        if time.time() - began > HISTORY_BUDGET_S:
+            print(f"committee history: time is up at {year}; the next run carries on")
+            break
+        try:
+            skip = 0
+            while skip < 5000:
+                js = get(cfg["api"], params={"StartDate": f"{year}-01-01", "EndDate": f"{year}-12-31", "PublicationTypeIds": ids, "Take": 100, "Skip": skip}).json()
+                rows = js.get("items") or []
+                for row in rows:
+                    it = _committee_row(row, cfg["keep_types"])
+                    if it:
+                        items.append(it)
+                if len(rows) < 100:
+                    break
+                skip += 100
+        except Exception as e:  # noqa: BLE001
+            print(f"committee history {year} failed: {e}", file=sys.stderr)
+    print(f"committee history: {len(items)} reports and government responses")
+    return items
+
+
+def archive_history_start() -> int | None:
+    """The year to load committee history from (and back to 2010): this year for a fresh archive, otherwise the oldest year the archive holds so far.
+    None when the archive already reaches back to 2010. ARCHIVE_HISTORY=1 loads it all again by hand."""
+    if os.environ.get("ARCHIVE_HISTORY"):
+        return NOW.year
+    if not ingest_configured():
+        return None
+    try:
+        oldest = _ingest({"action": "archive_status"}).get("oldest_committee")
+    except Exception as e:  # noqa: BLE001
+        print(f"archive status failed: {e}", file=sys.stderr)
+        return None
+    if not oldest:
+        return NOW.year
+    year = int(str(oldest)[:4])
+    return year if year > ARCHIVE_FROM_YEAR else None
+
+
+def upload_archive(items: list[dict]) -> bool:
+    """Keep every item the collector has (not only the last 180 days) in the permanent archive."""
+    if not items or not ingest_configured():
+        return True
+    ok, stored = True, 0
+    for i in range(0, len(items), ARCHIVE_CHUNK):
+        try:
+            stored += int(_ingest({"action": "archive", "rows": items[i:i + ARCHIVE_CHUNK]}).get("stored", 0))
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            print(f"archive upload failed: {e}", file=sys.stderr)
+    print(f"archive: {stored} items kept")
+    return ok
+
+
 def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None, london_data: list[dict] | None = None, events: list[dict] | None = None, parliament: list[dict] | None = None) -> bool:
     """Push feed/polls/health (and any new Sarah Olney coverage and social posts) through the ingest function."""
     if not ingest_configured():
@@ -1614,6 +1696,14 @@ def main() -> int:
         print(f"stats calendar: {len(body['releases'])} releases, {sum(s['ok'] for s in body['sources'])}/{len(body['sources'])} sources ok")
     feed = merge(items)
     write("feed", {"updated": NOW.isoformat(), "items": feed})
+    history: list[dict] = []
+    start_year = archive_history_start() if run("committees") else None
+    if start_year:   # a new archive is filled with every committee report since 2010, newest first, a few years per run
+        history = collect_committee_history(start_year)
+        now_iso = NOW.isoformat()
+        for it in history:
+            it["first_seen"] = it.get("published") or now_iso
+            classify(it)
     if only:   # a partial run keeps the other groups' last known health
         try:
             prev = json.loads((DATA / "health.json").read_text()).get("sources", [])
@@ -1624,7 +1714,7 @@ def main() -> int:
     write("health", {"updated": NOW.isoformat(), "sources": health})
     ok = sum(h["ok"] for h in health)
     print(f"{len(feed)} items stored; {ok}/{len(health)} sources returned data")
-    return 0 if upload(coverage, social_posts, london_data, events, parliament) else 1
+    return 0 if upload(coverage, social_posts, london_data, events, parliament) and upload_archive(list({i["id"]: i for i in history + feed}.values())) else 1
 
 
 if __name__ == "__main__":

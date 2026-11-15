@@ -223,12 +223,14 @@ function renderHealth() {
 
 /* ---------------------------------------------------------------- render + events */
 function render(keepControls) {
-  const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", stats = tab === "statscal", other = health || team || stats;
+  const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", stats = tab === "statscal", arch = tab === "archive", other = health || team || stats || arch;
   saveView();
   { const b = document.querySelector(`#tabs button[data-tab="${tab}"]`); $("pt").querySelector("h1").textContent = tab === "team" ? "Team & access" : (b ? b.textContent : "Everything"); }
   $("healthpanel").hidden = !health; $("teampanel").hidden = !team; $("list").hidden = other; $("controls").hidden = other; $("overview").hidden = other || poll;
-  $("pollpanel").hidden = !poll; document.querySelector(".listhead").hidden = other; $("statspanel").hidden = !stats;
+  $("pollpanel").hidden = !poll; document.querySelector(".listhead").hidden = other; $("statspanel").hidden = !stats; $("archivepanel").hidden = !arch;
   if (!stats && location.hash.startsWith("#stats")) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* ignore */ } }
+  if (!arch) delete $("archivepanel").dataset.on;
+  if (arch) { if (!$("archivepanel").dataset.on) { $("archivepanel").dataset.on = "1"; Archive.render($("archivepanel"), cardHtml); } return; }   // drawn once per visit: a redraw would lose the page and search
   if (stats) return StatsCal.render($("statspanel"), state.statscal);
   if (team) return TeamPage.render($("teampanel"), { program: "lucien", name: "LUCIEN" });
   if (health) return renderHealth();
