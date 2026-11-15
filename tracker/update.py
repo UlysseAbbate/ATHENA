@@ -1370,7 +1370,65 @@ def london_data_rows(body: dict, today: date | None = None) -> list[dict]:
     return out[:600]
 
 
-def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None, london_data: list[dict] | None = None) -> bool:
+LIBDEM_EVENTS_URL = "https://events.libdems.org.uk/"
+LIBDEM_EVENTS_PARAMS = {"organiser_group": "london", "date_filter": "", "category_filter": ""}   # the "London" group only
+_DT = re.compile(r"(\d{1,2})(?:st|nd|rd|th)\s+([A-Z][a-z]{2})\s+(\d{4})(?:\s+(\d{1,2})(?::(\d\d))?\s*(am|pm))?")
+
+
+def libdem_event_rows(html: str, today: date | None = None) -> list[dict]:
+    """The Liberal Democrats' London events (events.libdems.org.uk, organiser group London), for Lovelace's Daily Plan (Internal Campaign > Membership Engagement).
+    One row per event: { key, date, title, url, starts }. An event that runs for more than a week (a membership year, say) is left out; so are events already over."""
+    today = today or NOW.astimezone(LONDON).date()
+    out, seen = [], set()
+    for card in BeautifulSoup(html, "html.parser").select("article.event"):
+        a = card.select_one(".event-title a[href]")
+        when = card.select_one(".event-date")
+        if not a or not when:
+            continue
+        spans = [sp.get_text(" ", strip=True) for sp in when.find_all("span") if "event-date-timezone" not in (sp.get("class") or [])]
+        m = _DT.search(spans[0]) if spans else None
+        if not m:
+            continue
+        try:
+            day = datetime.strptime(f"{m.group(1)} {m.group(2)} {m.group(3)}", "%d %b %Y").date()
+        except ValueError:
+            continue
+        if len(spans) > 1:   # "start - end": a long-running event is not a day's event
+            e = _DT.search(spans[1])
+            try:
+                if e and (datetime.strptime(f"{e.group(1)} {e.group(2)} {e.group(3)}", "%d %b %Y").date() - day).days > 7:
+                    continue
+            except ValueError:
+                pass
+        if day < today:
+            continue
+        starts = None
+        if m.group(4):
+            hour = int(m.group(4)) % 12 + (12 if m.group(6) == "pm" else 0)
+            starts = f"{hour:02d}:{m.group(5) or '00'}"
+        url = a["href"].strip()
+        eid = (re.search(r"/events/(\d+)", url) or [None, hashlib.sha1(url.encode()).hexdigest()[:10]])[1]
+        key = f"libdemev:{eid}:{day.isoformat()}"
+        title = a.get_text(" ", strip=True)[:400]
+        if key in seen or not title or not url.startswith("https://events.libdems.org.uk/"):
+            continue
+        seen.add(key)
+        out.append({"key": key, "date": day.isoformat(), "title": title, "url": url, "starts": starts})
+    out.sort(key=lambda x: (x["date"], x["starts"] or ""))
+    return out[:600]
+
+
+def collect_libdem_events() -> list[dict]:
+    try:
+        rows = libdem_event_rows(get(LIBDEM_EVENTS_URL, params=LIBDEM_EVENTS_PARAMS).text)
+        print(f"lib dem london events: {len(rows)} upcoming")
+        return rows
+    except Exception as e:  # noqa: BLE001
+        print(f"lib dem london events failed: {e}", file=sys.stderr)
+        return []
+
+
+def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None, london_data: list[dict] | None = None, events: list[dict] | None = None) -> bool:
     """Push feed/polls/health (and any new Sarah Olney coverage and social posts) through the ingest function."""
     if not ingest_configured():
         print("INGEST_URL / INGEST_TOKEN not set: data written locally only, not uploaded")
@@ -1397,6 +1455,12 @@ def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None =
         except Exception as e:  # noqa: BLE001
             ok = False
             print(f"london data upload failed: {e}", file=sys.stderr)
+    if events:
+        try:
+            print(f"events: {_ingest({'action': 'membership_events', 'rows': events}).get('added', 0)} new Lib Dem London events added to Membership Engagement")
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            print(f"events upload failed: {e}", file=sys.stderr)
     if social_posts:
         try:
             print(f"social: {_ingest({'action': 'social_posts', 'rows': social_posts}).get('added', 0)} new posts added to the Social Media Channels Tracker")
@@ -1453,12 +1517,15 @@ def main() -> int:
         write("feed", {"updated": NOW.isoformat(), "items": feed})
         print(f"{len(feed)} items re-classified")
         return 0 if upload() else 1
-    groups = {"committees", "thinktanks", "media", "polling", "statscal"}
+    groups = {"committees", "thinktanks", "media", "polling", "statscal", "events"}
     run = lambda k: not only or k in only  # noqa: E731
     items: list[dict] = []
     coverage: list[dict] = []
     social_posts: list[dict] = []
     london_data: list[dict] = []
+    events: list[dict] = []
+    if run("events"):
+        events = collect_libdem_events()
     if run("committees"):
         items += collect_committees()
     if run("thinktanks"):
@@ -1498,7 +1565,7 @@ def main() -> int:
     write("health", {"updated": NOW.isoformat(), "sources": health})
     ok = sum(h["ok"] for h in health)
     print(f"{len(feed)} items stored; {ok}/{len(health)} sources returned data")
-    return 0 if upload(coverage, social_posts, london_data) else 1
+    return 0 if upload(coverage, social_posts, london_data, events) else 1
 
 
 if __name__ == "__main__":
