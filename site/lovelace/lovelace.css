@@ -79,7 +79,7 @@ td.perm{white-space:nowrap}td.perm label{display:inline-flex;align-items:center;
 .ovday h3 a{color:inherit;text-decoration:none}.ovday h3 a:hover{text-decoration:underline}
 .ovday.now h3{background:var(--accent-tint)}
 .ovday>.ovarea{margin:0 .9rem 8px}
-.ovarea h4{font:700 .68rem var(--head);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 2px}
+.ovarea h4{font:800 .92rem var(--head);letter-spacing:-.02em;color:var(--ink);margin:6px 0 3px}
 .ovsec{margin:0 0 4px}.ovtag{display:inline-block;font:600 .68rem var(--head);color:var(--muted);border:1px solid var(--rule-strong);border-radius:99px;padding:0 8px;margin:2px 0}
 /* Communications: the social accounts and their posts */
 .acct{background:var(--card);border:1px solid var(--band-line);border-radius:var(--radius);padding:8px 12px;margin:0 0 10px}
