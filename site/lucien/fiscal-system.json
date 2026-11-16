@@ -1,0 +1,1540 @@
+{
+ "title": "How the UK tax and welfare system works",
+ "tax_year": "2026-27",
+ "retrieved": "2026-11-16",
+ "groups": [
+  {
+   "id": "earnings",
+   "title": "Taxes on earnings and income",
+   "intro": "What comes off pay and other income before it reaches the person.",
+   "items": [
+    {
+     "id": "income-tax",
+     "name": "Income Tax (England, Wales and Northern Ireland)",
+     "kind": "tax",
+     "summary": "Tax on earnings, pensions and most other income above a tax-free Personal Allowance, charged in bands. Scotland sets its own rates on earnings and pensions (next entry); dividends and savings are taxed the same across the UK.",
+     "who": "Anyone with taxable income above the allowance.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Personal Allowance",
+       "value": "£12,570 a year",
+       "source": "it",
+       "verify": [
+        "standard Personal Allowance is £12,570"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Basic rate",
+       "value": "20% on £12,571 to £50,270",
+       "source": "it",
+       "verify": [
+        "£12,571 to £50,270",
+        "20%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Higher rate",
+       "value": "40% on £50,271 to £125,140",
+       "source": "it",
+       "verify": [
+        "£50,271 to £125,140",
+        "40%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Additional rate",
+       "value": "45% over £125,140",
+       "source": "it",
+       "verify": [
+        "over £125,140",
+        "45%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Personal Allowance taper",
+       "value": "£1 lost for every £2 of adjusted net income over £100,000; gone completely at £125,140",
+       "source": "it",
+       "verify": [
+        "£1 for every £2",
+        "£100,000",
+        "£125,140"
+       ],
+       "note": "Worked out from this: between £100,000 and £125,140 each extra £1 earned is taxed at 40% and also costs 50p of allowance, an effective 60% rate."
+      },
+      {
+       "label": "Trading and property allowances",
+       "value": "£1,000 each of income, tax-free",
+       "source": "it",
+       "verify": [
+        "£1,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Marriage Allowance",
+       "value": "transfer £1,260 of Personal Allowance to a spouse or civil partner, saving them up to £252",
+       "source": "marr",
+       "verify": [
+        "£1,260",
+        "£252"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": [
+      "The 60% effective rate between £100,000 and £125,140 sits on top of National Insurance (2%), and for some people the High Income Child Benefit Charge, student loan repayments and the loss of Tax-Free Childcare (all at £100,000 for the childcare).",
+      "Pension contributions made through the employer or with tax relief can bring adjusted net income back down below a threshold."
+     ]
+    },
+    {
+     "id": "income-tax-scotland",
+     "name": "Income Tax (Scotland)",
+     "kind": "tax",
+     "summary": "Scottish residents pay Scottish rates and bands on earnings, pensions and most other non-savings, non-dividend income; the Personal Allowance is the same.",
+     "who": "People resident in Scotland.",
+     "admin": "HMRC collects it for the Scottish Government",
+     "parts": [
+      {
+       "label": "Starter rate",
+       "value": "19% on £12,571 to £16,537",
+       "source": "sit",
+       "verify": [
+        "£12,571 to £16,537",
+        "19%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Basic rate",
+       "value": "20% on £16,538 to £29,526",
+       "source": "sit",
+       "verify": [
+        "£16,538 to £29,526",
+        "20%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Intermediate rate",
+       "value": "21% on £29,527 to £43,662",
+       "source": "sit",
+       "verify": [
+        "£29,527 to £43,662",
+        "21%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Higher rate",
+       "value": "42% on £43,663 to £75,000",
+       "source": "sit",
+       "verify": [
+        "£43,663 to £75,000",
+        "42%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Advanced rate",
+       "value": "45% on £75,001 to £125,140",
+       "source": "sit",
+       "verify": [
+        "£75,001 to £125,140",
+        "45%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Top rate",
+       "value": "48% over £125,140",
+       "source": "sit",
+       "verify": [
+        "over £125,140",
+        "48%"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "employee-ni",
+     "name": "National Insurance: employees (Class 1)",
+     "kind": "tax",
+     "summary": "Paid by employees on weekly (or monthly) earnings between two thresholds, at a low rate above the upper one. It also builds entitlement to the State Pension and some benefits.",
+     "who": "Employees aged 16 to State Pension age.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Nothing on earnings up to",
+       "value": "£242 a week (£12,570 a year)",
+       "source": "ni",
+       "verify": [
+        "£129 to £242",
+        "£1,048"
+       ],
+       "note": "Between £129 and £242 a week nothing is paid but the year counts towards benefits."
+      },
+      {
+       "label": "Main rate (category A)",
+       "value": "8% on earnings from £242.01 to £967 a week (£50,270 a year)",
+       "source": "ni",
+       "verify": [
+        "£242.01 to £967",
+        "8%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Above the upper limit",
+       "value": "2% on earnings over £967 a week",
+       "source": "ni",
+       "verify": [
+        "Over £967",
+        "2%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Who stops paying",
+       "value": "at State Pension age for employees",
+       "source": "ni",
+       "verify": [],
+       "note": "Employees stop paying Class 1 when they reach State Pension age."
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "employer-ni",
+     "name": "National Insurance: employers (Class 1 secondary)",
+     "kind": "tax",
+     "summary": "Paid by the employer on each employee's earnings above a low threshold, not deducted from pay; on benefits in kind the employer pays Class 1A.",
+     "who": "Employers.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Rate",
+       "value": "15%",
+       "source": "ni",
+       "verify": [
+        "15%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Starts above",
+       "value": "£96 a week (£5,000 a year) for most employees",
+       "source": "emp",
+       "verify": [
+        "£96 per week",
+        "£5,000 per year"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Upper secondary threshold",
+       "value": "£967 a week for under-21s, apprentices under 25 and veterans: nothing is paid between the secondary and upper thresholds for them",
+       "source": "emp",
+       "verify": [
+        "£967 per week"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Class 1A (expenses and benefits)",
+       "value": "15%",
+       "source": "ni",
+       "verify": [
+        "Class 1A",
+        "15%"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": [
+      "Economists generally expect much of this to fall on wages and profits rather than on the employer alone: a costing has to say what it assumes (see the costing specification)."
+     ]
+    },
+    {
+     "id": "self-employed-ni",
+     "name": "National Insurance: self-employed (Classes 2 and 4)",
+     "kind": "tax",
+     "summary": "Class 4 is a percentage of profits between two thresholds; Class 2 is no longer compulsory.",
+     "who": "Self-employed people.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Class 4, main rate",
+       "value": "6% on profits from £12,570 to £50,270",
+       "source": "sene",
+       "verify": [
+        "6% on profits over £12,570 up to £50,270"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Class 4, above",
+       "value": "2% on profits over £50,270",
+       "source": "sene",
+       "verify": [
+        "2% on profits over £50,270"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Class 2",
+       "value": "no payment needed from £7,105 of profits (counts as paid); £3.65 a week if paid voluntarily below that",
+       "source": "sene",
+       "verify": [
+        "£7,105",
+        "£3.65 a week"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "student-loan",
+     "name": "Student loan repayments",
+     "kind": "tax",
+     "summary": "Not a tax, but collected through payroll like one: a share of income above a threshold, in addition to tax and National Insurance, until the loan is repaid or written off.",
+     "who": "Anyone with a student loan in repayment.",
+     "admin": "Student Loans Company / HMRC",
+     "parts": [
+      {
+       "label": "Plan 1",
+       "value": "9% of income over £26,900 a year",
+       "source": "sl",
+       "verify": [
+        "£26,900",
+        "9% of your income over the threshold"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Plan 2",
+       "value": "9% of income over £29,385 a year",
+       "source": "sl",
+       "verify": [
+        "£29,385"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Plan 4",
+       "value": "9% of income over £33,795 a year",
+       "source": "sl",
+       "verify": [
+        "£33,795"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Plan 5",
+       "value": "9% of income over £25,000 a year",
+       "source": "sl",
+       "verify": [
+        "£25,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Postgraduate Loan",
+       "value": "6% of income over £21,000 a year",
+       "source": "sl",
+       "verify": [
+        "£21,000",
+        "6% of your income over the threshold"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": [
+      "Repayments run alongside income tax and National Insurance, so a Plan 2 borrower in the basic-rate band faces 20% + 8% + 9% = 37% on each extra £1 (worked out from the rules shown here)."
+     ]
+    },
+    {
+     "id": "hicbc",
+     "name": "High Income Child Benefit Charge",
+     "kind": "tax",
+     "summary": "A tax charge that claws back Child Benefit from households where one person has a high income.",
+     "who": "Anyone with Child Benefit in the household, where the higher earner has income over £60,000.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Starts at",
+       "value": "individual income over £60,000",
+       "source": "hicbc",
+       "verify": [
+        "over £60,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Rate",
+       "value": "1% of the Child Benefit for every £200 over £60,000",
+       "source": "hicbc",
+       "verify": [
+        "1% of your Child Benefit for every £200"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Fully repaid at",
+       "value": "£80,000",
+       "source": "hicbc",
+       "verify": [
+        "£80,000"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": [
+      "Between £60,000 and £80,000 the clawback behaves like an extra marginal rate on top of 40% income tax and 2% National Insurance; the size depends on the number of children."
+     ]
+    },
+    {
+     "id": "pensions-tax",
+     "name": "Tax relief on pensions",
+     "kind": "tax",
+     "summary": "Contributions to a private pension get tax relief, up to limits.",
+     "who": "Anyone paying into a private pension.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Relief limit",
+       "value": "contributions up to 100% of earnings in a year get relief",
+       "source": "pen",
+       "verify": [
+        "100% of your earnings"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Annual allowance",
+       "value": "£60,000 a year",
+       "source": "pen",
+       "verify": [
+        "£60,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Relief at source",
+       "value": "the provider claims 20%; higher-rate payers claim the rest through tax",
+       "source": "pen",
+       "verify": [
+        "20%"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "isas",
+     "name": "ISAs",
+     "kind": "tax",
+     "summary": "Savings and investment accounts whose returns are tax-free.",
+     "who": "Adults saving.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Annual limit",
+       "value": "£20,000 across all ISAs in the year",
+       "source": "isa",
+       "verify": [
+        "£20,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Lifetime ISA",
+       "value": "up to £4,000 a year within the limit",
+       "source": "isa",
+       "verify": [
+        "£4,000"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "dividend-tax",
+     "name": "Tax on dividends",
+     "kind": "tax",
+     "summary": "Dividends above an allowance are taxed at rates that depend on the income tax band they fall in.",
+     "who": "Shareholders outside ISAs and pensions.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Dividend allowance",
+       "value": "£500 a year",
+       "source": "div",
+       "verify": [
+        "£500"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Basic rate",
+       "value": "10.75%",
+       "source": "div",
+       "verify": [
+        "10.75%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Higher rate",
+       "value": "35.75%",
+       "source": "div",
+       "verify": [
+        "35.75%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Additional rate",
+       "value": "39.35%",
+       "source": "div",
+       "verify": [
+        "39.35%"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    }
+   ]
+  },
+  {
+   "id": "spending",
+   "title": "Taxes on spending",
+   "intro": "Charged when things are bought.",
+   "items": [
+    {
+     "id": "vat",
+     "name": "Value Added Tax",
+     "kind": "tax",
+     "summary": "A tax on most goods and services sold by VAT-registered businesses, which pass it on to the buyer.",
+     "who": "Buyers of goods and services; collected by VAT-registered businesses.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Standard rate",
+       "value": "20%",
+       "source": "vat",
+       "verify": [
+        "20%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Reduced rate",
+       "value": "5%",
+       "source": "vat",
+       "verify": [
+        "5%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Zero rate",
+       "value": "0% (the sale is covered by VAT, but nothing is charged)",
+       "source": "vat",
+       "verify": [
+        "0%"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    }
+   ]
+  },
+  {
+   "id": "wealth",
+   "title": "Taxes on wealth, property and gains",
+   "intro": "Charged on gains, on property bought, and on estates.",
+   "items": [
+    {
+     "id": "cgt",
+     "name": "Capital Gains Tax",
+     "kind": "tax",
+     "summary": "A tax on the profit from selling assets such as shares and second homes.",
+     "who": "People and trustees selling assets at a gain.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Annual tax-free allowance",
+       "value": "£3,000 (£1,500 for most trusts)",
+       "source": "cgt",
+       "verify": [
+        "£3,000",
+        "£1,500"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Basic-rate taxpayers",
+       "value": "18% on gains",
+       "source": "cgt",
+       "verify": [
+        "18%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Higher and additional-rate taxpayers",
+       "value": "24% on gains",
+       "source": "cgt",
+       "verify": [
+        "24%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Basic rate band for the calculation",
+       "value": "£37,700: gains within it (after taxable income) are at 18%",
+       "source": "cgt",
+       "verify": [
+        "£37,700"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "iht",
+     "name": "Inheritance Tax",
+     "kind": "tax",
+     "summary": "A tax on estates (and some lifetime gifts) above a threshold.",
+     "who": "Estates above the threshold.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Threshold",
+       "value": "£325,000 per person",
+       "source": "iht",
+       "verify": [
+        "£325,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Home to children or grandchildren",
+       "value": "threshold can rise to £500,000",
+       "source": "iht",
+       "verify": [
+        "£500,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Rate",
+       "value": "40% on the value above the threshold",
+       "source": "iht",
+       "verify": [
+        "40%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Charity",
+       "value": "36% if 10% or more of the net estate goes to charity",
+       "source": "iht",
+       "verify": [
+        "36%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Gifts",
+       "value": "£3,000 a year exempt; gifts within seven years of death may be taxed",
+       "source": "iht",
+       "verify": [
+        "£3,000",
+        "7 years"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "sdlt",
+     "name": "Stamp Duty Land Tax (England and Northern Ireland)",
+     "kind": "tax",
+     "summary": "A tax on buying property, charged in bands on the part of the price in each band.",
+     "who": "Buyers of property in England and Northern Ireland (Scotland and Wales have their own taxes).",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Up to £125,000",
+       "value": "0%",
+       "source": "sdlt",
+       "verify": [
+        "Up to £125,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "£125,001 to £250,000",
+       "value": "2%",
+       "source": "sdlt",
+       "verify": [
+        "£125,001 to £250,000",
+        "2%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "£250,001 to £925,000",
+       "value": "5%",
+       "source": "sdlt",
+       "verify": [
+        "£250,001 to £925,000",
+        "5%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "£925,001 to £1.5 million",
+       "value": "10%",
+       "source": "sdlt",
+       "verify": [
+        "£925,001 to £1.5 million",
+        "10%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Above £1.5 million",
+       "value": "12%",
+       "source": "sdlt",
+       "verify": [
+        "12%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "First-time buyers",
+       "value": "nothing up to £300,000, then 5% to £500,000; no relief on homes over £500,000",
+       "source": "sdlt",
+       "verify": [
+        "£300,000",
+        "£500,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Additional homes",
+       "value": "5% on top of these rates",
+       "source": "sdlt",
+       "verify": [
+        "5% on top of these rates"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    }
+   ]
+  },
+  {
+   "id": "business",
+   "title": "Taxes on business",
+   "intro": "Charged on company profits.",
+   "items": [
+    {
+     "id": "corp-tax",
+     "name": "Corporation Tax",
+     "kind": "tax",
+     "summary": "A tax on company profits, with a lower rate for small companies and marginal relief in between.",
+     "who": "Companies.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Main rate",
+       "value": "25% on profits over £250,000",
+       "source": "ct",
+       "verify": [
+        "25%",
+        "£250,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Small profits rate",
+       "value": "19% on profits of £50,000 or less",
+       "source": "ct",
+       "verify": [
+        "19%",
+        "£50,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Between the two",
+       "value": "marginal relief: an effective rate between 19% and 25% on profits from £50,000 to £250,000",
+       "source": "ct",
+       "verify": [
+        "Marginal Relief"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    }
+   ]
+  },
+  {
+   "id": "benefits-working-age",
+   "title": "Welfare: working-age and families",
+   "intro": "Amounts for 2026-27 (and, where different, last year's) read from the DWP's published rates.",
+   "items": [
+    {
+     "id": "universal-credit",
+     "name": "Universal Credit",
+     "kind": "benefit",
+     "summary": "The main means-tested benefit for people of working age on a low income, in or out of work. It combines the support that used to be in several benefits and is reduced as earnings rise.",
+     "who": "Working-age people and families on a low income.",
+     "admin": "DWP",
+     "parts": [
+      {
+       "label": "Standard allowance: single under 25",
+       "value": "£338.58 a month",
+       "previous": "£316.98 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Standard allowance: single 25 or over",
+       "value": "£424.90 a month",
+       "previous": "£400.14 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Standard allowance: couple, both under 25",
+       "value": "£528.34 a month",
+       "previous": "£497.55 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Standard allowance: couple, one or both 25 or over",
+       "value": "£666.97 a month",
+       "previous": "£628.10 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Child element: first child (born before 6 April 2017)",
+       "value": "£351.88 a month",
+       "previous": "£339.00 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Child element: first child born from 6 April 2017, and other children",
+       "value": "£303.94 a month",
+       "previous": "£292.81 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Disabled child addition: lower",
+       "value": "£164.79 a month",
+       "previous": "£158.76 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Disabled child addition: higher",
+       "value": "£514.71 a month",
+       "previous": "£495.87 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Limited capability for work",
+       "value": "£158.76 a month",
+       "previous": "",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Limited capability for work and work-related activity (new claims)",
+       "value": "£217.26 a month",
+       "previous": "£423.27 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": "The amount for people who claimed before 2026, and for severe conditions and terminal illness, is higher: see the DWP table."
+      },
+      {
+       "label": "Carer amount",
+       "value": "£209.34 a month",
+       "previous": "£201.68 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Childcare: one child (up to 85% of costs)",
+       "value": "£1,071.09 a month",
+       "previous": "£1,031.88 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Childcare: two or more children",
+       "value": "£1,836.16 a month",
+       "previous": "£1,768.94 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Work allowance (no housing element)",
+       "value": "£710.00 a month",
+       "previous": "£684.00 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Work allowance (with a housing element)",
+       "value": "£427.00 a month",
+       "previous": "£411.00 a month",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Taper",
+       "value": "payment falls by 55p for every £1 earned above the work allowance",
+       "source": "uc",
+       "verify": [
+        "goes down by 55p"
+       ],
+       "note": "Earnings are taxed first, so the 55p applies to take-home pay: see the marginal rates explorer for the combined effect with tax and National Insurance."
+      },
+      {
+       "label": "Capital limit: no UC above",
+       "value": "£16,000",
+       "previous": "",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Savings between £6,000 and the limit count as income of",
+       "value": "£4.35 a month for every £250",
+       "previous": "",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      }
+     ],
+     "interactions": [
+      "Because UC is reduced by 55p for each £1 of earnings above the work allowance, it adds to the marginal rate of tax and National Insurance: the combined effect is shown in the marginal rates explorer.",
+      "The benefit cap limits the total of UC and other benefits a household can receive (see Benefit cap).",
+      "Student loan repayments and the High Income Child Benefit Charge are separate and do not reduce UC."
+     ]
+    },
+    {
+     "id": "benefit-cap",
+     "name": "Benefit cap",
+     "kind": "benefit",
+     "summary": "A limit on the total benefit income of a working-age household. It is waived for households with earnings of £881 a month or more after tax and National Insurance, and for several disability and caring groups.",
+     "who": "Working-age households not exempt.",
+     "admin": "DWP",
+     "parts": [
+      {
+       "label": "Couples, or single parents (Greater London), a year",
+       "value": "£25,323 a year",
+       "previous": "",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Single adults, no children (Greater London), a year",
+       "value": "£16,967 a year",
+       "previous": "",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Couples, or single parents (rest of Great Britain), a year",
+       "value": "£22,020 a year",
+       "previous": "",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Single adults, no children (rest of Great Britain), a year",
+       "value": "£14,753 a year",
+       "previous": "",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Earnings exemption",
+       "value": "£881 a month combined, after tax and National Insurance (from 1 April 2026)",
+       "source": "bcap",
+       "verify": [
+        "£881"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "child-benefit",
+     "name": "Child Benefit",
+     "kind": "benefit",
+     "summary": "A payment for each child, not means-tested, but clawed back through tax from households where someone has a high income (the High Income Child Benefit Charge, above).",
+     "who": "Anyone responsible for a child.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Eldest or only child",
+       "value": "£27.05 a week",
+       "source": "cb",
+       "verify": [
+        "£27.05"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Each other child",
+       "value": "£17.90 a week",
+       "source": "cb",
+       "verify": [
+        "£17.90"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": [
+      "The High Income Child Benefit Charge claws it back between £60,000 and £80,000 of individual income."
+     ]
+    },
+    {
+     "id": "tfc",
+     "name": "Tax-Free Childcare",
+     "kind": "benefit",
+     "summary": "The government tops up money paid into a childcare account.",
+     "who": "Working parents.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Top-up",
+       "value": "£2 for every £8 paid in, up to £2,000 a year per child (£4,000 if the child is disabled)",
+       "source": "tfc",
+       "verify": [
+        "£2",
+        "£2,000",
+        "£4,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Income limit",
+       "value": "no support if either partner's expected adjusted net income is over £100,000",
+       "source": "tfc",
+       "verify": [
+        "£100,000"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "jsa-esa",
+     "name": "Jobseeker's Allowance and Employment and Support Allowance",
+     "kind": "benefit",
+     "summary": "Older, 'legacy' benefits that Universal Credit is replacing; the new-style versions are paid on National Insurance contributions.",
+     "who": "Jobseekers and people with limited capability for work.",
+     "admin": "DWP",
+     "parts": [
+      {
+       "label": "JSA (contribution-based) personal rate: 25 or over",
+       "value": "£95.55 a week",
+       "previous": "£92.05 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "JSA (contribution-based) personal rate: under 25",
+       "value": "£75.65 a week",
+       "previous": "£72.90 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "ESA (contributory and new style): 25 or over",
+       "value": "£95.55 a week",
+       "previous": "£92.05 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "ESA (contributory and new style): work-related activity component",
+       "value": "£37.95 a week",
+       "previous": "£36.55 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "ESA (contributory and new style): support component",
+       "value": "£50.35 a week",
+       "previous": "£48.50 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "statutory-pay",
+     "name": "Statutory sick, maternity and other family pay",
+     "kind": "benefit",
+     "summary": "Paid by employers (and reclaimed in part), at a flat rate or a share of earnings.",
+     "who": "Employees (and some self-employed people for Maternity Allowance).",
+     "admin": "Employers; DWP for Maternity Allowance",
+     "parts": [
+      {
+       "label": "Statutory Sick Pay: standard rate (or 80% of average earnings if lower)",
+       "value": "£123.25 a week",
+       "previous": "£118.75 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Statutory Maternity Pay: flat rate",
+       "value": "£194.32 a week",
+       "previous": "£187.18 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Maternity Allowance: standard rate",
+       "value": "£194.32 a week",
+       "previous": "£187.18 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    }
+   ]
+  },
+  {
+   "id": "benefits-disability",
+   "title": "Welfare: disability, health and caring",
+   "intro": "Not means-tested, apart from the additions in other benefits.",
+   "items": [
+    {
+     "id": "pip",
+     "name": "Personal Independence Payment",
+     "kind": "benefit",
+     "summary": "Help with the extra costs of a long-term illness or disability, in two parts; people of working age.",
+     "who": "People with a long-term condition, assessed on how it affects daily life.",
+     "admin": "DWP",
+     "parts": [
+      {
+       "label": "Daily living: standard",
+       "value": "£76.70 a week",
+       "previous": "£73.90 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Daily living: enhanced",
+       "value": "£114.60 a week",
+       "previous": "£110.40 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Mobility: standard",
+       "value": "£30.30 a week",
+       "previous": "£29.20 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Mobility: enhanced",
+       "value": "£80.00 a week",
+       "previous": "£77.05 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "aa",
+     "name": "Attendance Allowance",
+     "kind": "benefit",
+     "summary": "The equivalent for people over State Pension age who need care.",
+     "who": "Over State Pension age, with care needs.",
+     "admin": "DWP",
+     "parts": [
+      {
+       "label": "Lower rate",
+       "value": "£76.70 a week",
+       "previous": "£73.90 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Higher rate",
+       "value": "£114.60 a week",
+       "previous": "£110.40 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "carers",
+     "name": "Carer's Allowance",
+     "kind": "benefit",
+     "summary": "For people who spend at least 35 hours a week caring for someone getting a disability benefit, with an earnings limit.",
+     "who": "Carers.",
+     "admin": "DWP",
+     "parts": [
+      {
+       "label": "Weekly rate",
+       "value": "£86.45 a week",
+       "previous": "£83.30 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Earnings limit",
+       "value": "£204.00 a week",
+       "previous": "£196.00 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    }
+   ]
+  },
+  {
+   "id": "benefits-pensioners",
+   "title": "Welfare: pensioners",
+   "intro": "State Pension and the top-ups for pensioners on low incomes.",
+   "items": [
+    {
+     "id": "state-pension",
+     "name": "State Pension",
+     "kind": "benefit",
+     "summary": "The new State Pension is paid to people reaching State Pension age since April 2016; the old basic pension to those before.",
+     "who": "People over State Pension age with enough National Insurance years.",
+     "admin": "DWP",
+     "parts": [
+      {
+       "label": "New State Pension: full rate",
+       "value": "£241.30 a week",
+       "previous": "£230.25 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Old basic State Pension (category A or B)",
+       "value": "£184.90 a week",
+       "previous": "£176.45 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "pension-credit",
+     "name": "Pension Credit",
+     "kind": "benefit",
+     "summary": "Tops a pensioner's income up to a minimum level (the Guarantee Credit), with a small extra for savings (Savings Credit).",
+     "who": "People over the Pension Credit age on a low income.",
+     "admin": "DWP",
+     "parts": [
+      {
+       "label": "Guarantee Credit: single",
+       "value": "tops weekly income up to £238",
+       "source": "pc",
+       "verify": [
+        "£238"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Guarantee Credit: couple",
+       "value": "tops joint weekly income up to £363.25",
+       "source": "pc",
+       "verify": [
+        "£363.25"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Savings",
+       "value": "the first £10,000 is ignored; each £500 above it counts as £1 a week of income",
+       "source": "pc",
+       "verify": [
+        "£10,000",
+        "£500"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": [
+      "Getting Pension Credit opens up other help (for example Warm Home Discount and the Winter Fuel Payment in full)."
+     ]
+    },
+    {
+     "id": "winter-fuel",
+     "name": "Winter Fuel Payment",
+     "kind": "benefit",
+     "summary": "A payment to pensioners for heating costs, which HMRC takes back through tax from people with a higher income.",
+     "who": "Pensioners.",
+     "admin": "DWP; HMRC for the clawback",
+     "parts": [
+      {
+       "label": "Amount",
+       "value": "£100 to £300, by age and household",
+       "source": "wfp",
+       "verify": [
+        "£100",
+        "£300"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Clawback",
+       "value": "taken back if the person's total income is over £35,000",
+       "source": "wfp",
+       "verify": [
+        "£35,000"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    }
+   ]
+  }
+ ],
+ "gaps": [
+  "Fuel, alcohol and tobacco duties, Air Passenger Duty, Insurance Premium Tax and vehicle tax rates (the figures are on GOV.UK; not yet loaded here).",
+  "Council Tax and business rates (set by local authorities and the devolved governments), and the Scottish and Welsh property taxes.",
+  "Capital allowances, business reliefs, the Apprenticeship Levy and the Employment Allowance, Corporation Tax reliefs, and the levies on banks and digital services.",
+  "Housing Benefit and Local Housing Allowance, free school meals, Child Tax Credit and Working Tax Credit (closed to new claims), and devolved benefits.",
+  "Eligibility conditions in detail (this page gives rates, thresholds and tapers, not who qualifies in every case)."
+ ],
+ "model": {
+  "tax_year": "2026-27",
+  "personal_allowance": 12570,
+  "pa_taper_start": 100000,
+  "pa_taper_end": 125140,
+  "basic_top": 50270,
+  "additional_from": 125140,
+  "rate_basic": 0.2,
+  "rate_higher": 0.4,
+  "rate_additional": 0.45,
+  "ni_threshold": 12570,
+  "ni_upper": 50270,
+  "ni_main": 0.08,
+  "ni_upper_rate": 0.02,
+  "student_loan_rate": 0.09,
+  "student_loan_thresholds": {
+   "plan1": 26900,
+   "plan2": 29385,
+   "plan4": 33795,
+   "plan5": 25000
+  },
+  "postgraduate_rate": 0.06,
+  "postgraduate_threshold": 21000,
+  "hicbc_start": 60000,
+  "hicbc_end": 80000,
+  "child_benefit_week": {
+   "eldest": 27.05,
+   "other": 17.9
+  },
+  "uc_month": {
+   "standard_single_25": 424.9,
+   "child_first": 303.94,
+   "child_other": 303.94,
+   "work_allowance_children": 710.0,
+   "taper": 0.55
+  }
+ },
+ "sources": {
+  "bcap": {
+   "title": "Benefit cap",
+   "url": "https://www.gov.uk/benefit-cap/benefit-cap-amounts",
+   "published": "2024-10-21"
+  },
+  "cb": {
+   "title": "Child Benefit",
+   "url": "https://www.gov.uk/child-benefit/what-youll-get",
+   "published": "2024-11-22"
+  },
+  "cgt": {
+   "title": "Capital Gains Tax: what you pay it on, rates and allowances",
+   "url": "https://www.gov.uk/capital-gains-tax/rates",
+   "published": "2024-10-30"
+  },
+  "ct": {
+   "title": "Corporation Tax rates, expenses and reliefs",
+   "url": "https://www.gov.uk/corporation-tax-rates",
+   "published": "2016-04-01"
+  },
+  "div": {
+   "title": "Tax on dividends",
+   "url": "https://www.gov.uk/tax-on-dividends",
+   "published": "2024-12-02"
+  },
+  "dwp": {
+   "title": "Benefit and pension rates 2026 to 2027",
+   "url": "https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027",
+   "published": "2026-02-16"
+  },
+  "emp": {
+   "title": "Rates and thresholds for employers 2026 to 2027",
+   "url": "https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027",
+   "published": "2026-09-01"
+  },
+  "hicbc": {
+   "title": "High Income Child Benefit Charge",
+   "url": "https://www.gov.uk/child-benefit-tax-charge",
+   "published": "2024-12-31"
+  },
+  "iht": {
+   "title": "How Inheritance Tax works: thresholds, rules and allowances",
+   "url": "https://www.gov.uk/inheritance-tax",
+   "published": "2024-11-08"
+  },
+  "isa": {
+   "title": "Individual Savings Accounts (ISAs)",
+   "url": "https://www.gov.uk/individual-savings-accounts",
+   "published": "2025-01-08"
+  },
+  "it": {
+   "title": "Income Tax rates and Personal Allowances ",
+   "url": "https://www.gov.uk/income-tax-rates",
+   "published": "2024-11-07"
+  },
+  "marr": {
+   "title": "Marriage Allowance",
+   "url": "https://www.gov.uk/marriage-allowance",
+   "published": "2017-11-30"
+  },
+  "ni": {
+   "title": "National Insurance rates and categories",
+   "url": "https://www.gov.uk/national-insurance-rates-letters",
+   "published": "2024-11-08"
+  },
+  "pc": {
+   "title": "Pension Credit",
+   "url": "https://www.gov.uk/pension-credit/what-youll-get",
+   "published": "2024-10-14"
+  },
+  "pen": {
+   "title": "Tax on your private pension contributions",
+   "url": "https://www.gov.uk/tax-on-your-private-pension/annual-allowance",
+   "published": "2024-11-08"
+  },
+  "sdlt": {
+   "title": "Stamp Duty Land Tax",
+   "url": "https://www.gov.uk/stamp-duty-land-tax/residential-property-rates",
+   "published": "2024-10-30"
+  },
+  "sene": {
+   "title": "Self-employed National Insurance rates",
+   "url": "https://www.gov.uk/self-employed-national-insurance-rates",
+   "published": "2015-02-10"
+  },
+  "sit": {
+   "title": "Income Tax in Scotland",
+   "url": "https://www.gov.uk/scottish-income-tax",
+   "published": "2015-10-27"
+  },
+  "sl": {
+   "title": "Repaying your student loan",
+   "url": "https://www.gov.uk/repaying-your-student-loan/what-you-pay",
+   "published": "2024-10-18"
+  },
+  "tfc": {
+   "title": "Tax-Free Childcare",
+   "url": "https://www.gov.uk/tax-free-childcare",
+   "published": "2024-11-08"
+  },
+  "uc": {
+   "title": "Universal Credit",
+   "url": "https://www.gov.uk/universal-credit/how-your-earnings-affect-your-payments",
+   "published": "2024-10-17"
+  },
+  "vat": {
+   "title": "VAT rates",
+   "url": "https://www.gov.uk/vat-rates",
+   "published": "2014-12-12"
+  },
+  "wfp": {
+   "title": "Winter Fuel Payment",
+   "url": "https://www.gov.uk/winter-fuel-payment/how-much-youll-get",
+   "published": "2024-11-04"
+  }
+ },
+ "notice": "Rules as published on GOV.UK on the date retrieved. A reference summary for policy work, not tax or benefits advice, and not an official costing."
+}
