@@ -32,7 +32,7 @@ ok(c.length > 400 && c.every((p) => p.total > -0.0001 && p.total < 1.1), 'the cu
 
 // the rulebook
 const items = data.groups.flatMap((g) => g.items);
-ok(items.length >= 25 && items.every((i) => i.name && i.summary && i.parts.length && i.parts.every((p) => p.label && p.value && data.sources[p.source])), 'every rule has a label, a value and a source that is listed');
+ok(items.length >= 40 && items.every((i) => i.name && i.summary && i.parts.length && i.parts.every((p) => p.label && p.value && data.sources[p.source])), 'every rule has a label, a value and a source that is listed');
 ok(!JSON.stringify(data).includes('"?"') && !JSON.stringify(data).includes('?'), 'no placeholder values are left in the rulebook');
 ok(items.filter((i) => i.kind === 'benefit').every((i) => i.parts.length >= 1) && items.some((i) => i.id === 'universal-credit') && items.some((i) => i.id === 'income-tax'), 'taxes and welfare are both there');
 ok(/^\d{4}-\d{2}-\d{2}$/.test(data.retrieved) && Array.isArray(data.gaps) && data.gaps.length > 0 && /not .*costing/i.test(data.notice), 'it says when it was read, what it does not cover, and that it is not a costing');

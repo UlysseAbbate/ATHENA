@@ -46,6 +46,21 @@ SOURCES = {
     "pc": ("Pension Credit: what you'll get", "pension-credit/what-youll-get"),
     "wfp": ("Winter Fuel Payment: how much you'll get", "winter-fuel-payment/how-much-youll-get"),
     "bcap": ("Benefit cap", "benefit-cap/benefit-cap-amounts"),
+    "fuel": ("HMRC: Excise duty hydrocarbon oils rates", "government/publications/rates-and-allowances-excise-duty-hydrocarbon-oils/excise-duty-hydrocarbon-oils-rates"),
+    "alc": ("HMRC: Alcohol Duty rates", "guidance/alcohol-duty-rates"),
+    "tob": ("HMRC: Tobacco Products Duty rates", "government/publications/rates-and-allowances-excise-duty-tobacco-duty/excise-duty-tobacco-duty-rates"),
+    "apd": ("HMRC: Rates for Air Passenger Duty", "guidance/rates-and-allowances-for-air-passenger-duty"),
+    "ipt": ("HMRC: Insurance Premium Tax rates", "government/publications/rates-and-allowances-insurance-premium-tax/insurance-premium-tax-rates"),
+    "ctax": ("How Council Tax works", "council-tax"),
+    "nndr": ("Business rates", "introduction-to-business-rates"),
+    "ea": ("Employment Allowance", "claim-employment-allowance"),
+    "levy": ("Pay Apprenticeship Levy", "guidance/pay-apprenticeship-levy"),
+    "capall": ("Claim capital allowances", "capital-allowances"),
+    "lha": ("Find your Local Housing Allowance rates", "guidance/local-housing-allowance"),
+    "whd": ("Warm Home Discount Scheme", "the-warm-home-discount-scheme"),
+    "fsm": ("Apply for free school meals", "apply-free-school-meals"),
+    "lbtt": ("Revenue Scotland: LBTT residential property rates and bands", "https://revenue.scot/taxes/land-buildings-transaction-tax/residential-property"),
+    "scp": ("Social Security Scotland: Scottish Child Payment", "https://www.socialsecurity.gov.scot/scottish-child-payment"),
     "dwp": ("DWP: Benefit and pension rates 2026 to 2027", "government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027"),
 }
 
@@ -66,11 +81,20 @@ _cache: dict[str, dict] = {}
 
 def page(src: str) -> dict:
     if src not in _cache:
-        r = requests.get(API + SOURCES[src][1], headers=UA, timeout=60, allow_redirects=True)
+        path = SOURCES[src][1]
+        if path.startswith("http"):   # a page outside GOV.UK (Revenue Scotland, Social Security Scotland): read as an ordinary web page
+            r = requests.get(path, headers=UA, timeout=60, allow_redirects=True)
+            r.raise_for_status()
+            body = re.sub(r"<(nav|header|footer)[^>]*>.*?</\1>", "", r.text, flags=re.S)
+            _cache[src] = {"json": {}, "html": body, "text": strip_html(body), "title": SOURCES[src][0]}
+            return _cache[src]
+        r = requests.get(API + path, headers=UA, timeout=60, allow_redirects=True)
         r.raise_for_status()
         j = r.json()
         d = j.get("details", {})
         chunks = [d.get("body", "")] + [p.get("body", "") for p in d.get("parts", []) or []]
+        if not any(chunks):   # a transaction page (for example free school meals) keeps its words in other fields
+            chunks = [v for v in d.values() if isinstance(v, str)]
         _cache[src] = {"json": j, "html": "\n".join(chunks), "text": strip_html("\n".join(chunks)), "title": j.get("title", SOURCES[src][0])}
     return _cache[src]
 
@@ -294,6 +318,79 @@ def build() -> dict:
              [P("Amount", "£100 to £300, by age and household", "wfp", ["£100", "£300"]), P("Clawback", "taken back if the person's total income is over £35,000", "wfp", ["£35,000"])], who="Pensioners.", admin="DWP; HMRC for the clawback"),
     ]})
 
+
+    def grp(gid):
+        return next(g for g in groups if g["id"] == gid)
+
+    grp("spending")["items"] += [
+        item("fuel-duty", "Fuel Duty", "tax", "A tax per litre on petrol, diesel and other road fuels, charged before VAT. The rates are set in pounds and pence per litre (or per kilogram for gases) rather than as a percentage of price.",
+             [P("Unleaded petrol, diesel and bioethanol or biodiesel", "£0.5295 a litre (52.95p)", "fuel", ["0.5295"]), P("Light oil other than petrol", "£0.6267 a litre", "fuel", ["0.6267"]),
+              P("Marked gas oil (red diesel) and kerosene for excepted machines", "£0.1018 a litre, temporarily cut to £0.0648 from 15 June 2026 to 30 June 2027", "fuel", ["0.1018", "0.0648", "30 June 2027"]),
+              P("Natural road fuel gas / LPG", "£0.2257 / £0.2888 a kilogram", "fuel", ["0.2257", "0.2888"])],
+             who="Fuel suppliers, passed on to motorists and businesses.", admin="HMRC"),
+        item("alcohol-duty", "Alcohol Duty", "tax", "A tax per litre of pure alcohol, in bands by strength, with lower rates for draught products.",
+             [P("Up to 1.2% ABV", "nil", "alc", ["0 to 1.2%"]), P("1.3% to 3.4%", "£9.96 per litre of pure alcohol", "alc", ["9.96"]),
+              P("3.5% to 8.4%: beer", "£22.58", "alc", ["22.58"]), P("3.5% to 8.4%: cider (not sparkling)", "£10.39", "alc", ["10.39"]), P("3.5% to 8.4%: spirits-based drinks and wine", "£26.61", "alc", ["26.61"]),
+              P("8.5% to 22%", "£30.62", "alc", ["30.62"]), P("Stronger than 22%", "£33.99", "alc", ["33.99"]), P("Draught (3.5% to under 8.5%: beer, wine, spirits)", "£19.45", "alc", ["19.45"])],
+             who="Producers and importers, passed on in prices.", admin="HMRC"),
+        item("tobacco-duty", "Tobacco Products Duty", "tax", "Tobacco is taxed per thousand cigarettes or per kilogram, with cigarettes also charged a share of the retail price and a minimum amount. Rates from 1 October 2026.",
+             [P("Cigarettes", "the higher of 16.5% of the retail price plus £394.09 per 1,000, or £518.75 per 1,000 (the minimum excise tax)", "tob", ["16.5%", "£394.09", "£518.75"]),
+              P("Hand rolling tobacco", "£574.30 per kg", "tob", ["£574.30"]), P("Cigars", "£508.12 per kg", "tob", ["£508.12"]), P("Other smoking and chewing tobacco", "£248.07 per kg", "tob", ["£248.07"]), P("Tobacco for heating", "£426.47 per kg", "tob", ["£426.47"])],
+             who="Manufacturers and importers, passed on in prices.", admin="HMRC",
+             interactions=["Behaviour matters a great deal for tobacco: much of a rise in duty can be lost as people smoke less or buy illicit tobacco, which is why costing specifications treat it as a high-uncertainty measure."]),
+        item("apd", "Air Passenger Duty", "tax", "A tax per passenger on flights from UK airports, by distance band and class of travel. Rates from 1 April 2026.",
+             [P("Domestic: reduced / standard / higher", "£8 / £16 / £142", "apd", ["£8", "£16", "£142"]), P("Band A (up to 2,000 miles): reduced / standard / higher", "£15 / £32 / £142", "apd", ["£15", "£32"]),
+              P("Band B (2,001 to 5,500 miles)", "£102 / £244 / £1,097", "apd", ["£102", "£244", "£1097"]), P("Band C (over 5,500 miles)", "£106 / £253 / £1,141", "apd", ["£106", "£253", "£1141"])],
+             who="Airline passengers.", admin="HMRC"),
+        item("ipt", "Insurance Premium Tax", "tax", "A tax on general insurance premiums, with a higher rate for travel insurance, some appliance insurance and some vehicle insurance.",
+             [P("Standard rate", "12%", "ipt", ["12%"]), P("Higher rate", "20%", "ipt", ["20%"])], who="Buyers of general insurance.", admin="HMRC"),
+    ]
+
+    groups.insert(groups.index(grp("wealth")) + 1, {"id": "local", "title": "Local and devolved property taxes", "intro": "Set by councils and the devolved governments, not by the UK Parliament alone.", "items": [
+        item("council-tax", "Council Tax", "tax", "A tax on homes in England, Scotland and Wales, set by the local council within the national rules and charged by property band. The band charges are set locally each year; the national rules give discounts.",
+             [P("Single person", "25% off the bill if you live alone (and pay Council Tax)", "ctax", ["25% off your bill"]), P("Everyone in the household 'disregarded'", "50% off the bill (for example if everyone is a full-time student)", "ctax", ["50% off your bill"]),
+              P("Severe mental impairment", "100% discount where it applies", "ctax", ["100% discount"])],
+             who="The people living in a home.", admin="Local councils",
+             interactions=["Many councils also run a Council Tax Reduction scheme for people on low incomes; its rules are set locally."]),
+        item("business-rates", "Business rates", "tax", "A tax on non-domestic property in England: the property's rateable value multiplied by a multiplier set each year, with reliefs.",
+             [P("How the bill is worked out", "rateable value × the multiplier (standard or small business)", "nndr", ["multiplier"]), P("Small business rate relief", "may be available if the business uses one property in England with a rateable value under £15,000", "nndr", ["£15,000"]),
+              P("Retail, hospitality and leisure", "relief replaced by two new rate multipliers", "nndr", ["Retail, hospitality and leisure rate relief has been replaced with two new rate multipliers"])],
+             who="Occupiers of business premises.", admin="Local councils"),
+        item("lbtt", "Land and Buildings Transaction Tax (Scotland)", "tax", "Scotland's tax on buying property, in place of Stamp Duty Land Tax: charged in bands on the part of the price in each band.",
+             [P("Up to £145,000", "0%", "lbtt", ["Up to £145,000"]), P("£145,001 to £250,000", "2%", "lbtt", ["£145,001 to £250,000"]), P("£250,001 to £325,000", "5%", "lbtt", ["£250,001 to £325,000"]),
+              P("£325,001 to £750,000", "10%", "lbtt", ["£325,001 to £750,000"]), P("Over £750,000", "12%", "lbtt", ["Over £750,000"])],
+             who="Buyers of residential property in Scotland.", admin="Revenue Scotland"),
+    ]})
+
+    grp("business")["items"] += [
+        item("employment-allowance", "Employment Allowance", "tax", "A relief that cuts an employer's annual Class 1 National Insurance bill.",
+             [P("Amount", "up to £10,500 off employers' Class 1 National Insurance each tax year", "ea", ["£10,500"]), P("Who can claim", "from April 2025, employers with Class 1 liabilities over £100,000 can claim too", "ea", ["£100,000"])],
+             who="Eligible employers.", admin="HMRC"),
+        item("apprenticeship-levy", "Apprenticeship Levy", "tax", "A charge on large employers' pay bills, which funds apprenticeships.",
+             [P("Rate", "0.5% of the annual pay bill", "levy", ["0.5%"]), P("Who pays", "employers with an annual pay bill over £3 million (including connected companies)", "levy", ["£3 million"]), P("Allowance", "£15,000 a year off the levy", "levy", ["£15,000"])],
+             who="Large employers.", admin="HMRC"),
+        item("capital-allowances", "Capital allowances", "tax", "Tax relief for businesses on spending on plant and machinery, in place of depreciation.",
+             [P("Annual investment allowance", "up to £1 million a year of qualifying spending", "capall", ["£1 million"]), P("Full expensing", "100% first-year relief on qualifying plant and machinery from 1 April 2023", "capall", ["full expensing"]),
+              P("40% first-year allowance", "for qualifying plant and machinery bought after 1 January 2026", "capall", ["40% first year allowance", "1 January 2026"]), P("Writing down allowances", "for spending that does not qualify for another allowance, and any value left over", "capall", ["writing down allowances"])],
+             who="Businesses buying plant and machinery.", admin="HMRC"),
+    ]
+
+    grp("benefits-working-age")["items"] += [
+        item("housing-benefit", "Housing Benefit and Local Housing Allowance", "benefit", "Help with rent for people who have not moved to Universal Credit, mainly pensioners and some supported housing. For private renters the amount is capped by the Local Housing Allowance, set from local private rents.",
+             [D("Single or lone parent, reached State Pension age on or after 1 April 2021", "Housing Benefit", "reached state pension age on or after 1 April 2021", sub="Personal Allowances", table="State Pension age"),
+              D("Couple, both reached State Pension age on or after 1 April 2021", "Housing Benefit", "Couple (both reached state pension age on or after 1 April 2021)", sub="Personal Allowances", table="State Pension age"),
+              D("Dependent children", "Housing Benefit", "Dependent children", sub="Personal Allowances"), D("Disability premium: single", "Housing Benefit", "Single", sub="Premiums", table="Disability"),
+              P("Local Housing Allowance", "set by the area's private rents (a Broad Rental Market Area) and the bedrooms the household needs", "lha", ["Broad Rental Market Area", "number of bedrooms"], "Area rates are looked up on GOV.UK by postcode, so they are not copied here.")],
+             who="Tenants of working age in supported housing and pensioners; most working-age renters get the housing element of Universal Credit instead.", admin="DWP and local councils"),
+        item("warm-home-discount", "Warm Home Discount", "benefit", "A one-off discount on an electricity bill for people on certain benefits or low incomes.", [P("Amount", "£150", "whd", ["£150"])], who="People on Pension Credit or in a low-income household.", admin="Energy suppliers"),
+        item("free-school-meals", "Free school meals (England)", "benefit", "Free lunches for children in families on certain benefits.",
+             [P("Universal Credit", "household income of £7,400 a year or less after tax, not counting benefits (for claims from 1 April 2018)", "fsm", ["£7,400"]), P("Other qualifying benefits", "income-related Employment and Support Allowance; the guaranteed element of Pension Credit; some asylum support", "fsm", ["income-related Employment and Support Allowance", "guaranteed element of Pension Credit"])],
+             who="Children of families on these benefits.", admin="Local councils"),
+        item("scottish-child-payment", "Scottish Child Payment", "benefit", "A payment from the Scottish Government to low-income families with children under 16.",
+             [P("Amount", "£28.20 a week for each eligible child, paid every four weeks (£112.80)", "scp", ["£28.20", "£112.80"]), P("Number of children", "no limit on the number of children in a family who can get it", "scp", ["no limit on the number of children"])],
+             who="Low-income families in Scotland.", admin="Social Security Scotland"),
+    ]
+
     return {"groups": groups}
 
 
@@ -320,11 +417,12 @@ def model() -> tuple[dict, list[tuple[str, str]]]:
 
 # what this page does not cover yet, said openly
 GAPS = [
-    "Fuel, alcohol and tobacco duties, Air Passenger Duty, Insurance Premium Tax and vehicle tax rates (the figures are on GOV.UK; not yet loaded here).",
-    "Council Tax and business rates (set by local authorities and the devolved governments), and the Scottish and Welsh property taxes.",
-    "Capital allowances, business reliefs, the Apprenticeship Levy and the Employment Allowance, Corporation Tax reliefs, and the levies on banks and digital services.",
-    "Housing Benefit and Local Housing Allowance, free school meals, Child Tax Credit and Working Tax Credit (closed to new claims), and devolved benefits.",
-    "Eligibility conditions in detail (this page gives rates, thresholds and tapers, not who qualifies in every case).",
+    "Wales' Land Transaction Tax and other Welsh Government taxes: the Welsh Government's site refuses automated access (its robots.txt blocks bots), so it is not read here.",
+    "Scottish benefits other than the Scottish Child Payment (for example Adult Disability Payment, Carer Support Payment, Best Start Grant): the amounts are not on pages that could be read reliably yet.",
+    "Soft Drinks Industry Levy, Plastic Packaging Tax, Climate Change Levy and vehicle tax rates: the GOV.UK pages found carry historic or partial rate tables, so a current figure could not be checked against them.",
+    "Bank levy and Digital Services Tax: no GOV.UK rates page was found to read them from.",
+    "Council Tax band charges (set by each council), Local Housing Allowance rates (looked up by area) and the yearly business rates multipliers: local or annual numbers, not national ones.",
+    "Child Tax Credit and Working Tax Credit (closed; replaced by Universal Credit) and the detail of who qualifies for each payment: this page gives rates, thresholds and tapers, not every eligibility rule.",
 ]
 
 
@@ -349,7 +447,7 @@ def main() -> int:
     used = sorted({p["source"] for g in data["groups"] for it in g["items"] for p in it["parts"]})
     today = date.today().isoformat()
     out = {"title": "How the UK tax and welfare system works", "tax_year": TAX_YEAR, "retrieved": today, "groups": data["groups"], "gaps": GAPS, "model": mdl,
-           "sources": {k: {"title": page(k)["title"], "url": "https://www.gov.uk/" + SOURCES[k][1], "published": (page(k)["json"].get("public_updated_at") or "")[:10]} for k in used},
+           "sources": {k: {"title": page(k)["title"], "url": SOURCES[k][1] if SOURCES[k][1].startswith("http") else "https://www.gov.uk/" + SOURCES[k][1], "published": (page(k)["json"].get("public_updated_at") or "")[:10]} for k in used},
            "notice": "Rules as published on GOV.UK on the date retrieved. A reference summary for policy work, not tax or benefits advice, and not an official costing."}
     if problems:
         print("The sources no longer say what these rules say; fix or update before publishing:", file=sys.stderr)

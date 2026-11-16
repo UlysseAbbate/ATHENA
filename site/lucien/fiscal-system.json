@@ -558,6 +558,282 @@
       }
      ],
      "interactions": []
+    },
+    {
+     "id": "fuel-duty",
+     "name": "Fuel Duty",
+     "kind": "tax",
+     "summary": "A tax per litre on petrol, diesel and other road fuels, charged before VAT. The rates are set in pounds and pence per litre (or per kilogram for gases) rather than as a percentage of price.",
+     "who": "Fuel suppliers, passed on to motorists and businesses.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Unleaded petrol, diesel and bioethanol or biodiesel",
+       "value": "£0.5295 a litre (52.95p)",
+       "source": "fuel",
+       "verify": [
+        "0.5295"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Light oil other than petrol",
+       "value": "£0.6267 a litre",
+       "source": "fuel",
+       "verify": [
+        "0.6267"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Marked gas oil (red diesel) and kerosene for excepted machines",
+       "value": "£0.1018 a litre, temporarily cut to £0.0648 from 15 June 2026 to 30 June 2027",
+       "source": "fuel",
+       "verify": [
+        "0.1018",
+        "0.0648",
+        "30 June 2027"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Natural road fuel gas / LPG",
+       "value": "£0.2257 / £0.2888 a kilogram",
+       "source": "fuel",
+       "verify": [
+        "0.2257",
+        "0.2888"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "alcohol-duty",
+     "name": "Alcohol Duty",
+     "kind": "tax",
+     "summary": "A tax per litre of pure alcohol, in bands by strength, with lower rates for draught products.",
+     "who": "Producers and importers, passed on in prices.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Up to 1.2% ABV",
+       "value": "nil",
+       "source": "alc",
+       "verify": [
+        "0 to 1.2%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "1.3% to 3.4%",
+       "value": "£9.96 per litre of pure alcohol",
+       "source": "alc",
+       "verify": [
+        "9.96"
+       ],
+       "note": ""
+      },
+      {
+       "label": "3.5% to 8.4%: beer",
+       "value": "£22.58",
+       "source": "alc",
+       "verify": [
+        "22.58"
+       ],
+       "note": ""
+      },
+      {
+       "label": "3.5% to 8.4%: cider (not sparkling)",
+       "value": "£10.39",
+       "source": "alc",
+       "verify": [
+        "10.39"
+       ],
+       "note": ""
+      },
+      {
+       "label": "3.5% to 8.4%: spirits-based drinks and wine",
+       "value": "£26.61",
+       "source": "alc",
+       "verify": [
+        "26.61"
+       ],
+       "note": ""
+      },
+      {
+       "label": "8.5% to 22%",
+       "value": "£30.62",
+       "source": "alc",
+       "verify": [
+        "30.62"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Stronger than 22%",
+       "value": "£33.99",
+       "source": "alc",
+       "verify": [
+        "33.99"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Draught (3.5% to under 8.5%: beer, wine, spirits)",
+       "value": "£19.45",
+       "source": "alc",
+       "verify": [
+        "19.45"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "tobacco-duty",
+     "name": "Tobacco Products Duty",
+     "kind": "tax",
+     "summary": "Tobacco is taxed per thousand cigarettes or per kilogram, with cigarettes also charged a share of the retail price and a minimum amount. Rates from 1 October 2026.",
+     "who": "Manufacturers and importers, passed on in prices.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Cigarettes",
+       "value": "the higher of 16.5% of the retail price plus £394.09 per 1,000, or £518.75 per 1,000 (the minimum excise tax)",
+       "source": "tob",
+       "verify": [
+        "16.5%",
+        "£394.09",
+        "£518.75"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Hand rolling tobacco",
+       "value": "£574.30 per kg",
+       "source": "tob",
+       "verify": [
+        "£574.30"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Cigars",
+       "value": "£508.12 per kg",
+       "source": "tob",
+       "verify": [
+        "£508.12"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Other smoking and chewing tobacco",
+       "value": "£248.07 per kg",
+       "source": "tob",
+       "verify": [
+        "£248.07"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Tobacco for heating",
+       "value": "£426.47 per kg",
+       "source": "tob",
+       "verify": [
+        "£426.47"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": [
+      "Behaviour matters a great deal for tobacco: much of a rise in duty can be lost as people smoke less or buy illicit tobacco, which is why costing specifications treat it as a high-uncertainty measure."
+     ]
+    },
+    {
+     "id": "apd",
+     "name": "Air Passenger Duty",
+     "kind": "tax",
+     "summary": "A tax per passenger on flights from UK airports, by distance band and class of travel. Rates from 1 April 2026.",
+     "who": "Airline passengers.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Domestic: reduced / standard / higher",
+       "value": "£8 / £16 / £142",
+       "source": "apd",
+       "verify": [
+        "£8",
+        "£16",
+        "£142"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Band A (up to 2,000 miles): reduced / standard / higher",
+       "value": "£15 / £32 / £142",
+       "source": "apd",
+       "verify": [
+        "£15",
+        "£32"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Band B (2,001 to 5,500 miles)",
+       "value": "£102 / £244 / £1,097",
+       "source": "apd",
+       "verify": [
+        "£102",
+        "£244",
+        "£1097"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Band C (over 5,500 miles)",
+       "value": "£106 / £253 / £1,141",
+       "source": "apd",
+       "verify": [
+        "£106",
+        "£253",
+        "£1141"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "ipt",
+     "name": "Insurance Premium Tax",
+     "kind": "tax",
+     "summary": "A tax on general insurance premiums, with a higher rate for travel insurance, some appliance insurance and some vehicle insurance.",
+     "who": "Buyers of general insurance.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Standard rate",
+       "value": "12%",
+       "source": "ipt",
+       "verify": [
+        "12%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Higher rate",
+       "value": "20%",
+       "source": "ipt",
+       "verify": [
+        "20%"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
     }
    ]
   },
@@ -752,6 +1028,147 @@
    ]
   },
   {
+   "id": "local",
+   "title": "Local and devolved property taxes",
+   "intro": "Set by councils and the devolved governments, not by the UK Parliament alone.",
+   "items": [
+    {
+     "id": "council-tax",
+     "name": "Council Tax",
+     "kind": "tax",
+     "summary": "A tax on homes in England, Scotland and Wales, set by the local council within the national rules and charged by property band. The band charges are set locally each year; the national rules give discounts.",
+     "who": "The people living in a home.",
+     "admin": "Local councils",
+     "parts": [
+      {
+       "label": "Single person",
+       "value": "25% off the bill if you live alone (and pay Council Tax)",
+       "source": "ctax",
+       "verify": [
+        "25% off your bill"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Everyone in the household 'disregarded'",
+       "value": "50% off the bill (for example if everyone is a full-time student)",
+       "source": "ctax",
+       "verify": [
+        "50% off your bill"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Severe mental impairment",
+       "value": "100% discount where it applies",
+       "source": "ctax",
+       "verify": [
+        "100% discount"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": [
+      "Many councils also run a Council Tax Reduction scheme for people on low incomes; its rules are set locally."
+     ]
+    },
+    {
+     "id": "business-rates",
+     "name": "Business rates",
+     "kind": "tax",
+     "summary": "A tax on non-domestic property in England: the property's rateable value multiplied by a multiplier set each year, with reliefs.",
+     "who": "Occupiers of business premises.",
+     "admin": "Local councils",
+     "parts": [
+      {
+       "label": "How the bill is worked out",
+       "value": "rateable value × the multiplier (standard or small business)",
+       "source": "nndr",
+       "verify": [
+        "multiplier"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Small business rate relief",
+       "value": "may be available if the business uses one property in England with a rateable value under £15,000",
+       "source": "nndr",
+       "verify": [
+        "£15,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Retail, hospitality and leisure",
+       "value": "relief replaced by two new rate multipliers",
+       "source": "nndr",
+       "verify": [
+        "Retail, hospitality and leisure rate relief has been replaced with two new rate multipliers"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "lbtt",
+     "name": "Land and Buildings Transaction Tax (Scotland)",
+     "kind": "tax",
+     "summary": "Scotland's tax on buying property, in place of Stamp Duty Land Tax: charged in bands on the part of the price in each band.",
+     "who": "Buyers of residential property in Scotland.",
+     "admin": "Revenue Scotland",
+     "parts": [
+      {
+       "label": "Up to £145,000",
+       "value": "0%",
+       "source": "lbtt",
+       "verify": [
+        "Up to £145,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "£145,001 to £250,000",
+       "value": "2%",
+       "source": "lbtt",
+       "verify": [
+        "£145,001 to £250,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "£250,001 to £325,000",
+       "value": "5%",
+       "source": "lbtt",
+       "verify": [
+        "£250,001 to £325,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "£325,001 to £750,000",
+       "value": "10%",
+       "source": "lbtt",
+       "verify": [
+        "£325,001 to £750,000"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Over £750,000",
+       "value": "12%",
+       "source": "lbtt",
+       "verify": [
+        "Over £750,000"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    }
+   ]
+  },
+  {
    "id": "business",
    "title": "Taxes on business",
    "intro": "Charged on company profits.",
@@ -790,6 +1207,121 @@
        "source": "ct",
        "verify": [
         "Marginal Relief"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "employment-allowance",
+     "name": "Employment Allowance",
+     "kind": "tax",
+     "summary": "A relief that cuts an employer's annual Class 1 National Insurance bill.",
+     "who": "Eligible employers.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Amount",
+       "value": "up to £10,500 off employers' Class 1 National Insurance each tax year",
+       "source": "ea",
+       "verify": [
+        "£10,500"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Who can claim",
+       "value": "from April 2025, employers with Class 1 liabilities over £100,000 can claim too",
+       "source": "ea",
+       "verify": [
+        "£100,000"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "apprenticeship-levy",
+     "name": "Apprenticeship Levy",
+     "kind": "tax",
+     "summary": "A charge on large employers' pay bills, which funds apprenticeships.",
+     "who": "Large employers.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Rate",
+       "value": "0.5% of the annual pay bill",
+       "source": "levy",
+       "verify": [
+        "0.5%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Who pays",
+       "value": "employers with an annual pay bill over £3 million (including connected companies)",
+       "source": "levy",
+       "verify": [
+        "£3 million"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Allowance",
+       "value": "£15,000 a year off the levy",
+       "source": "levy",
+       "verify": [
+        "£15,000"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "capital-allowances",
+     "name": "Capital allowances",
+     "kind": "tax",
+     "summary": "Tax relief for businesses on spending on plant and machinery, in place of depreciation.",
+     "who": "Businesses buying plant and machinery.",
+     "admin": "HMRC",
+     "parts": [
+      {
+       "label": "Annual investment allowance",
+       "value": "up to £1 million a year of qualifying spending",
+       "source": "capall",
+       "verify": [
+        "£1 million"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Full expensing",
+       "value": "100% first-year relief on qualifying plant and machinery from 1 April 2023",
+       "source": "capall",
+       "verify": [
+        "full expensing"
+       ],
+       "note": ""
+      },
+      {
+       "label": "40% first-year allowance",
+       "value": "for qualifying plant and machinery bought after 1 January 2026",
+       "source": "capall",
+       "verify": [
+        "40% first year allowance",
+        "1 January 2026"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Writing down allowances",
+       "value": "for spending that does not qualify for another allowance, and any value left over",
+       "source": "capall",
+       "verify": [
+        "writing down allowances"
        ],
        "note": ""
       }
@@ -1162,6 +1694,139 @@
       }
      ],
      "interactions": []
+    },
+    {
+     "id": "housing-benefit",
+     "name": "Housing Benefit and Local Housing Allowance",
+     "kind": "benefit",
+     "summary": "Help with rent for people who have not moved to Universal Credit, mainly pensioners and some supported housing. For private renters the amount is capped by the Local Housing Allowance, set from local private rents.",
+     "who": "Tenants of working age in supported housing and pensioners; most working-age renters get the housing element of Universal Credit instead.",
+     "admin": "DWP and local councils",
+     "parts": [
+      {
+       "label": "Single or lone parent, reached State Pension age on or after 1 April 2021",
+       "value": "£238.00 a week",
+       "previous": "£227.10 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Couple, both reached State Pension age on or after 1 April 2021",
+       "value": "£363.25 a week",
+       "previous": "£346.60 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Dependent children",
+       "value": "£87.88 a week",
+       "previous": "£84.66 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Disability premium: single",
+       "value": "£44.85 a week",
+       "previous": "£43.20 a week",
+       "source": "dwp",
+       "verify": [],
+       "note": ""
+      },
+      {
+       "label": "Local Housing Allowance",
+       "value": "set by the area's private rents (a Broad Rental Market Area) and the bedrooms the household needs",
+       "source": "lha",
+       "verify": [
+        "Broad Rental Market Area",
+        "number of bedrooms"
+       ],
+       "note": "Area rates are looked up on GOV.UK by postcode, so they are not copied here."
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "warm-home-discount",
+     "name": "Warm Home Discount",
+     "kind": "benefit",
+     "summary": "A one-off discount on an electricity bill for people on certain benefits or low incomes.",
+     "who": "People on Pension Credit or in a low-income household.",
+     "admin": "Energy suppliers",
+     "parts": [
+      {
+       "label": "Amount",
+       "value": "£150",
+       "source": "whd",
+       "verify": [
+        "£150"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "free-school-meals",
+     "name": "Free school meals (England)",
+     "kind": "benefit",
+     "summary": "Free lunches for children in families on certain benefits.",
+     "who": "Children of families on these benefits.",
+     "admin": "Local councils",
+     "parts": [
+      {
+       "label": "Universal Credit",
+       "value": "household income of £7,400 a year or less after tax, not counting benefits (for claims from 1 April 2018)",
+       "source": "fsm",
+       "verify": [
+        "£7,400"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Other qualifying benefits",
+       "value": "income-related Employment and Support Allowance; the guaranteed element of Pension Credit; some asylum support",
+       "source": "fsm",
+       "verify": [
+        "income-related Employment and Support Allowance",
+        "guaranteed element of Pension Credit"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
+    },
+    {
+     "id": "scottish-child-payment",
+     "name": "Scottish Child Payment",
+     "kind": "benefit",
+     "summary": "A payment from the Scottish Government to low-income families with children under 16.",
+     "who": "Low-income families in Scotland.",
+     "admin": "Social Security Scotland",
+     "parts": [
+      {
+       "label": "Amount",
+       "value": "£28.20 a week for each eligible child, paid every four weeks (£112.80)",
+       "source": "scp",
+       "verify": [
+        "£28.20",
+        "£112.80"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Number of children",
+       "value": "no limit on the number of children in a family who can get it",
+       "source": "scp",
+       "verify": [
+        "no limit on the number of children"
+       ],
+       "note": ""
+      }
+     ],
+     "interactions": []
     }
    ]
   },
@@ -1376,11 +2041,12 @@
   }
  ],
  "gaps": [
-  "Fuel, alcohol and tobacco duties, Air Passenger Duty, Insurance Premium Tax and vehicle tax rates (the figures are on GOV.UK; not yet loaded here).",
-  "Council Tax and business rates (set by local authorities and the devolved governments), and the Scottish and Welsh property taxes.",
-  "Capital allowances, business reliefs, the Apprenticeship Levy and the Employment Allowance, Corporation Tax reliefs, and the levies on banks and digital services.",
-  "Housing Benefit and Local Housing Allowance, free school meals, Child Tax Credit and Working Tax Credit (closed to new claims), and devolved benefits.",
-  "Eligibility conditions in detail (this page gives rates, thresholds and tapers, not who qualifies in every case)."
+  "Wales' Land Transaction Tax and other Welsh Government taxes: the Welsh Government's site refuses automated access (its robots.txt blocks bots), so it is not read here.",
+  "Scottish benefits other than the Scottish Child Payment (for example Adult Disability Payment, Carer Support Payment, Best Start Grant): the amounts are not on pages that could be read reliably yet.",
+  "Soft Drinks Industry Levy, Plastic Packaging Tax, Climate Change Levy and vehicle tax rates: the GOV.UK pages found carry historic or partial rate tables, so a current figure could not be checked against them.",
+  "Bank levy and Digital Services Tax: no GOV.UK rates page was found to read them from.",
+  "Council Tax band charges (set by each council), Local Housing Allowance rates (looked up by area) and the yearly business rates multipliers: local or annual numbers, not national ones.",
+  "Child Tax Credit and Working Tax Credit (closed; replaced by Universal Credit) and the detail of who qualifies for each payment: this page gives rates, thresholds and tapers, not every eligibility rule."
  ],
  "model": {
   "tax_year": "2026-27",
@@ -1420,10 +2086,25 @@
   }
  },
  "sources": {
+  "alc": {
+   "title": "Alcohol Duty rates",
+   "url": "https://www.gov.uk/guidance/alcohol-duty-rates",
+   "published": "2026-02-01"
+  },
+  "apd": {
+   "title": "Rates for Air Passenger Duty",
+   "url": "https://www.gov.uk/guidance/rates-and-allowances-for-air-passenger-duty",
+   "published": "2026-04-01"
+  },
   "bcap": {
    "title": "Benefit cap",
    "url": "https://www.gov.uk/benefit-cap/benefit-cap-amounts",
    "published": "2024-10-21"
+  },
+  "capall": {
+   "title": "Claim capital allowances",
+   "url": "https://www.gov.uk/capital-allowances",
+   "published": "2024-10-22"
   },
   "cb": {
    "title": "Child Benefit",
@@ -1440,6 +2121,11 @@
    "url": "https://www.gov.uk/corporation-tax-rates",
    "published": "2016-04-01"
   },
+  "ctax": {
+   "title": "How Council Tax works",
+   "url": "https://www.gov.uk/council-tax",
+   "published": "2025-02-05"
+  },
   "div": {
    "title": "Tax on dividends",
    "url": "https://www.gov.uk/tax-on-dividends",
@@ -1450,10 +2136,25 @@
    "url": "https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027",
    "published": "2026-02-16"
   },
+  "ea": {
+   "title": "Employment Allowance",
+   "url": "https://www.gov.uk/claim-employment-allowance",
+   "published": "2024-11-18"
+  },
   "emp": {
    "title": "Rates and thresholds for employers 2026 to 2027",
    "url": "https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027",
    "published": "2026-09-01"
+  },
+  "fsm": {
+   "title": "Apply for free school meals",
+   "url": "https://www.gov.uk/apply-free-school-meals",
+   "published": "2015-09-21"
+  },
+  "fuel": {
+   "title": "Excise duty hydrocarbon oils rates",
+   "url": "https://www.gov.uk/government/publications/rates-and-allowances-excise-duty-hydrocarbon-oils/excise-duty-hydrocarbon-oils-rates",
+   "published": "2026-10-29"
   },
   "hicbc": {
    "title": "High Income Child Benefit Charge",
@@ -1465,6 +2166,11 @@
    "url": "https://www.gov.uk/inheritance-tax",
    "published": "2024-11-08"
   },
+  "ipt": {
+   "title": "Insurance Premium Tax rates",
+   "url": "https://www.gov.uk/government/publications/rates-and-allowances-insurance-premium-tax/insurance-premium-tax-rates",
+   "published": "2017-08-04"
+  },
   "isa": {
    "title": "Individual Savings Accounts (ISAs)",
    "url": "https://www.gov.uk/individual-savings-accounts",
@@ -1474,6 +2180,21 @@
    "title": "Income Tax rates and Personal Allowances ",
    "url": "https://www.gov.uk/income-tax-rates",
    "published": "2024-11-07"
+  },
+  "lbtt": {
+   "title": "Revenue Scotland: LBTT residential property rates and bands",
+   "url": "https://revenue.scot/taxes/land-buildings-transaction-tax/residential-property",
+   "published": ""
+  },
+  "levy": {
+   "title": "Pay Apprenticeship Levy",
+   "url": "https://www.gov.uk/guidance/pay-apprenticeship-levy",
+   "published": "2026-04-06"
+  },
+  "lha": {
+   "title": "Find your Local Housing Allowance rates",
+   "url": "https://www.gov.uk/guidance/local-housing-allowance",
+   "published": "2026-11-04"
   },
   "marr": {
    "title": "Marriage Allowance",
@@ -1485,6 +2206,11 @@
    "url": "https://www.gov.uk/national-insurance-rates-letters",
    "published": "2024-11-08"
   },
+  "nndr": {
+   "title": "Business rates",
+   "url": "https://www.gov.uk/introduction-to-business-rates",
+   "published": "2014-12-01"
+  },
   "pc": {
    "title": "Pension Credit",
    "url": "https://www.gov.uk/pension-credit/what-youll-get",
@@ -1494,6 +2220,11 @@
    "title": "Tax on your private pension contributions",
    "url": "https://www.gov.uk/tax-on-your-private-pension/annual-allowance",
    "published": "2024-11-08"
+  },
+  "scp": {
+   "title": "Social Security Scotland: Scottish Child Payment",
+   "url": "https://www.socialsecurity.gov.scot/scottish-child-payment",
+   "published": ""
   },
   "sdlt": {
    "title": "Stamp Duty Land Tax",
@@ -1520,6 +2251,11 @@
    "url": "https://www.gov.uk/tax-free-childcare",
    "published": "2024-11-08"
   },
+  "tob": {
+   "title": "Tobacco Products Duty rates",
+   "url": "https://www.gov.uk/government/publications/rates-and-allowances-excise-duty-tobacco-duty/excise-duty-tobacco-duty-rates",
+   "published": "2025-11-26"
+  },
   "uc": {
    "title": "Universal Credit",
    "url": "https://www.gov.uk/universal-credit/how-your-earnings-affect-your-payments",
@@ -1534,6 +2270,11 @@
    "title": "Winter Fuel Payment",
    "url": "https://www.gov.uk/winter-fuel-payment/how-much-youll-get",
    "published": "2024-11-04"
+  },
+  "whd": {
+   "title": "Warm Home Discount Scheme",
+   "url": "https://www.gov.uk/the-warm-home-discount-scheme",
+   "published": "2024-10-14"
   }
  },
  "notice": "Rules as published on GOV.UK on the date retrieved. A reference summary for policy work, not tax or benefits advice, and not an official costing."
