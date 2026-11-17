@@ -70,32 +70,33 @@ async function boot() {
 
 const TABS = [
   ["today", "Summary", () => can("dayplan_full", "read") || can("dayplan_volunteer", "read"), renderToday],
-  ["plan", "Full Plan", () => can("dayplan_full", "read"), renderPlan],
-  ["parl", "Parliamentary Activity", () => can("dayplan_full", "read"), renderParl],
+  // Full Plan holds the calendar, London Politics (policy reports and London media) and Parliamentary Activity as tabs of its own; a volunteer, who has no Full Plan, gets London Politics alone under that name
+  ["plan", () => (can("dayplan_full", "read") ? "Full Plan" : "London Politics"), () => can("dayplan_full", "read") || can("london_reports", "read") || can("london_media", "read"), renderPlan],
   ["zone", "Member's Zone", () => can("dayplan_volunteer", "read") || can("help_offer", "write") || can("help_inbox", "read"), renderZone],
   ["todo", "To-Do-List", () => can("mayor_todo", "read"), renderTodos],
   ["budget", "Governance", () => can("budget", "read"), renderBudget],
   ["people", "Stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
   ["comms", "Comms", () => can("coverage", "read") || can("social", "read") || can("policies", "read"), renderComms],
-  ["london", "London Politics", () => can("london_reports", "read") || can("london_media", "read"), renderLondon],
   ["team", "Team & access", () => S.admin, renderTeam, true]   // the administrator's alone: its button is in the footer, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
-const ALIAS = { visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people", suggestions: "people", offers: "zone", help: "zone" };
+const ALIAS = { parl: "plan", london: "plan", visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people", suggestions: "people", offers: "zone", help: "zone" };
+const tabLabel = t => (typeof t[1] === "function" ? t[1]() : t[1]);
 function buildTabs() {
   const vis = TABS.filter(t => t[3] && t[2]());
   const nav = $("#tabs"); nav.hidden = false;
   if (S.admin) Shell.footLink("team", "Team & access", () => go("team"));
-  nav.innerHTML = vis.filter(t => !t[4]).map(t => `<button data-t="${t[0]}">${esc(t[1])}</button>`).join("");
+  nav.innerHTML = vis.filter(t => !t[4]).map(t => `<button data-t="${t[0]}">${esc(tabLabel(t))}</button>`).join("");
   nav.onclick = e => { const b = e.target.closest("button"); if (b) go(b.dataset.t); };
   const hash = ALIAS[location.hash.slice(1)] || location.hash.slice(1);
+  if (location.hash.slice(1) === "parl" || location.hash.slice(1) === "london") planTab = location.hash.slice(1);   // an old address opens that tab of Full Plan
   go(vis.some(t => t[0] === hash) ? hash : S.tab && vis.some(t => t[0] === S.tab) ? S.tab : vis[0]?.[0]);
 }
 async function go(id, quiet) {
   S.tab = id; S.loadedAt = Date.now();
   if (location.hash.slice(1) !== id) history.replaceState(null, "", "#" + id);
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === id));
-  { const t = TABS.find(x => x[0] === id), pt = $("#pt"); if (t && pt) { pt.hidden = false; $("h1", pt).textContent = t[1]; } }
+  { const t = TABS.find(x => x[0] === id), pt = $("#pt"); if (t && pt) { pt.hidden = false; $("h1", pt).textContent = tabLabel(t); } }
   main.onclick = main.onchange = null;   // handlers belong to the page being left
   if (!quiet) main.innerHTML = '<p class="muted">Loading…</p>';
   const t = TABS.find(x => x[0] === id);
@@ -302,7 +303,7 @@ const AREA_DOT = { mayor: "a-mayor", gla: "a-gla", internal: "a-internal", gover
 async function renderPlanner(kind) {
   const P = PLANNERS[kind], st = P.state, editable = P.editable(), today = iso(new Date());
   const areas = P.areas;
-  const reload = () => renderPlanner(kind);
+  const reload = () => renderPlan();
   if (st.mode === "month") {
     const first = monthStartOf(st.date), gridStart = mondayOf(first), lastOfMonth = addDays(addMonths(first, 1), -1);
     const days = []; for (let d = gridStart; ; d = addDays(d, 1)) { days.push(d); if (d >= lastOfMonth && parseISO(d).getDay() === 0) break; }   // whole weeks, Monday to Sunday
@@ -355,10 +356,23 @@ function entryForm(entry, area, sec, date, after) {
     onDelete: entry ? async () => { const { error } = await sb.from("day_plan_entries").delete().eq("id", entry.id); if (!error) after(); return error; } : null
   });
 }
-function renderPlan() { return renderPlanner("plan"); }
+/** Full Plan has three tabs: the calendar and daily plan, London Politics (policy reports and London media) and Parliamentary Activity (listed under it). */
+let planTab = "calendar";
+const planSubs = () => [["calendar", "Calendar", () => can("dayplan_full", "read"), () => renderPlanner("plan")],
+  ["london", "London Politics", () => can("london_reports", "read") || can("london_media", "read"), renderLondonBody],
+  ["parl", "Parliamentary Activity", () => can("dayplan_full", "read"), renderParlBody]].filter(x => x[2]());
+async function renderPlan() {
+  const subs = planSubs();
+  if (!subs.length) { main.innerHTML = '<p class="muted">Full Plan is not open to your role yet.</p>'; return; }
+  const cur = subs.find(x => x[0] === planTab) || subs[0];
+  planTab = cur[0];
+  await cur[3]();
+  if (subs.length > 1) main.insertAdjacentHTML("afterbegin", `<div class="row"><div class="seg" data-pt>${subs.map(x => `<button data-ptb="${x[0]}" class="${x[0] === planTab ? "on" : ""}">${esc(x[1])}</button>`).join("")}</div></div>`);
+}
+main.addEventListener("click", e => { const b = e.target.closest("[data-ptb]"); if (b && S.tab === "plan") { planTab = b.dataset.ptb; renderPlan(); } });
 /* ------------------------------------------------------------------ Parliamentary Activity: the What's On calendar for a day, in three parts */
 const parlState = { date: iso(new Date()) };
-async function renderParl() {
+async function renderParlBody() {
   const date = parlState.date, editable = can("dayplan_full", "write");
   let entries;
   try { entries = (await loadPlan(date, date, null)).filter(e => e.area === "parliament"); } catch (e) { return showError(e); }
@@ -367,13 +381,13 @@ async function renderParl() {
     <h2 class="cal-day">${esc(fmtDay(date))}</h2>
     <p class="muted">What is on in Parliament, from the UK Parliament's What's On calendar (read at 6am and 6pm): Commons Business is the Chamber and Westminster Hall, the Lords Chamber is the Chamber and Grand Committee, and Committees are the select, joint and general committees.</p>
     ${PARL.sections.map(([sid, sname]) => sectionBlock(PARL, sid, sname, entries, editable, { showEmpty: true })).join("")}`;
-  const go_ = d => { parlState.date = d; renderParl(); };
+  const go_ = d => { parlState.date = d; renderPlan(); };
   main.onclick = e => {
     const n = e.target.closest("[data-n]");
     if (n) return go_(n.dataset.n === "0" ? iso(new Date()) : addDays(date, +n.dataset.n));
     const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]");
-    if (a) { const [area, sec] = a.dataset.add.split("|"); return entryForm(null, area, sec, date, renderParl); }
-    if (x) { const en = entries.find(z => z.id === x.dataset.e); return entryForm(en, en.area, en.section, date, renderParl); }
+    if (a) { const [area, sec] = a.dataset.add.split("|"); return entryForm(null, area, sec, date, renderPlan); }
+    if (x) { const en = entries.find(z => z.id === x.dataset.e); return entryForm(en, en.area, en.section, date, renderPlan); }
   };
   main.onchange = e => { if (e.target.matches("[data-d]") && e.target.value) go_(e.target.value); };
 }
@@ -542,7 +556,7 @@ async function renderHelp(host = main) {
 /* ------------------------------------------------------------------ London Politics: policy reports and London media (filled by the collector, like LUCIEN's reports and media) */
 const londonState = { tab: "reports", q: "", source: "", page: 0 };
 const LONDON_PAGE = 30;
-async function renderLondon() {
+async function renderLondonBody() {
   const tabs = [["reports", "Policy reports", () => can("london_reports", "read")], ["media", "London media", () => can("london_media", "read")]].filter(t => t[2]());
   if (!tabs.length) { main.innerHTML = '<p class="muted">London Politics is not open to your role yet.</p>'; return; }
   if (!tabs.some(t => t[0] === londonState.tab)) londonState.tab = tabs[0][0];
@@ -552,7 +566,7 @@ async function renderLondon() {
     <p class="muted">${kind === "report" ? "Reports on London, the Mayor and the Greater London Authority from the London think tanks and the GLA (Centre for London, LSE London, London Councils, Trust for London and others), and any national think tank report that is about London. Found automatically at 6am and 6pm." : "Stories about London government and politics from the London papers and broadcasters (MyLondon, the Evening Standard, Metro, BBC London). Found automatically at 6am and 6pm."}</p>
     <div class="row"><input class="grow" type="search" placeholder="Search…" id="ln-q" value="${esc(londonState.q)}"><select id="ln-src" aria-label="Source"><option value="">All sources</option></select></div><div id="ln-list"><p class="muted">Loading…</p></div><div class="row" id="ln-pager"></div>`;
   main.onclick = e => {
-    const l = e.target.closest("[data-l]"); if (l) { londonState.tab = l.dataset.l; londonState.source = ""; londonState.page = 0; return renderLondon(); }
+    const l = e.target.closest("[data-l]"); if (l) { londonState.tab = l.dataset.l; londonState.source = ""; londonState.page = 0; return renderPlan(); }
     const pg = e.target.closest("[data-pg]"); if (pg) { londonState.page = Math.max(0, londonState.page + +pg.dataset.pg); return drawLondon(kind); }
   };
   const q = $("#ln-q"), src = $("#ln-src");
