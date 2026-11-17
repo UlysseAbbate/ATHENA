@@ -9,6 +9,8 @@ const PORT = 8765, BASE = `http://127.0.0.1:${PORT}`;
 const SB = "https://fbsoibmtvapmxdlfdgxc.supabase.co";
 const ROOT = path.resolve(__dirname, "../..");
 const today = new Date(), iso = d => d.toISOString().slice(0, 10), plus = n => iso(new Date(Date.now() + n * 864e5));
+const OTHER = today.getUTCDay() === 1 ? plus(1) : plus(-1);   // another day of this week (Monday to Sunday), for the volunteers' week
+const OTHER_FUTURE = OTHER > iso(today);
 const feedFile = path.join(ROOT, "data/ulysse/feed.json");
 const _rel = (id, title, publisher, tier, kind, date, extra = {}) => ({ id, title, publisher, tier, kind, date, datetime: null, date_precision: "day", date_status: "confirmed", previous_dates: [], cancelled: kind === "cancelled", summary: "", url: "https://www.gov.uk/x/" + id, first_seen: "2026-01-01T00:00:00+00:00", ...extra });
 const STATSCAL = { updated: new Date().toISOString(), changes: [{ at: new Date().toISOString(), type: "date_changed", id: "r2", title: "Moved release", publisher: "Office for National Statistics", tier: "ons", date: plus(9), old_date: plus(3), new_date: plus(9), url: "https://www.ons.gov.uk/x" }],
@@ -47,8 +49,8 @@ const PEOPLE = { lucien: [{ user_id: "p1", email: "reader@test.invalid", full_na
           { user_id: "p3", email: "bm@test.invalid", full_name: "", level: "staff", is_manager: true, grant_ceiling: 3, expires_at: null, last_sign_in_at: null }],
   lovelace: [{ user_id: "p4", email: "core@test.invalid", full_name: "", level: "core_team", is_manager: true, grant_ceiling: null, expires_at: null, last_sign_in_at: null }] };
 const PERMS = {
-  core_team: ["dayplan_full", "dayplan_volunteer", "help_offer", "help_inbox", "mayor_todo", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit"],
-  member: ["dayplan_volunteer", "help_offer", "volunteers_add", "stakeholders_add", "coverage"],
+  core_team: ["dayplan_full", "dayplan_volunteer", "help_offer", "help_inbox", "mayor_todo", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit", "london_reports", "london_media"],
+  member: ["dayplan_volunteer", "help_offer", "volunteers_add", "stakeholders_add", "coverage", "social", "policies", "london_reports", "london_media"],
 };
 const ALLRES = [...PERMS.core_team, "ulysse"];
 const ts = new Date(Date.now() - 3 * 36e5).toISOString();
@@ -64,7 +66,23 @@ const TABLES = {
     { id: "d8", plan_date: iso(today), area: "mayor", section: "media", title: "Press briefing", starts: "09:00", created_at: ts, updated_at: ts },
     { id: "d9", plan_date: iso(today), area: "mayor", section: "media", title: "Mayor's interview", starts: "08:00", created_at: ts, updated_at: ts },
     { id: "d6", plan_date: plus(2), area: "gla", section: "media", title: "Radio interview", starts: "08:00", created_at: ts, updated_at: ts },
-    { id: "d7", plan_date: plus(2), area: "gla", section: "media", title: "Podcast recording", starts: "16:00", created_at: ts, updated_at: ts }],
+    { id: "d7", plan_date: plus(2), area: "gla", section: "media", title: "Podcast recording", starts: "16:00", created_at: ts, updated_at: ts },
+    { id: "o1", plan_date: OTHER, area: "mayor", section: "field", title: "Doorstep session", created_at: ts, updated_at: ts },
+    { id: "o2", plan_date: OTHER, area: "mayor", section: "media", title: "Op-ed draft", created_at: ts, updated_at: ts },
+    { id: "o3", plan_date: OTHER, area: "gla", section: "membership", title: "Members' meet", created_at: ts, updated_at: ts },
+    { id: "o4", plan_date: OTHER, area: "internal", section: "membership", title: "Branch AGM", created_at: ts, updated_at: ts },
+    { id: "o5", plan_date: OTHER, area: "internal", section: "donor", title: "Donor lunch", created_at: ts, updated_at: ts },
+    { id: "o6", plan_date: OTHER, area: "governance", section: "governance", title: "Audit meeting", created_at: ts, updated_at: ts },
+    { id: "m1", plan_date: iso(today), area: "internal", section: "other", title: "Stewards' briefing", created_at: ts, updated_at: ts },
+    { id: "p1", plan_date: iso(today), area: "parliament", section: "commons", title: "Commons Chamber: Oral questions", starts: "11:30", created_at: ts, updated_at: ts },
+    { id: "p2", plan_date: iso(today), area: "parliament", section: "commons", title: "Commons Westminster Hall: Housing debate", starts: "14:30", created_at: ts, updated_at: ts },
+    { id: "p3", plan_date: iso(today), area: "parliament", section: "commons", title: "Commons Chamber: Statement on transport", starts: "15:30", created_at: ts, updated_at: ts },
+    { id: "p4", plan_date: iso(today), area: "parliament", section: "commons", title: "Commons Chamber: Opposition day", starts: "16:00", created_at: ts, updated_at: ts },
+    { id: "p5", plan_date: iso(today), area: "parliament", section: "lords", title: "Lords Chamber: Oral questions", starts: "14:30", created_at: ts, updated_at: ts },
+    { id: "p6", plan_date: iso(today), area: "parliament", section: "committees", title: "Commons Committee: Health Committee (Oral evidence)", starts: "09:30", created_at: ts, updated_at: ts }],
+  london_feed: [{ id: "lf1", kind: "report", source: "Centre for London", title: "A better deal for London's renters", url: "https://centreforlondon.org/r1", published: new Date().toISOString(), first_seen: ts, summary: "Report", tags: [] },
+    { id: "lf2", kind: "report", source: "Trust for London", title: "London's poverty profile", url: "https://trustforlondon.org.uk/r2", published: new Date(Date.now() - 864e5).toISOString(), first_seen: ts, summary: "", tags: [] },
+    { id: "lf3", kind: "media", source: "MyLondon", title: "Mayor of London announces fares freeze", url: "https://www.mylondon.news/m1", published: new Date().toISOString(), first_seen: ts, summary: "", tags: [] }],
   local_party_visits: [{ id: "v1", local_party: "Richmond Park", request: "Street stall", contact_name: "Pat", contact_phone: "0701", taken_by: "Louis", actioning: "Sarah", visit_date: iso(today), updated_at: ts },
     { id: "v2", local_party: "Hounslow", request: "AGM", visit_date: null, updated_at: ts }],
   governance_items: [{ id: "g1", title: "Register with Electoral Commission", area: "Legal", status: "To do", due_date: plus(-1), updated_at: ts }],
@@ -850,13 +868,13 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.goto(BASE + "/lovelace/");
       await page.waitForSelector("#tabs button", { timeout: 5000 });
       const tabs = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent));
-      check(`${who}: lovelace tabs`, who === "member" ? !tabs.includes("Governance") && tabs.includes("Summary") && tabs.includes("Member's Zone") && !tabs.includes("Full Plan") : tabs.includes("Governance") && tabs.includes("Full Plan") && tabs.includes("Member's Zone") && tabs.includes("Comms") && !tabs.includes("This Week") && !tabs.includes("Team & access") && ((await page.$('#shell-foot [data-foot="team"]')) !== null) === (who === "admin"), tabs.join(" | "));
+      check(`${who}: lovelace tabs`, who === "member" ? !tabs.includes("Parliamentary Activity") && tabs.includes("London Politics") && !tabs.includes("Governance") && tabs.includes("Summary") && tabs.includes("Member's Zone") && !tabs.includes("Full Plan") : tabs.includes("Governance") && tabs.includes("Full Plan") && tabs.includes("Member's Zone") && tabs.includes("Comms") && !tabs.includes("This Week") && !tabs.includes("Team & access") && ((await page.$('#shell-foot [data-foot="team"]')) !== null) === (who === "admin"), tabs.join(" | "));
       check(`${who}: the Theme button is in the foot, not the masthead`, (await page.$(".masthead [data-theme-btn]")) === null && (await page.$("#shell-foot [data-theme-btn]")) !== null);
       await page.waitForSelector(".ovday, #main .muted", { timeout: 5000 });
       {
         const ovd = await page.$$eval(".ovday h3", hs => hs.map(h => h.textContent.trim()));
         const ovt = await page.$eval("#main", m => m.innerText);
-        check(`${who}: the overview is a list of the days that have something planned (a day with nothing is left out; volunteers see today only)`, ovd.length === (who === "member" ? 1 : 2) && /^Today/.test(ovd[0]) && !/Nothing/.test(await page.$$eval(".ovday", ds => ds.map(d => d.innerText).join(" "))), ovd.join(" | "));
+        check(`${who}: the overview is a list of the days that have something planned (a day with nothing is left out; volunteers see today only)`, ovd.length === (who === "member" ? 1 : 2 + (OTHER_FUTURE ? 1 : 0)) && /^Today/.test(ovd[0]) && !/Nothing/.test(await page.$$eval(".ovday", ds => ds.map(d => d.innerText).join(" "))), ovd.join(" | "));
         if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `lovelace-overview-${scheme}.png`) }); await page.emulateMedia({ colorScheme: "light" }); }
         if (who !== "member") {
           const more = await page.$$eval(".ov-more", bs => bs.map(b => b.textContent.trim()));
@@ -924,7 +942,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       check(`${who}: sending the form files the suggestion`, log.includes("POST campaign_suggestions") && /Thank you/.test(await page.$eval("#hmsg", e => e.textContent)), log.join(";"));
       await page.click('#tabs button:text-is("Comms")'); await page.waitForTimeout(450);
       const trk =await page.$$eval("[data-tr] button", bs => bs.map(b => b.textContent.trim()));
-      check(`${who}: Communications has the media trackers${who === "member" ? "" : " (and the tracked accounts)"}`, trk.join("|") === (who === "member" ? "Overall Media Tracker|Olney Media Tracker" : "Overall Media Tracker|Olney Media Tracker|Social Media Channels Tracker|Tracked accounts"), trk.join("|"));
+      check(`${who}: Comms has the media trackers and the tracked accounts (a member reads them too)`, trk.join("|") === "Overall Media Tracker|Olney Media Tracker|Social Media Channels Tracker|Tracked accounts", trk.join("|"));
       check(`${who}: the Overall Media Tracker lists wider political news`, /Heathrow expansion debated/.test(await page.$eval("#cm", m => m.innerText)) && /Overall Media Tracker/.test(await page.$eval("#cm h2", h => h.textContent)));
       await page.click('[data-t="olney"]'); await page.waitForTimeout(350);
       check(`${who}: the Olney Media Tracker lists the news about Sarah Olney only`, /Sarah Olney on Heathrow/.test(await page.$eval("#cm", m => m.innerText)) && !/Heathrow expansion debated/.test(await page.$eval("#cm", m => m.innerText)) && !(await page.$("#cm [data-fl]")));
@@ -939,18 +957,44 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       check(`${who}: media has no content pipeline`, !/content pipeline/i.test(await page.$eval("#main", m => m.innerText)));
       check(`${who}: the old #coverage address opens Communications`, (await page.$eval("#tabs button.on", b => b.textContent)) === "Comms");
       {
-        // the Member's Zone: a calendar of the same days; a day shows the activities except Governance and Legal, and only Membership Engagement under Internal Campaign
+        // the Member's Zone: the whole week. Today: Mayor's and GLA Activity and Membership Engagement and Other. Another day: Field Campaign and Membership Engagement only.
         await page.click('#tabs button:text-is("Member\'s Zone")'); await page.waitForTimeout(450);
-        await page.click('[data-zs] button:text-is("Today")'); await page.waitForTimeout(400);
-        check(`${who}: the Member's Zone shows today only, with no calendar to browse`, (await page.$$(".cal-cell")).length === 0 && (await page.$("[data-n]")) === null && /Launch housing pledge/.test(await page.$eval("#main", c => c.innerText)));
-        const zt = await page.$eval("#main", m => m.innerText);
-        const zh = await page.$$eval("#main .grp .h2-rule", hs => hs.map(h => h.textContent.trim()));
-        check(`${who}: a day in the Member's Zone shows Mayor's, GLA and Membership Engagement only, read-only`, zh.join("|") === "Mayor's Activity|Internal Campaign" && /Launch housing pledge/.test(zt) && /Members' call/.test(zt) && !/Donor dinner|File the return|Governance and Legal|Donor Events/.test(zt) && (await page.$("[data-add]")) === null && (await page.$("[data-e]")) === null, zh.join("|"));
+        await page.click('[data-zs] button:text-is("This week")'); await page.waitForTimeout(400);
+        const days7 = (await page.$$("#main .ovday")).length;
+        const nowT = await page.$eval("#main .ovday.now", d => d.innerText);
+        const restT = await page.$$eval("#main .ovday:not(.now)", ds => ds.map(d => d.innerText).join(" | "));
+        check(`${who}: the Member's Zone shows the whole week (seven days, today marked), with no calendar`, days7 === 7 && /^Today/.test(nowT) && (await page.$$(".cal-cell")).length === 0, `${days7}`);
+        check(`${who}: today the Member's Zone shows Mayor's and GLA activity and Membership Engagement and Other, never Donor Events or Governance`, /Launch housing pledge/.test(nowT) && /Press briefing/.test(nowT) && /Members' call/.test(nowT) && /Stewards' briefing/.test(nowT) && !/Donor dinner|File the return/.test(nowT), nowT.slice(0, 300));
+        check(`${who}: another day shows only Field Campaign and Membership Engagement (Mayor's and GLA) and Internal Membership Engagement`, /Doorstep session/.test(restT) && /Members' meet/.test(restT) && /Branch AGM/.test(restT) && !/Op-ed draft|Op-ed in the Standard|Donor lunch|Audit meeting/.test(restT), restT.slice(0, 300));
+        check(`${who}: the Member's Zone is read-only`, (await page.$("#main [data-add]")) === null && (await page.$("#main [data-e]")) === null);
+      }
+      {
+        // London Politics: policy reports and London media (read by every role)
+        await page.click('#tabs button:text-is("London Politics")'); await page.waitForSelector("#ln-list .pe", { timeout: 5000 });
+        const rep = (await page.$eval("#ln-list", e => e.innerText)).replace(/\s+/g, " ");
+        check(`${who}: London Politics > Policy reports lists the London reports with their source`, /A better deal for London's renters/.test(rep) && /Centre for London/.test(rep) && /London's poverty profile/.test(rep) && !/fares freeze/.test(rep) && (await page.$$eval("[data-lt] button", bs => bs.map(b => b.textContent))).join("|") === "Policy reports|London media", rep.slice(0, 200));
+        await page.click('[data-lt] [data-l="media"]'); await page.waitForSelector("#ln-list .pe", { timeout: 5000 });
+        const med = (await page.$eval("#ln-list", e => e.innerText)).replace(/\s+/g, " ");
+        check(`${who}: London media lists the London stories`, /Mayor of London announces fares freeze/.test(med) && /MyLondon/.test(med) && !/renters/.test(med), med.slice(0, 200));
       }
       if (who !== "member") {
+        await page.click('#tabs button:text-is("Parliamentary Activity")'); await page.waitForSelector("#main .sec", { timeout: 5000 });
+        const pt = (await page.$eval("#main", m => m.innerText)).replace(/\s+/g, " ");
+        const pheads = await page.$$eval("#main .sec-title", hs => hs.map(h => h.textContent.trim()));
+        check(`${who}: Parliamentary Activity breaks the day into Commons Business, Lords Chamber and Committees`, pheads.join("|") === "Commons Business|Lords Chamber|Committees" && /Oral questions/.test(pt) && /Health Committee/.test(pt), pheads.join("|"));
+        const vis = () => page.$$eval("#main .sec", ss => [...ss[0].querySelectorAll(".pe")].filter(e => e.offsetParent !== null).length);
+        check(`${who}: a section with more than three entries shows three and "See all (4)"`, (await vis()) === 3 && (await page.$eval("#main [data-seeall]", b => b.textContent.trim())) === "See all (4)");
+        await page.click("#main [data-seeall]"); await page.waitForTimeout(100);
+        check(`${who}: "See all" shows the rest and the button says "See less"`, (await vis()) === 4 && (await page.$eval("#main [data-seeall]", b => b.textContent.trim())) === "See less");
+        await page.click("#main [data-seeall]"); await page.waitForTimeout(100);
+        check(`${who}: "See less" puts them away again`, (await vis()) === 3);
+        await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(450);
+        if (await page.$(".cal-cell.today")) { await page.click(".cal-cell.today"); await page.waitForTimeout(450); }
+        check(`${who}: the Full Plan day no longer carries the Parliamentary Activity`, !/Statement on transport|Opposition day/.test(await page.$eval("#main", m => m.textContent)));
+        if (await page.$("[data-back]")) { await page.click("[data-back]"); await page.waitForTimeout(300); }   // back to the month, where the next checks start
         await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(450);
         const cal = await page.$eval("#main", m => m.innerText);
-        check(`${who}: the Calendar is a month calendar with the day's entries in their cells, with no visit requests under it`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && !/File the return/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && (await (async () => { const evs = await page.$$eval(".cal-cell.today .cal-ev", e => e.map(x => x.textContent)); const more = await page.$eval(".cal-cell.today", c => c.innerText); return evs.length === 4 && /interview/.test(evs[0]) && /Press briefing/.test(evs[1]) && /Launch housing pledge/.test(evs[2]) && /Members' call/.test(evs[3]) && /\+1 more/.test(more); })()) && !/[Ll]ocal party visit/.test(cal), cal.slice(0, 120).replace(/\n/g, " "));
+        check(`${who}: the Calendar is a month calendar with the day's entries in their cells, with no visit requests under it`, (await page.$$(".cal-cell")).length >= 28 && /Launch housing pledge/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && !/File the return/.test(await page.$eval(".cal-cell.today", c => c.innerText)) && (await (async () => { const evs = await page.$$eval(".cal-cell.today .cal-ev", e => e.map(x => x.textContent)); const more = await page.$eval(".cal-cell.today", c => c.innerText); return evs.length === 4 && /interview/.test(evs[0]) && /Press briefing/.test(evs[1]) && /Launch housing pledge/.test(evs[2]) && /Stewards' briefing/.test(evs[3]) && /\+2 more/.test(more); })()) && !/[Ll]ocal party visit/.test(cal), (await page.$eval(".cal-cell.today", c => c.innerText)).replace(/\n/g, " | "));
         if (process.env.SHOTS && who === "admin") await page.screenshot({ path: path.join(process.env.SHOTS, "lovelace-calendar.png"), fullPage: true });
         await page.click(".cal-cell.today"); await page.waitForTimeout(450);
         const plan = await page.$eval("#main", m => m.innerText);

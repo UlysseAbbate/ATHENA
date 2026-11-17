@@ -101,3 +101,7 @@ tr.todo-done td.wrapcell{text-decoration:line-through}
 .sec-title{margin:0;font:700 1rem var(--head);letter-spacing:-.02em}.sec-head .btn{margin-left:auto}
 
 .ov-more{margin:2px 0 4px;padding:2px 0;background:none;border:0;color:var(--link, inherit);font:600 .85rem var(--head);text-decoration:underline;cursor:pointer}
+
+/* "See all (N)" / "See less" under a section with more than three entries */
+.seeall{margin:4px 0 2px}
+.sec-rest[hidden]{display:none}

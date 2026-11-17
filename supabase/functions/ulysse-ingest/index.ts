@@ -7,9 +7,10 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   {action: "social_posts", rows: [...]}  add posts found on the tracked social accounts to the Social Media Channels Tracker (rows: organisation, platform, posted_on, summary, url)
 //   {action: "london_data", rows: [...]}  add the London data drops, ONS releases and GLA meetings to Lovelace's Daily Plan (rows: key, date, title, url, starts, section)
 //   {action: "membership_events", rows: [...]}  add the Lib Dem London events to Lovelace's Daily Plan, under Internal Campaign > Membership Engagement (rows: key, date, title, url, starts)
-//   {action: "parliament_events", rows: [...]}  add the UK Parliament What's On events to Lovelace's Daily Plan, under London Politics > Political Events (rows: key, date, title, url, starts)
+//   {action: "parliament_events", rows: [...]}  add the UK Parliament What's On events to Lovelace's Daily Plan, under Parliamentary Activity: Commons Business, Lords Chamber or Committees (rows: key, date, title, url, starts, section)
 //   {action: "archive", rows: [...]}   keep items in LUCIEN's permanent archive (table lucien_archive); {action: "archive_status"} says how many committee items it holds
 //   {action: "econ_data", rows: [...]}  load economic statistics (Nomis and ONS) into the table econ_data; {action: "econ_status"} says when they were last loaded
+//   {action: "london_feed", rows: [...]}  keep London policy reports and London media stories for LOVELACE's London Politics pages (rows: id, kind, source, title, url, published, first_seen, summary, tags)
 //   {action: "social_accounts"}        the tracked social accounts that have a handle set, for the collector to follow
 const ALLOWED = new Set(["feed", "polls", "health", "statscal"]);
 const MAX_BYTES = 5_000_000;
@@ -80,16 +81,16 @@ Deno.serve(async (req: Request) => {
   // Events the collector reads from public calendars, filed on their day in Lovelace's Daily Plan, once each. An entry nobody has edited that the calendar no longer carries
   // (a date moved, an event cancelled) is removed; one a person has edited (or moved to another section) stays.
   //   membership_events: the Liberal Democrats' London events (events.libdems.org.uk)   -> Internal Campaign > Membership Engagement
-  //   parliament_events: the UK Parliament What's On calendar (whatson-api.parliament.uk) -> London Politics > Political Events
-  const DAY_EVENTS: Record<string, { area: string; section: string; prefix: string; link: RegExp }> = {
+  //   parliament_events: the UK Parliament What's On calendar (whatson-api.parliament.uk) -> Parliamentary Activity (Commons Business, Lords Chamber, Committees)
+  const DAY_EVENTS: Record<string, { area: string; section: string; sections?: string[]; prefix: string; link: RegExp }> = {
     membership_events: { area: "internal", section: "membership", prefix: "libdemev:", link: /^https:\/\/events\.libdems\.org\.uk\// },
-    parliament_events: { area: "london", section: "political", prefix: "whatson:", link: /^https:\/\/whatson\.parliament\.uk\// },
+    parliament_events: { area: "parliament", section: "committees", sections: ["commons", "lords", "committees"], prefix: "whatson:", link: /^https:\/\/whatson\.parliament\.uk\// },
   };
   const feed = payload.action ? DAY_EVENTS[payload.action] : undefined;
   if (feed) {
     if (!Array.isArray(payload.rows)) return json({ error: "bad request" }, 400);
     const rows = payload.rows.slice(0, MAX_COVERAGE).map((r: Record<string, unknown>) => ({
-      plan_date: /^\d{4}-\d{2}-\d{2}$/.test(String(r?.date)) ? String(r.date) : null, area: feed.area, section: feed.section,
+      plan_date: /^\d{4}-\d{2}-\d{2}$/.test(String(r?.date)) ? String(r.date) : null, area: feed.area, section: feed.sections && feed.sections.includes(String(r?.section)) ? String(r.section) : feed.section,
       title: str(r?.title, 400), starts: str(r?.starts, 40) || null, link: feed.link.test(str(r?.url, 1000)) ? str(r?.url, 1000) : null, auto_key: str(r?.key, 160),
     })).filter(r => r.plan_date && r.title && r.auto_key.startsWith(feed.prefix));
     if (!rows.length) return json({ ok: true, added: 0 });
@@ -152,6 +153,21 @@ Deno.serve(async (req: Request) => {
     const { data, error } = await sb.from("econ_data").select("fetched_at").order("fetched_at", { ascending: false }).limit(1);
     if (error) return json({ error: error.message }, 500);
     return json({ ok: true, last_fetched: data?.[0]?.fetched_at ?? null });
+  }
+
+  // LOVELACE > London Politics: policy reports and London media found by the collector, kept once each by id.
+  if (payload.action === "london_feed") {
+    if (!Array.isArray(payload.rows)) return json({ error: "bad request" }, 400);
+    const rows = payload.rows.slice(0, 1000).map((r: Record<string, unknown>) => ({
+      id: str(r?.id, 64), kind: r?.kind === "media" ? "media" : "report", source: str(r?.source, 200), title: str(r?.title, 400), url: str(r?.url, 1000),
+      published: typeof r?.published === "string" && !isNaN(Date.parse(r.published as string)) ? new Date(r.published as string).toISOString() : null,
+      first_seen: typeof r?.first_seen === "string" && !isNaN(Date.parse(r.first_seen as string)) ? new Date(r.first_seen as string).toISOString() : new Date().toISOString(),
+      summary: str(r?.summary, 2000) || null, tags: Array.isArray(r?.tags) ? (r.tags as unknown[]).slice(0, 20).map((t) => str(t, 80)).filter(Boolean) : [],
+    })).filter((r) => r.id && r.source && r.title && /^https?:\/\//.test(r.url));
+    if (!rows.length) return json({ ok: true, stored: 0 });
+    const { data, error } = await sb.from("london_feed").upsert(rows, { onConflict: "id", ignoreDuplicates: true }).select("id");
+    if (error) return json({ error: error.message }, 500);
+    return json({ ok: true, stored: data?.length ?? 0 });
   }
 
   // Posts found on the tracked social accounts: kept against their account (Lovelace's Social Media Channels Tracker); a post is stored once per address.

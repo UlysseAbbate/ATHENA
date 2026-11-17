@@ -209,3 +209,24 @@ thinktanks:
   - {name: Theos, url: "https://www.theosthinktank.co.uk/research"}
   - {name: Think Labour, url: "https://thinklabour.co.uk/thinking", urls: ["https://www.thinklabour.org/", "https://thinklabour.co.uk/"]}  # rebranded from Labour Together in 2026; real domain is thinklabour.co.uk (Nuxt site: publications under /thinking, no feed)
   - {name: UK in a Changing Europe, url: "https://ukandeu.ac.uk/reports/", feed: false}  # /research-papers/ 404s; listing has no dates (first-seen used)
+
+# ---------------------------------------------------------------------------
+# LOVELACE > London Politics: London policy reports and London media. Read the same way as LUCIEN's think tanks and media (own feeds, then pages, then sitemap; robots.txt respected).
+# `reports`: London think tanks and the GLA; any national think tank report from LUCIEN that is about London is added automatically.
+# `media`: the London papers and broadcasters; only stories matching media_pattern (London government and politics) are kept.
+london:
+  reports:
+    - {name: Centre for London, url: "https://centreforlondon.org/", feeds: ["https://centreforlondon.org/feed/"]}
+    - {name: LSE London, url: "https://www.lse.ac.uk/geography-and-environment/research/lse-london", feeds: ["https://blogs.lse.ac.uk/politicsandpolicy/feed/"], require: 'London'}
+    - {name: London Councils, url: "https://www.londoncouncils.gov.uk/", feeds: ["https://www.londoncouncils.gov.uk/rss.xml", "https://www.londoncouncils.gov.uk/feed"]}
+    - {name: Trust for London, url: "https://trustforlondon.org.uk/publications/", feeds: ["https://trustforlondon.org.uk/feed/"]}
+    - {name: Mayor of London and the GLA, url: "https://www.london.gov.uk/media-centre", feeds: ["https://www.london.gov.uk/rss.xml"], require: 'report|strategy|review|plan\b|analysis|investigation|assembly|data|research|evidence|consultation'}
+    - {name: Future of London, url: "https://www.futureoflondon.org.uk/", feeds: ["https://www.futureoflondon.org.uk/feed/"]}
+    - {name: New London Architecture, url: "https://nla.london/", feeds: ["https://nla.london/feed"]}
+    - {name: London First, url: "https://www.londonfirst.co.uk/", feeds: ["https://www.londonfirst.co.uk/feed"]}
+  media_pattern: 'Mayor of London|Sadiq|London Assembly|\bGLA\b|Greater London Authority|City Hall|Transport for London|\bTfL\b|ULEZ|London (council|councils|borough|boroughs)|mayoral|councillors?\b|Lib(eral)? Dems?|Liberal Democrats?|Reform UK'
+  media:
+    - {name: MyLondon, url: "https://www.mylondon.news/news/politics/", feeds: ["https://www.mylondon.news/?service=rss", "https://www.mylondon.news/news/politics/?service=rss"]}
+    - {name: Evening Standard, url: "https://www.standard.co.uk/news/politics", feeds: ["https://www.standard.co.uk/rss", "https://www.standard.co.uk/news/politics/rss"]}
+    - {name: Metro (London), url: "https://metro.co.uk/london/", feeds: ["https://metro.co.uk/london/feed/", "https://metro.co.uk/news/uk/feed/"]}
+    - {name: BBC London, url: "https://www.bbc.co.uk/news/england/london", feeds: ["https://feeds.bbci.co.uk/news/england/london/rss.xml"]}
