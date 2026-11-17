@@ -566,3 +566,25 @@ def test_ons_series_points_and_rows():
     assert [r["period"] for r in first] == ["2026-01", "2026-02", "2026-03"] and first[-1]["value"] == 3.5 and first[0]["unit"] == "%" and first[0]["geography_level"] == "uk"
     assert first[0]["source_url"] == "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23" and first[0]["label"] == "2026 JAN" and seen[0].endswith("/d7g7/mm23/data")
     assert len({r["id"] for r in rows}) == len(rows)
+
+
+# ------------------------------------------------------------------ working links for select committee reports, and polling kept whether or not it is political
+def test_committee_link_opens_the_publication():
+    row = {"id": 55848, "documents": [{"documentId": 314690}], "committee": {"id": 127}, "additionalContentUrl": None}
+    assert U.committee_link(row) == "https://committees.parliament.uk/publications/55848/documents/314690/default/"
+    lords = {"id": 55828, "documents": [], "committee": {"id": 9}, "additionalContentUrl": "https://publications.parliament.uk/pa/ld5902/ldselect/ldresilience/79/7902.htm"}
+    assert U.committee_link(lords) == "https://publications.parliament.uk/pa/ld5902/ldselect/ldresilience/79/7902.htm"
+    bare = {"id": 1, "documents": [], "committee": {"id": 127}, "additionalContentUrl": "http://evil.example/x"}
+    assert U.committee_link(bare) == "https://committees.parliament.uk/committee/127/"
+    full = {"id": 55848, "type": {"name": "Report"}, "description": "A report", "publicationStartDate": "2026-11-16T10:00:00", "documents": [{"documentId": 7}], "committee": {"id": 3, "name": "Health Committee", "house": "Commons"}}
+    it = U._committee_row(full, ["report"])
+    assert it["url"].endswith("/publications/55848/documents/7/default/") and it["id"] == U.make_item("committee", "x", "x", "https://committees.parliament.uk/publications/55848/", None)["id"]
+
+
+def test_archive_history_start_rereads_broken_links(monkeypatch):
+    monkeypatch.setattr(U, "ingest_configured", lambda: True)
+    monkeypatch.delenv("ARCHIVE_HISTORY", raising=False)
+    monkeypatch.setattr(U, "_ingest", lambda payload, timeout=90: {"ok": True, "committees": 11000, "oldest_committee": "1995-03-01T00:00:00+00:00", "stale_links": 9000, "newest_stale": "2024-05-01T00:00:00+00:00"})
+    assert U.archive_history_start() == 2024
+    monkeypatch.setattr(U, "_ingest", lambda payload, timeout=90: {"ok": True, "committees": 11000, "oldest_committee": "1995-03-01T00:00:00+00:00", "stale_links": 0, "newest_stale": None})
+    assert U.archive_history_start() is None

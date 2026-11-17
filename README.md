@@ -96,7 +96,7 @@ Pages refresh themselves when you come back to the browser tab, so you see other
 
 ## LUCIEN (policy tracker, formerly Ulysse)
 
-**Select committees** (a tab) lists every one of them, searchable by words, committee, House, type and date; it reads the archive, not the 180-day feed.
+**Reports** (a tab) lists every select committee report, special report and government response and every think tank report, searchable by words, source, House, type and date; it reads the archive, not the 180-day feed. (It replaces the separate Select committees and Think tanks tabs.) Each committee report links to the publication itself: its document page on committees.parliament.uk, or the Lords' own publications.parliament.uk page, or failing that the committee's page; the address `…/publications/{id}/` on its own is a "page does not exist" on Parliament's site, so it is not used.
 
 **Archive** (a tab): the other tabs show the last 180 days (the live feed is pruned to that). Every item the collector finds is also kept for good in the table `lucien_archive` (migration `20261119100000`), which the **Archive** tab searches (words, kind, source, dates, pages, CSV download of up to 5,000). A new archive is filled with every select committee report, special report and government response the Parliament Committees API holds (back to 1995; read a year at a time, newest first, at most about 20 minutes per run, so it completes over a few runs; set `ARCHIVE_HISTORY=1` to load it again). Think tank, media and polling items are archived from the day the archive began: their feeds and sitemaps only show recent items, so there is no history to fetch. Only the collector writes to the archive (ingest action `archive`).
 
@@ -106,8 +106,8 @@ Refreshed automatically at 6am and 6pm London time by GitHub Actions (`.github/w
 
 1. **Select committees:** reports, special reports and government responses (Parliament Committees API).
 2. **Think tanks:** ~63 organisations in `config/sources.yml`.
-3. **Lib Dems in the media:** each outlet's own RSS feeds, filtered to stories whose headline or standfirst is about the party.
-4. **Political polling**, only specific polls and reports (no generic voting-intention averages or Wikipedia tables):
+3. **LD Media** (was *Lib Dems in the media*): each outlet's own RSS feeds, filtered to stories whose headline or standfirst is about the party.
+4. **Polling**, specific polls and reports (no generic voting-intention averages or Wikipedia tables). Non-political polling (consumer and commercial polls, other countries' politics) is kept too: each item is flagged, and the Polling tab has a Political / Non-political filter:
    - the pollsters' own sites (~30) and polling analysts, through the same self-healing collector as the think tanks;
    - YouGov's article pages and News Tracker;
    - a political-only filter.

@@ -122,7 +122,11 @@ Deno.serve(async (req: Request) => {
     const { count, error } = await sb.from("lucien_archive").select("id", { count: "exact", head: true }).eq("category", "committee");
     if (error) return json({ error: error.message }, 500);
     const { data } = await sb.from("lucien_archive").select("published").eq("category", "committee").not("published", "is", null).order("published", { ascending: true }).limit(1);
-    return json({ ok: true, committees: count ?? 0, oldest_committee: data?.[0]?.published ?? null });
+    // Committee items stored with the old address (…/publications/{id}/, which Parliament's site answers with "page does not exist") still have to be re-read for their real link.
+    const OLD = "^https://committees\\.parliament\\.uk/publications/[0-9]+/$";
+    const { count: stale } = await sb.from("lucien_archive").select("id", { count: "exact", head: true }).eq("category", "committee").filter("url", "match", OLD);
+    const { data: sd } = await sb.from("lucien_archive").select("published").eq("category", "committee").filter("url", "match", OLD).not("published", "is", null).order("published", { ascending: false }).limit(1);
+    return json({ ok: true, committees: count ?? 0, oldest_committee: data?.[0]?.published ?? null, stale_links: stale ?? 0, newest_stale: sd?.[0]?.published ?? null });
   }
 
   // LUCIEN > Economic policy: open official statistics (Nomis) in one long table, so a figure can be cross-referenced by area, age and sex.

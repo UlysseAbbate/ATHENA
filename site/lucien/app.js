@@ -11,7 +11,7 @@ const NEW_HOURS = 48, PAGE = 150;
 const TZ = "Europe/London";
 const SAVED = "ulysse.view.v1";
 const state = { tab: "all", items: [], polls: [], health: [], statscal: null, read: new Set(), shown: PAGE, pollRange: "all", hidden: new Set(),
-  f: { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", onlyNew: false, sinceLast: false } };
+  f: { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", political: "", onlyNew: false, sinceLast: false } };
 
 function saveView() { try { localStorage.setItem(SAVED, JSON.stringify({ tab: state.tab, f: state.f, pollRange: state.pollRange })); } catch (e) { /* private mode */ } }
 function restoreView() {
@@ -81,6 +81,7 @@ function rowsFor(skip = []) {
     if (!skip.includes("kind") && f.kind && i.kind !== f.kind) return false;
     if (!skip.includes("source") && f.source && i.source !== f.source) return false;
     if (!skip.includes("house") && f.house && !(i.tags || []).includes(f.house)) return false;
+    if (!skip.includes("political") && tab === "polling" && f.political && (f.political === "yes") !== (i.political !== false)) return false;   // an item stored before the flag existed counts as political
     if (!skip.includes("status") && f.status && (f.status === "read") !== state.read.has(i.id)) return false;
     if (!skip.includes("new") && f.onlyNew && !isNew(i)) return false;
     if (!skip.includes("new") && f.sinceLast && !(state.baseline && new Date(i.first_seen) > state.baseline)) return false;
@@ -115,6 +116,7 @@ function renderControls() {
   fillSelect("source", "All sources", tally(rowsFor(["source"]), r => r.source), f.source, { order: (a, b) => a.localeCompare(b) });
   const hs = $("house"); hs.hidden = state.tab !== "committee";
   if (!hs.hidden) fillSelect("house", "Commons & Lords", tally(rowsFor(["house"]).filter(r => r.category === "committee"), r => (r.tags || []).filter(t => ["Commons", "Lords", "Joint"].includes(t))), f.house);
+  $("political").hidden = state.tab !== "polling"; $("political").value = f.political;
   $("range").value = f.range; $("status").value = f.status; $("onlyNew").checked = f.onlyNew; $("sinceLast").checked = f.sinceLast;
   $("sinceLastWrap").hidden = !state.baseline;
 }
@@ -223,7 +225,7 @@ function renderHealth() {
 
 /* ---------------------------------------------------------------- render + events */
 function render(keepControls) {
-  const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", stats = tab === "statscal", arch = tab === "archive" || tab === "committee", eco = tab === "economy", other = health || team || stats || arch || eco;
+  const tab = state.tab, team = tab === "team", health = tab === "health", poll = tab === "polling", stats = tab === "statscal", arch = tab === "archive" || tab === "reports", eco = tab === "economy", other = health || team || stats || arch || eco;
   saveView();
   { const b = document.querySelector(`#tabs button[data-tab="${tab}"]`); $("pt").querySelector("h1").textContent = tab === "team" ? "Team & access" : (b ? b.textContent : "Everything"); }
   $("healthpanel").hidden = !health; $("teampanel").hidden = !team; $("list").hidden = other; $("controls").hidden = other; $("overview").hidden = other || poll;
@@ -232,7 +234,7 @@ function render(keepControls) {
   if (!arch) delete $("archivepanel").dataset.on;
   if (!eco) delete $("economypanel").dataset.on;
   if (eco) { if (!$("economypanel").dataset.on) { $("economypanel").dataset.on = "1"; Economy.render($("economypanel")); } return; }   // drawn once per visit, like the archive
-  if (arch) { if ($("archivepanel").dataset.on !== tab) { $("archivepanel").dataset.on = tab; Archive.render($("archivepanel"), cardHtml, { category: tab === "committee" ? "committee" : "" }); } return; }   // drawn once per visit: a redraw would lose the page and search
+  if (arch) { if ($("archivepanel").dataset.on !== tab) { $("archivepanel").dataset.on = tab; Archive.render($("archivepanel"), cardHtml, { category: tab === "reports" ? "reports" : "" }); } return; }   // drawn once per visit: a redraw would lose the page and search
   if (stats) return StatsCal.render($("statspanel"), state.statscal);
   if (team) return TeamPage.render($("teampanel"), { program: "lucien", name: "LUCIEN" });
   if (health) return renderHealth();
@@ -251,11 +253,11 @@ function bind() {
   let qt;
   $("q").addEventListener("input", e => { clearTimeout(qt); qt = setTimeout(() => { state.f.q = e.target.value; state.shown = PAGE; render(true); renderControls(); }, 120); });
   document.addEventListener("keydown", e => { if (e.key === "/" && !/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) { e.preventDefault(); $("q").focus(); } });
-  [["area", "area"], ["geo", "geo"], ["kind", "kind"], ["source", "source"], ["house", "house"], ["range", "range"], ["status", "status"]].forEach(([id, k]) =>
+  [["area", "area"], ["geo", "geo"], ["kind", "kind"], ["source", "source"], ["house", "house"], ["range", "range"], ["status", "status"], ["political", "political"]].forEach(([id, k]) =>
     $(id).addEventListener("change", e => { state.f[k] = e.target.value; state.shown = PAGE; render(); }));
   $("onlyNew").addEventListener("change", e => { state.f.onlyNew = e.target.checked; state.shown = PAGE; render(); });
   $("sinceLast").addEventListener("change", e => { state.f.sinceLast = e.target.checked; state.shown = PAGE; render(); });
-  $("reset").onclick = () => { Object.assign(state.f, { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", onlyNew: false, sinceLast: false }); $("q").value = ""; state.shown = PAGE; render(); };
+  $("reset").onclick = () => { Object.assign(state.f, { q: "", area: "", geo: "", kind: "", source: "", house: "", range: "7", status: "", political: "", onlyNew: false, sinceLast: false }); $("q").value = ""; state.shown = PAGE; render(); };
   $("markall").onclick = () => { const ids = rowsFor().filter(r => !state.read.has(r.id)).map(r => r.id); if (ids.length && confirm(`Mark ${ids.length} item${ids.length === 1 ? "" : "s"} as read?`)) setRead(ids, true); };
   document.body.addEventListener("click", e => {
     const rd = e.target.closest("[data-read]"); if (rd) return setRead([rd.dataset.read], !state.read.has(rd.dataset.read));
@@ -286,6 +288,7 @@ function signIn() { AuthUI.render(sb, document.body, { title: "LUCIEN" }); }
   $("updated").textContent = feed ? `Updated ${Athena.ago(feed.updated)}` : "No data yet. Run the collector.";
   if (staleH > 15) $("updated").classList.add("stale");
   restoreView();
+  if (state.tab === "committee" || state.tab === "thinktank") state.tab = "reports";   // the two tabs became one
   if (state.tab === "team" && !acc.admin) state.tab = "all";
   // "since your last visit": the previous visit's time, kept for this whole browser session (reloads do not reset it)
   try {
