@@ -91,6 +91,8 @@ const TABLES = {
       rows.push(row(geo, name, "ashe", "female", null, "All workers", 600 + k, { measure: "Median weekly pay - gross", unit: "£", period: "2025" }));
       rows.push(row(geo, name, "gdhi", "all", null, "GDHI", 25000 + k * 1000, { measure: "GDHI per head (£)", unit: "£", period: "2024" }));
     }
+    for (const [name, unit, vals] of [["CPI inflation (annual rate)", "%", [2.0, 2.5, 3.0, 3.5]], ["Average weekly earnings, whole economy (£ a week)", "£", [700, 710, 720, 770]]])
+      vals.forEach((v, i) => rows.push({ dataset: "ons_series", geography_code: "K02000001", geography_name: "United Kingdom", geography_level: "uk", sex: "all", age_from: null, age_to: null, age_label: null, category: name, measure: "Value", unit, value: v, period: ["2025-09", "2025-10", "2025-11", "2026-09"][i], label: `p${i}`, source_url: "https://www.ons.gov.uk/x/timeseries/d7g7/mm23" }));
     return rows;
   })(),
   lucien_archive: [{ id: "a1", category: "committee", source: "Health Committee", title: "Report on waiting lists (2011)", url: "https://committees.parliament.uk/publications/1/", published: "2011-03-01T10:00:00Z", first_seen: "2011-03-01T10:00:00Z", summary: "Old report", tags: ["Report", "Commons"], item: { areas: ["Health"], kind: "Report" } },
@@ -140,6 +142,8 @@ async function mock(page, who, log) {
     if (eqProgram) rows = rows.filter(r => "eq." + r.program === eqProgram);
     const eqName = url.searchParams.get("name");
     if (eqName) rows = rows.filter(r => "eq." + r.name === eqName);
+    const eqDataset = url.searchParams.get("dataset");
+    if (eqDataset && t === "econ_data") rows = rows.filter(r => "eq." + r.dataset === eqDataset);
     const eqKind = url.searchParams.get("kind");
     if (eqKind) rows = rows.filter(r => "eq." + r.kind === eqKind);
     if (url.searchParams.get("topic") === "not.is.null") rows = rows.filter(r => r.topic);
@@ -1074,11 +1078,26 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check("select committees: the House and type narrow the list (committee kind is fixed)", /category=eq\.committee/.test(cq) && /tags=cs\.\{Lords\}/.test(cq) && /tags=cs\.\{Government.Response\}/.test(cq), cq);
         await page.click('#tabs button[data-tab="all"]'); await page.waitForTimeout(250);
         await page.click('#tabs button[data-tab="economy"]'); await page.waitForTimeout(400);
-        check("economy: the Economic policy tab has Data profiles and Costings", (await page.$$eval("#eco-tabs button", bs => bs.map(b => b.textContent))).join("|") === "Data profiles|Costings" && (await page.$("#eco-q")) !== null);
+        check("economy: the Economic policy tab has Data profiles, How the system works and Costings", (await page.$$eval("#eco-tabs button", bs => bs.map(b => b.textContent))).join("|") === "Data profiles|Indicators|How the system works|Costings" && (await page.$("#eco-q")) !== null);
         await page.fill("#eco-q", "create a data profile, compared to the average, of Londoners aged 18-25"); await page.click("#eco-ask button"); await page.waitForTimeout(600);
         const eco = await page.$eval("#economypanel", e => e.innerText);
         check("economy: a question in words is read (London, 18-25) and answered with the closest age band", /London, aged 18-25/.test(eco) && /closest it can give is\s+16-24/.test(eco.replace(/\s+/g, " ")) && /Employment rate/.test(eco) && /60\.0%/.test(eco) && /75\.7%/.test(eco), eco.slice(0, 300).replace(/\n/g, " "));
         check("economy: the difference is in percentage points, pay and household income are included with their limits", /−15\.7 points|-15\.7 points/.test(eco) && /Median weekly pay/.test(eco) && /not available by age/.test(eco) && /Household income per head/.test(eco));
+        await page.click('#eco-tabs [data-et="indicators"]'); await page.waitForSelector(".ind-grid .ind", { timeout: 5000 });
+        const indT = (await page.$eval("#economypanel", e => e.innerText)).replace(/\s+/g, " ");
+        check("economy: Indicators shows each ONS series with its latest value, the change on a year earlier, a trend and a source link", (await page.$$(".ind-grid .ind")).length === 2 && /CPI inflation \(annual rate\)/.test(indT) && /3\.5%/.test(indT) && /\+1\.5 points on a year earlier/.test(indT) && /£770/.test(indT) && (await page.$$(".ind svg polyline")).length === 2 && (await page.$$(".ind a[href^='https://www.ons.gov.uk']")).length === 2, indT.slice(indT.indexOf("CPI inflation"), indT.indexOf("CPI inflation") + 400) + ` | cards ${(await page.$$(".ind-grid .ind")).length} lines ${(await page.$$(".ind svg polyline")).length} links ${(await page.$$(".ind a[href^='https://www.ons.gov.uk']")).length}`);
+        await page.click('#eco-tabs [data-et="system"]'); await page.waitForSelector("#sys-book details.rule", { timeout: 5000 });
+        const sysText = await page.$eval("#economypanel", e => e.textContent);
+        check("economy: How the system works shows the explorer chart, the rulebook (taxes and welfare), its source date and what is not covered", (await page.$("#economypanel svg polygon")) !== null && /Income Tax \(England/.test(sysText) && /Universal Credit/.test(sysText) && /55p for every £1/.test(sysText) && /read from GOV\.UK on \d{4}-\d{2}-\d{2}/.test(sysText) && /Not covered yet/.test(sysText) && /not .*costing/i.test(sysText));
+        const rows0 = await page.$$eval("#economypanel .tablewrap tbody tr", rs => rs.length);
+        check("economy: the explorer gives the 60% income tax band between £100,000 and £125,140 (62% with National Insurance)", /£110,000[^\n]*62%/.test(sysText.replace(/\t/g, " ").replace(/ +/g, " ")) || /£110,000\s+60%/.test(sysText.replace(/\s+/g, " ")), sysText.slice(sysText.indexOf("£110,000"), sysText.indexOf("£110,000") + 80));
+        await page.selectOption("#sys-kids", "2"); await page.waitForTimeout(150);
+        const withKids = (await page.$eval("#economypanel", e => e.innerText)).replace(/\s+/g, " ");
+        check("economy: choosing two children adds the Child Benefit charge to the rates at £70,000", /£70,000 [^£]*11\.7%/.test(withKids), withKids.slice(withKids.indexOf("£70,000"), withKids.indexOf("£70,000") + 90));
+        await page.fill("#sys-q", "taper"); await page.waitForTimeout(150);
+        const found = await page.$$eval("#sys-book details.rule summary b", bs => bs.map(b => b.textContent));
+        check("economy: searching the rulebook narrows it (taper: Income Tax and Universal Credit)", found.includes("Universal Credit") && found.includes("Income Tax (England, Wales and Northern Ireland)") && !found.includes("Value Added Tax"), found.join("|"));
+        await page.fill("#sys-q", "");
         await page.click('#eco-tabs [data-et="costings"]'); await page.waitForTimeout(150);
         check("economy: the Costings tab says it is the next stage and not an official costing", /next stage/.test(await page.$eval("#economypanel", e => e.innerText)) && /not be an official/.test(await page.$eval("#economypanel", e => e.innerText)));
         await page.click('#tabs button[data-tab="statscal"]'); await page.waitForTimeout(300);

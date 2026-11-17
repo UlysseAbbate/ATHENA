@@ -9,7 +9,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   {action: "membership_events", rows: [...]}  add the Lib Dem London events to Lovelace's Daily Plan, under Internal Campaign > Membership Engagement (rows: key, date, title, url, starts)
 //   {action: "parliament_events", rows: [...]}  add the UK Parliament What's On events to Lovelace's Daily Plan, under London Politics > Political Events (rows: key, date, title, url, starts)
 //   {action: "archive", rows: [...]}   keep items in LUCIEN's permanent archive (table lucien_archive); {action: "archive_status"} says how many committee items it holds
-//   {action: "econ_data", rows: [...]}  load economic statistics (Nomis) into the table econ_data; {action: "econ_status"} says when they were last loaded
+//   {action: "econ_data", rows: [...]}  load economic statistics (Nomis and ONS) into the table econ_data; {action: "econ_status"} says when they were last loaded
 //   {action: "social_accounts"}        the tracked social accounts that have a handle set, for the collector to follow
 const ALLOWED = new Set(["feed", "polls", "health", "statscal"]);
 const MAX_BYTES = 5_000_000;
@@ -128,7 +128,7 @@ Deno.serve(async (req: Request) => {
   // LUCIEN > Economic policy: open official statistics (Nomis) in one long table, so a figure can be cross-referenced by area, age and sex.
   if (payload.action === "econ_data") {
     if (!Array.isArray(payload.rows)) return json({ error: "bad request" }, 400);
-    const DS = new Set(["aps_labour", "claimants", "ashe", "gdhi", "census_econ"]);
+    const DS = new Set(["aps_labour", "claimants", "ashe", "gdhi", "census_econ", "ons_series"]);
     const num = (v: unknown) => (typeof v === "number" && isFinite(v) ? v : null);
     const rows = payload.rows.slice(0, 1000).map((r: Record<string, unknown>) => ({
       id: str(r?.id, 40), dataset: str(r?.dataset, 30), geography_code: str(r?.geography_code, 20), geography_name: str(r?.geography_name, 80),
@@ -136,7 +136,7 @@ Deno.serve(async (req: Request) => {
       sex: ["all", "male", "female"].includes(String(r?.sex)) ? String(r.sex) : "all",
       age_from: num(r?.age_from), age_to: num(r?.age_to), age_label: str(r?.age_label, 40) || null,
       category: str(r?.category, 200), measure: str(r?.measure, 200), unit: str(r?.unit, 20), value: num(r?.value),
-      period: str(r?.period, 60), source_url: /^https:\/\/www\.nomisweb\.co\.uk\//.test(str(r?.source_url, 500)) ? str(r?.source_url, 500) : null, fetched_at: new Date().toISOString(),
+      period: str(r?.period, 60), label: str(r?.label, 60) || null, source_url: /^https:\/\/www\.(nomisweb\.co\.uk|ons\.gov\.uk)\//.test(str(r?.source_url, 500)) ? str(r?.source_url, 500) : null, fetched_at: new Date().toISOString(),
     })).filter((r) => r.id && DS.has(r.dataset) && r.geography_code && r.category && r.measure && r.unit && r.value !== null && r.period);
     if (!rows.length) return json({ ok: true, stored: 0 });
     const { error } = await sb.from("econ_data").upsert(rows, { onConflict: "id" });

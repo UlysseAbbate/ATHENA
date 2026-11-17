@@ -120,3 +120,8 @@ select{cursor:pointer;padding-right:8px}
 .arc-form input[type=search]{flex:1 1 16rem;min-width:0}.arc-form input[type=text]{flex:1 1 12rem;min-width:0}
 .arc-d{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted)}
 .arc-pager{display:flex;align-items:center;justify-content:center;gap:14px;margin:14px 0 24px}
+
+/* Economic indicators */
+.ind-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin:0 0 20px}
+.ind{border:1px solid var(--line, var(--rule-strong, #ddd));border-radius:8px;padding:10px 12px;background:var(--card, transparent)}
+.ind h3{margin:0 0 4px;font-size:.85rem;font-weight:600}.ind-v{font:800 1.5rem var(--head);letter-spacing:-.03em}

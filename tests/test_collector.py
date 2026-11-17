@@ -550,3 +550,19 @@ def test_econdata_one_failing_dataset_does_not_stop_the_rest():
 def test_nomis_api_is_the_one_robots_exception():
     assert U.allowed("https://www.nomisweb.co.uk/api/v01/dataset/NM_170_1.data.csv?x=1") is True
     assert any(e["prefix"].startswith("https://www.nomisweb.co.uk/api/") for e in U.CONFIG["robots_exceptions"]) and len(U.CONFIG["robots_exceptions"]) == 1
+
+
+def test_ons_series_points_and_rows():
+    import econdata as E
+    assert E.point_key({"date": "2026 SEP"}) == "2026-09" and E.point_key({"date": "2026 Q2"}) == "2026-Q2" and E.point_key({"date": "2026"}) is None
+    pts = [{"date": f"2026 {m}", "value": str(i + 1.5), "label": f"2026 {m}"} for i, m in enumerate(["JAN", "FEB", "MAR"])] + [{"date": "2025 DEC", "value": "bad"}, {"date": "2026", "value": "1"}]
+
+    class R:
+        def json(self):
+            return {"months": pts, "quarters": [], "years": []}
+    seen = []
+    rows = E.ons_series(lambda url, **kw: seen.append(url) or R())
+    first = [r for r in rows if r["category"] == E.ONS_SERIES[0][0]]
+    assert [r["period"] for r in first] == ["2026-01", "2026-02", "2026-03"] and first[-1]["value"] == 3.5 and first[0]["unit"] == "%" and first[0]["geography_level"] == "uk"
+    assert first[0]["source_url"] == "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23" and first[0]["label"] == "2026 JAN" and seen[0].endswith("/d7g7/mm23/data")
+    assert len({r["id"] for r in rows}) == len(rows)
