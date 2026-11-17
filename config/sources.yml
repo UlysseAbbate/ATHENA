@@ -157,7 +157,7 @@ thinktanks:
   - {name: Centre for Public Data, url: "https://www.centreforpublicdata.org/blog"}
   - {name: Centre for Social Justice, url: "https://www.centreforsocialjustice.org.uk/library"}
   - {name: CEPEO, url: "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo", urls: ["https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities", "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities/publications", "https://www.ucl.ac.uk/ioe/research/cepeo", "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo/publications", "https://www.ucl.ac.uk/ioe/departments-and-centres/centres/centre-education-policy-and-equalising-opportunities-cepeo/news", "https://cepeo.ucl.ac.uk/"]}  # cepeo.ucl.ac.uk no longer resolves; now part of UCL IOE
-  - {name: Chatham House, url: "https://www.chathamhouse.org/publications", feeds: ["https://www.chathamhouse.org/rss.xml", "https://www.chathamhouse.org/publications/rss"], openalex: "Royal Institute of International Affairs"}  # 403 to GitHub's runners
+  - {name: Chatham House, url: "https://www.chathamhouse.org/publications", feeds: ["https://www.chathamhouse.org/rss.xml", "https://www.chathamhouse.org/publications/rss"]}  # 403 to GitHub's runners
   - {name: City-REDI, url: "https://www.birmingham.ac.uk/research/city-redi/publications"}
   - {name: Civitas, url: "https://www.civitas.org.uk/publications/"}
   - {name: Demos, url: "https://demos.co.uk/research/"}
@@ -172,7 +172,7 @@ thinktanks:
   - {name: IIED, url: "https://www.iied.org/publications", feeds: ["https://www.iied.org/rss.xml", "https://www.iied.org/feeds/publications"], sitemap_pattern: '^/\d+[a-z]*iied/?$', sitemap_days: 400}  # its publications are top-level /12345iied addresses  # page loads but is JavaScript-rendered
   - {name: IISS, url: "https://www.iiss.org/publications/", feeds: ["https://www.iiss.org/rss/", "https://www.iiss.org/feed/"]}  # page loads but is JavaScript-rendered
   # 403 to all automated requests (WAF) on 2026-10-23, as above. Decision needed.
-  - {name: Institute for Fiscal Studies, url: "https://ifs.org.uk/publications", feeds: ["https://ifs.org.uk/publications/rss.xml", "https://ifs.org.uk/rss.xml"], repec: ["ifs/ifsewp"], openalex: "Institute for Fiscal Studies"}  # web pages 403 to automated requests (WAF): respected as "no bots"; shows as failing
+  - {name: Institute for Fiscal Studies, url: "https://ifs.org.uk/publications", feeds: ["https://ifs.org.uk/publications/rss.xml", "https://ifs.org.uk/rss.xml"], repec: ["ifs/ifsewp"]}  # web pages 403 to automated requests (WAF): respected as "no bots"; shows as failing
   - {name: Institute for Government, url: "https://www.instituteforgovernment.org.uk/publications"}
   - {name: Institute for Policy Research (Bath), url: "https://www.bath.ac.uk/publications/"}  # 403 to GitHub's runners; generic bath.ac.uk/publications/ is the whole university
   - {name: Institute of Development Studies, url: "https://www.ids.ac.uk/publications/"}
@@ -194,14 +194,14 @@ thinktanks:
   - {name: Resolution Foundation, url: "https://www.resolutionfoundation.org/publications/"}
   - {name: RUSI, url: "https://www.rusi.org/explore-our-research/publications"}
   - {name: Smart Thinking (all think tanks' reports), url: "https://smartthinking.org.uk/reports/", feeds: ["https://smartthinking.org.uk/feed/"]}   # a directory of UK think tanks and their latest reports; it shows its own bot check to automated visitors (respected), so this fails until Smart Thinking allows it
-  - {name: Social Market Foundation, url: "https://www.smf.co.uk/publications/", feeds: ["https://www.smf.co.uk/feed/"], openalex: "Social Market Foundation"}  # 403 to GitHub's runners
+  - {name: Social Market Foundation, url: "https://www.smf.co.uk/publications/", feeds: ["https://www.smf.co.uk/feed/"]}  # 403 to GitHub's runners
   - {name: The Coalition for Global Prosperity, url: "https://www.coalitionforglobalprosperity.com/news", feeds: ["https://www.coalitionforglobalprosperity.com/news?format=rss", "https://www.coalitionforglobalprosperity.com/feed/"]}  # is .com, not .org
   - {name: The Constitution Unit, url: "https://www.ucl.ac.uk/constitution-unit/publications"}
   - {name: The David Hume Institute, url: "https://www.davidhumeinstitute.com/", urls: ["https://www.davidhumeinstitute.com/publications", "https://www.davidhumeinstitute.com/research", "https://www.davidhumeinstitute.com/reports", "https://www.davidhumeinstitute.com/blog", "https://www.davidhumeinstitute.com/news"], feeds: ["https://www.davidhumeinstitute.com/publications?format=rss", "https://www.davidhumeinstitute.com/blog?format=rss", "https://www.davidhumeinstitute.com/news?format=rss", "https://www.davidhumeinstitute.com/research?format=rss"]}  # a Squarespace site: any collection page has ?format=rss  # is .com, not .org
   - {name: The Foreign Policy Centre, url: "https://fpc.org.uk/publications/"}
   - {name: The Henry Jackson Society, url: "https://henryjacksonsociety.org/", feed: false}  # /publications/ 404s; homepage lists latest /publications/<slug>/ and PDF reports. Its /feed/ has only one item
   - {name: The Jobs Foundation, url: "https://www.jobsfoundation.org/research", urls: ["https://jobsfoundation.org.uk/research", "https://www.jobsfoundation.org.uk/"]}  # 401 (login) at the old URL; real domain unconfirmed; 
-  - {name: The King's Fund, url: "https://www.kingsfund.org.uk/insight-and-analysis/reports", feeds: ["https://www.kingsfund.org.uk/rss.xml", "https://www.kingsfund.org.uk/feeds/all"], openalex: "King's Fund"}  # 403 to GitHub's runners
+  - {name: The King's Fund, url: "https://www.kingsfund.org.uk/insight-and-analysis/reports", feeds: ["https://www.kingsfund.org.uk/rss.xml", "https://www.kingsfund.org.uk/feeds/all"]}  # 403 to GitHub's runners
   - {name: The Nuffield Trust, url: "https://www.nuffieldtrust.org.uk/research"}
   - {name: The Policy Institute (KCL), url: "https://www.kcl.ac.uk/policy-institute/research-analysis"}
   - {name: The Sutton Trust, url: "https://www.suttontrust.com/our-research/"}

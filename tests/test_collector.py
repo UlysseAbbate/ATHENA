@@ -590,7 +590,7 @@ def test_archive_history_start_rereads_broken_links(monkeypatch):
     assert U.archive_history_start() is None
 
 
-# ------------------------------------------------------------------ think tanks that block automated visitors: RePEc and OpenAlex
+# ------------------------------------------------------------------ think tanks that block automated visitors: RePEc
 _REPEC_HTML = '''<div id="content"><h2>Content</H2><h3>2026</h3><div class="panel-body"><UL class="list-group paperlist">
 <LI class="list-group-item downfree"><B>W46/46 <A HREF="/p/ifs/ifsewp/46-46.html">Horizontal equity of taxation</A></B><BR><I>by</I> A & B
 <LI class="list-group-item downfree"><B>W28/45 <A HREF="/p/ifs/ifsewp/28-45.html">Smartphones and children's mental health</A></B></UL></div>
@@ -612,36 +612,14 @@ def test_repec_series_items(monkeypatch):
     assert rows[0]["url"] == "https://ideas.repec.org/p/ifs/ifsewp/46-46.html" and rows[0]["tags"] == ["RePEc", "2026"] and rows[2]["tags"] == ["RePEc", "2025"] and rows[0]["published"] is None
 
 
-def test_openalex_items(monkeypatch):
-    calls = []
-
-    def fake(url, **kw):
-        calls.append((url, kw.get("params"), kw.get("headers")))
-        if url.endswith("/institutions"):
-            return _Resp2(data={"results": [{"id": "https://openalex.org/I1", "display_name": "Fiscal Studies Group"}, {"id": "https://openalex.org/I2", "display_name": "Institute for Fiscal Studies"}]})
-        return _Resp2(data={"results": [{"display_name": "A report", "publication_date": "2026-10-01", "primary_location": {"landing_page_url": "https://ifs.org.uk/a"}, "doi": None},
-                                        {"display_name": "Only a DOI", "publication_date": "2026-09-01", "primary_location": {}, "doi": "https://doi.org/10.1/x"}, {"display_name": "No link", "primary_location": {}}]})
-    monkeypatch.setattr(U, "get", fake)
-    rows = U.openalex_items("Institute for Fiscal Studies", "Institute for Fiscal Studies", "KEY")
-    assert [r["title"] for r in rows] == ["A report", "Only a DOI"] and rows[0]["published"].startswith("2026-10-01") and rows[1]["url"] == "https://doi.org/10.1/x"
-    assert "institutions.id:I2" in calls[1][1]["filter"] and calls[0][2]["Authorization"] == "Bearer KEY"
-    monkeypatch.setattr(U, "get", lambda url, **kw: _Resp2(data={"results": []}))
-    try:
-        U.openalex_items("X", "No Such Place", "KEY")
-        assert False
-    except LookupError:
-        pass
-
-
 def test_blocked_think_tank_falls_back_to_the_indexes(monkeypatch):
     blocked = ([], {"group": "thinktanks", "name": "IFS", "ok": False, "items": 0, "error": "ifs.org.uk/publications: HTTP 403 (Cloudflare challenge)"})
     monkeypatch.setattr(U, "collect_source", lambda tt, c, g: blocked)
     monkeypatch.setattr(U, "get", lambda url, **kw: _Resp2(_REPEC_HTML))
-    monkeypatch.delenv("OPENALEX_API_KEY", raising=False)
-    items, rec = U.collect_thinktank({"name": "IFS", "repec": ["ifs/ifsewp"], "openalex": "Institute for Fiscal Studies"})
-    assert rec["ok"] and rec["method"] == "repec/openalex" and len(items) == 3 and "scholarly indexes" in rec["error"] and "OPENALEX_API_KEY" in rec["error"]
-    items, rec = U.collect_thinktank({"name": "SMF", "openalex": "Social Market Foundation"})
-    assert not rec["ok"] and items == [] and "OPENALEX_API_KEY" in rec["error"]
+    items, rec = U.collect_thinktank({"name": "IFS", "repec": ["ifs/ifsewp"]})
+    assert rec["ok"] and rec["method"] == "repec" and len(items) == 3 and "scholarly indexes" in rec["error"]
+    items, rec = U.collect_thinktank({"name": "SMF"})
+    assert not rec["ok"] and items == []
     items, rec = U.collect_thinktank({"name": "Other"})
     assert not rec["ok"]
 

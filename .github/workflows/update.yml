@@ -29,5 +29,4 @@ jobs:
         env:
           INGEST_URL: https://fbsoibmtvapmxdlfdgxc.supabase.co/functions/v1/ulysse-ingest
           INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
-          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}   # optional: a free key from openalex.org, used to list the publications of think tanks whose own sites block automated visitors
           ONLY_IF_DUE: ${{ github.event_name == 'schedule' && '1' || '' }}   # a timed run skips itself if the data was already renewed since 6am / 6pm
