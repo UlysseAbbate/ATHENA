@@ -224,6 +224,21 @@ def _first(d: dict, *keys):
     return None
 
 
+def committee_link(row: dict) -> str:
+    """A web address that opens the publication itself. https://committees.parliament.uk/publications/{id}/ on its own gives "This page does not exist", so:
+    the document page when the publication has one (…/publications/{id}/documents/{documentId}/default/), else the page Parliament gives for it (a Lords report's
+    publications.parliament.uk page), else the committee's own page."""
+    pid = row.get("id")
+    extra = str(row.get("additionalContentUrl") or "").strip()
+    docs = [d for d in (row.get("documents") or []) if d.get("documentId")]
+    if docs:
+        return f"https://committees.parliament.uk/publications/{pid}/documents/{docs[0]['documentId']}/default/"
+    if extra.startswith("https://") and urlparse(extra).netloc.endswith("parliament.uk"):
+        return extra
+    cid = (row.get("committee") or {}).get("id")
+    return f"https://committees.parliament.uk/committee/{cid}/" if cid else f"https://committees.parliament.uk/publications/{pid}/"
+
+
 def _committee_row(row: dict, keep_types: list[str]) -> dict | None:
     """Fields verified against the live API (Oct 2026): `type.name` is the
     publication type, `committee` is a single object with `name` and `house`
@@ -246,8 +261,9 @@ def _committee_row(row: dict, keep_types: list[str]) -> dict | None:
     committee = row.get("committee") or {}
     name = committee.get("name") or "Parliamentary committee"
     tags = [t for t in [ptype_name, committee.get("house")] if t]
-    return make_item("committee", name, title, f"https://committees.parliament.uk/publications/{pid}/",
-                     date, summary="", tags=tags)
+    item = make_item("committee", name, title, f"https://committees.parliament.uk/publications/{pid}/", date, summary="", tags=tags)   # the id keeps coming from this address, so stored items keep theirs
+    item["url"] = committee_link(row)
+    return item
 
 
 # -------------------------------------------------------------- think tanks
@@ -713,8 +729,85 @@ def _done(t0, group, name, items, method, via, notes):
 
 
 
+def repec_series_items(name: str, handle: str, limit: int = 30) -> list[dict]:
+    """The newest papers of one RePEc series (ideas.repec.org/s/{handle}.html, for example ifs/ifsewp): a listing by year, newest first. RePEc gives the year, not the day."""
+    url = f"https://ideas.repec.org/s/{handle}.html"
+    soup = BeautifulSoup(get(url).text, "html.parser")
+    out = []
+    year = None
+    for el in soup.select("div#content h3, div#content ul.paperlist li"):
+        if el.name == "h3":
+            m = re.fullmatch(r"\d{4}", el.get_text(strip=True))
+            year = m.group(0) if m else None
+            continue
+        a = el.find("a", href=True)
+        if not a or "/p/" not in a["href"]:
+            continue
+        title = a.get_text(" ", strip=True)
+        if title:
+            out.append(make_item("thinktank", name, title, urljoin(url, a["href"]), None, summary="", tags=["RePEc"] + ([year] if year else [])))
+        if len(out) >= limit:
+            break
+    return out
+
+
+def openalex_items(name: str, institution: str, api_key: str, days: int = 400, limit: int = 25) -> list[dict]:
+    """The newest works OpenAlex lists for an institution, found by name (the first match whose name contains it). OpenAlex needs a free API key (OPENALEX_API_KEY)."""
+    hdr = {"Authorization": f"Bearer {api_key}", "Accept": "application/json"}
+    base = "https://api.openalex.org"
+    inst = None
+    for r in get(f"{base}/institutions", params={"search": institution, "per_page": 5}, headers=hdr).json().get("results", []):
+        if institution.lower() in str(r.get("display_name", "")).lower():
+            inst = r
+            break
+    if not inst:
+        raise LookupError(f"OpenAlex has no institution called {institution!r}")
+    since = (NOW - timedelta(days=days)).strftime("%Y-%m-%d")
+    works = get(f"{base}/works", params={"filter": f"institutions.id:{inst['id'].rsplit('/', 1)[-1]},from_publication_date:{since}", "sort": "publication_date:desc", "per_page": limit}, headers=hdr).json().get("results", [])
+    out = []
+    for w in works:
+        title = (w.get("display_name") or w.get("title") or "").strip()
+        link = ((w.get("primary_location") or {}).get("landing_page_url") or w.get("doi") or "").strip()
+        if title and link.startswith("http"):
+            out.append(make_item("thinktank", name, title, link, parse_date(w.get("publication_date")), summary="", tags=["OpenAlex"]))
+    return out
+
+
 def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
-    return collect_source(tt, "thinktank", "thinktanks")
+    """The organisation's own pages and feeds first. If a site keeps automated visitors out (a Cloudflare challenge, say) and the entry names a RePEc series (`repec:`) or an OpenAlex
+    institution (`openalex:`), the publications are listed from those open scholarly indexes instead: they carry only what has been deposited there, so the health record says so."""
+    items, rec = collect_source(tt, "thinktank", "thinktanks")
+    if rec["ok"] or not (tt.get("repec") or tt.get("openalex")):
+        return items, rec
+    t0, got, notes, used = time.time(), [], [], []
+    for handle in tt.get("repec") or []:
+        try:
+            rows = repec_series_items(tt["name"], handle)
+            got += rows
+            used.append(f"RePEc {handle}: {len(rows)}")
+        except Exception as e:  # noqa: BLE001
+            notes.append(f"RePEc {handle}: {e}")
+    if tt.get("openalex"):
+        key = os.environ.get("OPENALEX_API_KEY", "").strip()
+        if not key:
+            notes.append("OpenAlex needs a free API key (set OPENALEX_API_KEY)")
+        else:
+            try:
+                rows = openalex_items(tt["name"], tt["openalex"], key)
+                got += rows
+                used.append(f"OpenAlex: {len(rows)}")
+            except Exception as e:  # noqa: BLE001
+                notes.append(f"OpenAlex: {e}")
+    if not got:
+        rec["error"] = (rec.get("error", "") + " | " + "; ".join(notes)).strip(" |")[:900]
+        return items, rec
+    seen, uniq = set(), []
+    for it in got:
+        if it["id"] not in seen:
+            seen.add(it["id"])
+            uniq.append(it)
+    why = "its own site refuses automated visitors" + (f" ({rec['error'].split(';')[0][:90]})" if rec.get("error") else "")
+    return _done(t0, "thinktanks", tt["name"], uniq, "repec/openalex", ", ".join(used), [f"listed from open scholarly indexes (not the full list the organisation publishes): {why}"] + notes)
 
 
 # ------------------------------------------------------------------- media
@@ -1025,7 +1118,7 @@ def _rx(key: str) -> "re.Pattern":
 
 
 def political_poll(title: str, summary: str = "") -> bool:
-    """Only political polling: drops consumer/commercial polls and other countries' politics."""
+    """True for political polling; False for consumer/commercial polls and other countries' politics (which are kept, flagged non-political)."""
     pc = CONFIG["polling"]["political"]
     if not hasattr(political_poll, "rx"):
         political_poll.rx = {k: re.compile(v, re.I) for k, v in pc.items()}
@@ -1073,8 +1166,9 @@ def collect_pollster_sources() -> list[dict]:
         keep = []
         for it in got:
             t = it["title"]
-            if not political_poll(t, it.get("summary", "")) or (req and not req.search(t + " " + it.get("summary", ""))):
+            if req and not req.search(t + " " + it.get("summary", "")):
                 continue
+            it["political"] = political_poll(t, it.get("summary", ""))   # kept either way: LUCIEN has a Political / Non-political filter
             it["tags"] = poll_kind_tags(t)
             if not it.get("published"):
                 it["published"] = (date_from_url(it["url"]) or date_from_title(t) or None) and (date_from_url(it["url"]) or date_from_title(t)).isoformat()
@@ -1083,7 +1177,7 @@ def collect_pollster_sources() -> list[dict]:
         rec["items"] = len(keep)
         rec["ok"] = bool(keep) or (rec["ok"] and dropped > 0)
         if dropped:
-            rec["error"] = (rec.get("error", "") + f" | {dropped} non-political items dropped").strip(" |")
+            rec["error"] = (rec.get("error", "") + f" | {dropped} items did not match this source's own filter").strip(" |")
         health.append(rec)
         items += keep
     return items
@@ -1093,7 +1187,9 @@ def collect_polling() -> tuple[list[dict], list[dict]]:
     """Specific political polls and reports only, from the pollsters' own sites and polling analysts. Generic voting-intention
     averages (Wikipedia's tables) are deliberately not collected."""
     write_ups = collect_poll_articles() + collect_pollster_sources()
-    out = [i for i in write_ups if political_poll(i["title"], i.get("summary", ""))]
+    out = write_ups
+    for i in out:
+        i.setdefault("political", political_poll(i["title"], i.get("summary", "")))
     stats: dict = {}
     for it in out:
         st = stats.setdefault(it["source"], {"name": it["source"], "polls": 0, "last": None})
@@ -1281,11 +1377,9 @@ def merge(new_items: list[dict]) -> list[dict]:
         elif it["category"] == "polling" and "poll-table" in it.get("tags", []):
             del old[it["id"]]   # rows that came from Wikipedia's generic poll tables: no longer collected, and removed from what is stored
         elif it["category"] == "polling":
-            # political polling only, applied retroactively (taxonomy/filter edits clean up what is already stored)
-            if not political_poll(it["title"], it.get("summary", "")):
-                del old[it["id"]]
-            else:
-                it["tags"] = poll_kind_tags(it["title"])
+            # polling is kept whether or not it is political: each item says which (taxonomy/filter edits are applied to what is already stored)
+            it["political"] = political_poll(it["title"], it.get("summary", ""))
+            it["tags"] = poll_kind_tags(it["title"])
     # The same article can arrive twice if a source's method flips between runs (direct feed vs Google News redirect):
     # keep one per (source, title), preferring the direct link.
     by_title: dict = {}
@@ -1530,17 +1624,20 @@ def collect_committee_history(start_year: int | None = None, first_year: int = A
 
 
 def archive_history_start() -> int | None:
-    """The year to load committee history from (and back to 2010): this year for a fresh archive, otherwise the oldest year the archive holds so far.
-    None when the archive already reaches back to 2010. ARCHIVE_HISTORY=1 loads it all again by hand."""
+    """The year to load committee history from (and back to ARCHIVE_FROM_YEAR): this year for a fresh archive, the newest year that still has items stored with a broken link,
+    otherwise the oldest year the archive holds so far. None when the archive reaches back that far with good links. ARCHIVE_HISTORY=1 loads it all again by hand."""
     if os.environ.get("ARCHIVE_HISTORY"):
         return NOW.year
     if not ingest_configured():
         return None
     try:
-        oldest = _ingest({"action": "archive_status"}).get("oldest_committee")
+        status = _ingest({"action": "archive_status"})
+        oldest = status.get("oldest_committee")
     except Exception as e:  # noqa: BLE001
         print(f"archive status failed: {e}", file=sys.stderr)
         return None
+    if status.get("stale_links") and status.get("newest_stale"):   # items stored with the old, broken address: read them again from the newest such year back
+        return int(str(status["newest_stale"])[:4])
     if not oldest:
         return NOW.year
     year = int(str(oldest)[:4])

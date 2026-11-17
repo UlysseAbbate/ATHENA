@@ -566,3 +566,81 @@ def test_ons_series_points_and_rows():
     assert [r["period"] for r in first] == ["2026-01", "2026-02", "2026-03"] and first[-1]["value"] == 3.5 and first[0]["unit"] == "%" and first[0]["geography_level"] == "uk"
     assert first[0]["source_url"] == "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23" and first[0]["label"] == "2026 JAN" and seen[0].endswith("/d7g7/mm23/data")
     assert len({r["id"] for r in rows}) == len(rows)
+
+
+# ------------------------------------------------------------------ working links for select committee reports, and polling kept whether or not it is political
+def test_committee_link_opens_the_publication():
+    row = {"id": 55848, "documents": [{"documentId": 314690}], "committee": {"id": 127}, "additionalContentUrl": None}
+    assert U.committee_link(row) == "https://committees.parliament.uk/publications/55848/documents/314690/default/"
+    lords = {"id": 55828, "documents": [], "committee": {"id": 9}, "additionalContentUrl": "https://publications.parliament.uk/pa/ld5902/ldselect/ldresilience/79/7902.htm"}
+    assert U.committee_link(lords) == "https://publications.parliament.uk/pa/ld5902/ldselect/ldresilience/79/7902.htm"
+    bare = {"id": 1, "documents": [], "committee": {"id": 127}, "additionalContentUrl": "http://evil.example/x"}
+    assert U.committee_link(bare) == "https://committees.parliament.uk/committee/127/"
+    full = {"id": 55848, "type": {"name": "Report"}, "description": "A report", "publicationStartDate": "2026-11-16T10:00:00", "documents": [{"documentId": 7}], "committee": {"id": 3, "name": "Health Committee", "house": "Commons"}}
+    it = U._committee_row(full, ["report"])
+    assert it["url"].endswith("/publications/55848/documents/7/default/") and it["id"] == U.make_item("committee", "x", "x", "https://committees.parliament.uk/publications/55848/", None)["id"]
+
+
+def test_archive_history_start_rereads_broken_links(monkeypatch):
+    monkeypatch.setattr(U, "ingest_configured", lambda: True)
+    monkeypatch.delenv("ARCHIVE_HISTORY", raising=False)
+    monkeypatch.setattr(U, "_ingest", lambda payload, timeout=90: {"ok": True, "committees": 11000, "oldest_committee": "1995-03-01T00:00:00+00:00", "stale_links": 9000, "newest_stale": "2024-05-01T00:00:00+00:00"})
+    assert U.archive_history_start() == 2024
+    monkeypatch.setattr(U, "_ingest", lambda payload, timeout=90: {"ok": True, "committees": 11000, "oldest_committee": "1995-03-01T00:00:00+00:00", "stale_links": 0, "newest_stale": None})
+    assert U.archive_history_start() is None
+
+
+# ------------------------------------------------------------------ think tanks that block automated visitors: RePEc and OpenAlex
+_REPEC_HTML = '''<div id="content"><h2>Content</H2><h3>2026</h3><div class="panel-body"><UL class="list-group paperlist">
+<LI class="list-group-item downfree"><B>W46/46 <A HREF="/p/ifs/ifsewp/46-46.html">Horizontal equity of taxation</A></B><BR><I>by</I> A & B
+<LI class="list-group-item downfree"><B>W28/45 <A HREF="/p/ifs/ifsewp/28-45.html">Smartphones and children's mental health</A></B></UL></div>
+<h3>2025</h3><UL class="list-group paperlist"><LI class="list-group-item"><B>W25/1 <A HREF="/p/ifs/ifsewp/25-01.html">An older paper</A></B></UL></div>'''
+
+
+class _Resp2:
+    def __init__(self, text="", data=None):
+        self.text, self._d = text, data
+
+    def json(self):
+        return self._d
+
+
+def test_repec_series_items(monkeypatch):
+    monkeypatch.setattr(U, "get", lambda url, **kw: _Resp2(_REPEC_HTML))
+    rows = U.repec_series_items("Institute for Fiscal Studies", "ifs/ifsewp", limit=3)
+    assert [r["title"] for r in rows] == ["Horizontal equity of taxation", "Smartphones and children's mental health", "An older paper"]
+    assert rows[0]["url"] == "https://ideas.repec.org/p/ifs/ifsewp/46-46.html" and rows[0]["tags"] == ["RePEc", "2026"] and rows[2]["tags"] == ["RePEc", "2025"] and rows[0]["published"] is None
+
+
+def test_openalex_items(monkeypatch):
+    calls = []
+
+    def fake(url, **kw):
+        calls.append((url, kw.get("params"), kw.get("headers")))
+        if url.endswith("/institutions"):
+            return _Resp2(data={"results": [{"id": "https://openalex.org/I1", "display_name": "Fiscal Studies Group"}, {"id": "https://openalex.org/I2", "display_name": "Institute for Fiscal Studies"}]})
+        return _Resp2(data={"results": [{"display_name": "A report", "publication_date": "2026-10-01", "primary_location": {"landing_page_url": "https://ifs.org.uk/a"}, "doi": None},
+                                        {"display_name": "Only a DOI", "publication_date": "2026-09-01", "primary_location": {}, "doi": "https://doi.org/10.1/x"}, {"display_name": "No link", "primary_location": {}}]})
+    monkeypatch.setattr(U, "get", fake)
+    rows = U.openalex_items("Institute for Fiscal Studies", "Institute for Fiscal Studies", "KEY")
+    assert [r["title"] for r in rows] == ["A report", "Only a DOI"] and rows[0]["published"].startswith("2026-10-01") and rows[1]["url"] == "https://doi.org/10.1/x"
+    assert "institutions.id:I2" in calls[1][1]["filter"] and calls[0][2]["Authorization"] == "Bearer KEY"
+    monkeypatch.setattr(U, "get", lambda url, **kw: _Resp2(data={"results": []}))
+    try:
+        U.openalex_items("X", "No Such Place", "KEY")
+        assert False
+    except LookupError:
+        pass
+
+
+def test_blocked_think_tank_falls_back_to_the_indexes(monkeypatch):
+    blocked = ([], {"group": "thinktanks", "name": "IFS", "ok": False, "items": 0, "error": "ifs.org.uk/publications: HTTP 403 (Cloudflare challenge)"})
+    monkeypatch.setattr(U, "collect_source", lambda tt, c, g: blocked)
+    monkeypatch.setattr(U, "get", lambda url, **kw: _Resp2(_REPEC_HTML))
+    monkeypatch.delenv("OPENALEX_API_KEY", raising=False)
+    items, rec = U.collect_thinktank({"name": "IFS", "repec": ["ifs/ifsewp"], "openalex": "Institute for Fiscal Studies"})
+    assert rec["ok"] and rec["method"] == "repec/openalex" and len(items) == 3 and "scholarly indexes" in rec["error"] and "OPENALEX_API_KEY" in rec["error"]
+    items, rec = U.collect_thinktank({"name": "SMF", "openalex": "Social Market Foundation"})
+    assert not rec["ok"] and items == [] and "OPENALEX_API_KEY" in rec["error"]
+    items, rec = U.collect_thinktank({"name": "Other"})
+    assert not rec["ok"]

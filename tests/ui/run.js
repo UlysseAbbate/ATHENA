@@ -22,6 +22,9 @@ const STATSCAL = { updated: new Date().toISOString(), changes: [{ at: new Date()
     _rel("m1", "Transport Committee", "London Assembly", "london", "upcoming", plus(2), { category: "meeting", datetime: plus(2) + "T10:00:00+00:00", summary: "Agenda: 1. Apologies for Absence; 2. Declarations of Interests; 3. Bus services", links: [{ label: "Agenda frontsheet", url: "https://www.london.gov.uk/a.pdf" }, { label: "Agenda reports pack", url: "https://www.london.gov.uk/b.pdf" }] }),
     _rel("m2", "Police and Crime Committee", "London Assembly", "london", "published", plus(-2), { category: "meeting", datetime: plus(-2) + "T14:00:00+00:00" })] };
 const FEED =fs.existsSync(feedFile) ? JSON.parse(fs.readFileSync(feedFile)) : { updated: new Date().toISOString(), items: [] };
+FEED.items = FEED.items.filter(i => i.category !== "polling").concat([   // two polling items of our own: one political, one not (the filter between them)
+  { id: "pollP", category: "polling", source: "YouGov", title: "Voting intention: Labour 28, Conservatives 19", url: "https://example.org/p1", published: new Date().toISOString(), first_seen: new Date().toISOString(), summary: "", tags: ["voting-intention"], areas: [], geo: [], kind: "Voting intention", political: true },
+  { id: "pollN", category: "polling", source: "YouGov", title: "Which crisp flavour do Britons prefer?", url: "https://example.org/p2", published: new Date().toISOString(), first_seen: new Date().toISOString(), summary: "", tags: [], areas: [], geo: [], kind: "Poll", political: false }]);
 FEED.updated = new Date().toISOString();
 
 const USERS = {
@@ -1070,12 +1073,33 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check("archive: Older shows the next page", /range|offset=50/.test((log.filter(l => l.startsWith("GET lucien_archive")).pop() || "")) || /Page 2 of 3/.test(await page.$eval("#arc-pager", e => e.innerText)));
         await page.click('#tabs button[data-tab="all"]'); await page.waitForTimeout(300);
         check("archive: the other tabs are unchanged (Everything shows its own list, not the archive)", (await page.$eval("#archivepanel", e => e.hidden)) && !(await page.$eval("#list", e => e.hidden)));
-        await page.click('#tabs button[data-tab="committee"]'); await page.waitForTimeout(400);
+        const tabNames = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent.trim()));
+        check("lucien: the tabs are Everything, Reports, LD Media, Polling (select committees and think tanks are one Reports tab; Lib Dems in the media is LD Media)", tabNames.slice(0, 4).join("|") === "Everything|Reports|LD Media|Polling" && !tabNames.includes("Think tanks") && !tabNames.includes("Select committees"), tabNames.join("|"));
         log.length = 0;
-        check("select committees: the tab lists every committee publication from the archive (count, House and type filters, no kind box)", /120 items/.test(await page.$eval("#arc-count", e => e.textContent)) && (await page.$("#arc-house")) !== null && (await page.$("#arc-type")) !== null && (await page.$("#arc-cat")) === null && /Select committees/.test(await page.$eval("#archivepanel h2", e => e.textContent)));
+        await page.click('#tabs button[data-tab="reports"]'); await page.waitForTimeout(400);
+        const rq = log.filter(l => l.startsWith("GET lucien_archive")).pop() || "";
+        check("reports: one page lists select committee and think tank reports from the archive (count, a kind box; House and type appear only for select committees)", /120 items/.test(await page.$eval("#arc-count", e => e.textContent)) && /category=in\.\(committee,thinktank\)/.test(rq) && (await page.$("#arc-cat")) !== null && (await page.$("#arc-house")) === null && /Reports/.test(await page.$eval("#archivepanel h2", e => e.textContent)), rq);
+        await page.selectOption("#arc-cat", "committee"); await page.waitForTimeout(400);
+        check("reports: choosing select committees brings in the House and type boxes", (await page.$("#arc-house")) !== null && (await page.$("#arc-type")) !== null);
         await page.selectOption("#arc-house", "Lords"); await page.selectOption("#arc-type", "Government Response"); await page.click('#arc-form button[type=submit]'); await page.waitForTimeout(400);
         const cq = log.filter(l => l.startsWith("GET lucien_archive")).pop() || "";
-        check("select committees: the House and type narrow the list (committee kind is fixed)", /category=eq\.committee/.test(cq) && /tags=cs\.\{Lords\}/.test(cq) && /tags=cs\.\{Government.Response\}/.test(cq), cq);
+        check("reports: the kind, House and type narrow the list", /category=eq\.committee/.test(cq) && /tags=cs\.\{Lords\}/.test(cq) && /tags=cs\.\{Government.Response\}/.test(cq), cq);
+        await page.selectOption("#arc-cat", "thinktank"); await page.waitForTimeout(400);
+        check("reports: choosing think tanks drops the House and type boxes", (await page.$("#arc-house")) === null && /category=eq\.thinktank/.test(log.filter(l => l.startsWith("GET lucien_archive")).pop() || ""));
+        // polling: nothing is excluded for being non-political; a filter chooses
+        await page.click('#tabs button[data-tab="all"]'); await page.waitForTimeout(250);
+        await page.click('#tabs button[data-tab="polling"]'); await page.waitForTimeout(400);
+        await page.selectOption("#range", "180"); await page.waitForTimeout(300);
+        const allPolls = await page.$$eval("#list .card .title", t => t.map(x => x.textContent));
+        check("polling: political and non-political polls are both listed, and the filter is there", allPolls.some(t => /Voting intention/.test(t)) && allPolls.some(t => /crisp/.test(t)) && !(await page.$eval("#political", e => e.hidden)), allPolls.join("|"));
+        await page.selectOption("#political", "no"); await page.waitForTimeout(250);
+        const nonPol = await page.$$eval("#list .card .title", t => t.map(x => x.textContent));
+        await page.selectOption("#political", "yes"); await page.waitForTimeout(250);
+        const pol = await page.$$eval("#list .card .title", t => t.map(x => x.textContent));
+        check("polling: the Political / Non-political filter separates them", nonPol.length === 1 && /crisp/.test(nonPol[0]) && pol.every(t => !/crisp/.test(t)) && pol.some(t => /Voting intention/.test(t)));
+        await page.selectOption("#political", ""); await page.selectOption("#range", "7");
+        await page.click('#tabs button[data-tab="all"]'); await page.waitForTimeout(250);
+        check("polling: the filter is only on the Polling tab", await page.$eval("#political", e => e.hidden));
         await page.click('#tabs button[data-tab="all"]'); await page.waitForTimeout(250);
         await page.click('#tabs button[data-tab="economy"]'); await page.waitForTimeout(400);
         check("economy: the Economic policy tab has Data profiles, How the system works and Costings", (await page.$$eval("#eco-tabs button", bs => bs.map(b => b.textContent))).join("|") === "Data profiles|Indicators|How the system works|Costings" && (await page.$("#eco-q")) !== null);
