@@ -8,6 +8,8 @@ and turns them into one long table, so any figure can be cross-referenced by are
   ashe          Annual Survey of Hours and Earnings: pay by sex and region (the resident analysis has no age)
   gdhi          Regional gross disposable household income per head (no age or sex)
   census_econ   Census 2021: economic activity status by age, sex and region
+  ons_series    ONS headline time series (inflation, earnings, unemployment, employment, inactivity, GDP growth, public sector borrowing and debt, vacancies): the
+                "economic determinants" a costing grows a tax base with. UK only, no age or sex.
 
 Every row is { dataset, geography_code, geography_name, geography_level, sex, age_from, age_to, age_label, category, measure, unit, value, period, source_url }.
 It replaces the old `pyscraper` idea (series from the ONS, the Bank of England and the IMF into pandas): the ONS web pages it read are gone, and Nomis has an
@@ -148,7 +150,58 @@ def census_econ(fetch) -> list[dict]:
     return _rows(fetch, "census_econ", q, label="NM_2124_1", unit="people", cat="C2021_EASTAT_7_NAME", measure="Count", age="C2021_AGE_7_NAME", sex="C_SEX_NAME")
 
 
-DATASETS = [("aps_labour", aps_labour), ("claimants", claimants), ("ashe", ashe), ("gdhi", gdhi), ("census_econ", census_econ)]
+ONS_SITE = "https://www.ons.gov.uk/"
+# (name, path of the series on ons.gov.uk, short unit label, how many of the latest points to keep)
+ONS_SERIES = [
+    ("CPI inflation (annual rate)", "economy/inflationandpriceindices/timeseries/d7g7/mm23", "%", 36),
+    ("CPIH inflation (annual rate)", "economy/inflationandpriceindices/timeseries/l55o/mm23", "%", 36),
+    ("Average weekly earnings, whole economy (£ a week)", "employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kab9/emp", "£", 36),
+    ("Unemployment rate, aged 16 and over", "employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms", "%", 36),
+    ("Employment rate, aged 16 to 64", "employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/lf24/lms", "%", 36),
+    ("Economic inactivity rate, aged 16 to 64", "employmentandlabourmarket/peoplenotinwork/economicinactivity/timeseries/lf2s/lms", "%", 36),
+    ("GDP growth on the previous quarter", "economy/grossdomesticproductgdp/timeseries/ihyq/qna", "%", 16),
+    ("Public sector net borrowing, excluding banks (£ million a month)", "economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf", "£m", 36),
+    ("Public sector net debt, excluding banks (% of GDP)", "economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6x/pusf", "%", 36),
+    ("Job vacancies (thousands)", "employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem", "thousand", 36),
+]
+_MONTHS = {m: i for i, m in enumerate(["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"], 1)}
+
+
+def point_key(p: dict) -> str | None:
+    """A sortable period for one ONS point: 2026-09 for a month, 2026-Q2 for a quarter."""
+    d = str(p.get("date", "")).upper().strip()
+    m = re.fullmatch(r"(\d{4}) ([A-Z]{3})", d)
+    if m and m.group(2) in _MONTHS:
+        return f"{m.group(1)}-{_MONTHS[m.group(2)]:02d}"
+    m = re.fullmatch(r"(\d{4}) (Q[1-4])", d)
+    return f"{m.group(1)}-{m.group(2)}" if m else None
+
+
+def ons_series(fetch) -> list[dict]:
+    """ONS headline series, read from the JSON behind each series' page on ons.gov.uk ({page}/data). The older api.ons.gov.uk was retired in November 2024."""
+    out = []
+    for name, path, unit, keep in ONS_SERIES:
+        j = fetch(f"{ONS_SITE}{path}/data", timeout=TIMEOUT).json()
+        pts = j.get("months") or j.get("quarters") or []
+        rows = []
+        for p in pts:
+            key = point_key(p)
+            try:
+                value = float(p.get("value"))
+            except (TypeError, ValueError):
+                continue
+            if key:
+                rows.append((key, p, value))
+        rows.sort(key=lambda x: x[0])
+        for key, p, value in rows[-keep:]:
+            r = {"dataset": "ons_series", "geography_code": "K02000001", "geography_name": "United Kingdom", "geography_level": "uk", "sex": "all", "age_from": None, "age_to": None, "age_label": None,
+                 "category": name, "measure": "Value", "unit": unit, "value": value, "period": key, "label": str(p.get("label") or p.get("date") or key), "source_url": f"{ONS_SITE}{path}"}
+            r["id"] = row_id(r)
+            out.append(r)
+    return out
+
+
+DATASETS = [("aps_labour", aps_labour), ("claimants", claimants), ("ashe", ashe), ("gdhi", gdhi), ("census_econ", census_econ), ("ons_series", ons_series)]
 
 
 def collect(fetch, record=None) -> list[dict]:

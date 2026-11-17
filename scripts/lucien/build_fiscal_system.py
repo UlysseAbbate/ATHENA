@@ -56,6 +56,7 @@ SOURCES = {
     "ea": ("Employment Allowance", "claim-employment-allowance"),
     "levy": ("Pay Apprenticeship Levy", "guidance/pay-apprenticeship-levy"),
     "capall": ("Claim capital allowances", "capital-allowances"),
+    "ctl": ("DLUHC: Council Tax levels set by local authorities in England 2026 to 2027", "government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027"),
     "lha": ("Find your Local Housing Allowance rates", "guidance/local-housing-allowance"),
     "whd": ("Warm Home Discount Scheme", "the-warm-home-discount-scheme"),
     "fsm": ("Apply for free school meals", "apply-free-school-meals"),
@@ -349,7 +350,11 @@ def build() -> dict:
     groups.insert(groups.index(grp("wealth")) + 1, {"id": "local", "title": "Local and devolved property taxes", "intro": "Set by councils and the devolved governments, not by the UK Parliament alone.", "items": [
         item("council-tax", "Council Tax", "tax", "A tax on homes in England, Scotland and Wales, set by the local council within the national rules and charged by property band. The band charges are set locally each year; the national rules give discounts.",
              [P("Single person", "25% off the bill if you live alone (and pay Council Tax)", "ctax", ["25% off your bill"]), P("Everyone in the household 'disregarded'", "50% off the bill (for example if everyone is a full-time student)", "ctax", ["50% off your bill"]),
-              P("Severe mental impairment", "100% discount where it applies", "ctax", ["100% discount"])],
+              P("Severe mental impairment", "100% discount where it applies", "ctax", ["100% discount"]),
+              P("Average Band D, England, 2026-27", "£2,392 (up £111, or 4.9%, on 2025-26), including adult social care and parish precepts", "ctl", ["£2,392", "£111", "4.9%"]),
+              P("Average Band D by type of area", "London £2,068; metropolitan areas £2,409; unitary areas £2,490; shire areas £2,452", "ctl", ["£2,068", "£2,409", "£2,490", "£2,452"]),
+              P("Average per dwelling", "£1,868", "ctl", ["£1,868"]),
+              P("Limit on rises", "a referendum is needed above the principles: 5% for authorities with adult social care duties (up to 2% for adult social care and 3% for other spending), with higher limits for a few named councils", "ctl", ["5% or more than 5%", "2% for expenditure on adult social care"])],
              who="The people living in a home.", admin="Local councils",
              interactions=["Many councils also run a Council Tax Reduction scheme for people on low incomes; its rules are set locally."]),
         item("business-rates", "Business rates", "tax", "A tax on non-domestic property in England: the property's rateable value multiplied by a multiplier set each year, with reliefs.",
@@ -421,7 +426,7 @@ GAPS = [
     "Scottish benefits other than the Scottish Child Payment (for example Adult Disability Payment, Carer Support Payment, Best Start Grant): the amounts are not on pages that could be read reliably yet.",
     "Soft Drinks Industry Levy, Plastic Packaging Tax, Climate Change Levy and vehicle tax rates: the GOV.UK pages found carry historic or partial rate tables, so a current figure could not be checked against them.",
     "Bank levy and Digital Services Tax: no GOV.UK rates page was found to read them from.",
-    "Council Tax band charges (set by each council), Local Housing Allowance rates (looked up by area) and the yearly business rates multipliers: local or annual numbers, not national ones.",
+    "Council Tax by individual council (the national averages are included; each council's own band charges are in the Government's Table 10 spreadsheet), Local Housing Allowance rates (looked up by area) and the yearly business rates multipliers.",
     "Child Tax Credit and Working Tax Credit (closed; replaced by Universal Credit) and the detail of who qualifies for each payment: this page gives rates, thresholds and tapers, not every eligibility rule.",
 ]
 

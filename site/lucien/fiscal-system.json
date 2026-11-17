@@ -1,7 +1,7 @@
 {
  "title": "How the UK tax and welfare system works",
  "tax_year": "2026-27",
- "retrieved": "2026-11-16",
+ "retrieved": "2026-11-17",
  "groups": [
   {
    "id": "earnings",
@@ -1066,6 +1066,48 @@
         "100% discount"
        ],
        "note": ""
+      },
+      {
+       "label": "Average Band D, England, 2026-27",
+       "value": "£2,392 (up £111, or 4.9%, on 2025-26), including adult social care and parish precepts",
+       "source": "ctl",
+       "verify": [
+        "£2,392",
+        "£111",
+        "4.9%"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Average Band D by type of area",
+       "value": "London £2,068; metropolitan areas £2,409; unitary areas £2,490; shire areas £2,452",
+       "source": "ctl",
+       "verify": [
+        "£2,068",
+        "£2,409",
+        "£2,490",
+        "£2,452"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Average per dwelling",
+       "value": "£1,868",
+       "source": "ctl",
+       "verify": [
+        "£1,868"
+       ],
+       "note": ""
+      },
+      {
+       "label": "Limit on rises",
+       "value": "a referendum is needed above the principles: 5% for authorities with adult social care duties (up to 2% for adult social care and 3% for other spending), with higher limits for a few named councils",
+       "source": "ctl",
+       "verify": [
+        "5% or more than 5%",
+        "2% for expenditure on adult social care"
+       ],
+       "note": ""
       }
      ],
      "interactions": [
@@ -2045,7 +2087,7 @@
   "Scottish benefits other than the Scottish Child Payment (for example Adult Disability Payment, Carer Support Payment, Best Start Grant): the amounts are not on pages that could be read reliably yet.",
   "Soft Drinks Industry Levy, Plastic Packaging Tax, Climate Change Levy and vehicle tax rates: the GOV.UK pages found carry historic or partial rate tables, so a current figure could not be checked against them.",
   "Bank levy and Digital Services Tax: no GOV.UK rates page was found to read them from.",
-  "Council Tax band charges (set by each council), Local Housing Allowance rates (looked up by area) and the yearly business rates multipliers: local or annual numbers, not national ones.",
+  "Council Tax by individual council (the national averages are included; each council's own band charges are in the Government's Table 10 spreadsheet), Local Housing Allowance rates (looked up by area) and the yearly business rates multipliers.",
   "Child Tax Credit and Working Tax Credit (closed; replaced by Universal Credit) and the detail of who qualifies for each payment: this page gives rates, thresholds and tapers, not every eligibility rule."
  ],
  "model": {
@@ -2125,6 +2167,11 @@
    "title": "How Council Tax works",
    "url": "https://www.gov.uk/council-tax",
    "published": "2025-02-05"
+  },
+  "ctl": {
+   "title": "Council Tax levels set by local authorities in England 2026 to 2027",
+   "url": "https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027",
+   "published": "2026-03-25"
   },
   "div": {
    "title": "Tax on dividends",

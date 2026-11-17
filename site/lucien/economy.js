@@ -10,7 +10,7 @@ const Economy = (() => {
   const codeOf = name => (AREAS.find(a => a[1] === name) || AREAS[0])[0];
   const SEXES = [["all", "Everyone"], ["female", "Women"], ["male", "Men"]];
   const SOURCES = { aps_labour: "Annual Population Survey", claimants: "Claimant Count", ashe: "Annual Survey of Hours and Earnings", gdhi: "Regional household income (GDHI)", census_econ: "Census 2021" };
-  let fiscal = null, fiscalError = "";
+  let fiscal = null, fiscalError = "", indicators = null, indicatorsError = "";
   const sys = { children: 0, loan: "none", q: "" };
   const st = { tab: "profiles", area: "London", from: 18, to: 25, sex: "all", cmp: "K02000001", said: "", result: null, loading: false, error: "" };
   let host = null;
@@ -139,9 +139,50 @@ const Economy = (() => {
       <div class="panel"><div class="panel-head"><h2>Not covered yet</h2></div><ul class="small">${fiscal.gaps.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>`;
   }
 
+  /* ---------------------------------------------------------------- Indicators: the ONS headline series */
+  async function loadIndicators() {
+    if (indicators || indicatorsError) return;
+    try {
+      const out = [];
+      for (let from = 0; from < 5000; from += 1000) {
+        const { data, error } = await sb.from("econ_data").select("category,unit,value,period,label,source_url").eq("dataset", "ons_series").range(from, from + 999);
+        if (error) throw error;
+        out.push(...data); if (data.length < 1000) break;
+      }
+      const by = new Map();
+      for (const r of out) { if (!by.has(r.category)) by.set(r.category, []); by.get(r.category).push(r); }
+      indicators = [...by.entries()].map(([name, pts]) => ({ name, pts: pts.sort((a, b) => a.period.localeCompare(b.period)) }));
+    } catch (e) { indicatorsError = e.message || String(e); }
+  }
+  /** The point a year before the latest one (12 months, or 4 quarters), by its sortable period. */
+  function yearBefore(pts) {
+    const last = pts[pts.length - 1].period, q = /^(\d{4})-(Q\d)$/.exec(last), m = /^(\d{4})-(\d\d)$/.exec(last);
+    const want = q ? `${+q[1] - 1}-${q[2]}` : m ? `${+m[1] - 1}-${m[2]}` : null;
+    return want ? pts.find(p => p.period === want) : null;
+  }
+  function sparkline(pts) {
+    const W = 220, H = 44, vals = pts.map(p => Number(p.value)), lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+    const xy = vals.map((v, i) => `${((i / Math.max(1, vals.length - 1)) * (W - 6) + 3).toFixed(1)},${(H - 4 - ((v - lo) / span) * (H - 8)).toFixed(1)}`).join(" ");
+    const lastXY = xy.split(" ").pop().split(",");
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" aria-hidden="true"><polyline points="${xy}" fill="none" stroke="var(--accent)" stroke-width="1.8"/><circle cx="${lastXY[0]}" cy="${lastXY[1]}" r="3" fill="var(--accent)"/></svg>`;
+  }
+  const fmtInd = (v, unit) => unit === "%" ? `${v.toFixed(1)}%` : unit === "£" ? `£${Math.round(v).toLocaleString("en-GB")}` : unit === "£m" ? `${v < 0 ? "−" : ""}£${Math.abs(Math.round(v)).toLocaleString("en-GB")}m` : unit === "thousand" ? `${Math.round(v).toLocaleString("en-GB")}k` : String(v);
+  function indicatorsHtml() {
+    if (indicatorsError) return `<div class="empty">The indicators could not be loaded: ${esc(indicatorsError)}</div>`;
+    if (!indicators) return '<p class="muted">Loading the indicators…</p>';
+    if (!indicators.length) return '<div class="empty">No indicators are stored yet. They are loaded from the ONS by the collector (about weekly), or with <b>Refresh all data</b>.</div>';
+    return `<div class="panel"><div class="panel-head"><h2>Economic indicators</h2><span class="muted">headline series from the ONS</span></div>
+      <p class="muted arc-note">The economy's headline numbers: the "economic determinants" that tax receipts and benefit spending grow with, and that a costing starts from. Each shows the latest figure, how it compares with a year before, and the recent trend. Source: Office for National Statistics.</p></div>
+      <div class="ind-grid">${indicators.map(ind => { const last = ind.pts[ind.pts.length - 1], prev = yearBefore(ind.pts), u = last.unit, v = Number(last.value);
+        let chg = "";
+        if (prev) { const pv = Number(prev.value); chg = u === "%" ? `${v - pv >= 0 ? "+" : "−"}${Math.abs(v - pv).toFixed(1)} points on a year earlier` : u === "£m" ? `a year earlier: ${fmtInd(pv, u)}` : `${v / pv - 1 >= 0 ? "+" : "−"}${Math.abs((v / pv - 1) * 100).toFixed(1)}% on a year earlier`; }
+        const src = Athena.safeUrl(last.source_url);
+        return `<section class="ind"><h3>${esc(ind.name)}</h3><div class="ind-v">${esc(fmtInd(v, u))}<span class="muted small"> ${esc(last.label || last.period)}</span></div><div class="muted small">${esc(chg)}</div>${sparkline(ind.pts)}${src ? `<a class="small" href="${esc(src)}" target="_blank" rel="noopener noreferrer">ONS series ↗</a>` : ""}</section>`; }).join("")}</div>`;
+  }
+
   function draw() {
     const area = st.area, seg = (id, label) => `<button data-et="${id}" class="${st.tab === id ? "on" : ""}">${label}</button>`;
-    host.innerHTML = `<div class="row"><div class="seg" id="eco-tabs">${seg("profiles", "Data profiles")}${seg("system", "How the system works")}${seg("costings", "Costings")}</div></div>` + (st.tab === "costings" ? costingsHtml() : st.tab === "system" ? systemHtml() : `
+    host.innerHTML = `<div class="row"><div class="seg" id="eco-tabs">${seg("profiles", "Data profiles")}${seg("indicators", "Indicators")}${seg("system", "How the system works")}${seg("costings", "Costings")}</div></div>` + (st.tab === "costings" ? costingsHtml() : st.tab === "system" ? systemHtml() : st.tab === "indicators" ? indicatorsHtml() : `
       <div class="panel"><div class="panel-head"><h2>Data profile</h2><span class="muted" id="eco-said">${esc(st.said)}</span></div>
       <p class="muted arc-note">Ask in words, for example <i>"create a data profile, compared to the average, of Londoners aged 18-25"</i>, or set the boxes below. The data is held in fixed age bands, so you get the closest bands it has.</p>
       <form class="arc-form" id="eco-ask"><input type="search" id="eco-q" placeholder="Ask: for example women in the North West aged 25-34" aria-label="Ask in words"><button class="ghost" type="submit">Ask</button></form>
@@ -155,7 +196,8 @@ const Economy = (() => {
   }
 
   function wire() {
-    host.querySelector("#eco-tabs").onclick = async e => { const b = e.target.closest("[data-et]"); if (!b) return; st.tab = b.dataset.et; if (st.tab === "system" && !fiscal && !fiscalError) { draw(); await loadFiscal(); } draw(); };
+    host.querySelector("#eco-tabs").onclick = async e => { const b = e.target.closest("[data-et]"); if (!b) return; st.tab = b.dataset.et; if (st.tab === "system" && !fiscal && !fiscalError) { draw(); await loadFiscal(); } if (st.tab === "indicators" && !indicators && !indicatorsError) { draw(); await loadIndicators(); } draw(); };
+    if (st.tab === "indicators") return;
     if (st.tab === "system") {
       const kids = host.querySelector("#sys-kids"), loan = host.querySelector("#sys-loan");
       if (kids) { kids.onchange = () => { sys.children = +kids.value; sys.loan = loan.value; draw(); }; loan.onchange = () => { sys.loan = loan.value; sys.children = +kids.value; draw(); }; }
