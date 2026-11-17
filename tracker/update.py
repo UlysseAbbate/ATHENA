@@ -1532,7 +1532,8 @@ _WO_TYPE = {"main chamber": "Chamber", "select & joint committees": "Committee",
 
 def whatson_event_rows(events: list[dict], today: date | None = None) -> list[dict]:
     """The UK Parliament's What's On calendar (both Houses and joint committees), for Lovelace's Daily Plan (London Politics > Political Events).
-    Cancelled events and committees' private meetings are left out. One row per event: { key, date, title, url, starts }."""
+    Cancelled events and committees' private meetings are left out. One row per event: { key, date, title, url, starts, section }, where section is commons (Chamber and
+    Westminster Hall), lords (Chamber and Grand Committee) or committees (everything else)."""
     today = today or NOW.astimezone(LONDON).date()
     hi = today + timedelta(days=WHATSON_DAYS)
     out = []
@@ -1553,7 +1554,9 @@ def whatson_event_rows(events: list[dict], today: date | None = None) -> list[di
         kind = _WO_TYPE.get(str(e.get("Type") or "").strip().lower(), str(e.get("Type") or "").strip())
         title = f"{' '.join(x for x in (house, kind) if x)}: {what}"[:400]
         starts = str(e.get("StartTime") or "")[:5] or None
-        out.append({"key": f"whatson:{e['Id']}", "date": day.isoformat(), "title": title, "starts": starts, "url": f"https://whatson.parliament.uk/event/cal{e['Id']}"})
+        low = kind.lower()
+        section = "commons" if house == "Commons" and low in ("chamber", "westminster hall") else "lords" if house == "Lords" and low in ("chamber", "grand committee") else "committees"
+        out.append({"key": f"whatson:{e['Id']}", "date": day.isoformat(), "title": title, "starts": starts, "section": section, "url": f"https://whatson.parliament.uk/event/cal{e['Id']}"})
     out.sort(key=lambda x: (x["date"], x["starts"] or ""))
     return out[:600]
 
@@ -1692,6 +1695,64 @@ def upload_econ(rows: list[dict]) -> bool:
     return ok
 
 
+LONDON_RX = re.compile(r"\bLondon\b|Mayor of London|\bGLA\b|Greater London Authority|London Assembly|City Hall", re.I)
+
+
+def london_feed_rows(items: list[dict], kind: str) -> list[dict]:
+    """The rows the London Politics pages (LOVELACE) are filled from: { id, kind, source, title, url, published, first_seen, summary, tags }."""
+    now_iso = NOW.isoformat()
+    return [{"id": i["id"], "kind": kind, "source": i["source"], "title": i["title"], "url": i["url"], "published": i.get("published"), "first_seen": i.get("first_seen") or now_iso,
+             "summary": i.get("summary", ""), "tags": i.get("tags", [])} for i in items if i.get("url") and i.get("title")]
+
+
+def collect_london(national: list[dict] | None = None) -> list[dict]:
+    """London policy reports (the London think tanks and the GLA, plus any national think tank report that is about London) and London media (the London papers and broadcasters,
+    keeping the stories about London government and politics). Same self-healing readers and the same robots.txt rules as LUCIEN."""
+    cfg = CONFIG.get("london") or {}
+    rows: list[dict] = []
+    reports: list[dict] = []
+    for src in cfg.get("reports", []):
+        got, rec = collect_source(src, "thinktank", "london")
+        if src.get("require"):   # a general feed (the GLA's news): keep only what looks like a report
+            req = re.compile(src["require"], re.I)
+            got = [i for i in got if req.search(f"{i['title']} {i.get('summary', '')}")]
+            rec["items"] = len(got)
+        health.append(rec)
+        reports += got
+    reports += [i for i in (national or []) if i.get("category") == "thinktank" and (any(str(g).startswith("London") for g in i.get("geo", [])) or LONDON_RX.search(i.get("title", "")))]
+    seen = set()
+    reports = [i for i in reports if not (i["id"] in seen or seen.add(i["id"]))]
+    rows += london_feed_rows(reports, "report")
+    rx = re.compile(cfg.get("media_pattern") or r"Mayor of London", re.I)
+    media: list[dict] = []
+    for src in cfg.get("media", []):
+        got, rec = collect_source(src, "media", "london")
+        keep = [i for i in got if rx.search(f"{i['title']} {i.get('summary', '')}")]
+        rec["items"] = len(keep)
+        rec["ok"] = bool(keep) or rec["ok"]
+        if got and len(keep) < len(got):
+            rec["error"] = (rec.get("error", "") + f" | {len(got) - len(keep)} stories not about London government or politics left out").strip(" |")
+        health.append(rec)
+        media += keep
+    rows += london_feed_rows(media, "media")
+    print(f"london: {len(reports)} reports and {len(media)} media stories")
+    return rows
+
+
+def upload_london(rows: list[dict]) -> bool:
+    if not rows or not ingest_configured():
+        return True
+    ok, stored = True, 0
+    for i in range(0, len(rows), 500):
+        try:
+            stored += int(_ingest({"action": "london_feed", "rows": rows[i:i + 500]}).get("stored", 0))
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            print(f"london feed upload failed: {e}", file=sys.stderr)
+    print(f"london: {stored} items kept")
+    return ok
+
+
 def upload(coverage: list[dict] | None = None, social_posts: list[dict] | None = None, london_data: list[dict] | None = None, events: list[dict] | None = None, parliament: list[dict] | None = None) -> bool:
     """Push feed/polls/health (and any new Sarah Olney coverage and social posts) through the ingest function."""
     if not ingest_configured():
@@ -1787,7 +1848,7 @@ def main() -> int:
         write("feed", {"updated": NOW.isoformat(), "items": feed})
         print(f"{len(feed)} items re-classified")
         return 0 if upload() else 1
-    groups = {"committees", "thinktanks", "media", "polling", "statscal", "events", "parliament", "economic"}
+    groups = {"committees", "thinktanks", "media", "polling", "statscal", "events", "parliament", "economic", "london"}
     run = lambda k: not only or k in only  # noqa: E731
     items: list[dict] = []
     coverage: list[dict] = []
@@ -1833,6 +1894,9 @@ def main() -> int:
     if run("economic") and econ_due():   # Nomis: labour market and census figures by age, sex and region (tracker/econdata.py)
         import econdata
         econ = econdata.collect(get, lambda name, ok, n, err: record("economic", f"Nomis: {name}", ok, n, err))
+    london: list[dict] = []
+    if run("london"):
+        london = collect_london(feed)
     start_year = archive_history_start() if run("committees") else None
     if start_year:   # a new archive is filled with every committee report since 2010, newest first, a few years per run
         history = collect_committee_history(start_year)
@@ -1850,7 +1914,7 @@ def main() -> int:
     write("health", {"updated": NOW.isoformat(), "sources": health})
     ok = sum(h["ok"] for h in health)
     print(f"{len(feed)} items stored; {ok}/{len(health)} sources returned data")
-    return 0 if upload(coverage, social_posts, london_data, events, parliament) and upload_archive(list({i["id"]: i for i in history + feed}.values())) and upload_econ(econ) else 1
+    return 0 if upload(coverage, social_posts, london_data, events, parliament) and upload_archive(list({i["id"]: i for i in history + feed}.values())) and upload_econ(econ) and upload_london(london) else 1
 
 
 if __name__ == "__main__":

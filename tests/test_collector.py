@@ -644,3 +644,31 @@ def test_blocked_think_tank_falls_back_to_the_indexes(monkeypatch):
     assert not rec["ok"] and items == [] and "OPENALEX_API_KEY" in rec["error"]
     items, rec = U.collect_thinktank({"name": "Other"})
     assert not rec["ok"]
+
+
+# ------------------------------------------------------------------ LOVELACE: Parliamentary Activity sections and London Politics (policy reports, London media)
+def test_whatson_events_go_to_parliamentary_sections():
+    today = date(2026, 11, 16)
+    ev = lambda i, house, typ, **k: {"Id": str(i), "StartDate": "2026-11-17T00:00:00", "StartTime": "10:00", "House": house, "Type": typ, "Category": "Debate", "Description": f"Item {i}", "Committee": None, "CancelledDate": None, **k}  # noqa: E731
+    rows = U.whatson_event_rows([ev(1, "Commons", "Main Chamber"), ev(2, "Commons", "Westminster Hall"), ev(3, "Lords", "Main Chamber"), ev(4, "Lords", "Grand Committee"),
+                                 ev(5, "Commons", "Select & Joint Committees", Committee={"Description": "Health Committee"}), ev(6, "Lords", "Select & Joint Committees", Committee={"Description": "Lords committee"}),
+                                 ev(7, "Commons", "General Committee"), ev(8, "Joint", "Select & Joint Committees", Committee={"Description": "Joint committee"})], today)
+    assert {r["key"]: r["section"] for r in rows} == {"whatson:1": "commons", "whatson:2": "commons", "whatson:3": "lords", "whatson:4": "lords", "whatson:5": "committees", "whatson:6": "committees", "whatson:7": "committees", "whatson:8": "committees"}
+
+
+def test_collect_london_keeps_london_politics_only(monkeypatch):
+    mk = lambda src, title, cat: {"id": U.make_item(cat, src, title, f"https://x.example/{title}", None)["id"], "category": cat, "source": src, "title": title, "url": f"https://x.example/{title}", "published": None, "summary": "", "tags": []}  # noqa: E731
+
+    def fake_source(tt, cat, group):
+        rows = {"Centre for London": [mk("Centre for London", "Housing in the capital", "thinktank")], "Mayor of London and the GLA": [mk("GLA", "New report on air quality", "thinktank"), mk("GLA", "Road closure today", "thinktank")],
+                "MyLondon": [mk("MyLondon", "Mayor of London announces fares freeze", "media"), mk("MyLondon", "Football results", "media")]}
+        return rows.get(tt["name"], []), {"group": group, "name": tt["name"], "ok": bool(rows.get(tt["name"])), "items": 0, "error": ""}
+    monkeypatch.setattr(U, "collect_source", fake_source)
+    monkeypatch.setitem(U.CONFIG, "london", {"reports": [{"name": "Centre for London"}, {"name": "Mayor of London and the GLA", "require": "report"}], "media_pattern": "Mayor of London|TfL", "media": [{"name": "MyLondon"}]})
+    national = [{"id": "n1", "category": "thinktank", "source": "IPPR", "title": "A plan for London's economy", "url": "https://x.example/n1", "geo": ["London"], "tags": []},
+                {"id": "n2", "category": "thinktank", "source": "IPPR", "title": "Pensions reform", "url": "https://x.example/n2", "geo": ["UK-wide"], "tags": []}]
+    rows = U.collect_london(national)
+    by_kind = {k: sorted(r["title"] for r in rows if r["kind"] == k) for k in ("report", "media")}
+    assert by_kind["report"] == ["A plan for London's economy", "Housing in the capital", "New report on air quality"]
+    assert by_kind["media"] == ["Mayor of London announces fares freeze"]
+    assert all(r["url"].startswith("https://") and r["first_seen"] for r in rows)
