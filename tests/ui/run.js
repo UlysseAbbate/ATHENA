@@ -868,7 +868,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.goto(BASE + "/lovelace/");
       await page.waitForSelector("#tabs button", { timeout: 5000 });
       const tabs = await page.$$eval("#tabs button", bs => bs.map(b => b.textContent));
-      check(`${who}: lovelace tabs`, who === "member" ? !tabs.includes("Parliamentary Activity") && tabs.includes("London Politics") && !tabs.includes("Full Plan") && !tabs.includes("Governance") && tabs.includes("Summary") && tabs.includes("Member's Zone") && !tabs.includes("Full Plan") : tabs.includes("Governance") && tabs.includes("Full Plan") && tabs.includes("Member's Zone") && tabs.includes("Comms") && !tabs.includes("This Week") && !tabs.includes("Team & access") && ((await page.$('#shell-foot [data-foot="team"]')) !== null) === (who === "admin"), tabs.join(" | "));
+      check(`${who}: lovelace tabs`, who === "member" ? !tabs.includes("Parliamentary Activity") && tabs.includes("London Politics") && !tabs.includes("Governance") && tabs.includes("Summary") && tabs.includes("Member's Zone") && !tabs.includes("Full Plan") : tabs.includes("Governance") && tabs.includes("Full Plan") && tabs.includes("Member's Zone") && tabs.includes("Comms") && !tabs.includes("This Week") && !tabs.includes("Team & access") && ((await page.$('#shell-foot [data-foot="team"]')) !== null) === (who === "admin"), tabs.join(" | "));
       check(`${who}: the Theme button is in the foot, not the masthead`, (await page.$(".masthead [data-theme-btn]")) === null && (await page.$("#shell-foot [data-theme-btn]")) !== null);
       await page.waitForSelector(".ovday, #main .muted", { timeout: 5000 });
       {
@@ -968,12 +968,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: another day shows only Field Campaign and Membership Engagement (Mayor's and GLA) and Internal Membership Engagement`, /Doorstep session/.test(restT) && /Members' meet/.test(restT) && /Branch AGM/.test(restT) && !/Op-ed draft|Op-ed in the Standard|Donor lunch|Audit meeting/.test(restT), restT.slice(0, 300));
         check(`${who}: the Member's Zone is read-only`, (await page.$("#main [data-add]")) === null && (await page.$("#main [data-e]")) === null);
       }
-      {
-        // London Politics: policy reports and London media (read by every role)
-        if (who === "member") await page.click('#tabs button:text-is("London Politics")');
-        else { await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(300); await page.click('[data-ptb="london"]'); }
-        await page.waitForSelector("#ln-list .pe", { timeout: 5000 });
-        if (who !== "member") check(`${who}: Full Plan has the tabs Calendar, London Politics and Parliamentary Activity (in that order), and no tab of their own on the menu`, (await page.$$eval("[data-pt] button", bs => bs.map(b => b.textContent))).join("|") === "Calendar|London Politics|Parliamentary Activity" && !(await page.$$eval("#tabs button", bs => bs.map(b => b.textContent.trim()))).some(t => t === "London Politics" || t === "Parliamentary Activity"));
+      if (who === "member") {
+        // a volunteer has no Full Plan: London Politics is a page of its own for them (policy reports and London media)
+        await page.click('#tabs button:text-is("London Politics")'); await page.waitForSelector("#ln-list .pe", { timeout: 5000 });
         const rep = (await page.$eval("#ln-list", e => e.innerText)).replace(/\s+/g, " ");
         check(`${who}: London Politics > Policy reports lists the London reports with their source`, /A better deal for London's renters/.test(rep) && /Centre for London/.test(rep) && /London's poverty profile/.test(rep) && !/fares freeze/.test(rep) && (await page.$$eval("[data-lt] button", bs => bs.map(b => b.textContent))).join("|") === "Policy reports|London media", rep.slice(0, 200));
         await page.click('[data-lt] [data-l="media"]'); await page.waitForSelector("#ln-list .pe", { timeout: 5000 });
@@ -981,19 +978,25 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: London media lists the London stories`, /Mayor of London announces fares freeze/.test(med) && /MyLondon/.test(med) && !/renters/.test(med), med.slice(0, 200));
       }
       if (who !== "member") {
-        await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(300); await page.click('[data-ptb="parl"]'); await page.waitForSelector("#main .sec", { timeout: 5000 });
-        const pt = (await page.$eval("#main", m => m.innerText)).replace(/\s+/g, " ");
-        const pheads = await page.$$eval("#main .sec-title", hs => hs.map(h => h.textContent.trim()));
-        check(`${who}: Parliamentary Activity breaks the day into Commons Business, Lords Chamber and Committees`, pheads.join("|") === "Commons Business|Lords Chamber|Committees" && /Oral questions/.test(pt) && /Health Committee/.test(pt), pheads.join("|"));
-        const vis = () => page.$$eval("#main .sec", ss => [...ss[0].querySelectorAll(".pe")].filter(e => e.offsetParent !== null).length);
-        check(`${who}: a section with more than three entries shows three and "See all (4)"`, (await vis()) === 3 && (await page.$eval("#main [data-seeall]", b => b.textContent.trim())) === "See all (4)");
-        await page.click("#main [data-seeall]"); await page.waitForTimeout(100);
-        check(`${who}: "See all" shows the rest and the button says "See less"`, (await vis()) === 4 && (await page.$eval("#main [data-seeall]", b => b.textContent.trim())) === "See less");
-        await page.click("#main [data-seeall]"); await page.waitForTimeout(100);
+        // the day's six areas: Mayor's, GLA, Internal Campaign, Governance and Legal, London Politics (with Policy reports and London media in it) and Parliamentary Activity
+        await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(450);
+        await page.click(".cal-cell.today"); await page.waitForTimeout(500);
+        const heads6 = await page.$$eval("#main .grp .h2-rule", hs => hs.map(h => h.textContent.trim()));
+        check(`${who}: a day has six areas: Mayor's, GLA, Internal Campaign, Governance and Legal, London Politics, Parliamentary Activity (no tabs of their own on the menu)`, heads6.join("|") === "Mayor's Activity|GLA Activity|Internal Campaign|Governance and Legal|London Politics|Parliamentary Activity" && !(await page.$$eval("#tabs button", bs => bs.map(b => b.textContent.trim()))).some(t => t === "London Politics" || t === "Parliamentary Activity"), heads6.join("|"));
+        const lon = await page.$$eval("#main .grp", gs => { const g = gs.find(x => /London Politics/.test(x.querySelector(".h2-rule").textContent)); return g ? [...g.querySelectorAll(".sec-title")].map(h => h.textContent.trim()) : []; });
+        check(`${who}: London Politics holds Data & Statistics, Political Events, London Events, Policy reports and London media`, lon.join("|") === "Data & Statistics|Political Events|London Events|Policy reports|London media", lon.join("|"));
+        const lt = (await page.$eval("#main [data-lfeed='report']", e => e.innerText)).replace(/\s+/g, " ") + " || " + (await page.$eval("#main [data-lfeed='media']", e => e.innerText)).replace(/\s+/g, " ");
+        check(`${who}: the London policy reports and London media are listed in London Politics`, /A better deal for London's renters/.test(lt) && /Centre for London/.test(lt) && /London's poverty profile/.test(lt) && /Mayor of London announces fares freeze/.test(lt) && /MyLondon/.test(lt), lt.slice(0, 250));
+        const parlSecs = await page.$$eval("#main .grp", gs => { const g = gs.find(x => /Parliamentary Activity/.test(x.querySelector(".h2-rule").textContent)); return g ? [...g.querySelectorAll(".sec-title")].map(h => h.textContent.trim()) : []; });
+        const ptxt = (await page.$eval("#main", m => m.textContent)).replace(/\s+/g, " ");
+        check(`${who}: Parliamentary Activity breaks down into Commons Business, Lords Chamber and Committees`, parlSecs.join("|") === "Commons Business|Lords Chamber|Committees" && /Oral questions/.test(ptxt) && /Health Committee/.test(ptxt), parlSecs.join("|"));
+        const vis = () => page.$$eval("#main .grp", gs => { const g = gs.find(x => /Parliamentary Activity/.test(x.querySelector(".h2-rule").textContent)); return [...g.querySelector(".sec").querySelectorAll(".pe")].filter(e => e.offsetParent !== null).length; });
+        const btn = () => page.$eval("#main .grp:last-of-type [data-seeall]", b => b.textContent.trim());
+        check(`${who}: a section with more than three entries shows three and "See all (4)"`, (await vis()) === 3 && (await btn()) === "See all (4)");
+        await page.click("#main .grp:last-of-type [data-seeall]"); await page.waitForTimeout(100);
+        check(`${who}: "See all" shows the rest and the button says "See less"`, (await vis()) === 4 && (await btn()) === "See less");
+        await page.click("#main .grp:last-of-type [data-seeall]"); await page.waitForTimeout(100);
         check(`${who}: "See less" puts them away again`, (await vis()) === 3);
-        await page.click('[data-ptb="calendar"]'); await page.waitForTimeout(450);
-        if (await page.$(".cal-cell.today")) { await page.click(".cal-cell.today"); await page.waitForTimeout(450); }
-        check(`${who}: the Full Plan day no longer carries the Parliamentary Activity`, !/Statement on transport|Opposition day/.test(await page.$eval("#main", m => m.textContent)));
         if (await page.$("[data-back]")) { await page.click("[data-back]"); await page.waitForTimeout(300); }   // back to the month, where the next checks start
         await page.click('#tabs button:text-is("Full Plan")'); await page.waitForTimeout(450);
         const cal = await page.$eval("#main", m => m.innerText);
@@ -1004,8 +1007,8 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         const gh = await page.$$eval("#main .grp .h2-rule", hs => hs.map(h => h.textContent.trim()));
         check(`${who}: clicking a day gives its daily plan: Mayor's Activity, GLA Activity, Internal Campaign, Governance and Legal`, gh.slice(0, 5).join("|") === "Mayor's Activity|GLA Activity|Internal Campaign|Governance and Legal|London Politics", gh.join("|"));
         const secs = await page.$$eval("#main .grp", gs => gs.map(g => [...g.querySelectorAll("h3")].map(h => h.textContent.trim()).join(",")));
-        check(`${who}: each area has its sections`, secs[0] === "Field Campaign,Media,Membership Engagement,Other Activities" && secs[1] === secs[0] && secs[2] === "Membership Engagement,Donor Events,Staff Activities,Other" && secs[3] === "" && secs[4] === "Data & Statistics,Political Events,London Events", secs.join(" | "));
-        check(`${who}: an entry shows its time, place, link and notes, and a section can take more entries`, /10:00/.test(plan) && /Richmond Park/.test(plan) && /Bring leaflets/.test(plan) && (await page.$('[data-add="mayor|field"]')) !== null && (await page.$$("[data-add]")).length === 16);
+        check(`${who}: each area has its sections`, secs[0] === "Field Campaign,Media,Membership Engagement,Other Activities" && secs[1] === secs[0] && secs[2] === "Membership Engagement,Donor Events,Staff Activities,Other" && secs[3] === "" && secs[4] === "Data & Statistics,Political Events,London Events,Policy reports,London media" && secs[5] === "Commons Business,Lords Chamber,Committees", secs.join(" | "));
+        check(`${who}: an entry shows its time, place, link and notes, and a section can take more entries`, /10:00/.test(plan) && /Richmond Park/.test(plan) && /Bring leaflets/.test(plan) && (await page.$('[data-add="mayor|field"]')) !== null && (await page.$$("[data-add]")).length === 19);
         check(`${who}: the day has no local party visits section`, !/[Ll]ocal party visit/.test(plan) && !/contact Pat 0701/.test(plan));
         // the sections of a day are open, each with its Add button on the title's line, to the right; an entry can be moved to another section
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
