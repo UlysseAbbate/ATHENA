@@ -729,8 +729,85 @@ def _done(t0, group, name, items, method, via, notes):
 
 
 
+def repec_series_items(name: str, handle: str, limit: int = 30) -> list[dict]:
+    """The newest papers of one RePEc series (ideas.repec.org/s/{handle}.html, for example ifs/ifsewp): a listing by year, newest first. RePEc gives the year, not the day."""
+    url = f"https://ideas.repec.org/s/{handle}.html"
+    soup = BeautifulSoup(get(url).text, "html.parser")
+    out = []
+    year = None
+    for el in soup.select("div#content h3, div#content ul.paperlist li"):
+        if el.name == "h3":
+            m = re.fullmatch(r"\d{4}", el.get_text(strip=True))
+            year = m.group(0) if m else None
+            continue
+        a = el.find("a", href=True)
+        if not a or "/p/" not in a["href"]:
+            continue
+        title = a.get_text(" ", strip=True)
+        if title:
+            out.append(make_item("thinktank", name, title, urljoin(url, a["href"]), None, summary="", tags=["RePEc"] + ([year] if year else [])))
+        if len(out) >= limit:
+            break
+    return out
+
+
+def openalex_items(name: str, institution: str, api_key: str, days: int = 400, limit: int = 25) -> list[dict]:
+    """The newest works OpenAlex lists for an institution, found by name (the first match whose name contains it). OpenAlex needs a free API key (OPENALEX_API_KEY)."""
+    hdr = {"Authorization": f"Bearer {api_key}", "Accept": "application/json"}
+    base = "https://api.openalex.org"
+    inst = None
+    for r in get(f"{base}/institutions", params={"search": institution, "per_page": 5}, headers=hdr).json().get("results", []):
+        if institution.lower() in str(r.get("display_name", "")).lower():
+            inst = r
+            break
+    if not inst:
+        raise LookupError(f"OpenAlex has no institution called {institution!r}")
+    since = (NOW - timedelta(days=days)).strftime("%Y-%m-%d")
+    works = get(f"{base}/works", params={"filter": f"institutions.id:{inst['id'].rsplit('/', 1)[-1]},from_publication_date:{since}", "sort": "publication_date:desc", "per_page": limit}, headers=hdr).json().get("results", [])
+    out = []
+    for w in works:
+        title = (w.get("display_name") or w.get("title") or "").strip()
+        link = ((w.get("primary_location") or {}).get("landing_page_url") or w.get("doi") or "").strip()
+        if title and link.startswith("http"):
+            out.append(make_item("thinktank", name, title, link, parse_date(w.get("publication_date")), summary="", tags=["OpenAlex"]))
+    return out
+
+
 def collect_thinktank(tt: dict) -> tuple[list[dict], dict]:
-    return collect_source(tt, "thinktank", "thinktanks")
+    """The organisation's own pages and feeds first. If a site keeps automated visitors out (a Cloudflare challenge, say) and the entry names a RePEc series (`repec:`) or an OpenAlex
+    institution (`openalex:`), the publications are listed from those open scholarly indexes instead: they carry only what has been deposited there, so the health record says so."""
+    items, rec = collect_source(tt, "thinktank", "thinktanks")
+    if rec["ok"] or not (tt.get("repec") or tt.get("openalex")):
+        return items, rec
+    t0, got, notes, used = time.time(), [], [], []
+    for handle in tt.get("repec") or []:
+        try:
+            rows = repec_series_items(tt["name"], handle)
+            got += rows
+            used.append(f"RePEc {handle}: {len(rows)}")
+        except Exception as e:  # noqa: BLE001
+            notes.append(f"RePEc {handle}: {e}")
+    if tt.get("openalex"):
+        key = os.environ.get("OPENALEX_API_KEY", "").strip()
+        if not key:
+            notes.append("OpenAlex needs a free API key (set OPENALEX_API_KEY)")
+        else:
+            try:
+                rows = openalex_items(tt["name"], tt["openalex"], key)
+                got += rows
+                used.append(f"OpenAlex: {len(rows)}")
+            except Exception as e:  # noqa: BLE001
+                notes.append(f"OpenAlex: {e}")
+    if not got:
+        rec["error"] = (rec.get("error", "") + " | " + "; ".join(notes)).strip(" |")[:900]
+        return items, rec
+    seen, uniq = set(), []
+    for it in got:
+        if it["id"] not in seen:
+            seen.add(it["id"])
+            uniq.append(it)
+    why = "its own site refuses automated visitors" + (f" ({rec['error'].split(';')[0][:90]})" if rec.get("error") else "")
+    return _done(t0, "thinktanks", tt["name"], uniq, "repec/openalex", ", ".join(used), [f"listed from open scholarly indexes (not the full list the organisation publishes): {why}"] + notes)
 
 
 # ------------------------------------------------------------------- media
