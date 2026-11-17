@@ -71,17 +71,16 @@ async function boot() {
 const TABS = [
   ["today", "Summary", () => can("dayplan_full", "read") || can("dayplan_volunteer", "read"), renderToday],
   ["plan", "Full Plan", () => can("dayplan_full", "read"), renderPlan],
-  ["parl", "Parliamentary Activity", () => can("dayplan_full", "read"), renderParl],
   ["zone", "Member's Zone", () => can("dayplan_volunteer", "read") || can("help_offer", "write") || can("help_inbox", "read"), renderZone],
   ["todo", "To-Do-List", () => can("mayor_todo", "read"), renderTodos],
   ["budget", "Governance", () => can("budget", "read"), renderBudget],
   ["people", "Stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
   ["comms", "Comms", () => can("coverage", "read") || can("social", "read") || can("policies", "read"), renderComms],
-  ["london", "London Politics", () => can("london_reports", "read") || can("london_media", "read"), renderLondon],
+  ["london", "London Politics", () => !can("dayplan_full", "read") && (can("london_reports", "read") || can("london_media", "read")), renderLondon],  // a volunteer has no Full Plan: London Politics is its own page for them
   ["team", "Team & access", () => S.admin, renderTeam, true]   // the administrator's alone: its button is in the footer, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
-const ALIAS = { visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people", suggestions: "people", offers: "zone", help: "zone" };
+const ALIAS = { parl: "plan", visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people", suggestions: "people", offers: "zone", help: "zone" };
 function buildTabs() {
   const vis = TABS.filter(t => t[3] && t[2]());
   const nav = $("#tabs"); nav.hidden = false;
@@ -234,7 +233,9 @@ const AREAS = [
   { id: "internal", name: "Internal Campaign", sections: [["membership", "Membership Engagement"], ["donor", "Donor Events"], ["staff", "Staff Activities"], ["other", "Other"]] },
   { id: "governance", name: "Governance and Legal", sections: [["governance", "Governance and Legal"]] },
   // GLA / London Data fills itself from the Stats calendar's collector (the GLA and London data drops only); the other two are typed in
-  { id: "london", name: "London Politics", sections: [["data", "Data & Statistics"], ["political", "Political Events"], ["events", "London Events"]] }
+  { id: "london", name: "London Politics", sections: [["data", "Data & Statistics"], ["political", "Political Events"], ["events", "London Events"]] },
+  // the UK Parliament's What's On calendar, filled by the collector: Commons Business (Chamber and Westminster Hall), Lords Chamber (Chamber and Grand Committee), Committees
+  { id: "parliament", name: "Parliamentary Activity", sections: [["commons", "Commons Business"], ["lords", "Lords Chamber"], ["committees", "Committees"]] }
 ];
 // What volunteers see, and only for today (the database enforces the same rule): Mayor's and GLA Activity, and Internal Campaign > Membership Engagement; never Governance and Legal or London Politics.
 // What volunteers see (the database enforces the same rules), over the week from Monday to Sunday. Today: Mayor's and GLA Activity (every section) and Internal Campaign > Membership Engagement and Other.
@@ -243,11 +244,8 @@ const volunteerSeesOn = (e, today) => e.plan_date === today
   ? (e.area === "mayor" || e.area === "gla" || (e.area === "internal" && (e.section === "membership" || e.section === "other")))
   : (((e.area === "mayor" || e.area === "gla") && (e.section === "field" || e.section === "membership")) || (e.area === "internal" && e.section === "membership"));
 const volunteerSees = e => volunteerSeesOn(e, iso(new Date()));
-// Parliamentary Activity has its own tab (the What's On calendar, filled by the collector): Commons Business (Chamber and Westminster Hall), Lords Chamber (Chamber and Grand Committee), Committees.
-const PARL = { id: "parliament", name: "Parliamentary Activity", sections: [["commons", "Commons Business"], ["lords", "Lords Chamber"], ["committees", "Committees"]] };
-const ALL_AREAS = [...AREAS, PARL];
-const sectionName = (area, sec) => (ALL_AREAS.find(a => a.id === area)?.sections.find(s => s[0] === sec) || [, sec])[1];
-const areaName = id => ALL_AREAS.find(a => a.id === id)?.name || id;
+const sectionName = (area, sec) => (AREAS.find(a => a.id === area)?.sections.find(s => s[0] === sec) || [, sec])[1];
+const areaName = id => AREAS.find(a => a.id === id)?.name || id;
 const byTime = (a, b) => String(a.starts || "~").localeCompare(String(b.starts || "~"), "en-GB", { numeric: true }) || String(a.created_at || "").localeCompare(String(b.created_at || ""));
 const monthStartOf = s => s.slice(0, 7) + "-01";
 const addMonths = (s, n) => { const d = parseISO(monthStartOf(s)); d.setMonth(d.getMonth() + n); return iso(d); };
@@ -278,12 +276,30 @@ function sectionBlock(a, sid, sname, list, editable, { single = a.sections.lengt
   return `<div class="sec">${single ? (add ? `<div class="sec-head">${add}</div>` : "") : `<div class="sec-head"><h3 class="sec-title">${esc(sname)}</h3>${add}</div>`}${entriesHtml(mine, editable)}${!mine.length && showEmpty ? '<p class="muted small">Nothing listed.</p>' : ""}</div>`;
 }
 /** A day's plan. Editors see every section, with a button to add to it; everyone else sees only what is planned (nothing is shown for an empty section). */
-function dayHtml(list, { editable, areas = AREAS }) {
+function dayHtml(list, { editable, areas = AREAS, feeds = false }) {
   const out = areas.map(a => {
-    const secs = a.sections.map(([sid, sname]) => sectionBlock(a, sid, sname, list, editable)).join("");
+    let secs = a.sections.map(([sid, sname]) => sectionBlock(a, sid, sname, list, editable)).join("");
+    if (feeds && a.id === "london") {   // the London policy reports and London media, filled in after the page is drawn (fillLondonFeeds)
+      for (const [kind, label, res] of [["report", "Policy reports", "london_reports"], ["media", "London media", "london_media"]])
+        if (can(res, "read")) secs += `<div class="sec" data-lfeed="${kind}"><div class="sec-head"><h3 class="sec-title">${label}</h3></div><p class="muted small">Loading…</p></div>`;
+    }
     return secs ? `<section class="grp"><h2 class="h2-rule">${esc(a.name)}</h2>${secs}</section>` : "";
   }).join("");
   return out || '<p class="muted">Nothing is planned for this day.</p>';
+}
+/** The latest London policy reports and London media stories, in the London Politics part of a day: three, and "See all" for the rest. */
+async function fillLondonFeeds(root = main) {
+  for (const box of root.querySelectorAll("[data-lfeed]")) {
+    const kind = box.dataset.lfeed;
+    const { data, error } = await sb.from("london_feed").select("*").eq("kind", kind).order("published", { ascending: false, nullsFirst: false }).order("first_seen", { ascending: false }).limit(30);
+    const body = box.querySelector("p");
+    if (!body) continue;
+    if (error) { body.textContent = `Could not load: ${error.message}`; continue; }
+    if (!data.length) { body.textContent = "Nothing yet: these fill in at the next 6am or 6pm update (or with Refresh all data)."; continue; }
+    const row = r => `<div class="pe"><div class="pe-main"><span class="pe-time">${esc(r.published ? fmtShort(String(r.published).slice(0, 10)) : "")}</span><a class="pe-title" href="${esc(safeUrl(r.url))}" target="_blank" rel="noopener noreferrer">${esc(r.title)}</a> <span class="muted">· ${esc(r.source)}</span></div></div>`;
+    body.outerHTML = data.length <= SEE ? data.map(row).join("")
+      : data.slice(0, SEE).map(row).join("") + `<div class="sec-rest" hidden>${data.slice(SEE).map(row).join("")}</div><button type="button" class="btn sm seeall" data-seeall="${data.length}" aria-expanded="false">See all (${data.length})</button>`;
+  }
 }
 // "See all" / "See less" on any section of a day (one listener for the whole page)
 main.addEventListener("click", e => {
@@ -329,7 +345,8 @@ async function renderPlanner(kind) {
   try { entries = await loadPlan(date, date, P.filter); } catch (e) { return showError(e); }
   main.innerHTML = `<div class="row"><button class="btn" data-back>◀ Full Plan</button><button class="btn" data-n="-1" aria-label="Previous day">‹ Previous day</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Next day">Next day ›</button>
       <input type="date" value="${esc(date)}" style="width:auto" data-d></div>
-    <h2 class="cal-day">${esc(fmtDay(date))}</h2>${dayHtml(entries, { editable, areas })}`;
+    <h2 class="cal-day">${esc(fmtDay(date))}</h2>${dayHtml(entries, { editable, areas, feeds: true })}`;
+  fillLondonFeeds();
   const go_ = d => { st.date = d; reload(); };
   main.onclick = e => {
     if (e.target.closest("[data-back]")) { st.mode = "month"; return reload(); }
@@ -345,7 +362,7 @@ function entryForm(entry, area, sec, date, after) {
   openForm({
     title: `${areaName(area)}${areaName(area) === sectionName(area, sec) ? "" : ` · ${sectionName(area, sec)}`}: ${fmtShort(entry?.plan_date || date)}`,
     fields: [T("title", "What", "text", { req: true }), T("starts", "Time (for example 10:00, or all day)"), T("place", "Where"), T("link", "Link"), T("detail", "Notes", "textarea"), T("plan_date", "Date", "date", { req: true }),
-      T("where", "Section (change it to move the entry)", "select", { req: true, options: ALL_AREAS.flatMap(a => a.sections.map(([sid, sname]) => [`${a.id}|${sid}`, a.sections.length === 1 || a.name === sname ? a.name : `${a.name}: ${sname}`])) })],
+      T("where", "Section (change it to move the entry)", "select", { req: true, options: AREAS.flatMap(a => a.sections.map(([sid, sname]) => [`${a.id}|${sid}`, a.sections.length === 1 || a.name === sname ? a.name : `${a.name}: ${sname}`])) })],
     values: { ...(entry || { plan_date: date }), where: `${area}|${sec}` }, meta: edited(entry),
     onSubmit: async v => {
       const [na, ns] = String(v.where || `${area}|${sec}`).split("|"); delete v.where;
@@ -356,28 +373,6 @@ function entryForm(entry, area, sec, date, after) {
   });
 }
 function renderPlan() { return renderPlanner("plan"); }
-/* ------------------------------------------------------------------ Parliamentary Activity: the What's On calendar for a day, in three parts */
-const parlState = { date: iso(new Date()) };
-async function renderParl() {
-  const date = parlState.date, editable = can("dayplan_full", "write");
-  let entries;
-  try { entries = (await loadPlan(date, date, null)).filter(e => e.area === "parliament"); } catch (e) { return showError(e); }
-  main.innerHTML = `<div class="row"><button class="btn" data-n="-1" aria-label="Previous day">‹ Previous day</button><button class="btn" data-n="0">Today</button><button class="btn" data-n="1" aria-label="Next day">Next day ›</button>
-      <input type="date" value="${esc(date)}" style="width:auto" data-d></div>
-    <h2 class="cal-day">${esc(fmtDay(date))}</h2>
-    <p class="muted">What is on in Parliament, from the UK Parliament's What's On calendar (read at 6am and 6pm): Commons Business is the Chamber and Westminster Hall, the Lords Chamber is the Chamber and Grand Committee, and Committees are the select, joint and general committees.</p>
-    ${PARL.sections.map(([sid, sname]) => sectionBlock(PARL, sid, sname, entries, editable, { showEmpty: true })).join("")}`;
-  const go_ = d => { parlState.date = d; renderParl(); };
-  main.onclick = e => {
-    const n = e.target.closest("[data-n]");
-    if (n) return go_(n.dataset.n === "0" ? iso(new Date()) : addDays(date, +n.dataset.n));
-    const a = e.target.closest("[data-add]"), x = e.target.closest("[data-e]");
-    if (a) { const [area, sec] = a.dataset.add.split("|"); return entryForm(null, area, sec, date, renderParl); }
-    if (x) { const en = entries.find(z => z.id === x.dataset.e); return entryForm(en, en.area, en.section, date, renderParl); }
-  };
-  main.onchange = e => { if (e.target.matches("[data-d]") && e.target.value) go_(e.target.value); };
-}
-
 /** The Volunteer's Zone: the week, and nothing else (the database shows volunteers no other day). */
 const zoneState = { section: null };
 async function renderZone() {
@@ -749,7 +744,7 @@ async function renderToday() {
       <a class="btn primary" href="#${full ? "plan" : "zone"}" data-go="${full ? "plan" : "zone"}">${full ? "Open the calendar" : "Open the Volunteer's Zone"} ›</a></div>
     ${days.length ? days.map(d => {
       const list = entries.filter(e => e.plan_date === d);
-      return `<section class="ovday${d === today ? " now" : ""}"><h3><a href="#" data-day="${d}">${esc(d === today ? "Today · " : "")}${esc(fmtDay(d))}</a></h3>${AREAS.map(a => {
+      return `<section class="ovday${d === today ? " now" : ""}"><h3><a href="#" data-day="${d}">${esc(d === today ? "Today · " : "")}${esc(fmtDay(d))}</a></h3>${AREAS.filter(a => a.id !== "parliament").map(a => {
         const mine = list.filter(e => e.area === a.id);
         if (!mine.length) return "";
         return `<div class="ovarea"><h4>${esc(a.name)}</h4>${a.sections.map(([sid, sname]) => { const m = mine.filter(e => e.section === sid);
