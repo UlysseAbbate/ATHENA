@@ -43,6 +43,8 @@ jobs:
         run: node scripts/lucien/check-econ.mjs
       - name: Check LUCIEN's tax and welfare rulebook and the marginal rates calculation
         run: node scripts/lucien/check-fiscal.mjs
+      - name: Check LUCIEN's costing engine against the published figures
+        run: node scripts/lucien/check-costing.mjs
       - name: Check sign-in, the guessing throttle and the security headers
         run: node scripts/libby/check-access.mjs
       - name: Check the grid and hymn sheet Word documents

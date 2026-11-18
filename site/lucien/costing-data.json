@@ -1,0 +1,2250 @@
+{
+ "meta": {
+  "version": "2026-11-18",
+  "built_by": "scripts/lucien/build_costing_data.py",
+  "unit": "£ million, Exchequer impact; positive = Exchequer gain, negative = cost",
+  "ready_reckoner": {
+   "as_at": "2025-06-24",
+   "baseline": "OBR March 2025 forecast, Spring Statement 2025",
+   "start": "April 2026",
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "name": "HMRC, Direct effects of illustrative tax changes",
+   "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+   "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+   "basis": "National Accounts basis; the figures include HMRC's behavioural responses (taxable income elasticities, incorporation, a CGT elasticity, vaping substitution) but no wider economic effects"
+  },
+  "stale_after_months": 12,
+  "newer_baseline_exists": "The OBR's October 2026 Economic and fiscal outlook is published (obr.uk). Its files cannot be fetched automatically (obr.uk answers automated downloads with an access page, which is not worked around), so this tool uses the HMRC ready reckoner on the March 2025 baseline until a newer one is added."
+ },
+ "items": [
+  {
+   "id": "income_tax:change_starting_rate_for_savings_income_by_1p",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change starting rate for savings income by 1p",
+   "unit": "p",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    0.0,
+    10.0,
+    5.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change starting rate for savings income by 1p"
+   }
+  },
+  {
+   "id": "income_tax:change_basic_rate_by_1p",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change basic rate by 1p",
+   "unit": "p",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    6900.0,
+    8250.0,
+    8200.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change basic rate by 1p"
+   }
+  },
+  {
+   "id": "income_tax:change_higher_rate_by_1p",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change higher rate by 1p",
+   "unit": "p",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    1600.0,
+    2150.0,
+    2100.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change higher rate by 1p"
+   }
+  },
+  {
+   "id": "income_tax:increase_additional_rate_by_1p_yield",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Increase additional rate by 1p",
+   "unit": "p",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield",
+   "values": [
+    145.0,
+    265.0,
+    230.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase additional rate by 1p (yield)"
+   },
+   "behaviour": {
+    "tie": {
+     "central": 0.45,
+     "low": 0.35,
+     "high": 0.6,
+     "status": "SOURCED (central, low) / UNSOURCED (high)",
+     "source": "OBR, 'The additional rate of income tax' (Budget 2012): the costing of the 45p rate assumed a taxable income elasticity of 0.45 (the March 2010 costing used 0.35; Brewer, Saez and Shephard 0.46; the HMRC study pointed higher). The OBR called 0.45 reasonable and central. The upper end of the range is a tool assumption.",
+     "url": "https://obr.uk/box/the-additional-rate-of-income-tax/"
+    }
+   }
+  },
+  {
+   "id": "income_tax:decrease_additional_rate_by_1p_cost",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Decrease additional rate by 1p",
+   "unit": "p",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "cost",
+   "values": [
+    175.0,
+    335.0,
+    300.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Decrease additional rate by 1p (cost)"
+   }
+  },
+  {
+   "id": "income_tax:change_personal_allowance_by_100",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change personal allowance by £100",
+   "unit": "gbp",
+   "size": 100.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    810.0,
+    1050.0,
+    1000.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change personal allowance by £100"
+   },
+   "nonlinear_note": "HMRC: the cost of raising an allowance or limit does not scale in a straight line; the 1% and 10% estimates are published for that reason."
+  },
+  {
+   "id": "income_tax:change_personal_allowance_by_1",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change personal allowance by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    1000.0,
+    1200.0,
+    1100.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change personal allowance by 1%"
+   },
+   "nonlinear_note": "HMRC: the cost of raising an allowance or limit does not scale in a straight line; the 1% and 10% estimates are published for that reason."
+  },
+  {
+   "id": "income_tax:change_personal_allowance_by_10",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change personal allowance by 10%",
+   "unit": "pct",
+   "size": 10.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    10000.0,
+    11650.0,
+    11500.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change personal allowance by 10%"
+   },
+   "nonlinear_note": "HMRC: the cost of raising an allowance or limit does not scale in a straight line; the 1% and 10% estimates are published for that reason."
+  },
+  {
+   "id": "income_tax:change_savings_allowance_by_100_for_br_and_50_for_hr_taxpayers",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change Savings allowance by £100 for BR and £50 for HR taxpayers",
+   "unit": "gbp",
+   "size": 100.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    0.0,
+    30.0,
+    25.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change Savings allowance by £100 for BR and £50 for HR taxpayers"
+   },
+   "nonlinear_note": "HMRC: the cost of raising an allowance or limit does not scale in a straight line; the 1% and 10% estimates are published for that reason."
+  },
+  {
+   "id": "income_tax:change_dividend_allowance_by_100",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change dividend allowance by £100",
+   "unit": "gbp",
+   "size": 100.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    0.0,
+    70.0,
+    65.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change dividend allowance by £100"
+   },
+   "nonlinear_note": "HMRC: the cost of raising an allowance or limit does not scale in a straight line; the 1% and 10% estimates are published for that reason."
+  },
+  {
+   "id": "income_tax:change_starting_rate_limit_for_savings_income_by_100",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change starting rate limit for savings income by £100",
+   "unit": "gbp",
+   "size": 100.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    0.0,
+    5.0,
+    5.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change starting rate limit for savings income by £100"
+   },
+   "nonlinear_note": "HMRC: the cost of raising an allowance or limit does not scale in a straight line; the 1% and 10% estimates are published for that reason."
+  },
+  {
+   "id": "income_tax:change_basic_rate_limit_by_1",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change basic rate limit by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    495.0,
+    665.0,
+    670.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change basic rate limit by 1%"
+   },
+   "nonlinear_note": "HMRC: the cost of raising an allowance or limit does not scale in a straight line; the 1% and 10% estimates are published for that reason."
+  },
+  {
+   "id": "income_tax:increase_basic_rate_limit_by_10_cost",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Increase basic rate limit by 10%",
+   "unit": "pct",
+   "size": 10.0,
+   "direction": 1,
+   "meaning": "cost",
+   "values": [
+    4600.0,
+    6250.0,
+    6000.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase basic rate limit by 10% (cost)"
+   }
+  },
+  {
+   "id": "income_tax:decrease_basic_rate_limit_by_10_yield",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Decrease basic rate limit by 10%",
+   "unit": "pct",
+   "size": 10.0,
+   "direction": -1,
+   "meaning": "yield",
+   "values": [
+    5400.0,
+    7200.0,
+    6950.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Decrease basic rate limit by 10% (yield)"
+   }
+  },
+  {
+   "id": "income_tax:change_all_main_allowances_starting_and_basic_rate_limits_by_1",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Change all main allowances, starting and basic rate limits by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    1450.0,
+    1850.0,
+    1800.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change all main allowances, starting and basic rate limits by 1%"
+   },
+   "nonlinear_note": "HMRC: the cost of raising an allowance or limit does not scale in a straight line; the 1% and 10% estimates are published for that reason."
+  },
+  {
+   "id": "income_tax:increase_all_main_allowances_starting_and_basic_rate_limits_by_10_cost",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Increase all main allowances, starting and basic rate limits by 10%",
+   "unit": "pct",
+   "size": 10.0,
+   "direction": 1,
+   "meaning": "cost",
+   "values": [
+    14400.0,
+    17700.0,
+    17300.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase all main allowances, starting and basic rate limits by 10% (cost)"
+   }
+  },
+  {
+   "id": "income_tax:decrease_all_main_allowances_starting_and_basic_rate_limits_by_10_yiel",
+   "tax": "income_tax",
+   "taxName": "Income Tax",
+   "label": "Decrease all main allowances, starting and basic rate limits by 10%",
+   "unit": "pct",
+   "size": 10.0,
+   "direction": -1,
+   "meaning": "yield",
+   "values": [
+    16100.0,
+    19700.0,
+    19350.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Decrease all main allowances, starting and basic rate limits by 10% (yield)"
+   }
+  },
+  {
+   "id": "nics:change_class_1_employee_main_rate_by_1_percentage_point",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change Class 1 employee main rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    5350.0,
+    5300.0,
+    5400.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change Class 1 employee main rate by 1 percentage point"
+   }
+  },
+  {
+   "id": "nics:change_class_1_employee_additional_rate_by_1_percentage_point",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change Class 1 employee additional rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    2000.0,
+    2000.0,
+    2050.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change Class 1 employee additional rate by 1 percentage point"
+   }
+  },
+  {
+   "id": "nics:change_class_1_employer_rate_by_1_percentage_point",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change Class 1 employer rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    11150.0,
+    11250.0,
+    11550.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change Class 1 employer rate by 1 percentage point"
+   },
+   "warning": "HMRC's figure leaves out the effect of employers passing the cost on through lower pay, higher prices and lower profits (it says these are captured in the OBR forecast, not here). The optional 'wider effects' switch applies the OBR's incidence split."
+  },
+  {
+   "id": "nics:change_class_4_main_rate_by_1_percentage_point",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change Class 4 main rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    440.0,
+    525.0,
+    445.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change Class 4 main rate by 1 percentage point"
+   }
+  },
+  {
+   "id": "nics:change_class_4_additional_rate_by_1_percentage_point",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change Class 4 additional rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    295.0,
+    355.0,
+    320.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change Class 4 additional rate by 1 percentage point"
+   }
+  },
+  {
+   "id": "nics:change_employee_entry_threshold_by_2_per_week",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change employee entry threshold by £2 per week",
+   "unit": "gbp_week",
+   "size": 2.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    210.0,
+    230.0,
+    250.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change employee entry threshold by £2 per week"
+   }
+  },
+  {
+   "id": "nics:change_employer_threshold_by_2_per_week",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change employer threshold by £2 per week",
+   "unit": "gbp_week",
+   "size": 2.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    420.0,
+    430.0,
+    470.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change employer threshold by £2 per week"
+   }
+  },
+  {
+   "id": "nics:change_lower_profits_limit_by_104_per_year",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change lower profits limit by £104 per year",
+   "unit": "gbp_year",
+   "size": 104.0,
+   "direction": 0,
+   "meaning": "cost_if_up",
+   "values": [
+    15.0,
+    15.0,
+    20.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change lower profits limit by £104 per year"
+   }
+  },
+  {
+   "id": "nics:change_upper_profits_limit_by_520_per_year",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change upper profits limit by £520 per year",
+   "unit": "gbp_year",
+   "size": 520.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    10.0,
+    10.0,
+    10.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change upper profits limit by £520 per year"
+   }
+  },
+  {
+   "id": "nics:change_upper_earnings_limit_by_10_per_week",
+   "tax": "nics",
+   "taxName": "National Insurance",
+   "label": "Change upper earnings limit by £10 per week",
+   "unit": "gbp_week",
+   "size": 10.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    220.0,
+    220.0,
+    200.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change upper earnings limit by £10 per week"
+   }
+  },
+  {
+   "id": "child_benefit:increase_first_child_rate_by_1_per_week_cost",
+   "tax": "child_benefit",
+   "taxName": "Child Benefit",
+   "label": "Increase first child rate by £1 per week",
+   "unit": "gbp_week",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "cost",
+   "values": [
+    335.0,
+    335.0,
+    330.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase first child rate by £1 per week (cost)"
+   }
+  },
+  {
+   "id": "child_benefit:decrease_first_child_rate_by_1_per_week_yield",
+   "tax": "child_benefit",
+   "taxName": "Child Benefit",
+   "label": "Decrease first child rate by £1 per week",
+   "unit": "gbp_week",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "yield",
+   "values": [
+    335.0,
+    355.0,
+    345.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Decrease first child rate by £1 per week (yield)"
+   }
+  },
+  {
+   "id": "child_benefit:increase_subsequent_child_rate_by_1_per_week_cost",
+   "tax": "child_benefit",
+   "taxName": "Child Benefit",
+   "label": "Increase subsequent child rate by £1 per week",
+   "unit": "gbp_week",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "cost",
+   "values": [
+    230.0,
+    240.0,
+    245.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase subsequent child rate by £1 per week (cost)"
+   }
+  },
+  {
+   "id": "child_benefit:decrease_subsequent_child_rate_by_1_per_week_yield",
+   "tax": "child_benefit",
+   "taxName": "Child Benefit",
+   "label": "Decrease subsequent child rate by £1 per week",
+   "unit": "gbp_week",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "yield",
+   "values": [
+    230.0,
+    225.0,
+    220.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Decrease subsequent child rate by £1 per week (yield)"
+   }
+  },
+  {
+   "id": "corporation_tax:increase_corporation_tax_by_1_percentage_point",
+   "tax": "corporation_tax",
+   "taxName": "Corporation tax",
+   "label": "Increase Corporation tax by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield_if_up",
+   "values": [
+    3600.0,
+    3900.0,
+    4000.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase Corporation tax by 1 percentage point"
+   }
+  },
+  {
+   "id": "cgt:increase_business_asset_disposal_relief_rate_by_1_percentage_point",
+   "tax": "cgt",
+   "taxName": "Capital Gains Tax",
+   "label": "Increase Business Asset Disposal Relief rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "signed",
+   "values": [
+    10.0,
+    135.0,
+    180.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase Business Asset Disposal Relief rate by 1 percentage point"
+   },
+   "nonlinear": true
+  },
+  {
+   "id": "cgt:increase_business_asset_disposal_relief_rate_by_5_percentage_points",
+   "tax": "cgt",
+   "taxName": "Capital Gains Tax",
+   "label": "Increase Business Asset Disposal Relief rate by 5 percentage points",
+   "unit": "pp",
+   "size": 5.0,
+   "direction": 1,
+   "meaning": "signed",
+   "values": [
+    40.0,
+    635.0,
+    840.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase Business Asset Disposal Relief rate by 5 percentage points"
+   },
+   "nonlinear": true
+  },
+  {
+   "id": "cgt:increase_lower_capital_gains_tax_rate_by_1_percentage_point",
+   "tax": "cgt",
+   "taxName": "Capital Gains Tax",
+   "label": "Increase lower Capital Gains Tax rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "signed",
+   "values": [
+    -5.0,
+    10.0,
+    5.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase lower Capital Gains Tax rate by 1 percentage point"
+   },
+   "nonlinear": true
+  },
+  {
+   "id": "cgt:increase_lower_capital_gains_tax_rate_by_5_percentage_points",
+   "tax": "cgt",
+   "taxName": "Capital Gains Tax",
+   "label": "Increase lower Capital Gains Tax rate by 5 percentage points",
+   "unit": "pp",
+   "size": 5.0,
+   "direction": 1,
+   "meaning": "signed",
+   "values": [
+    -40.0,
+    20.0,
+    -10.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase lower Capital Gains Tax rate by 5 percentage points"
+   },
+   "nonlinear": true
+  },
+  {
+   "id": "cgt:increase_lower_capital_gains_tax_rate_by_10_percentage_points",
+   "tax": "cgt",
+   "taxName": "Capital Gains Tax",
+   "label": "Increase lower Capital Gains Tax rate by 10 percentage points",
+   "unit": "pp",
+   "size": 10.0,
+   "direction": 1,
+   "meaning": "signed",
+   "values": [
+    -130.0,
+    -55.0,
+    -135.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase lower Capital Gains Tax rate by 10 percentage points"
+   },
+   "nonlinear": true
+  },
+  {
+   "id": "cgt:increase_higher_capital_gains_tax_rate_by_1_percentage_point",
+   "tax": "cgt",
+   "taxName": "Capital Gains Tax",
+   "label": "Increase higher Capital Gains Tax rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "signed",
+   "values": [
+    -15.0,
+    80.0,
+    -30.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase higher Capital Gains Tax rate by 1 percentage point"
+   },
+   "nonlinear": true
+  },
+  {
+   "id": "cgt:increase_higher_capital_gains_tax_rate_by_5_percentage_points",
+   "tax": "cgt",
+   "taxName": "Capital Gains Tax",
+   "label": "Increase higher Capital Gains Tax rate by 5 percentage points",
+   "unit": "pp",
+   "size": 5.0,
+   "direction": 1,
+   "meaning": "signed",
+   "values": [
+    -170.0,
+    -235.0,
+    -870.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase higher Capital Gains Tax rate by 5 percentage points"
+   },
+   "nonlinear": true
+  },
+  {
+   "id": "cgt:increase_higher_capital_gains_tax_rate_by_10_percentage_points",
+   "tax": "cgt",
+   "taxName": "Capital Gains Tax",
+   "label": "Increase higher Capital Gains Tax rate by 10 percentage points",
+   "unit": "pp",
+   "size": 10.0,
+   "direction": 1,
+   "meaning": "signed",
+   "values": [
+    -540.0,
+    -2060.0,
+    -3565.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase higher Capital Gains Tax rate by 10 percentage points"
+   },
+   "nonlinear": true
+  },
+  {
+   "id": "cgt:increase_annual_exempt_amount_by_500_for_individuals_and_250_for_trust",
+   "tax": "cgt",
+   "taxName": "Capital Gains Tax",
+   "label": "Increase Annual Exempt Amount by £500 for individuals and £250 for trusts",
+   "unit": "gbp",
+   "size": 500.0,
+   "direction": 1,
+   "meaning": "signed",
+   "values": [
+    0.0,
+    -35.0,
+    -30.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase Annual Exempt Amount by £500 for individuals and £250 for trusts"
+   },
+   "nonlinear": true
+  },
+  {
+   "id": "inheritance_tax:increase_standard_rate_for_estates_left_on_death_by_1_percentage_point",
+   "tax": "inheritance_tax",
+   "taxName": "Inheritance tax",
+   "label": "Increase standard rate for estates left on death by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield_if_up",
+   "values": [
+    105.0,
+    240.0,
+    290.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase standard rate for estates left on death by 1 percentage point"
+   }
+  },
+  {
+   "id": "inheritance_tax:increase_nil_rate_band_by_5_000_cost",
+   "tax": "inheritance_tax",
+   "taxName": "Inheritance tax",
+   "label": "Increase Nil Rate Band by £5,000",
+   "unit": "gbp",
+   "size": 5000.0,
+   "direction": 1,
+   "meaning": "cost",
+   "values": [
+    60.0,
+    140.0,
+    165.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase Nil Rate Band by £5,000 (cost)"
+   }
+  },
+  {
+   "id": "inheritance_tax:increase_residence_nil_rate_band_by_5_000_cost",
+   "tax": "inheritance_tax",
+   "taxName": "Inheritance tax",
+   "label": "Increase Residence Nil Rate Band by £5,000",
+   "unit": "gbp",
+   "size": 5000.0,
+   "direction": 1,
+   "meaning": "cost",
+   "values": [
+    25.0,
+    55.0,
+    65.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase Residence Nil Rate Band by £5,000 (cost)"
+   }
+  },
+  {
+   "id": "duties:change_beer_and_cider_duties_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Beer and cider duties by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    25.0,
+    30.0,
+    30.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Beer and cider duties"
+   }
+  },
+  {
+   "id": "duties:change_wine_and_other_fermented_product_duties_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Wine and other fermented product duties by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    40.0,
+    40.0,
+    40.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Wine and other fermented product duties"
+   }
+  },
+  {
+   "id": "duties:change_spirits_duties_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Spirits duties by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    40.0,
+    40.0,
+    45.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Spirits duties"
+   }
+  },
+  {
+   "id": "duties:change_tobacco_duties_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Tobacco Duties by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    5.0,
+    10.0,
+    15.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Tobacco Duties"
+   },
+   "behaviour": {
+    "offset": {
+     "central": 0.75,
+     "low": 0.6,
+     "high": 0.9,
+     "status": "SOURCED (central) / UNSOURCED (range)",
+     "source": "OBR, Economic and fiscal outlook October 2021 (corrected text): the costing of the tobacco duty rise assumed about three-quarters of the static yield is lost to behavioural response. The brief said about 80%; the OBR text found says three-quarters.",
+     "url": "https://obr.uk/download/economic-and-fiscal-outlook-october-2021"
+    }
+   }
+  },
+  {
+   "id": "duties:change_petrol_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Petrol by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Petrol"
+   }
+  },
+  {
+   "id": "duties:change_diesel_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Diesel by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    140.0,
+    135.0,
+    130.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Diesel"
+   }
+  },
+  {
+   "id": "duties:change_rebated_oil_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Rebated oil by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Rebated oil"
+   }
+  },
+  {
+   "id": "duties:change_climate_change_levy_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Climate change levy by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    15.0,
+    15.0,
+    15.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Climate change levy"
+   }
+  },
+  {
+   "id": "duties:change_carbon_price_support_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Carbon price support by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    5.0,
+    5.0,
+    0.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Carbon price support"
+   }
+  },
+  {
+   "id": "duties:change_aggregates_levy_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Aggregates levy by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    5.0,
+    5.0,
+    5.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Aggregates levy"
+   }
+  },
+  {
+   "id": "duties:change_landfill_tax_by_1",
+   "tax": "duties",
+   "taxName": "Duties",
+   "label": "Change Landfill tax by 1%",
+   "unit": "pct",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Landfill tax"
+   }
+  },
+  {
+   "id": "ved:increase_rates_by_1_for_motorbikes_and_5_for_all_other_vehicles",
+   "tax": "ved",
+   "taxName": "Vehicle excise duty",
+   "label": "Increase rates by £1 for motorbikes and £5 for all other vehicles",
+   "unit": "gbp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield_if_up",
+   "values": [
+    205.0,
+    210.0,
+    215.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase rates by £1 for motorbikes and £5 for all other vehicles"
+   }
+  },
+  {
+   "id": "apd:increase_reduced_rate_by_1",
+   "tax": "apd",
+   "taxName": "Air passenger duty",
+   "label": "Increase reduced rate by £1",
+   "unit": "gbp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield_if_up",
+   "values": [
+    115.0,
+    125.0,
+    130.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase reduced rate by £1"
+   }
+  },
+  {
+   "id": "vat:change_reduced_rate_by_1_percentage_point",
+   "tax": "vat",
+   "taxName": "VAT",
+   "label": "Change reduced rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    490.0,
+    480.0,
+    480.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change reduced rate by 1 percentage point"
+   }
+  },
+  {
+   "id": "vat:change_standard_rate_by_1_percentage_point",
+   "tax": "vat",
+   "taxName": "VAT",
+   "label": "Change standard rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    8800.0,
+    9200.0,
+    9550.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change standard rate by 1 percentage point"
+   }
+  },
+  {
+   "id": "ipt:change_standard_rate_by_1_percentage_point",
+   "tax": "ipt",
+   "taxName": "Insurance premium tax",
+   "label": "Change standard rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    630.0,
+    640.0,
+    660.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change standard rate by 1 percentage point"
+   }
+  },
+  {
+   "id": "ipt:change_higher_rate_by_1_percentage_point",
+   "tax": "ipt",
+   "taxName": "Insurance premium tax",
+   "label": "Change higher rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 0,
+   "meaning": "yield_if_up",
+   "values": [
+    20.0,
+    20.0,
+    20.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Change higher rate by 1 percentage point"
+   }
+  },
+  {
+   "id": "sdlt:cut_residential_2_marginal_rate_by_1_percentage_point_cost",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Cut residential 2% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "cost",
+   "values": [
+    450.0,
+    460.0,
+    525.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Cut residential 2% marginal rate by 1 percentage point (Cost)"
+   }
+  },
+  {
+   "id": "sdlt:raise_residential_2_marginal_rate_by_1_percentage_point_yield",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Raise residential 2% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield",
+   "values": [
+    420.0,
+    425.0,
+    490.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Raise residential 2% marginal rate by 1 percentage point (Yield)"
+   }
+  },
+  {
+   "id": "sdlt:cut_residential_5_marginal_rate_by_1_percentage_point_cost",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Cut residential 5% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "cost",
+   "values": [
+    775.0,
+    795.0,
+    940.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Cut residential 5% marginal rate by 1 percentage point (Cost)"
+   }
+  },
+  {
+   "id": "sdlt:raise_residential_5_marginal_rate_by_1_percentage_point_yield",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Raise residential 5% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield",
+   "values": [
+    685.0,
+    680.0,
+    815.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Raise residential 5% marginal rate by 1 percentage point (Yield)"
+   }
+  },
+  {
+   "id": "sdlt:cut_residential_10_marginal_rate_by_1_percentage_point_cost",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Cut residential 10% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "cost",
+   "values": [
+    40.0,
+    25.0,
+    35.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Cut residential 10% marginal rate by 1 percentage point (Cost)"
+   }
+  },
+  {
+   "id": "sdlt:raise_residential_10_marginal_rate_by_1_percentage_point_yield",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Raise residential 10% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield",
+   "values": [
+    35.0,
+    15.0,
+    25.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Raise residential 10% marginal rate by 1 percentage point (Yield)"
+   }
+  },
+  {
+   "id": "sdlt:cut_residential_12_marginal_rate_by_1_percentage_point_cost",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Cut residential 12% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "cost",
+   "values": [
+    -10.0,
+    -40.0,
+    -35.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Cut residential 12% marginal rate by 1 percentage point (Cost)"
+   }
+  },
+  {
+   "id": "sdlt:raise_residential_12_marginal_rate_by_1_percentage_point_yield",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Raise residential 12% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield",
+   "values": [
+    -25.0,
+    -60.0,
+    -60.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Raise residential 12% marginal rate by 1 percentage point (Yield)"
+   }
+  },
+  {
+   "id": "sdlt:decrease_higher_rates_of_duty_on_additional_dwellings_by_1_percentage_",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Decrease Higher Rates of Duty on Additional Dwellings by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "cost",
+   "values": [
+    90.0,
+    5.0,
+    100.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Decrease Higher Rates of Duty on Additional Dwellings by 1 percentage point (Cost)"
+   }
+  },
+  {
+   "id": "sdlt:increase_higher_rates_of_duty_on_additional_dwellings_by_1_percentage_",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Increase Higher Rates of Duty on Additional Dwellings by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield",
+   "values": [
+    -45.0,
+    -130.0,
+    -50.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase Higher Rates of Duty on Additional Dwellings by 1 percentage point (Yield)"
+   }
+  },
+  {
+   "id": "sdlt:decrease_nrsdlt_by_1_percentage_point_cost",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Decrease NRSDLT by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "cost",
+   "values": [
+    10.0,
+    -5.0,
+    25.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Decrease NRSDLT by 1 percentage point (Cost)"
+   }
+  },
+  {
+   "id": "sdlt:increase_nrsdlt_by_1_percentage_point_yield",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Increase NRSDLT by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield",
+   "values": [
+    -10.0,
+    -25.0,
+    0.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase NRSDLT by 1 percentage point (Yield)"
+   }
+  },
+  {
+   "id": "sdlt:decrease_non_residential_5_marginal_rate_by_1_percentage_point_cost",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Decrease non-residential 5% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": -1,
+   "meaning": "cost",
+   "values": [
+    305.0,
+    355.0,
+    410.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Decrease non-residential 5% marginal rate by 1 percentage point (Cost)"
+   }
+  },
+  {
+   "id": "sdlt:increase_non_residential_5_marginal_rate_by_1_percentage_point_yield",
+   "tax": "sdlt",
+   "taxName": "Stamp duty land tax",
+   "label": "Increase non-residential 5% marginal rate by 1 percentage point",
+   "unit": "pp",
+   "size": 1.0,
+   "direction": 1,
+   "meaning": "yield",
+   "values": [
+    150.0,
+    185.0,
+    230.0
+   ],
+   "years": [
+    "2026-27",
+    "2027-28",
+    "2028-29"
+   ],
+   "source": {
+    "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+    "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes",
+    "file": "https://assets.publishing.service.gov.uk/media/68552862b46781eacfd71d71/June_2025_TRR_ODS__1_.ods",
+    "row": "Increase non-residential 5% marginal rate by 1 percentage point (Yield)"
+   }
+  }
+ ],
+ "uncertainty_scale": {
+  "Low": 0.05,
+  "Medium": 0.15,
+  "High": 0.3,
+  "Very High": 0.6,
+  "status": "UNSOURCED: the tool's own convention for the +/- width of a published figure by rating (the OBR's rating database could not be read, see meta.newer_baseline_exists). Shown on every result."
+ },
+ "extrapolation": {
+  "max_growth": 0.05,
+  "note": "HMRC publish three years. Years four and five are the third year grown at the item's own year-2 to year-3 growth (kept between 0% and 5%; held flat when the item is volatile). UNSOURCED assumption, shown on every result."
+ },
+ "spending": {
+  "universal_credit": {
+   "label": "Universal Credit (with legacy benefits, UC alone shown)",
+   "points": [
+    [
+     "2023-24",
+     51200
+    ],
+    [
+     "2028-29",
+     88100
+    ]
+   ],
+   "unit": "£ million",
+   "scope": "Great Britain, UC alone",
+   "source": "OBR, Tax by tax, spend by spend: Welfare spending, Universal Credit (spending on UC alone £51.2bn in 2023-24, forecast £88.1bn in 2028-29)",
+   "url": "https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/welfare-spending-universal-credit/"
+  },
+  "state_pension": {
+   "label": "State pension",
+   "points": [
+    [
+     "2023-24",
+     125000
+    ]
+   ],
+   "unit": "£ million",
+   "scope": "Great Britain",
+   "source": "OBR, Tax by tax, spend by spend: Welfare spending, Pensioner benefits (state pensions £125bn of £138bn pensioner benefit spending in 2023-24)",
+   "url": "https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/welfare-spending-pensioner-benefits/"
+  },
+  "pensioner_benefits": {
+   "label": "All pensioner benefits",
+   "points": [
+    [
+     "2023-24",
+     138000
+    ]
+   ],
+   "unit": "£ million",
+   "scope": "Great Britain",
+   "source": "OBR, Tax by tax, spend by spend: Welfare spending, Pensioner benefits",
+   "url": "https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/welfare-spending-pensioner-benefits/"
+  },
+  "disability_benefits": {
+   "label": "Disability benefits (PIP, DLA, Attendance Allowance)",
+   "points": [
+    [
+     "2023-24",
+     39100
+    ],
+    [
+     "2028-29",
+     58100
+    ]
+   ],
+   "unit": "£ million",
+   "scope": "Great Britain",
+   "source": "OBR, Tax by tax, spend by spend: Welfare spending, Disability benefits",
+   "url": "https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/welfare-spending-disability-benefits/"
+  },
+  "child_benefit": {
+   "label": "Child Benefit",
+   "points": [
+    [
+     "2023-24",
+     12500
+    ],
+    [
+     "2028-29",
+     13200
+    ]
+   ],
+   "unit": "£ million",
+   "scope": "United Kingdom",
+   "source": "OBR, Tax by tax, spend by spend: Welfare spending, Child Benefit",
+   "url": "https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/welfare-spending-child-benefit/"
+  },
+  "departmental": {
+   "label": "Departmental spending (resource and capital)",
+   "points": [
+    [
+     "2025-26",
+     592300
+    ]
+   ],
+   "unit": "£ million",
+   "scope": "United Kingdom",
+   "source": "OBR, Tax by tax, spend by spend: Departmental expenditure limits (£592.3bn in 2025-26: £481.0bn resource, £111.3bn capital)",
+   "url": "https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/departmental-expenditure-limits/"
+  },
+  "growth_unsourced": {
+   "state_pension": 0.045,
+   "pensioner_benefits": 0.045,
+   "departmental": 0.035,
+   "status": "UNSOURCED: the OBR pages give one year for these, so growth to other years is a tool assumption (shown, and widened in the range)."
+  },
+  "page_vintage_note": "The OBR pages carry the vintage of the forecast they were last updated for (the pages say some have not been updated for the latest forecast), so these are not the October 2026 baseline."
+ },
+ "benefit_behaviour": {
+  "universal_credit": {
+   "offset": {
+    "central": 0.1,
+    "low": 0.0,
+    "high": 0.25,
+    "status": "UNSOURCED"
+   },
+   "note": "Knock-on effects on tax, other benefits and work are not modelled; a placeholder range, flagged."
+  },
+  "state_pension": {
+   "offset": {
+    "central": 0.0,
+    "low": 0.0,
+    "high": 0.1,
+    "status": "UNSOURCED"
+   },
+   "note": "A pension rise is partly taxed back; not modelled."
+  },
+  "pensioner_benefits": {
+   "offset": {
+    "central": 0.0,
+    "low": 0.0,
+    "high": 0.1,
+    "status": "UNSOURCED"
+   },
+   "note": "As state pension."
+  },
+  "disability_benefits": {
+   "offset": {
+    "central": 0.0,
+    "low": 0.0,
+    "high": 0.1,
+    "status": "UNSOURCED"
+   },
+   "note": "Take-up and knock-on effects are not modelled."
+  },
+  "child_benefit": {
+   "offset": {
+    "central": 0.0,
+    "low": 0.0,
+    "high": 0.05,
+    "status": "UNSOURCED"
+   },
+   "note": "Use the HMRC ready reckoner rows for per-child changes; they include the High Income Child Benefit Charge."
+  }
+ },
+ "indirect": {
+  "employer_nics": {
+   "leakage": {
+    "central": 0.25,
+    "low": 0.1,
+    "high": 0.4,
+    "status": "UNSOURCED"
+   },
+   "incidence": {
+    "wages": 0.61,
+    "prices": 0.15,
+    "profits": 0.24,
+    "status": "SOURCED",
+    "source": "OBR October 2024 Economic and fiscal outlook, as reported by the IFS (Tax measures, Autumn Budget 2024): from 2026-27, 61% passed to workers' pay, 15% to prices, 24% absorbed in profits; 76% through real wages",
+    "url": "https://ifs.org.uk/sites/default/files/2024-10/Tax-measures-Isaac-Delestre_0.pdf"
+   },
+   "note": "The share of the headline yield lost to lower earnings and profits elsewhere in the tax system is a tool placeholder (UNSOURCED); only the incidence split is sourced."
+  }
+ },
+ "interactions": {
+  "note": "HMRC: changes can broadly be added, except an allowance or band change combined with a rate change in Income Tax, where the rate change is worth less. The tool adjusts those pairs from HMRC's own numbers; other interactions are listed as not modelled.",
+  "income_tax_pairs": [
+   {
+    "rate_family": "basic_rate",
+    "rate_item": "income_tax:change_basic_rate_by_1p",
+    "changers": [
+     [
+      "personal_allowance",
+      0.2
+     ],
+     [
+      "all_main_allowances_starting_and_basic_rate_limits",
+      0.2
+     ]
+    ]
+   },
+   {
+    "rate_family": "higher_rate",
+    "rate_item": "income_tax:change_higher_rate_by_1p",
+    "changers": [
+     [
+      "basic_rate_limit",
+      0.2
+     ]
+    ]
+   }
+  ],
+  "not_modelled": [
+   "fuel, alcohol and tobacco duty changes and the VAT charged on them",
+   "Income Tax and National Insurance changes together (incorporation and income shifting)",
+   "Universal Credit and tax changes together (the interaction through net income)",
+   "Corporation tax and employer National Insurance together (profits)"
+  ]
+ },
+ "references": [
+  {
+   "name": "HMRC, Direct effects of illustrative tax changes (June 2025)",
+   "url": "https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes"
+  },
+  {
+   "name": "OBR, The additional rate of income tax (Budget 2012)",
+   "url": "https://obr.uk/box/the-additional-rate-of-income-tax/"
+  },
+  {
+   "name": "OBR, Economic and fiscal outlook October 2021 (tobacco costing assumption)",
+   "url": "https://obr.uk/download/economic-and-fiscal-outlook-october-2021"
+  },
+  {
+   "name": "OBR, Tax by tax, spend by spend (welfare and departmental spending baselines)",
+   "url": "https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/"
+  },
+  {
+   "name": "IFS, Tax measures, Autumn Budget 2024 (OBR employer NICs incidence)",
+   "url": "https://ifs.org.uk/sites/default/files/2024-10/Tax-measures-Isaac-Delestre_0.pdf"
+  },
+  {
+   "name": "HM Treasury, Budget 2012 policy costings (additional rate, static cost)",
+   "url": "https://www.hrballiance.org.uk/wp-content/uploads/2012/05/budget2012_policy_costings.pdf"
+  }
+ ]
+}
