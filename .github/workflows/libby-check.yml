@@ -1,12 +1,18 @@
-# Checks the whole site on every commit (on any branch) and every pull request, and turns a red cross on GitHub if something is wrong
+# Checks the whole site on every pull request and every commit to main, and turns a red cross on GitHub if something is wrong
 # (a missing file, a broken import, a page with no file, a route that saves data without an access check, ...).
 # The same check can be run by hand with:  node scripts/libby/check-site.mjs
 name: Check site
 
 on:
-  push:            # every branch, so a change can be checked before it is merged
+  push:
+    branches: [main]   # a branch is checked through its pull request (not twice, to save Actions minutes)
   pull_request:
   workflow_dispatch:
+
+# a newer push to the same pull request cancels the check still running for the old one
+concurrency:
+  group: check-site-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 # the jobs only read the repository; nothing here can push, tag or change settings
 permissions:
