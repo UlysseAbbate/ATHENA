@@ -60,7 +60,7 @@ export const inHouse = (item, house = 'lords') => item.house === 'both' || (item
 //   rank 3 and above (Leader's circle and its Staff, Administrator, Developer)       everything their level allows: Leader's circle everything except the back-end
 // The pages are listed by id, the /api routes by name. The server enforces the same lists (functions/api/libby/_middleware.js).
 const BASIC_OPEN = { pages: ['home', 'data'], routes: ['data/.*', 'status', 'ld-peers'], write: [] };
-const WHIPS_OPEN = { pages: ['home', 'data', 'whips-office', 'whips', 'lds150', 'parliamentary-process', 'issues-tracker', 'concessionometer'], routes: [...BASIC_OPEN.routes, 'whip-availability', 'people-roles', 'parliamentary-process', 'issues', 'concessions'], write: ['whip-availability', 'parliamentary-process', 'issues'] };
+const WHIPS_OPEN = { pages: ['home', 'data', 'whips-office', 'whips', 'lds150', 'parliamentary-process', 'issues-tracker', 'concessionometer', 'hymn-sheets'], routes: [...BASIC_OPEN.routes, 'whip-availability', 'people-roles', 'parliamentary-process', 'issues', 'concessions', 'hymn-sheets'], write: ['whip-availability', 'parliamentary-process', 'issues'] };
 /** What this level may open for now: { pages, routes (reads), write (any request) }, or null if it is not held back. */
 export const openFor = (level) => (RANK[level] >= 3 ? null : RANK[level] === 2 ? WHIPS_OPEN : BASIC_OPEN);
 /** True if this level is held to part of LIBBY for now. */
@@ -186,6 +186,9 @@ export const PAGES = [
   { id: 'whips', match: /^\/whips(?:\/availability)?$/, view: 'whips-page.js', fn: 'renderWhips', level: 'whips',
     group: 'whips-office', tab: 'availability', tabLabel: 'Availability', href: '#/whips', house: 'both', card: 'Mark the days you would prefer to be duty whip, have no preference, or are not free.',
     api: [['whip-availability', { GET: 'whips', '*': 'whips' }], ['people-roles', { GET: 'whips', '*': BACKCHANNEL }]] },
+  { id: 'hymn-sheets', match: /^\/hymn-sheets$/, view: 'hymn-sheets-page.js', fn: 'renderHymnSheets', level: 'whips',
+    group: 'whips-office', tab: 'hymn-sheets', tabLabel: 'Hymn Sheets', href: '#/hymn-sheets', house: 'both', card: 'The hymn sheets prepared by the advisers, to download. Staff upload them.',
+    api: [['hymn-sheets', { GET: 'whips', '*': WHIPS_FEATURES }]] },
   { id: 'data', match: /^\/data(?:\/(votes|lords|commons))?$/, view: 'data-page.js', fn: 'renderData', params: (m) => ({ sub: m[1] || '' }), level: 'peers', beta: true,
     group: 'whips-office', tab: 'data', tabLabel: 'Data', href: '#/data', house: 'both', card: 'Voting analysis for the Lords and the Commons, and the Lords and Commons data.',
     api: [['data/.*', { '*': 'peers' }]], betaApi: ['data/.*'] },
