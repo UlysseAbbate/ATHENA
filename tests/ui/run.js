@@ -340,6 +340,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
             }
             (globalThis.__issuePosts = globalThis.__issuePosts || []).push(route.request().postData()); return j({ ok: true, id: 3 });
           }
+          if (u.pathname.endsWith("/api/libby/hymn-sheets")) return route.request().method() === "GET" ? j({ sheets: [{ id: 1, title: "Test Bill Report Stage Day 2 Hymn Sheet", bill_title: "Test Bill [HL]", stage: "Report Stage", day_number: 2, sitting_date: "2026-11-10", file_name: "hymns.docx", size_bytes: 20480, uploaded_by: "A Staffer", uploaded_at: "2026-11-09T10:00:00Z" }] }) : j({ ok: true, id: 2, title: "Uploaded" });
           if (u.pathname.endsWith("/api/libby/concessions")) {
             if (route.request().method() === "GET") return j({ portfolios: [{ code: "HO", name: "Home Office" }, { code: "DFT", name: "Transport" }], concessions: [{ billId: 1, stageId: 50, amendmentId: 101, house: "lords", number: "12", place: "C3, P2, L14", summary: "Leave out subsection (2)", url: "https://bills.parliament.uk/bills/1/stages/50/amendments/101", billTitle: "Test Bill [HL]", portfolio: ["HO"], notes: "The Government will bring forward its own wording.", wonBy: "Pat", wonAt: new Date().toISOString(), updatedBy: "Pat", updatedAt: new Date().toISOString() }, { billId: 7, stageId: 9, amendmentId: 5, house: "commons", number: "3", place: "", summary: "", url: "https://bills.parliament.uk/bills/7/stages/9/amendments/5", billTitle: "Old Act", portfolio: ["DfT"], notes: "", wonBy: "", wonAt: new Date().toISOString(), updatedBy: "", updatedAt: new Date().toISOString() }] });
             (globalThis.__concPosts = globalThis.__concPosts || []).push(route.request().postData()); return j({ ok: true });
@@ -616,7 +617,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           // the Whips' page and the Advisers' page
           await page.goto(BASE + "/libby/#/whips-office"); await page.waitForTimeout(600);
           const wo = await page.$$eval("#app .index-row .swipe", es => es.map(e => e.textContent));
-          check("Whips Hub: Availability, Data, the Issues Tracker and the Concessionometer sit under it", wo.join("|") === "Availability|Data|Issues Tracker|Concessionometer", wo.join("|"));
+          check("Whips Hub: Availability, Data, the Issues Tracker and the Concessionometer sit under it", wo.join("|") === "Availability|Hymn Sheets|Data|Issues Tracker|Concessionometer", wo.join("|"));
           await page.goto(BASE + "/libby/#/advisers-office"); await page.waitForTimeout(600);
           const ao = await page.$$eval("#app .index-row .swipe", es => es.map(e => e.textContent));
           check("Advisers' page: the Advisers and Roles pages sit under it", ao.join("|") === "Advisers|Roles", ao.join("|"));
@@ -649,7 +650,7 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
             lvl = whip; await page.goto(BASE + "/libby/"); await page.reload(); await page.waitForTimeout(900);
             check(`${whip}: the menu is Lib Dems 150 (for Parliamentary process) and the Whips Hub`, (await menu()).join("|") === "Lib Dems 150|Whips Hub", (await menu()).join("|"));
             await page.goto(BASE + "/libby/#/whips-office"); await page.waitForTimeout(500);
-            check(`${whip}: the Whips Hub opens, with Availability, Data, the Issues Tracker and the Concessionometer`, (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|") === "Availability|Data|Issues Tracker|Concessionometer", (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|"));
+            check(`${whip}: the Whips Hub opens, with Availability, Data, the Issues Tracker and the Concessionometer`, (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|") === "Availability|Hymn Sheets|Data|Issues Tracker|Concessionometer", (await page.$$eval(".index-row .swipe", ss => ss.map(s => s.textContent.trim()))).join("|"));
             await page.goto(BASE + "/libby/#/parliamentary-process"); await page.waitForTimeout(600);
             check(`${whip}: Parliamentary process opens`, !/Not available/.test(await page.$eval("#app", b => b.innerText)) && /Your question/.test(await page.$eval("#app", b => b.innerText)));
             if (whip === "whips") {
@@ -801,6 +802,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
           await page.click(".am-table thead th:nth-child(2) .tf-btn"); await page.waitForTimeout(150);
           await page.click('.tf-pop [data-s="desc"]'); await page.waitForTimeout(200);
           check("amendments: Sort Z to A in the filter reorders the rows, each with its detail row", (await page.$$eval("tr.am-row .am-n", ts => ts.map(t => t.textContent.trim()))).join(",") === "13,12,\u2014" && (await page.$$eval("tbody tr", rs => rs.map(r => r.className.split(" ")[0]))).join(" ") === "am-row am-more am-row am-more am-row am-more");
+          await page.goto(BASE + "/libby/#/hymn-sheets"); await page.waitForTimeout(900);
+          const hy = (await page.$eval("#app", b => b.innerText)).replace(/\s+/g, " ");
+          check("Hymn Sheets: the page lists each sheet under its Bill with a download link, and Staff get the upload form", /Test Bill \[HL\]/.test(hy) && /Test Bill Report Stage Day 2 Hymn Sheet/.test(hy) && /hymns\.docx/.test(hy) && /Upload a hymn sheet/.test(hy) && (await page.$eval('a[href*="/api/libby/hymn-sheets?id=1&download=1"]', a => !!a)), hy.slice(0, 200));
           await page.goto(BASE + "/libby/#/concessionometer"); await page.waitForTimeout(900);
           const ch = await page.$$eval(".conc-table thead th", hs => hs.map(h => h.textContent.trim()));
           check("Concessionometer: a grid of Bill, Portfolio and Notes", ch.join("|") === "Bill|Portfolio|Notes on the concession", ch.join("|"));
