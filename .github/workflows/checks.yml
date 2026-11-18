@@ -49,13 +49,16 @@ jobs:
           DATABASE_URL: postgresql://postgres:test@localhost:5432/postgres
       - name: Design tokens (contrast, light and dark)
         run: node tests/contrast.js && node tests/libby-css.js
+      # the browser tests (the slowest step) run on main and by hand; a pull request gets every other check, and the full browser run is done before each push
       - name: Browser download cache
+        if: github.event_name != 'pull_request'
         id: pw
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-1.47.2-chromium
       - name: Browser tests (mocked database, real security headers)
+        if: github.event_name != 'pull_request'
         run: |
           npm install --no-save --no-package-lock playwright@1.47.2
           if [ "${{ steps.pw.outputs.cache-hit }}" = "true" ]; then npx playwright install-deps chromium; else npx playwright install --with-deps chromium; fi
