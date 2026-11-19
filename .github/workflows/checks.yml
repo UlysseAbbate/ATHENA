@@ -53,7 +53,7 @@ jobs:
       - name: Browser download cache
         if: github.event_name != 'pull_request'
         id: pw
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-1.47.2-chromium
