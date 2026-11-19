@@ -1,7 +1,7 @@
 /* LUCIEN > Economic policy. Two parts:
  *   Data profiles: pick (or type) an area, an age range and a sex, and see the economic figures for those people beside the average. The figures are open official statistics
  *     (Nomis: Annual Population Survey, Claimant Count, ASHE, GDHI, Census 2021) kept in the table econ_data by the collector; the age matching is in econ-profile.js.
- *   Costings: the costing tool (next stage).
+ *   Costings: the costing tool (costing.js is the engine, costing-page.js the page, costing-data.json the sourced numbers).
  * Nothing here is a security boundary: the table is readable only by people with LUCIEN access. */
 const Economy = (() => {
   const { sb, esc } = Athena;
@@ -71,12 +71,6 @@ const Economy = (() => {
       <p class="muted">${matchNote}</p>
       <div class="tablewrap"><table class="grid"><thead><tr><th>Measure</th><th>${esc(ask.area)}, ${esc(ageText(ask.from, ask.to))}</th><th>Average</th><th>Difference</th><th>Source</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
       <p class="muted small">Official statistics from Nomis (ONS). Survey figures (Annual Population Survey) are estimates with a margin of error, larger for small groups. Pay is not split by age in the source, and household income is for the whole area. This is a data summary, not a costing.</p></div>`;
-  }
-
-  function costingsHtml() {
-    return `<div class="panel"><div class="panel-head"><h2>Costings</h2><span class="muted">next stage</span></div>
-      <p class="muted">The costing tool will take policy ideas (for example "raise the basic rate of income tax by 1p") and give a range of costings, year by year over five years: static and after behavioural change, low, central and high, with the method, data and assumptions shown, following the approach used by the OBR, HM Treasury and the IFS. It will not be an official or OBR-certified costing.</p>
-      <p class="muted">The data profiles are the first part (the statistics it will draw on), and How the system works is the second (the rules it will apply).</p></div>`;
   }
 
   /* ---------------------------------------------------------------- How the system works: the rulebook and the marginal rates explorer */
@@ -182,7 +176,7 @@ const Economy = (() => {
 
   function draw() {
     const area = st.area, seg = (id, label) => `<button data-et="${id}" class="${st.tab === id ? "on" : ""}">${label}</button>`;
-    host.innerHTML = `<div class="row"><div class="seg" id="eco-tabs">${seg("profiles", "Data profiles")}${seg("indicators", "Indicators")}${seg("system", "How the system works")}${seg("costings", "Costings")}</div></div>` + (st.tab === "costings" ? costingsHtml() : st.tab === "system" ? systemHtml() : st.tab === "indicators" ? indicatorsHtml() : `
+    host.innerHTML = `<div class="row"><div class="seg" id="eco-tabs">${seg("profiles", "Data profiles")}${seg("indicators", "Indicators")}${seg("system", "How the system works")}${seg("costings", "Costings")}</div></div>` + (st.tab === "costings" ? CostingPage.html() : st.tab === "system" ? systemHtml() : st.tab === "indicators" ? indicatorsHtml() : `
       <div class="panel"><div class="panel-head"><h2>Data profile</h2><span class="muted" id="eco-said">${esc(st.said)}</span></div>
       <p class="muted arc-note">Ask in words, for example <i>"create a data profile, compared to the average, of Londoners aged 18-25"</i>, or set the boxes below. The data is held in fixed age bands, so you get the closest bands it has.</p>
       <form class="arc-form" id="eco-ask"><input type="search" id="eco-q" placeholder="Ask: for example women in the North West aged 25-34" aria-label="Ask in words"><button class="ghost" type="submit">Ask</button></form>
@@ -196,8 +190,9 @@ const Economy = (() => {
   }
 
   function wire() {
-    host.querySelector("#eco-tabs").onclick = async e => { const b = e.target.closest("[data-et]"); if (!b) return; st.tab = b.dataset.et; if (st.tab === "system" && !fiscal && !fiscalError) { draw(); await loadFiscal(); } if (st.tab === "indicators" && !indicators && !indicatorsError) { draw(); await loadIndicators(); } draw(); };
+    host.querySelector("#eco-tabs").onclick = async e => { const b = e.target.closest("[data-et]"); if (!b) return; st.tab = b.dataset.et; if (st.tab === "system" && !fiscal && !fiscalError) { draw(); await loadFiscal(); } if (st.tab === "indicators" && !indicators && !indicatorsError) { draw(); await loadIndicators(); } if (st.tab === "costings") { draw(); await CostingPage.load(); } draw(); };
     if (st.tab === "indicators") return;
+    if (st.tab === "costings") { CostingPage.wire(host, draw); return; }
     if (st.tab === "system") {
       const kids = host.querySelector("#sys-kids"), loan = host.querySelector("#sys-loan");
       if (kids) { kids.onchange = () => { sys.children = +kids.value; sys.loan = loan.value; draw(); }; loan.onchange = () => { sys.loan = loan.value; sys.children = +kids.value; draw(); }; }
