@@ -38,7 +38,7 @@ jobs:
         run: python -m pyflakes tracker tests
       - name: Collector tests (offline)
         run: python -m pytest -q tests
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
       - name: JavaScript syntax
