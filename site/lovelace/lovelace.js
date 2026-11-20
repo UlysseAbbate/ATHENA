@@ -9,13 +9,14 @@ const ROLES = { core_team: "Core team", executive: "Executive", local_party_chai
   candidate: "Candidate", support_team: "Support team", member: "Member" };
 const RESOURCES = {
   dayplan_full: "Daily Plan: every day and every area, including Governance and Legal and London Politics (read and change)", dayplan_volunteer: "Member's Zone: this week's activities (today: Mayor's and GLA Activity and Internal Membership Engagement and Other; other days: Field Campaign and Membership Engagement), without Governance and Legal",
-  help_offer: "Help the Campaign: send a suggestion or an offer to help", help_inbox: "Suggestions and offers list (People page)",
+  help_offer: "Help the Campaign: send a suggestion or an offer to help", help_inbox: "Suggestions and offers list (Member's Zone > Suggestions & offers)",
   mayor_todo: "Mayor's To-Do List: read and tick done (write: add, edit, delete items)",
   london_reports: "London Politics: policy reports", london_media: "London Politics: London media",
   budget: "Budget & governance",
-  volunteers_all: "Full volunteer list (People page)", volunteers_add: "Add volunteers (own entries visible to the adder)", policies: "Policies (Communications)",
+  links: "Links page (the team's shared documents)",
+  volunteers_all: "Full volunteer list (no longer on the menu)", volunteers_add: "Add volunteers (no longer on the menu)", policies: "Policies (Communications)",
   social: "Social Media Channels Tracker and tracked accounts (Communications)", coverage: "Media trackers (Communications): news coverage",
-  stakeholders_all: "Full stakeholder list (People page)", stakeholders_add: "Add stakeholders (own entries visible to the adder)",
+  stakeholders_all: "Full stakeholder list (no longer on the menu)", stakeholders_add: "Add stakeholders (no longer on the menu)",
   users: "Team & access: see users / change roles", permissions: "Edit this permissions table",
   audit: "Activity log (who changed what)", ulysse: "LUCIEN policy tracker (only the admin can change this row)" };
 
@@ -74,13 +75,13 @@ const TABS = [
   ["zone", "Member's Zone", () => can("dayplan_volunteer", "read") || can("help_offer", "write") || can("help_inbox", "read"), renderZone],
   ["todo", "To-Do-List", () => can("mayor_todo", "read"), renderTodos],
   ["budget", "Governance", () => can("budget", "read"), renderBudget],
-  ["people", "Stakeholders", () => can("volunteers_all", "read") || can("stakeholders_all", "read") || can("volunteers_add", "write") || can("stakeholders_add", "write"), renderPeople],
+  ["links", "Links", () => can("links", "read"), renderLinks],
   ["comms", "Comms", () => can("coverage", "read") || can("social", "read") || can("policies", "read"), renderComms],
   ["london", "London Politics", () => !can("dayplan_full", "read") && (can("london_reports", "read") || can("london_media", "read")), renderLondon],  // a volunteer has no Full Plan: London Politics is its own page for them
   ["team", "Team & access", () => S.admin, renderTeam, true]   // the administrator's alone: its button is in the footer, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
-const ALIAS = { parl: "plan", visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "people", stakeholders: "people", suggestions: "people", offers: "zone", help: "zone" };
+const ALIAS = { parl: "plan", visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "links", stakeholders: "links", people: "links", suggestions: "zone", offers: "zone", help: "zone" };
 function buildTabs() {
   const vis = TABS.filter(t => t[3] && t[2]());
   const nav = $("#tabs"); nav.hidden = false;
@@ -376,11 +377,13 @@ function renderPlan() { return renderPlanner("plan"); }
 /** The Volunteer's Zone: the week, and nothing else (the database shows volunteers no other day). */
 const zoneState = { section: null };
 async function renderZone() {
-  const sections = [["today", "This week", () => can("dayplan_volunteer", "read")], ["help", "Help the Campaign", () => can("help_offer", "write") || can("help_inbox", "read")]].filter(x => x[2]());
+  const sections = [["today", "This week", () => can("dayplan_volunteer", "read")], ["help", "Help the Campaign", () => can("help_offer", "write") || can("help_inbox", "read")],
+    ["suggestions", "Suggestions & offers", () => can("help_inbox", "read")]].filter(x => x[2]());
   const sec = sections.some(x => x[0] === zoneState.section) ? zoneState.section : sections[0][0];
   main.innerHTML = `${sections.length > 1 ? `<div class="row"><div class="seg" data-zs>${sections.map(x => `<button data-z="${x[0]}" class="${x[0] === sec ? "on" : ""}">${esc(x[1])}</button>`).join("")}</div></div>` : ""}<div id="zb"></div>`;
   const pick = e => { const b = e.target.closest("[data-z]"); if (b) { zoneState.section = b.dataset.z; renderZone(); } };
   if (sec === "help") { await renderHelp($("#zb")); main.onclick = pick; return; }
+  if (sec === "suggestions") { main.onclick = pick; return crud(SUGGESTIONS, $("#zb"), renderZone); }   // what came in through Help the Campaign, for the campaign team
   await renderZoneToday($("#zb")); main.onclick = pick;
 }
 async function renderZoneToday(host) {
@@ -430,38 +433,16 @@ async function renderBudget() {
   main.innerHTML = '<div id="b1"></div><div id="b2"></div>';
   await crud(BUDGET, $("#b1"), renderBudget); await crud(GOVERNANCE, $("#b2"), renderBudget);
 }
-
-/* ------------------------------------------------------------------ volunteers & stakeholders: one list */
-const SECTORS = ["Lib Dems", "Media", "Think tank", "Campaign", "Donor", "Elected official", "Local party", "Business", "Union / membership body", "Community group", "Other"];
-const KIND = { volunteer: "Volunteer", stakeholder: "Stakeholder" };
-const mayAdd = k => can(k === "volunteer" ? "volunteers_add" : "stakeholders_add", "write");
-const mayEditAll = k => can(k === "volunteer" ? "volunteers_all" : "stakeholders_all", "write");
-const peopleState = { tab: "people" };
-async function renderPeople() {
-  if (can("help_inbox", "read")) {   // the campaign team also sees the suggestions and offers that come in from Help the Campaign
-    const t = peopleState.tab === "suggestions" ? "suggestions" : "people";
-    main.innerHTML = `<div class="row"><div class="seg" data-pt><button data-p="people" class="${t === "people" ? "on" : ""}">Volunteers &amp; stakeholders</button><button data-p="suggestions" class="${t === "suggestions" ? "on" : ""}">Suggestions &amp; offers</button></div></div><div id="pp"></div>`;
-    main.onclick = e => { const b = e.target.closest("[data-p]"); if (b) { peopleState.tab = b.dataset.p; renderPeople(); } };
-    if (t === "suggestions") return crud(SUGGESTIONS, $("#pp"), renderPeople);
-    return renderPeopleList($("#pp"));
-  }
-  return renderPeopleList(main);
-}
-async function renderPeopleList(host) {
-  const seeAll = can("volunteers_all", "read") || can("stakeholders_all", "read");
-  await crud({ table: "contacts", title: "Volunteers & stakeholders", owned: true, order: ["name", true], key: "contacts",
-    canEdit: () => can("volunteers_all", "write") || can("stakeholders_all", "write"), canAdd: () => mayAdd("volunteer") || mayAdd("stakeholder"),
-    canEditRow: r => r.created_by === S.user.id || mayEditAll(r.kind),
-    note: seeAll ? "One list for everyone we work with. Volunteers are filed under Lib Dems. The point of contact is the person on our side who owns the relationship. Anyone can add; you can always see and edit your own entries."
-      : "Add a volunteer or stakeholder. You can only see entries you added.",
-    filters: [{ label: "Everyone", test: () => true }, { label: "Volunteers", test: r => r.kind === "volunteer" }, { label: "Stakeholders", test: r => r.kind === "stakeholder" }],
-    transform: v => { if (v.kind === "volunteer") { v.organisation ||= "Lib Dems"; v.sector ||= "Lib Dems"; } },
-    fields: [T("name", "Full name", "text", { req: true }), T("organisation", "Organisation"), T("sector", "Sector", "text", { list: SECTORS }), T("email", "Email"), T("phone", "Phone"),
-      T("owner", "Point of contact"), T("notes", "Notes", "textarea"),
-      T("kind", "Type", "select", { req: true, hidden: true, options: () => Object.entries(KIND).filter(([k]) => mayAdd(k)) })] }, host, renderPeople);
+/* ------------------------------------------------------------------ Links: the team's shared documents (it replaced the Stakeholders page), for the core team and above */
+async function renderLinks() {
+  const { data, error } = await sb.from("links").select("id,label,url,position").order("position").order("label");
+  if (error) return showError(error);
+  main.innerHTML = `<p class="muted">The team's shared documents. Each opens in a new tab.</p>${data.length
+    ? `<div class="linkgrid">${data.map(l => `<a class="linkbtn" href="${esc(Athena.safeUrl(l.url))}" target="_blank" rel="noopener noreferrer">${esc(l.label)}</a>`).join("")}</div>`
+    : '<p class="muted">No links yet.</p>'}`;
 }
 
-/* ------------------------------------------------------------------ Help the Campaign: anyone can send a suggestion or an offer; the campaign team reads them on the People page */
+/* ------------------------------------------------------------------ Help the Campaign: anyone can send a suggestion or an offer; the campaign team reads them in the Member's Zone */
 const HELP_KINDS = [["venue", "I know of a venue(s) to host events/set pieces"], ["contact", "I know of a contact(s) at an organisation"], ["policy", "I would like to make a policy suggestion"],
   ["digital_filming", "I can support/have expertise in digital communications (filming)"], ["digital_editing", "I can support/have expertise in digital communications (editing)"], ["events", "I can support events and set pieces"]];
 const SUGGESTIONS = { table: "campaign_suggestions", key: "suggestions", title: "Suggestions & offers", order: ["created_at", false], owned: true, canEdit: () => can("help_inbox", "write"),
@@ -686,7 +667,7 @@ const TABLE_LABEL = { mayor_todos: "Mayor's To-Do List", campaign_suggestions: "
   volunteers: "Volunteers", stakeholders: "Stakeholders", contacts: "Volunteers & stakeholders", profiles: "People", role_permissions: "Permissions" };
 const READ_ONLY = new Set(["audit", "ulysse"]);
 // the core team can always see, edit and delete these (the database refuses to take it away): their boxes are locked on the grid
-const CORE_KEEPS = new Set(["london_reports", "london_media", "dayplan_full", "dayplan_volunteer", "budget", "volunteers_all", "volunteers_add", "stakeholders_all", "stakeholders_add", "policies", "social", "coverage", "visits", "help_offer", "help_inbox", "mayor_todo"]);   // only "can see" means anything for these
+const CORE_KEEPS = new Set(["links", "london_reports", "london_media", "dayplan_full", "dayplan_volunteer", "budget", "volunteers_all", "volunteers_add", "stakeholders_all", "stakeholders_add", "policies", "social", "coverage", "visits", "help_offer", "help_inbox", "mayor_todo"]);   // only "can see" means anything for these
 async function renderTeam() {
   const [{ data: profs, error }, { data: perms, error: pe }, seen, log] = await Promise.all([
     sb.from("profiles").select("*").order("created_at"), sb.from("role_permissions").select("*"), sb.rpc("team_last_seen"),

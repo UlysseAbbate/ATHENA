@@ -105,3 +105,8 @@ tr.todo-done td.wrapcell{text-decoration:line-through}
 /* "See all (N)" / "See less" under a section with more than three entries */
 .seeall{margin:4px 0 2px}
 .sec-rest[hidden]{display:none}
+
+/* Links page */
+.linkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:12px;margin-top:12px}
+.linkbtn{display:block;padding:18px 16px;border:1px solid var(--rule-strong,#999);background:var(--card);color:var(--ink,inherit);font:800 1.05rem var(--head);text-decoration:none;letter-spacing:-.02em}
+.linkbtn:hover,.linkbtn:focus-visible{border-color:var(--ink,#000);outline:2px solid var(--ink,#000);outline-offset:2px}

@@ -49,7 +49,7 @@ const PEOPLE = { lucien: [{ user_id: "p1", email: "reader@test.invalid", full_na
           { user_id: "p3", email: "bm@test.invalid", full_name: "", level: "staff", is_manager: true, grant_ceiling: 3, expires_at: null, last_sign_in_at: null }],
   lovelace: [{ user_id: "p4", email: "core@test.invalid", full_name: "", level: "core_team", is_manager: true, grant_ceiling: null, expires_at: null, last_sign_in_at: null }] };
 const PERMS = {
-  core_team: ["dayplan_full", "dayplan_volunteer", "help_offer", "help_inbox", "mayor_todo", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit", "london_reports", "london_media"],
+  core_team: ["links", "dayplan_full", "dayplan_volunteer", "help_offer", "help_inbox", "mayor_todo", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit", "london_reports", "london_media"],
   member: ["dayplan_volunteer", "help_offer", "volunteers_add", "stakeholders_add", "coverage", "social", "policies", "london_reports", "london_media"],
 };
 const ALLRES = [...PERMS.core_team, "ulysse"];
@@ -90,6 +90,12 @@ const TABLES = {
   media_coverage: [{ id: "m1", covered_on: iso(today), outlet: "BBC News", headline: "Sarah Olney on Heathrow", url: "https://example.org/a", source: "auto", kind: "libdem", updated_at: ts },
     { id: "m2", covered_on: plus(-3), outlet: "Standard", headline: "Olney backs rent reform", url: "https://example.org/b", source: "manual", kind: "libdem", updated_at: ts },
     { id: "m4", covered_on: plus(-1), outlet: "Hansard", headline: "Heathrow expansion debated in the Commons", url: "https://example.org/d", source: "manual", kind: "overall", topic: "parliament", updated_at: ts }],
+  links: [{ id: "l1", label: "Stakeholders", url: "https://docs.google.com/spreadsheets/d/1CelozKVMCXSYHujUpNcIH3CDKM-SmEbLRrU-YvnvyxA/edit?usp=sharing", position: 1 },
+    { id: "l2", label: "Policies", url: "https://drive.google.com/drive/folders/1c7RNdUw1EtfUicmtKyER0iNK0MjzFbhk?usp=share_link", position: 2 },
+    { id: "l3", label: "Brand Guidelines", url: "https://drive.google.com/file/d/1Eub9sSgq8OxLbbjAGWp-98pTpahtL49r/view?usp=share_link", position: 3 },
+    { id: "l4", label: "Digital Communications Guide", url: "https://drive.google.com/file/d/1nF41GRzuZ-4hS7w_I0gF5M6MCeLWVHWL/view?usp=share_link", position: 4 },
+    { id: "l5", label: "Selection Organogram", url: "https://docs.google.com/presentation/d/1jJN_Bfl3TqiTNoW2gGiN7xQKvI-zijTTeF2eSlUt6DM/edit?usp=sharing", position: 5 },
+    { id: "l6", label: "Campaigns Organogram", url: "https://docs.google.com/presentation/d/1qOKZ5Fhe6-DE6AferTOtJr0NCO90huIxaDzI1a3pqi8/edit?usp=sharing", position: 6 }],
   contacts: [{ id: "vo1", kind: "volunteer", name: "Alex Volunteer", organisation: "Lib Dems", sector: "Lib Dems", email: "alex@test.invalid", phone: "0700", owner: "Louis", notes: "Role: Canvassing", created_by: USERS.member.id, created_at: ts, updated_at: ts },
     { id: "s1", kind: "stakeholder", name: "Jo Bloggs", organisation: "Shelter", sector: "Campaign", email: null, phone: null, owner: "Sarah", notes: null, created_by: USERS.core.id, created_at: ts, updated_at: ts }],
   mayor_todos: [{ id: "mt1", action: "Approve the housing speech", responsible: "Sam Speechwriter", link: "https://example.org/speech", notes: "Needs a final read", done: false, created_at: ts, updated_at: ts },
@@ -898,13 +904,14 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: tab ${t} renders`, txt.length > 20 && !/Loading…$/.test(txt.trim()), txt.slice(0, 60).replace(/\n/g, " "));
       }
       // the merged pages: Communications (media trackers, policies) and Volunteers & stakeholders; visits live under the calendar
-      check(`${who}: old pages are merged away`, !tabs.some(t => ["Local party visits", "Social media", "Coverage", "Volunteers"].includes(t)) && !tabs.includes("Media") && !tabs.includes("Policies") && tabs.includes("Comms") && tabs.includes("Stakeholders"), tabs.join("|"));
-      await page.click('#tabs button:text-is("Stakeholders")'); await page.waitForTimeout(350);
-      const heads = await page.$$eval("#main table th", hs => hs.map(h => h.textContent.replace(/[▲▼]/g, "").trim()));
-      check(`${who}: people columns are Full name / Organisation / Sector / Email / Phone / Point of contact / Notes`, heads.slice(0, 7).join("|") === "Full name|Organisation|Sector|Email|Phone|Point of contact|Notes", heads.join("|"));
-      await page.click('#main [data-fl="1"]');
-      const vrows = await page.$$eval("#main tbody tr", rs => rs.map(r => r.innerText));
-      check(`${who}: volunteers are filed under Lib Dems`, vrows.length === 1 && /Alex Volunteer/.test(vrows[0]) && (vrows[0].match(/Lib Dems/g) || []).length === 2, vrows.join("|"));
+      check(`${who}: old pages are merged away`, !tabs.some(t => ["Local party visits", "Social media", "Coverage", "Volunteers"].includes(t)) && !tabs.includes("Media") && !tabs.includes("Policies") && tabs.includes("Comms") && !tabs.includes("Stakeholders"), tabs.join("|"));
+      check(`${who}: the Links page ${who === "member" ? "is not on a volunteer's menu" : "is on the menu, in place of Stakeholders"}`, tabs.includes("Links") === (who !== "member"), tabs.join("|"));
+      if (who !== "member") {
+        await page.click('#tabs button:text-is("Links")'); await page.waitForSelector(".linkbtn", { timeout: 4000 });
+        const lk = await page.$$eval(".linkbtn", as => as.map(a => [a.textContent.trim(), a.href, a.target, a.rel]));
+        check(`${who}: Links has six buttons (Stakeholders, Policies, Brand Guidelines, Digital Communications Guide, Selection Organogram, Campaigns Organogram) that open their documents in a new tab`, lk.map(x => x[0]).join("|") === "Stakeholders|Policies|Brand Guidelines|Digital Communications Guide|Selection Organogram|Campaigns Organogram" && lk.every(x => x[2] === "_blank" && /noopener/.test(x[3])), lk.map(x => x[0]).join("|"));
+        check(`${who}: each Links button goes to the right address`, lk[0][1].startsWith("https://docs.google.com/spreadsheets/d/1CelozKVMCXSYHujUpNcIH3CDKM-SmEbLRrU-YvnvyxA") && lk[1][1].startsWith("https://drive.google.com/drive/folders/1c7RNdUw1EtfUicmtKyER0iNK0MjzFbhk") && lk[2][1].startsWith("https://drive.google.com/file/d/1Eub9sSgq8OxLbbjAGWp-98pTpahtL49r/") && lk[3][1].startsWith("https://drive.google.com/file/d/1nF41GRzuZ-4hS7w_I0gF5M6MCeLWVHWL/") && lk[4][1].startsWith("https://docs.google.com/presentation/d/1jJN_Bfl3TqiTNoW2gGiN7xQKvI-zijTTeF2eSlUt6DM/") && lk[5][1].startsWith("https://docs.google.com/presentation/d/1qOKZ5Fhe6-DE6AferTOtJr0NCO90huIxaDzI1a3pqi8/"), lk.map(x => x[1]).join(" "));
+      }
       // Help the Campaign: a suggestion / offer form for everyone; the campaign team reads what comes in on the People page
       // the Mayor's To-Do List: for the core team (who fill it) and those who sign off; a volunteer does not see it
       check(`${who}: the Mayor's To-Do List is ${who === "member" ? "not on a volunteer's menu" : "on the menu"}`, tabs.includes("To-Do-List") === (who !== "member"), tabs.join("|"));
@@ -923,19 +930,17 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         await page.click('[data-l="staff"]'); await page.waitForTimeout(300);
         check(`${who}: another list shows only its own items`, /Nothing/.test(await page.$eval("#main tbody", b => b.innerText)) && !/Sign off the leaflet|Approve the housing/.test(await page.$eval("#main tbody", b => b.innerText)));
         await page.click('[data-l="mayor"]'); await page.waitForTimeout(200);
-        await page.click('#tabs button:text-is("Stakeholders")'); await page.waitForTimeout(350);   // (back to the page the next checks are about)
       }
       check(`${who}: Help the Campaign is a part of the Member's Zone, not a separate page`, !tabs.includes("Help the Campaign") && tabs.includes("Member's Zone"), tabs.join("|"));
-      if (who === "member") check(`${who}: a volunteer's People page has no suggestions list`, (await page.$("[data-pt]")) === null);
-      else {
-        check(`${who}: the People page has a Suggestions & offers list for the campaign team`, (await page.$$eval("[data-pt] button", bs => bs.map(b => b.textContent.trim()))).join("|") === "Volunteers & stakeholders|Suggestions & offers");
-        await page.click('[data-p="suggestions"]'); await page.waitForTimeout(400);
-        const sg = await page.$eval("#pp", e => e.innerText.replace(/\s+/g, " "));
-        check(`${who}: a suggestion shows who sent it, how to contact them and what they offer`, /Dana Donor/.test(sg) && /dana@test.invalid/.test(sg) && /I know of a venue/.test(sg) && /A hall in Kingston/.test(sg), sg.slice(0, 200));
-        check(`${who}: the campaign team can edit and delete a suggestion`, (await page.$("#pp [data-edit]")) !== null);
-        await page.click('[data-p="people"]'); await page.waitForTimeout(300);
-      }
       await page.click('#tabs button:text-is("Member\'s Zone")'); await page.waitForTimeout(300);
+      const zsecs = await page.$$eval("[data-zs] button", bs => bs.map(b => b.textContent.trim()));
+      check(`${who}: the Member's Zone has ${who === "member" ? "no Suggestions & offers list for a volunteer" : "a Suggestions & offers list for the campaign team"}`, who === "member" ? !zsecs.includes("Suggestions & offers") : zsecs.join("|") === "This week|Help the Campaign|Suggestions & offers", zsecs.join("|"));
+      if (who !== "member") {
+        await page.click('[data-zs] button:text-is("Suggestions & offers")'); await page.waitForTimeout(400);
+        const sg = await page.$eval("#zb", e => e.innerText.replace(/\s+/g, " "));
+        check(`${who}: a suggestion shows who sent it, how to contact them and what they offer`, /Dana Donor/.test(sg) && /dana@test.invalid/.test(sg) && /I know of a venue/.test(sg) && /A hall in Kingston/.test(sg), sg.slice(0, 200));
+        check(`${who}: the campaign team can edit and delete a suggestion`, (await page.$("#zb [data-edit]")) !== null);
+      }
       await page.click('[data-zs] button:text-is("Help the Campaign")'); await page.waitForTimeout(400);
       const hk = await page.$$eval("#h_kind option", os => os.map(o => o.textContent));
       check(`${who}: the form asks for a name, a contact (with happy to be contacted), what is offered, and further details`, (await page.$("#h_name")) !== null && (await page.$("#h_contact")) !== null && (await page.$('input[name="ok"]')) !== null && (await page.$("#h_details")) !== null
