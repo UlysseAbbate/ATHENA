@@ -14,7 +14,8 @@ const RESOURCES = {
   london_reports: "London Politics: policy reports", london_media: "London Politics: London media",
   budget: "Budget & governance",
   links: "Links page (the team's shared documents)",
-  volunteers_all: "Full volunteer list (no longer on the menu)", volunteers_add: "Add volunteers (no longer on the menu)", policies: "Policies (Communications)",
+  stories: "Comms > Stories: send a pitch (W: every role) and read the pitches (R: the core team)",
+  volunteers_all: "Full volunteer list (no longer on the menu)", volunteers_add: "Add volunteers (no longer on the menu)", policies: "Comms > Policies: read the policy documents (R) and upload them (W)",
   social: "Social Media Channels Tracker and tracked accounts (Communications)", coverage: "Media trackers (Communications): news coverage",
   stakeholders_all: "Full stakeholder list (no longer on the menu)", stakeholders_add: "Add stakeholders (no longer on the menu)",
   users: "Team & access: see users / change roles", permissions: "Edit this permissions table",
@@ -76,12 +77,12 @@ const TABS = [
   ["todo", "To-Do-List", () => can("mayor_todo", "read"), renderTodos],
   ["budget", "Governance", () => can("budget", "read"), renderBudget],
   ["links", "Links", () => can("links", "read"), renderLinks],
-  ["comms", "Comms", () => can("coverage", "read") || can("social", "read") || can("policies", "read"), renderComms],
+  ["comms", "Comms", () => commsSections().length > 0, renderComms],
   ["london", "London Politics", () => !can("dayplan_full", "read") && (can("london_reports", "read") || can("london_media", "read")), renderLondon],  // a volunteer has no Full Plan: London Politics is its own page for them
   ["team", "Team & access", () => S.admin, renderTeam, true]   // the administrator's alone: its button is in the footer, as on LUCIEN and LIBBY
 ];
 // old addresses (bookmarks) of the pages that were merged
-const ALIAS = { parl: "plan", visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", volunteers: "links", stakeholders: "links", people: "links", suggestions: "zone", offers: "zone", help: "zone" };
+const ALIAS = { parl: "plan", visits: "plan", social: "comms", coverage: "comms", media: "comms", policies: "comms", stories: "comms", volunteers: "links", stakeholders: "links", people: "links", suggestions: "zone", offers: "zone", help: "zone" };
 function buildTabs() {
   const vis = TABS.filter(t => t[3] && t[2]());
   const nav = $("#tabs"); nav.hidden = false;
@@ -404,23 +405,6 @@ async function renderZoneToday(host) {
 
 /* ------------------------------------------------------------------ entity configs */
 const T = (k, label, type = "text", extra = {}) => ({ k, label, type, ...extra });
-const POLICIES = { table: "policies", title: "Policies", order: ["theme", true], canEdit: () => can("policies", "write"),
-  fields: [T("policy", "Policy", "text", { req: true }), T("theme", "Theme"), T("briefing", "Briefing"), T("actions", "Actions", "textarea"),
-    T("interested_parties", "Interested parties", "textarea"), T("comms", "Comms", "textarea"), T("notes", "Notes", "textarea")] };
-const PLATFORMS = ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"];
-const TOPICS = [["parliament", "Parliament"], ["gla", "GLA"], ["council", "Council"]];
-const MEDIA_FIELDS = [T("covered_on", "Date", "date", { req: true }), T("outlet", "Outlet / platform", "text", { req: true, list: [...PLATFORMS, "BBC News", "The Guardian", "Evening Standard", "MyLondon"] }),
-    T("headline", "Headline / first line of the caption", "text", { req: true, render: r => {
-      const u = safeUrl(r.url); return (u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(r.headline)}</a>` : esc(r.headline)) +
-        (r.source === "auto" ? ' <span class="pill" title="Found automatically in the outlet\'s news feed or pages">auto</span>' : r.source === "social" ? ' <span class="pill" title="Found automatically on the account">auto</span>' : ""); } }),
-    T("topic", "Topic", "select", { options: TOPICS, render: r => esc(Object.fromEntries(TOPICS)[r.topic] || "") }),
-    T("url", "URL", "url", { hidden: true }), T("notes", "Notes", "textarea")];
-const MEDIA = { table: "media_coverage", key: "media_libdem", where: { kind: "libdem" }, title: "Olney Media Tracker", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
-  note: "Sarah Olney in the news: any article that mentions her, found automatically at 6am and 6pm, and anything added by hand. What our social accounts post is on the Social Media Channels Tracker.",
-  fields: MEDIA_FIELDS };
-const MEDIA_ALL = { table: "media_coverage", key: "media_overall", where: { kind: "overall" }, title: "Overall Media Tracker", order: ["covered_on", false], canEdit: () => can("coverage", "write"),
-  note: "Wider political news that matters to the campaign: Parliament, the GLA and the councils.",
-  fields: MEDIA_FIELDS };
 const BUDGET = { table: "budget_items", title: "Budget", order: ["created_at", true], canEdit: () => can("budget", "write"),
   fields: [T("item", "Item", "text", { req: true }), T("amount", "Amount (£)", "number"), T("category", "Category"), T("notes", "Notes", "textarea")],
   footer: rows => `<div class="total">Total: ${esc(gbp(rows.reduce((s, r) => s + Number(r.amount || 0), 0)))}</div>` };
@@ -555,119 +539,13 @@ async function drawLondon(kind) {
   $("#ln-pager").innerHTML = n > LONDON_PAGE ? `<button class="btn" data-pg="-1" ${londonState.page === 0 ? "disabled" : ""}>‹ Newer</button><span class="muted">Page ${londonState.page + 1} of ${last + 1}</span><button class="btn" data-pg="1" ${londonState.page >= last ? "disabled" : ""}>Older ›</button>` : "";
 }
 
-/* ------------------------------------------------------------------ Communications: Media (three trackers) and Policies */
-const commsState = { section: null, tracker: null };
-const TRACKERS = [
-  ["overall", "Overall Media Tracker", () => can("coverage", "read")],
-  ["olney", "Olney Media Tracker", () => can("coverage", "read")],
-  ["social", "Social Media Channels Tracker", () => can("social", "read")],
-  ["accounts", "Tracked accounts", () => can("social", "read")]
-];
-async function renderComms() {
-  const sections = [["media", "Media", () => can("coverage", "read") || can("social", "read")], ["policies", "Policies", () => can("policies", "read")]].filter(s => s[2]());
-  if (!sections.length) { main.innerHTML = '<p class="muted">Communications is not open to your role yet.</p>'; return; }
-  const sec = sections.some(s => s[0] === commsState.section) ? commsState.section : sections[0][0];
-  const trackers = TRACKERS.filter(t => t[2]());
-  const tr = trackers.some(t => t[0] === commsState.tracker) ? commsState.tracker : trackers[0]?.[0];
-  main.innerHTML = `<div class="row">${sections.length > 1 ? `<div class="seg" data-sec>${sections.map(s => `<button data-s="${s[0]}" class="${s[0] === sec ? "on" : ""}">${esc(s[1])}</button>`).join("")}</div>` : ""}</div>
-    ${sec === "media" ? `<h2 class="h2-rule" data-open>Media</h2><div class="row"><div class="seg" data-tr>${trackers.map(t => `<button data-t="${t[0]}" class="${t[0] === tr ? "on" : ""}">${esc(t[1])}</button>`).join("")}</div></div>` : ""}<div id="cm"></div>`;
-  main.onclick = e => {
-    const s = e.target.closest("[data-s]"), t = e.target.closest("[data-t]");
-    if (s) { commsState.section = s.dataset.s; renderComms(); }
-    if (t) { commsState.tracker = t.dataset.t; renderComms(); }
-  };
-  const host = $("#cm");
-  if (sec === "policies") return crud({ ...POLICIES, open: true }, host, renderComms);
-  if (tr === "overall") return crud({ ...MEDIA_ALL, open: true }, host, renderComms);
-  if (tr === "olney") return crud({ ...MEDIA, open: true }, host, renderComms);
-  if (tr === "social") return renderSocialTracker(host);
-  if (tr === "accounts") return renderAccounts(host);
-}
-
-/* ---- the Social Media Channels Tracker: the accounts being followed, and their posts */
-const POST_SHOWN = 6;
-async function renderSocialTracker(host) {
-  const w = can("social", "write");
-  const [accts, posts] = await Promise.all([sb.from("social_accounts").select("*").order("organisation").order("platform"), sb.from("social_posts").select("*").order("posted_at", { ascending: false }).limit(2000)]);
-  if (accts.error || posts.error) return showError(accts.error || posts.error);
-  const tracked = accts.data.filter(a => a.handle || a.url || posts.data.some(p => p.account_id === a.id));
-  const auto = a => ["BlueSky", "Substack", "YouTube", "Mastodon"].includes(a.platform);   // platforms that publish an open feed for this
-  const fmtPost = p => `<div class="pe"><div class="pe-main"><span class="pe-time">${esc(fmtShort(String(p.posted_at).slice(0, 10)))}</span>${(() => { const u = safeUrl(p.url); return u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(p.summary || "post")}</a>` : esc(p.summary || "post"); })()}${w ? ` <button class="btn sm" data-pe="${p.id}">Edit</button>` : ""}</div></div>`;
-  host.innerHTML = `<p class="muted">Every account we follow, with its latest posts. <b>BlueSky</b>, <b>Substack</b>, <b>YouTube</b> and <b>Mastodon</b> posts are found automatically at 6am and 6pm. Instagram, Facebook, X, TikTok and LinkedIn do not allow automatic reading (their terms forbid scraping, and they block it), so add their posts by hand. The list of accounts is kept on the <a href="#" data-acc>Tracked accounts</a> page, where you can upload links.</p>
-    <div class="row"><input class="grow" type="search" placeholder="Search accounts and posts…" data-q></div><div id="acc-list"></div>`;
-  const draw = () => {
-    const q = $("[data-q]", host).value.toLowerCase();
-    const items = tracked.map(a => ({ a, ps: posts.data.filter(p => p.account_id === a.id) })).filter(({ a, ps }) => !q || `${a.organisation} ${a.platform} ${a.handle || ""}`.toLowerCase().includes(q) || ps.some(p => String(p.summary || "").toLowerCase().includes(q)));
-    $("#acc-list", host).innerHTML = items.length ? items.map(({ a, ps }) => { const u = safeUrl(a.url);
-      return `<section class="acct"><h3>${esc(a.organisation)} <span class="muted">· ${esc(a.platform)}${a.handle ? ` · ${esc(a.handle)}` : ""}</span> ${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer" aria-label="Open the account">↗</a>` : ""} <span class="pill">${auto(a) && a.handle ? "automatic" : "by hand"}</span>
-        ${w ? `<button class="btn sm" data-addp="${a.id}">+ Add a post</button>` : ""}</h3>
-        ${ps.length ? ps.slice(0, POST_SHOWN).map(fmtPost).join("") + (ps.length > POST_SHOWN ? `<details><summary class="muted">${ps.length - POST_SHOWN} older post${ps.length - POST_SHOWN === 1 ? "" : "s"}</summary>${ps.slice(POST_SHOWN).map(fmtPost).join("")}</details>` : "") : '<p class="muted small">No posts yet.</p>'}</section>`; }).join("")
-      : `<p class="muted">${tracked.length ? "Nothing matches the search." : "No accounts are being tracked yet. Add their links on the Tracked accounts page."}</p>`;
-  };
-  draw();
-  $("[data-q]", host).oninput = draw;
-  const postForm = (a, row) => openForm({ title: `${a.organisation} · ${a.platform}`, fields: [T("posted_at", "Date posted", "date", { req: true }), T("summary", "What it says (the first line is enough)", "text", { req: true }), T("url", "Link to the post"), T("topic", "Topic")],
-    values: row ? { ...row, posted_at: String(row.posted_at).slice(0, 10) } : { posted_at: iso(new Date()) }, meta: edited(row),
-    onSubmit: async v => { v.posted_at = `${v.posted_at}T12:00:00Z`; const e = row ? await guardedUpdate("social_posts", row, v) : (await sb.from("social_posts").insert({ ...v, account_id: a.id })).error;
-      if (!e || e.message === CONFLICT) renderSocialTracker(host); return e; },
-    onDelete: row ? async () => { const { error: e } = await sb.from("social_posts").delete().eq("id", row.id); if (!e) renderSocialTracker(host); return e; } : null });
-  host.onclick = e => {
-    if (e.target.closest("[data-acc]")) { e.preventDefault(); commsState.tracker = "accounts"; return renderComms(); }
-    const ap = e.target.closest("[data-addp]"), pe = e.target.closest("[data-pe]");
-    if (ap) postForm(tracked.find(a => a.id === ap.dataset.addp));
-    if (pe) { const p = posts.data.find(x => x.id === pe.dataset.pe); postForm(accts.data.find(a => a.id === p.account_id), p); }
-  };
-}
-
-/* ---- Tracked accounts: the list of accounts the tracker follows. Links can be uploaded from a spreadsheet, or added one at a time. */
-async function renderAccounts(host) {
-  const w = can("social", "write");
-  const { data: accts, error } = await sb.from("social_accounts").select("*").order("organisation");
-  if (error) return showError(error);
-  const known = accts.filter(a => a.handle || a.url);
-  host.innerHTML = `<p class="muted">The accounts the Social Media Channels Tracker follows. ${w ? "Upload a spreadsheet of links (an account owner and a link to each profile), or add one below: the platform and handle are worked out from the link. " : ""}<b>BlueSky</b>, <b>Substack</b>, <b>YouTube</b> and <b>Mastodon</b> accounts are read automatically at 6am and 6pm; for the other platforms add the posts by hand.</p>
-    ${w ? '<div id="acc-import"></div><form class="row" data-one><input name="organisation" placeholder="Account owner, e.g. Sarah Olney MP" required style="width:22rem"><input name="url" placeholder="Link to the profile" required style="width:24rem"><button class="btn primary" type="submit">Add this account</button><span class="muted small" data-onemsg role="status" aria-live="polite"></span></form>' : ""}
-    <div class="tablewrap"><table class="grid"><thead><tr><th>Account owner</th><th>Platform</th><th>Handle</th><th>Link</th>${w ? "<th></th>" : ""}</tr></thead><tbody>${known.map(a => { const u = safeUrl(a.url);
-      return `<tr><td>${esc(a.organisation)}</td><td>${esc(a.platform)}</td><td>${esc(a.handle || "")}</td><td>${u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">link</a>` : ""}</td>${w ? `<td><button class="btn sm" data-a="${a.id}">Edit</button></td>` : ""}</tr>`; }).join("") || `<tr><td colspan="${w ? 5 : 4}" class="muted">No accounts yet.</td></tr>`}</tbody></table></div>`;
-  if (!w) return;
-  const { mountImport } = await import("../shared/import/panel.js"), { IMPORTERS, platformOf, handleOf } = await import("../shared/import/importers.js");
-  mountImport($("#acc-import", host), {
-    importer: IMPORTERS.accounts,
-    after: () => renderAccounts(host),
-    commit: async (entries, progress) => {
-      let added = 0, done = 0; const failed = [];
-      for (const e of entries) {
-        const { error: er } = await sb.from("social_accounts").upsert({ organisation: e.organisation, platform: e.platform, handle: e.handle || null, url: e.url || null }, { onConflict: "organisation,platform" });
-        if (er) failed.push({ summary: `${e.organisation} · ${e.platform}`, error: er.message }); else added++;
-        progress(++done, entries.length);
-      }
-      return { added, skipped: 0, failed };
-    }
-  });
-  host.querySelector("[data-one]").onsubmit = async ev => {
-    ev.preventDefault();
-    const f = ev.target.elements, msg = host.querySelector("[data-onemsg]"), url = f.url.value.trim(), platform = platformOf(url);
-    if (!platform) { msg.textContent = "I could not tell the platform from that link."; return; }
-    const { error: er } = await sb.from("social_accounts").upsert({ organisation: f.organisation.value.trim(), platform, handle: handleOf(platform, url) || null, url }, { onConflict: "organisation,platform" });
-    if (er) { msg.textContent = er.message; return; }
-    renderAccounts(host);
-  };
-  host.onclick = e => {
-    const c = e.target.closest("[data-a]"); if (!c) return;
-    const a = accts.find(x => x.id === c.dataset.a);
-    openForm({ title: `${a.organisation} · ${a.platform}`, fields: [T("handle", "Handle"), T("url", "Profile link", "url"), T("notes", "Notes", "textarea")], values: a, meta: edited(a),
-      onSubmit: async v => { const er = await guardedUpdate("social_accounts", a, v); if (!er || er.message === CONFLICT) renderAccounts(host); return er; },
-      onDelete: async () => { const { error: er } = await sb.from("social_accounts").delete().eq("id", a.id); if (!er) renderAccounts(host); return er; } });
-  };
-}
-
 /* ------------------------------------------------------------------ team & access */
 const TABLE_LABEL = { mayor_todos: "Mayor's To-Do List", campaign_suggestions: "Suggestions and offers", day_plan_entries: "Daily Plan", plan_entries: "Plan (old)", plan_categories: "Plan rows", local_party_visits: "Visits", budget_items: "Budget", governance_items: "Governance",
-  policies: "Policies", social_accounts: "Social accounts", social_posts: "Social outputs", content_items: "Content", media_coverage: "Coverage",
+  policies: "Policies (old list)", policy_docs: "Policy documents", story_pitches: "Story pitches", social_accounts: "Tracked accounts", social_posts: "Social outputs", content_items: "Content", media_coverage: "Media tracker",
   volunteers: "Volunteers", stakeholders: "Stakeholders", contacts: "Volunteers & stakeholders", profiles: "People", role_permissions: "Permissions" };
 const READ_ONLY = new Set(["audit", "ulysse"]);
 // the core team can always see, edit and delete these (the database refuses to take it away): their boxes are locked on the grid
-const CORE_KEEPS = new Set(["links", "london_reports", "london_media", "dayplan_full", "dayplan_volunteer", "budget", "volunteers_all", "volunteers_add", "stakeholders_all", "stakeholders_add", "policies", "social", "coverage", "visits", "help_offer", "help_inbox", "mayor_todo"]);   // only "can see" means anything for these
+const CORE_KEEPS = new Set(["links", "stories", "london_reports", "london_media", "dayplan_full", "dayplan_volunteer", "budget", "volunteers_all", "volunteers_add", "stakeholders_all", "stakeholders_add", "policies", "social", "coverage", "visits", "help_offer", "help_inbox", "mayor_todo"]);   // only "can see" means anything for these
 async function renderTeam() {
   const [{ data: profs, error }, { data: perms, error: pe }, seen, log] = await Promise.all([
     sb.from("profiles").select("*").order("created_at"), sb.from("role_permissions").select("*"), sb.rpc("team_last_seen"),

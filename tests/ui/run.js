@@ -49,14 +49,14 @@ const PEOPLE = { lucien: [{ user_id: "p1", email: "reader@test.invalid", full_na
           { user_id: "p3", email: "bm@test.invalid", full_name: "", level: "staff", is_manager: true, grant_ceiling: 3, expires_at: null, last_sign_in_at: null }],
   lovelace: [{ user_id: "p4", email: "core@test.invalid", full_name: "", level: "core_team", is_manager: true, grant_ceiling: null, expires_at: null, last_sign_in_at: null }] };
 const PERMS = {
-  core_team: ["links", "dayplan_full", "dayplan_volunteer", "help_offer", "help_inbox", "mayor_todo", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit", "london_reports", "london_media"],
-  member: ["dayplan_volunteer", "help_offer", "volunteers_add", "stakeholders_add", "coverage", "social", "policies", "london_reports", "london_media"],
+  core_team: ["links", "stories", "dayplan_full", "dayplan_volunteer", "help_offer", "help_inbox", "mayor_todo", "budget", "volunteers_all", "volunteers_add", "policies", "social", "coverage", "stakeholders_all", "stakeholders_add", "visits", "users", "permissions", "audit", "london_reports", "london_media"],
+  member: ["dayplan_volunteer", "help_offer", "volunteers_add", "stakeholders_add", "coverage", "social", "london_reports", "london_media"],
 };
 const ALLRES = [...PERMS.core_team, "ulysse"];
 const ts = new Date(Date.now() - 3 * 36e5).toISOString();
 const TABLES = {
   profiles: Object.values(USERS).map(u => ({ id: u.id, email: u.email, full_name: u.email.split("@")[0], role: u.role, access_until: u.role === "member" ? plus(20) : null, created_at: ts })),
-  role_permissions: ["core_team", "member"].flatMap(r => ALLRES.map(res => ({ role: r, resource: res, can_read: PERMS[r].includes(res) || (r === "member" && res === "coverage"), can_write: PERMS[r].includes(res) && r === "core_team" || ["volunteers_add", "stakeholders_add", "help_offer"].includes(res) }))),
+  role_permissions: ["core_team", "member"].flatMap(r => ALLRES.map(res => ({ role: r, resource: res, can_read: PERMS[r].includes(res) || (r === "member" && res === "coverage"), can_write: PERMS[r].includes(res) && r === "core_team" || ["volunteers_add", "stakeholders_add", "help_offer", "stories"].includes(res) }))),
   day_plan_entries: [
     { id: "d1", plan_date: iso(today), area: "mayor", section: "field", title: "Launch housing pledge", starts: "10:00", place: "Richmond Park", link: "https://example.org/h", detail: "Bring leaflets", created_at: ts, updated_at: ts },
     { id: "d2", plan_date: iso(today), area: "internal", section: "membership", title: "Members' call", starts: "19:00", created_at: ts, updated_at: ts },
@@ -103,7 +103,14 @@ const TABLES = {
   campaign_suggestions: [{ id: "cs1", name: "Dana Donor", contact: "dana@test.invalid", ok_to_contact: true, kind: "venue", details: "A hall in Kingston", status: "new", notes: null, created_at: ts, updated_at: ts }],
   budget_items: [{ id: "b1", item: "Leaflets", amount: 1200, category: "Print", updated_at: ts }, { id: "b2", item: "Hall hire", amount: 300, category: "Events", updated_at: ts }],
   policies: [{ id: "po1", policy: "Rent controls", theme: "Housing", updated_at: ts }],
-  social_accounts: ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"].map((p, i) => ({ id: "sa" + i, organisation: "Sarah Olney", platform: p, handle: i ? null : "@sarah", url: null, updated_at: ts })),
+  story_pitches: [{ id: "st1", status: "new", pitched_name: "Pat Pitcher", headline: "Rents up again for London renters", other_1: null, hook: "Rents rose 9% in a year", content: "Fact one. Fact two.", turn: "It hits young people hardest", cta: "Back rent stabilisation",
+    other_2: null, media: [{ organisation: "MyLondon", name: "Reporter One", details: "r1@test.invalid", why: "They cover housing" }], other_3: null, briefing_link: "https://example.org/brief", briefing_file_name: null, cost_estimate: "Not sure", orgs_work: [{ organisation: "Resolution Foundation", references: "https://example.org/rf" }],
+    other_4: null, set_piece: "yes", set_piece_kind: "Speech", set_piece_where: "City Hall", other_5: null, notes: null, created_at: ts, updated_at: ts }],
+  policy_docs: [{ id: "pd1", title: "Housing policy paper", theme: "Housing", summary: null, file_name: "housing.pdf", mime: "application/pdf", size_bytes: 1000, pages: 4, chunk_count: 3, created_at: ts, updated_at: ts },
+    { id: "pd2", title: "Transport motion", theme: null, summary: null, file_name: "transport.docx", mime: "application/octet-stream", size_bytes: 900, pages: null, chunk_count: 0, created_at: ts, updated_at: ts }],
+  policy_doc_files: [{ doc_id: "pd1", data: "JVBERi0=" }],
+  policy_doc_chunks: [],
+  social_accounts: ["Instagram", "Facebook", "Twitter", "BlueSky", "Substack", "TikTok", "LinkedIn"].map((p, i) => ({ id: "sa" + i, organisation: "Sarah Olney", platform: p, handle: i ? null : "@sarah", url: null, tracker: "libdem", updated_at: ts })).concat([{ id: "sa20", organisation: "Evening Standard", platform: "Print media", handle: "Evening Standard", url: null, tracker: "london", updated_at: ts }]),
   social_posts: [{ id: "sp1", account_id: "sa3", posted_at: new Date(Date.now() - 864e5).toISOString(), summary: "Out in Kingston talking about the cost of living", url: "https://bsky.app/profile/sarah/post/3k", updated_at: ts }],
   audit_log: [{ id: 1, at: ts, user_email: "core@test.invalid", table_name: "day_plan_entries", label: "Launch housing pledge", action: "update", changed: ["content"] }],
   ulysse_data: [{ name: "statscal", body: STATSCAL, updated_at: new Date().toISOString() }, { name: "feed", body: FEED, updated_at: new Date().toISOString() }, { name: "polls", body: { rows: [] } }, { name: "health", body: { sources: [{ group: "media", name: "BBC News", ok: true, items: 3 }, { group: "thinktanks", name: "IFS", ok: false, items: 0, error: "site refuses bots" }] } }],
@@ -149,6 +156,7 @@ async function mock(page, who, log) {
     if (url.pathname === "/rest/v1/rpc/team_last_seen") return json(Object.values(USERS).map(x => ({ id: x.id, last_sign_in_at: ts })));
     if (url.pathname.startsWith("/rest/v1/rpc/")) {
       const fn = url.pathname.split("/").pop(), body = m === "POST" ? JSON.parse(req.postData() || "{}") : {};
+      if (fn === "search_policy_docs") return json([{ doc_id: "pd1", title: "Housing policy paper", theme: "Housing", file_name: "housing.pdf", created_at: ts, extract_text: "We will build <mark>social</mark> homes at council rent", rank: 1 }]);
       if (fn === "program_people") return json(PEOPLE[body.p] || []);
       if (fn === "program_codes") return json((TABLES.access_codes || []).filter(c => c.program === body.p).map(c => ({ ...c, code: c.code_text || null })));
       if (fn === "all_people") return json(u.admin ? [
@@ -171,6 +179,8 @@ async function mock(page, who, log) {
     if (eqName) rows = rows.filter(r => "eq." + r.name === eqName);
     const eqDataset = url.searchParams.get("dataset");
     if (eqDataset && t === "econ_data") rows = rows.filter(r => "eq." + r.dataset === eqDataset);
+    const eqTracker = url.searchParams.get("tracker");
+    if (eqTracker) rows = rows.filter(r => "eq." + r.tracker === eqTracker);
     const eqKind = url.searchParams.get("kind");
     if (eqKind) rows = rows.filter(r => "eq." + r.kind === eqKind);
     if (url.searchParams.get("topic") === "not.is.null") rows = rows.filter(r => r.topic);
@@ -953,17 +963,69 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       await page.click("#helpf button[type=submit]"); await page.waitForTimeout(500);
       check(`${who}: sending the form files the suggestion`, log.includes("POST campaign_suggestions") && /Thank you/.test(await page.$eval("#hmsg", e => e.textContent)), log.join(";"));
       await page.click('#tabs button:text-is("Comms")'); await page.waitForTimeout(450);
-      const trk =await page.$$eval("[data-tr] button", bs => bs.map(b => b.textContent.trim()));
-      check(`${who}: Comms has the media trackers and the tracked accounts (a member reads them too)`, trk.join("|") === "Overall Media Tracker|Olney Media Tracker|Social Media Channels Tracker|Tracked accounts", trk.join("|"));
-      check(`${who}: the Overall Media Tracker lists wider political news`, /Heathrow expansion debated/.test(await page.$eval("#cm", m => m.innerText)) && /Overall Media Tracker/.test(await page.$eval("#cm h2", h => h.textContent)));
-      await page.click('[data-t="olney"]'); await page.waitForTimeout(350);
-      check(`${who}: the Olney Media Tracker lists the news about Sarah Olney only`, /Sarah Olney on Heathrow/.test(await page.$eval("#cm", m => m.innerText)) && !/Heathrow expansion debated/.test(await page.$eval("#cm", m => m.innerText)) && !(await page.$("#cm [data-fl]")));
+      const csec = await page.$$eval("[data-sec] button", bs => bs.map(b => b.textContent.trim()));
+      check(`${who}: Comms is Media, Stories and Policies (a volunteer has no Policies: they are for the Local party chair and above)`, csec.join("|") === (who === "member" ? "Media|Stories" : "Media|Stories|Policies"), csec.join("|"));
+      const cheads = await page.$$eval("#cm h2.h2-rule", hs => hs.map(h => h.textContent.trim()));
+      check(`${who}: Media has the London Media Tracker and the Lib Dem Media Tracker${who === "member" ? "" : ", and the Tracked accounts sheet for the core team and above"}`, cheads.join("|") === (who === "member" ? "London Media Tracker|Lib Dem Media Tracker" : "London Media Tracker|Lib Dem Media Tracker|Tracked accounts"), cheads.join("|"));
+      const lon = (await page.$eval("#trk-london", e => e.innerText)).replace(/\s+/g, " ");
+      const lonHeads = await page.$$eval("#trk-london thead th", hs => hs.map(h => h.textContent.trim()).filter(Boolean));
+      check(`${who}: the London Media Tracker lists the date, persona, channel and summary of each item (hand-added and found by the collector)`, lonHeads.join("|") === "Date|Persona|Channel|Summary" && /Hansard/.test(lon) && /Heathrow expansion debated/.test(lon) && /Mayor of London announces fares freeze/.test(lon) && /MyLondon/.test(lon) && !/Sarah Olney on Heathrow/.test(lon), lon.slice(0, 200));
+      const ld = (await page.$eval("#trk-libdem", e => e.innerText)).replace(/\s+/g, " ");
+      check(`${who}: the Lib Dem Media Tracker lists news about us and the accounts' posts, each with persona and channel`, /Sarah Olney on Heathrow/.test(ld) && /BBC News/.test(ld) && /Out in Kingston/.test(ld) && /BlueSky/.test(ld) && !/Heathrow expansion debated/.test(ld), ld.slice(0, 200));
       if (who !== "member") {
-        await page.click('[data-t="social"]'); await page.waitForTimeout(450);
-        const sm = await page.$$eval(".acct h3", hs => hs.map(h => h.innerText.replace(/\s+/g, " ").trim()));
-        check(`${who}: the Social Media Channels Tracker is a list of accounts, each with its posts`, sm.length === 2 && /Sarah Olney/.test(sm[0]) && /Out in Kingston/.test(await page.$eval("#cm", m => m.innerText)) && !(await page.$("#cm table")), sm.join(" | "));
-        await page.click('[data-t="accounts"]'); await page.waitForTimeout(500);
-        check(`${who}: the tracked accounts have their own page, with an upload of links and a one-link form`, (await page.$("#acc-import .import-box")) !== null && (await page.$("[data-one] input[name=url]")) !== null && /Instagram/.test(await page.$eval("#cm table", t => t.innerText)));
+        log.length = 0;
+        await page.click('[data-add="london"]'); await page.waitForSelector("dialog #f_persona", { timeout: 3000 });
+        check(`${who}: an entry is added with a date, persona, channel, summary and link`, (await page.$("dialog #f_date")) !== null && (await page.$("dialog #f_channel")) !== null && (await page.$("dialog #f_summary")) !== null && (await page.$("dialog #f_url")) !== null);
+        await page.fill("dialog #f_persona", "MyLondon"); await page.selectOption("dialog #f_channel", "Online news"); await page.fill("dialog #f_summary", "Rents to rise again"); await page.click("dialog button[value=ok]"); await page.waitForTimeout(500);
+        check(`${who}: saving the entry files it on the tracker`, log.includes("POST media_coverage"), log.join(";"));
+        check(`${who}: each tracker has an upload from a spreadsheet`, (await page.$$("[data-imp] .import-box")).length === 2);
+        const th = await page.$$eval("#trk-accounts thead th", hs => hs.map(h => h.textContent.trim()).filter(Boolean));
+        check(`${who}: Tracked accounts is a sheet with a column for each channel`, th.slice(0, 3).join("|") === "Persona|Tracker|Instagram" && th.includes("Print media") && th.includes("X (Twitter)") && th.includes("LinkedIn"), th.join("|"));
+        const arows = await page.$$eval("#trk-accounts tbody tr", rs => rs.map(r => [r.querySelector(".sh-name")?.value, r.querySelector('.sh-cell[data-c="Instagram"]')?.value, r.querySelector('.sh-cell[data-c="Print media"]')?.value, r.querySelector(".sh-tr")?.value, !!r.querySelector("[data-del]")]));
+        const arow = n => arows.find(r => r[0] === n) || [];
+        check(`${who}: each persona is a row (editable and deletable), with the handle in its channel's box`, arows.length === 2 && arow("Evening Standard")[2] === "Evening Standard" && arow("Evening Standard")[3] === "london" && arow("Sarah Olney")[1] === "@sarah" && arow("Sarah Olney")[3] === "libdem" && arows.every(r => r[4]), JSON.stringify(arows));
+        log.length = 0;
+        await page.fill('#trk-accounts tr[data-p="0"] .sh-cell[data-c="Facebook"]', "saraholney"); await page.dispatchEvent('#trk-accounts tr[data-p="0"] .sh-cell[data-c="Facebook"]', "change"); await page.waitForTimeout(500);
+        check(`${who}: typing into a box saves that channel for the persona`, log.some(l => /^(PATCH|POST) social_accounts/.test(l)), log.join(";"));
+        check(`${who}: a new persona can be added to the sheet`, (await page.$("[data-newp] input[name=name]")) !== null && (await page.$("#trk-accounts #acc-import .import-box")) !== null);
+      } else check(`${who}: a volunteer does not see the Tracked accounts`, (await page.$("#trk-accounts")) === null);
+      // Stories
+      await page.click('[data-sec] button[data-s="stories"]'); await page.waitForTimeout(400);
+      check(`${who}: anyone can pitch a story`, (await page.$("[data-pitch]")) !== null);
+      if (who === "member") check(`${who}: a volunteer cannot read the pitches`, (await page.$("#st-list table")) === null && /core team only/.test(await page.$eval("#cm", e => e.innerText)));
+      else {
+        const stl = (await page.$eval("#st-list", e => e.innerText)).replace(/\s+/g, " ");
+        check(`${who}: the core team sees the list of pitches`, /Rents up again for London renters/.test(stl) && /Pat Pitcher/.test(stl) && /Rents rose 9%/.test(stl), stl.slice(0, 200));
+        await page.click('[data-story="st1"]'); await page.waitForSelector("dialog .pitch.view", { timeout: 3000 });
+        const sv = (await page.$eval("dialog", e => e.innerText)).replace(/\s+/g, " ");
+        check(`${who}: a pitch opens with its comms plan, who might be interested, the briefing and the set piece`, /Hook/.test(sv) && /Call to action/.test(sv) && /Reporter One/.test(sv) && /Resolution Foundation/.test(sv) && /City Hall/.test(sv) && (await page.$("dialog #s_status")) !== null, sv.slice(0, 200));
+        await page.click("dialog #cx"); await page.waitForTimeout(150);
+      }
+      await page.click("[data-pitch]"); await page.waitForSelector("dialog .pitch", { timeout: 3000 });
+      const legends = await page.$$eval("dialog .pitch > fieldset > legend", ls => ls.map(l => l.textContent.trim()));
+      check(`${who}: the pitch form has the five parts`, legends.length === 5 && /^1\. What is the story/.test(legends[0]) && /^2\. How would it appear in a digital comms plan/.test(legends[1]) && /^3\. Which media/.test(legends[2]) && /^4\. The detailed policy briefing/.test(legends[3]) && /^5\. Is it right for a set piece/.test(legends[4]), legends.join("|"));
+      const labs = await page.$$eval("dialog .pitch label", ls => ls.map(l => l.textContent.replace(/\s+/g, " ").trim()));
+      check(`${who}: the comms plan asks for a Hook, Content, Turn and Call to action, and each part ends with Other comments`, ["Hook *", "Content *", "Turn *", "Call to action *"].every(x => labs.includes(x)) && labs.filter(l => l === "Other comments").length === 5, labs.join("|"));
+      check(`${who}: the form asks for organisation, contact name, contact details and why they would be interested`, ["Organisation *", "Contact name *", "Contact details *", "Why they would be interested *"].every(x => labs.some(l => l.startsWith(x))), labs.join("|"));
+      await page.fill("#p_head", "one\ntwo\nthree\nfour");
+      check(`${who}: the headline is kept to three lines`, await page.$eval("#p_head", e => !e.checkValidity()) && /4 of 3 lines/.test(await page.$eval("[data-headcount]", e => e.textContent)));
+      log.length = 0;
+      await page.click("dialog button[value=ok]"); await page.waitForTimeout(250);
+      check(`${who}: the pitch is not sent while required boxes are empty`, !log.includes("POST story_pitches") && (await page.$("dialog .pitch")) !== null);
+      await page.fill("#p_head", "Rents up again"); await page.fill("#p_hook", "Rents rose 9%"); await page.fill("#p_content", "Fact one"); await page.fill("#p_turn", "It matters"); await page.fill("#p_cta", "Back rent stabilisation");
+      await page.fill(".m-org", "MyLondon"); await page.fill(".m-name", "A Reporter"); await page.fill(".m-det", "r@test.invalid"); await page.fill(".m-why", "Housing desk");
+      await page.fill("#p_link", "https://example.org/brief"); await page.fill("#p_cost", "not sure"); await page.fill(".o-org", "Resolution Foundation"); await page.fill(".o-ref", "https://example.org/rf");
+      await page.selectOption("#p_set", "yes"); await page.selectOption("#p_kind", "Speech"); await page.fill("#p_where", "City Hall"); await page.fill("#o5", "Soon");
+      await page.click("dialog button[value=ok]"); await page.waitForTimeout(600);
+      check(`${who}: a complete pitch is sent`, log.includes("POST story_pitches") && /Thank you/.test(await page.$eval("#cm", e => e.innerText)), log.join(";"));
+      // Policies
+      if (who === "member") check(`${who}: a volunteer cannot open Policies`, (await page.$('[data-sec] button[data-s="policies"]')) === null);
+      else {
+        await page.click('[data-sec] button[data-s="policies"]'); await page.waitForTimeout(500);
+        const pol = (await page.$eval("#cm", e => e.innerText)).replace(/\s+/g, " ");
+        check(`${who}: Policies lists the uploaded documents by theme, with a search and (for the core team) an upload`, /Housing policy paper/.test(pol) && /Housing/.test(pol) && /Transport motion/.test(pol) && /no text found: cannot be searched/.test(pol) && (await page.$("#pol-upload input[type=file]")) !== null && (await page.$("[data-ps] input[name=q]")) !== null, pol.slice(0, 200));
+        await page.fill("[data-ps] input[name=q]", "social"); await page.click("[data-ps] button[type=submit]"); await page.waitForTimeout(500);
+        check(`${who}: searching finds the passage, with the matching word marked, and its document`, (await page.$eval("#pol-results mark", e => e.textContent)) === "social" && /Housing policy paper/.test(await page.$eval("#pol-results", e => e.innerText)));
       }
       await page.goto(BASE + "/lovelace/#coverage"); await page.waitForTimeout(600);
       check(`${who}: media has no content pipeline`, !/content pipeline/i.test(await page.$eval("#main", m => m.innerText)));
@@ -1097,12 +1159,15 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
         check(`${who}: LUCIEN permission editable only by admin`, ulysseLocked === (who !== "admin"));
         const selfLocked = await page.$$eval(`[data-u="${USERS[who].id}"]`, e => e.length === 0);
         check(`${who}: cannot edit own role`, selfLocked);
-        // Communications: choosing another tracker keeps Media and the tracker open
+        // Communications: a tracker opens on click and stays open when the page redraws
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
         await page.click('#tabs button:text-is("Comms")'); await page.waitForTimeout(450);
-        await page.click('[data-t="olney"]'); await page.waitForTimeout(700);
+        await page.click('[data-sec] button[data-s="media"]'); await page.waitForTimeout(400);
+        const cmClosed = await page.$$eval("#cm details.dd[open]", ds => ds.length);
+        check(`${who}: the Comms drop-downs start closed`, cmClosed === 0, String(cmClosed));
+        await page.click("#cm details.dd > summary"); await page.waitForTimeout(300);
         const cmOpen = await page.$$eval("details.dd[open] > summary", ss => ss.map(x => x.textContent.trim()));
-        check(`${who}: choosing another tracker leaves Media and the tracker open`, cmOpen.includes("Media") && cmOpen.some(x => /Olney Media Tracker/.test(x)), cmOpen.join("|"));
+        check(`${who}: clicking a tracker opens it`, cmOpen.some(x => /London Media Tracker/.test(x)), cmOpen.join("|"));
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = true; });
         // a drop-down the person is working in stays open when the page redraws after a change
         await page.evaluate(() => { window.ATHENA_DROPDOWNS_OPEN = false; });
