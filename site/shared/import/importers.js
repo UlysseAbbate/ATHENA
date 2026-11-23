@@ -183,7 +183,7 @@ const invites = {
 const SOCIAL_HOSTS = [['instagram.com', 'Instagram'], ['facebook.com', 'Facebook'], ['fb.com', 'Facebook'], ['twitter.com', 'Twitter'], ['x.com', 'Twitter'], ['bsky.app', 'BlueSky'], ['substack.com', 'Substack'],
   ['tiktok.com', 'TikTok'], ['linkedin.com', 'LinkedIn'], ['youtube.com', 'YouTube'], ['youtu.be', 'YouTube'], ['threads.net', 'Threads'], ['mastodon.social', 'Mastodon']];
 const PLATFORM_NAMES = { instagram: 'Instagram', insta: 'Instagram', ig: 'Instagram', facebook: 'Facebook', fb: 'Facebook', twitter: 'Twitter', x: 'Twitter', 'twitter x': 'Twitter', bluesky: 'BlueSky', bsky: 'BlueSky',
-  substack: 'Substack', tiktok: 'TikTok', linkedin: 'LinkedIn', youtube: 'YouTube', threads: 'Threads', mastodon: 'Mastodon', other: 'Other' };
+  substack: 'Substack', tiktok: 'TikTok', linkedin: 'LinkedIn', youtube: 'YouTube', threads: 'Threads', mastodon: 'Mastodon', other: 'Other', print: 'Print media', 'print media': 'Print media', newspaper: 'Print media', website: 'Website', web: 'Website' };
 const urlParts = (u) => { try { const x = new URL(/^https?:\/\//i.test(u) ? u : `https://${u}`); return { host: x.hostname.toLowerCase().replace(/^www\./, ''), path: x.pathname.split('/').filter(Boolean) }; } catch { return null; } };
 /** The platform a profile link belongs to ("https://bsky.app/profile/x.bsky.social" -> "BlueSky"), or '' if it is not one the tracker knows. */
 export function platformOf(url) {
@@ -229,7 +229,37 @@ const accounts = {
   },
 };
 
-export const IMPORTERS = { issues, concessions, accounts, roles, bulletin, invites };
+/* ------------------------------------------------------------------ LOVELACE Comms > Media trackers: one row per item (a headline or a caption), by persona and channel */
+export const MEDIA_CHANNELS = ['Instagram', 'Facebook', 'Twitter', 'BlueSky', 'Substack', 'TikTok', 'LinkedIn', 'YouTube', 'Threads', 'Mastodon', 'Print media', 'Website', 'Online news', 'Other'];
+const CHANNEL_WORDS = { 'x': 'Twitter', 'x twitter': 'Twitter', twitter: 'Twitter', insta: 'Instagram', ig: 'Instagram', fb: 'Facebook', bsky: 'BlueSky', print: 'Print media', 'print media': 'Print media', newspaper: 'Print media',
+  paper: 'Print media', web: 'Website', website: 'Website', online: 'Online news', 'online news': 'Online news', news: 'Online news', 'news site': 'Online news', article: 'Online news' };
+/** The channel named in a cell ("X", "Insta", "Print"), or '' if it is not one the trackers know. */
+export const channelOf = (text) => { const t = String(text || '').toLowerCase().replace(/[^a-z]+/g, ' ').trim(); return CHANNEL_WORDS[t] || MEDIA_CHANNELS.find((c) => c.toLowerCase() === t) || platformName(text) || ''; };
+const media = {
+  id: 'media', title: 'Media tracker entries', noun: 'entry',
+  blurb: 'One row for each item: the date, the persona it came from (an outlet or an account, for example Evening Standard or Sarah Olney), the channel (Instagram, Print media, Online news ...), a summary (the headline or the first line of the caption) and, if there is one, a link. A blank channel is filed as Online news.',
+  fields: [
+    f('date', 'Date', ['date', 'published', 'posted', 'when', 'day', 'date posted', 'date published'], { type: 'date', required: true }),
+    f('persona', 'Persona', ['persona', 'outlet', 'publication', 'source', 'account', 'account owner', 'who', 'organisation', 'paper', 'newspaper']),
+    f('channel', 'Channel', ['channel', 'platform', 'network', 'medium', 'where', 'social network']),
+    f('summary', 'Summary', ['summary', 'headline', 'title', 'caption', 'text', 'what it says', 'story', 'first line']),
+    f('url', 'Link', ['link', 'url', 'address', 'web address', 'article link', 'post link'], { type: 'url' }),
+  ],
+  resolve(v) {
+    if (!v.date && !v.persona && !v.summary && !v.url) return { skip: true };
+    const problems = [];
+    const channel = v.channel ? channelOf(v.channel) : 'Online news';
+    if (!v.date || v.date_bad) problems.push(v.date_bad ? `"${v.date_bad}" is not a date` : 'No date');
+    if (!v.persona) problems.push('No persona');
+    if (!v.summary) problems.push('No summary');
+    if (v.channel && !channel) problems.push(`"${v.channel}" is not a channel I know`);
+    if (v.url_bad) problems.push(`"${v.url_bad}" is not a web address (left out)`);
+    return { entry: { date: v.date, persona: v.persona, channel, summary: v.summary, url: v.url_bad ? '' : v.url || '' }, problems, fatal: !v.date || !!v.date_bad || !v.persona || !v.summary || (!!v.channel && !channel),
+      summary: `${v.date || '?'} · ${v.persona || '?'} · ${channel || '?'} · ${v.summary || '?'}` };
+  },
+};
+
+export const IMPORTERS = { issues, concessions, accounts, media, roles, bulletin, invites };
 
 /* ------------------------------------------------------------------ putting a sheet through an importer */
 

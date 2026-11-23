@@ -116,5 +116,10 @@ const acBook = csv('Account owner,Link\nSarah Olney MP,https://bsky.app/profile/
 const ac = readWithAll(acBook.sheets[0], LOOKUPS);
 ok(ac[0].importer.id === 'accounts' && ac[0].result.entries[0].entry.platform === 'BlueSky' && ac[0].result.entries[0].entry.handle === 'sarah.bsky.social' && ac[0].result.entries[1].entry.platform === 'Instagram' && ac[0].result.entries[2].fatal, 'a sheet of owners and links is recognised as tracked accounts; a link to an unknown site is refused with the reason');
 
+// LOVELACE media trackers: date, persona, channel, summary, link
+const mdBook = csv('Date,Persona,Channel,Headline / caption,Link\n12/11/2026,Evening Standard,Online,Rents to rise again,https://example.org/a\n13/11/2026,Sarah Olney,X,Out in Kingston today,\n14/11/2026,MyLondon,Newspaper,Council tax rise,\n15/11/2026,,Instagram,No persona,\n,,,,');
+const md = readWithAll(mdBook.sheets[0], LOOKUPS);
+ok(md[0].importer.id === 'media' && md[0].result.entries[0].entry.date === '2026-11-12' && md[0].result.entries[0].entry.channel === 'Online news' && md[0].result.entries[1].entry.channel === 'Twitter' && md[0].result.entries[2].entry.channel === 'Print media' && md[0].result.entries[3].fatal && md[0].result.entries.length === 4, 'a sheet of date, persona, channel and headline is recognised as media tracker entries; "X" is Twitter, "Newspaper" is Print media; a row with no persona is refused; an empty row is skipped');
+
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll spreadsheet import checks passed.');
 process.exit(failed ? 1 : 0);

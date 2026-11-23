@@ -110,3 +110,20 @@ tr.todo-done td.wrapcell{text-decoration:line-through}
 .linkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:12px;margin-top:12px}
 .linkbtn{display:block;padding:18px 16px;border:1px solid var(--rule-strong,#999);background:var(--card);color:var(--ink,inherit);font:800 1.05rem var(--head);text-decoration:none;letter-spacing:-.02em}
 .linkbtn:hover,.linkbtn:focus-visible{border-color:var(--ink,#000);outline:2px solid var(--ink,#000);outline-offset:2px}
+
+/* Comms: trackers, tracked-accounts sheet, story pitches, policy library */
+.nowrap{white-space:nowrap}
+.trk td{vertical-align:top}
+.sheet{font-size:.82rem}.sheet th,.sheet td{padding:3px 5px;white-space:nowrap}.sheet input,.sheet select{font:inherit;padding:3px 5px;margin:0;box-sizing:border-box}
+.sheet .sh-name{width:12rem}.sheet .sh-cell{width:8.6rem}.sheet .sh-go{margin-left:3px;text-decoration:none}.sheet tbody tr:nth-child(even){background:var(--card)}
+.clickable{cursor:pointer}.clickable:hover,.clickable:focus-visible{background:var(--card)}
+dialog.wide{width:min(860px,96vw);max-height:92vh;overflow:auto}
+.pitch fieldset{border:1px solid var(--rule);margin:0 0 14px;padding:10px 14px}.pitch legend{font:800 1rem var(--head);padding:0 6px}
+.pitch label{display:block;margin:8px 0 3px;font-weight:600}.pitch .hint{display:block;margin:-2px 0 3px}
+.pitch input,.pitch textarea,.pitch select{width:100%;box-sizing:border-box;font:inherit}
+.pitch .rep{border-style:dashed;margin:8px 0}.pitch.view dl{display:grid;grid-template-columns:11rem 1fr;gap:4px 12px}.pitch.view dt{font-weight:700}.pitch.view dd{margin:0}
+.results{list-style:none;padding:0;margin:8px 0}.results li{margin:0 0 10px}.result{display:block;text-decoration:none;color:inherit;border:1px solid var(--rule);padding:8px 12px;background:var(--card)}
+.result:hover,.result:focus-visible{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:2px}
+.extract{margin:0 0 4px;font-style:italic}.result-title{font-weight:800}mark{background:#ffe27a;color:#000}
+.pol-form{display:grid;gap:8px;max-width:40rem}.pol-form label{display:grid;gap:3px;font-weight:600}.pol-form input,.pol-form textarea{font:inherit;box-sizing:border-box;width:100%}
+.plain{list-style:none;padding:0;margin:4px 0 10px}.plain li{margin:3px 0}
