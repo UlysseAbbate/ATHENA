@@ -276,7 +276,8 @@ function signIn() { AuthUI.render(sb, document.body, { title: "LUCIEN" }); }
   let acc;
   try { acc = await Athena.access(); } catch (e) { document.body.textContent = e.message; return; }
   if (!acc) return signIn();
-  if (!Athena.may(acc, "ulysse")) return Athena.notFound();
+  // open to the administrator, a role with the Ulysse permission, or anyone with a LUCIEN grant (a person or an access code)
+  if (!Athena.may(acc, "ulysse") && !acc.programs?.lucien) return Athena.notFound();
   state.uid = acc.session.user.id;
   // Team & access: the administrator's alone, as on LOVELACE and LIBBY
   if (acc.admin) Shell.footLink("team", "Team & access", () => { state.tab = "team"; document.querySelectorAll("#tabs button").forEach(x => x.classList.remove("on")); state.shown = PAGE; render(); window.scrollTo(0, 0); });
