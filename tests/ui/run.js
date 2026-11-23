@@ -220,6 +220,9 @@ const check = (name, ok, extra = "") => { results.push([ok, name, extra]); };
       if (process.env.SHOTS && who === "admin") for (const scheme of ["light", "dark"]) { await page.emulateMedia({ colorScheme: scheme }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(process.env.SHOTS, `athena-home-${scheme}.png`), fullPage: true }); await page.emulateMedia({ colorScheme: "light" }); }
       const links = await page.$$eval("#n a b", bs => bs.map(b => b.textContent));
       check(`${who}: home shows LUCIEN to the admin and LUCIEN people only`, links.includes("LUCIEN") === (who === "admin" || who === "lmgr"), links.join(","));
+      { await page.goto(BASE + "/lucien/"); await page.waitForTimeout(800);
+        const lt = await page.evaluate(() => document.body.textContent); await page.goBack(); await page.waitForTimeout(600);
+        check(`${who}: /lucien/ opens for the admin and anyone with a LUCIEN grant, otherwise Not found`, /Not found/.test(lt) === !(who === "admin" || who === "lmgr"), lt.slice(0, 80)); }
       check(`${who}: home shows Access only to the admin and program managers`, links.includes("Access") === (who === "admin" || who === "lmgr" || who === "core"), links.join(","));
 
       // the Access page: admin sees every program, a program manager only theirs, others nothing
