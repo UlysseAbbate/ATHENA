@@ -222,24 +222,24 @@ async function renderStories(host, sentMsg = "") {
   if (error) { $("#st-list", host).append(notice(error.message)); return; }
   commsState.stories = data;
   $("#st-list", host).innerHTML = data.length ? `<div class="tablewrap"><table class="grid"><thead><tr><th>Sent</th><th>Headline</th><th>Hook</th><th>From</th><th>Set piece</th><th>Status</th></tr></thead><tbody>${data.map(s =>
-    `<tr class="clickable" data-story="${esc(s.id)}" tabindex="0"><td class="nowrap">${esc(fmtShort(String(s.created_at).slice(0, 10)))}</td><td><b>${esc(s.headline)}</b></td><td>${esc(s.hook)}</td><td>${esc(s.pitched_name || "")}</td>
+    `<tr class="clickable" data-story="${esc(s.id)}" tabindex="0"><td class="nowrap">${esc(fmtShort(String(s.created_at).slice(0, 10)))}</td><td><b>${esc(s.headline || "(no headline)")}</b></td><td>${esc(s.hook || "")}</td><td>${esc(s.pitched_name || "")}</td>
       <td>${esc(SET_LABEL[s.set_piece] || "")}</td><td><span class="pill">${esc(Object.fromEntries(STORY_STATUS)[s.status] || s.status)}</span></td></tr>`).join("")}</tbody></table></div>`
     : '<div class="empty">No pitches yet.</div>';
 }
 
-/** The pitch form: five parts, every box required except each part's "Other comments". */
+/** The pitch form: five parts, and every box in it is optional (fill in what you have). */
 function pitchForm(host) {
   const dlg = document.createElement("dialog"); dlg.className = "wide";
-  const ta = (id, label, hint, rows = 2, max = 600) => `<label for="${id}">${label} *</label>${hint ? `<span class="hint muted small">${hint}</span>` : ""}<textarea id="${id}" rows="${rows}" maxlength="${max}" required></textarea>`;
+  const ta = (id, label, hint, rows = 2, max = 600) => `<label for="${id}">${label}</label>${hint ? `<span class="hint muted small">${hint}</span>` : ""}<textarea id="${id}" rows="${rows}" maxlength="${max}"></textarea>`;
   const other = n => `<label for="o${n}">Other comments</label><textarea id="o${n}" rows="2" maxlength="1500"></textarea>`;
   const contactRow = i => `<fieldset class="rep" data-rep="media"><legend>Person or organisation ${i}</legend>
-    <label>Organisation *<input class="m-org" maxlength="200" required></label><label>Contact name *<input class="m-name" maxlength="200" required></label>
-    <label>Contact details *<input class="m-det" maxlength="300" required placeholder="email, phone or social handle"></label><label>Why they would be interested *<textarea class="m-why" rows="2" maxlength="600" required></textarea></label></fieldset>`;
+    <label>Organisation<input class="m-org" maxlength="200"></label><label>Contact name<input class="m-name" maxlength="200"></label>
+    <label>Contact details<input class="m-det" maxlength="300" placeholder="email, phone or social handle"></label><label>Why they would be interested<textarea class="m-why" rows="2" maxlength="600"></textarea></label></fieldset>`;
   const orgRow = i => `<fieldset class="rep" data-rep="orgs"><legend>Organisation ${i}</legend>
-    <label>Organisation *<input class="o-org" maxlength="200" required></label><label>Links or references to their sources *<textarea class="o-ref" rows="2" maxlength="800" required placeholder="a link, a report title, a page number"></textarea></label></fieldset>`;
-  dlg.innerHTML = `<form method="dialog" class="pitch"><h3>Pitch a story</h3><p class="muted small">Every box marked * is needed. If you are not sure of something, say so in the box (for example "not sure").</p>
+    <label>Organisation<input class="o-org" maxlength="200"></label><label>Links or references to their sources<textarea class="o-ref" rows="2" maxlength="800" placeholder="a link, a report title, a page number"></textarea></label></fieldset>`;
+  dlg.innerHTML = `<form method="dialog" class="pitch"><h3>Pitch a story</h3><p class="muted small">Every box is optional: fill in what you have. If you are not sure of something, say so in the box (for example "not sure").</p>
     <fieldset><legend>1. What is the story?</legend>
-      <label for="p_head">The story, as a headline (3 lines at most) *</label><textarea id="p_head" rows="3" maxlength="300" required></textarea><span class="muted small" data-headcount>0 of 3 lines</span>
+      <label for="p_head">The story, as a headline (3 lines at most)</label><textarea id="p_head" rows="3" maxlength="300"></textarea><span class="muted small" data-headcount>0 of 3 lines</span>
       ${other(1)}</fieldset>
     <fieldset><legend>2. How would it appear in a digital comms plan?</legend>
       ${ta("p_hook", "Hook", "One line: the 3-second opener", 1, 300)}${ta("p_content", "Content", "Two or three key facts", 3, 1500)}${ta("p_turn", "Turn", "Why it matters, why we care", 2, 1000)}${ta("p_cta", "Call to action", "What are you calling for?", 2, 600)}
@@ -247,14 +247,14 @@ function pitchForm(host) {
     <fieldset><legend>3. Which media personalities or agencies might be interested?</legend><div id="p_media">${contactRow(1)}</div>
       <p><button type="button" class="btn sm" data-addrep="media">+ Add another</button></p>${other(3)}</fieldset>
     <fieldset><legend>4. The detailed policy briefing</legend>
-      <label for="p_link">Link to the policy briefing</label><input id="p_link" maxlength="800" placeholder="https://…"><label for="p_file">or attach it (PDF, Word or text, up to 3 MB)</label><input id="p_file" type="file" accept=".pdf,.doc,.docx,.txt,.md"><span class="muted small">A link or an attachment is needed.</span>
+      <label for="p_link">Link to the policy briefing</label><input id="p_link" maxlength="800" placeholder="https://…"><label for="p_file">or attach it (PDF, Word or text, up to 3 MB)</label><input id="p_file" type="file" accept=".pdf,.doc,.docx,.txt,.md">
       ${ta("p_cost", "How much is this expected to cost or save?", "If you are not sure, give a range or say \"not sure\"", 1, 500)}
       <div id="p_orgs">${orgRow(1)}</div><p><button type="button" class="btn sm" data-addrep="orgs">+ Add another organisation</button></p>
       <span class="muted small">Which organisations have done work on this? Give each organisation and where to find its work.</span>${other(4)}</fieldset>
     <fieldset><legend>5. Is it right for a set piece?</legend>
-      <label for="p_set">Is this appropriate for a set piece opportunity? *</label><select id="p_set" required><option value=""></option><option value="yes">Yes</option><option value="no">No</option><option value="not_sure">Not sure</option></select>
-      <div id="p_setmore" hidden><label for="p_kind">What would the set piece be? *</label><select id="p_kind">${SET_PIECES.map(k => `<option>${esc(k)}</option>`).join("")}</select>
-        <input id="p_kindo" placeholder="Describe it" hidden maxlength="200"><label for="p_where">Where would it take place? *</label><input id="p_where" maxlength="300"></div>
+      <label for="p_set">Is this appropriate for a set piece opportunity?</label><select id="p_set"><option value=""></option><option value="yes">Yes</option><option value="no">No</option><option value="not_sure">Not sure</option></select>
+      <div id="p_setmore" hidden><label for="p_kind">What would the set piece be?</label><select id="p_kind">${SET_PIECES.map(k => `<option>${esc(k)}</option>`).join("")}</select>
+        <input id="p_kindo" placeholder="Describe it" hidden maxlength="200"><label for="p_where">Where would it take place?</label><input id="p_where" maxlength="300"></div>
       ${other(5)}</fieldset>
     <div class="row"><button class="btn primary" value="ok">Send the pitch</button><button class="btn" type="button" id="cx">Cancel</button></div><div id="fe"></div></form>`;
   document.body.append(dlg); dlg.showModal();
@@ -264,8 +264,8 @@ function pitchForm(host) {
   const head = $("#p_head", dlg), count = $("[data-headcount]", dlg);
   const checkHead = () => { const n = lineCount(head.value); count.textContent = `${head.value.trim() ? n : 0} of 3 lines`; head.setCustomValidity(n > 3 ? "Keep the headline to three lines at most." : ""); };
   head.oninput = checkHead;
-  $("#p_set", dlg).onchange = e => { $("#p_setmore", dlg).hidden = e.target.value !== "yes"; $("#p_kind", dlg).required = $("#p_where", dlg).required = e.target.value === "yes"; };
-  $("#p_kind", dlg).onchange = e => { const o = $("#p_kindo", dlg); o.hidden = e.target.value !== "Other"; o.required = e.target.value === "Other"; };
+  $("#p_set", dlg).onchange = e => { $("#p_setmore", dlg).hidden = e.target.value !== "yes"; };
+  $("#p_kind", dlg).onchange = e => { const o = $("#p_kindo", dlg); o.hidden = e.target.value !== "Other"; };
   dlg.addEventListener("click", e => {
     const b = e.target.closest("[data-addrep]"); if (!b) return;
     const k = b.dataset.addrep, box = $(k === "media" ? "#p_media" : "#p_orgs", dlg), n = box.children.length;
@@ -276,16 +276,17 @@ function pitchForm(host) {
     e.preventDefault(); checkHead();
     const v = id => ($(id, dlg).value || "").trim(), err = $("#fe", dlg), btn = $("button[value=ok]", dlg);
     err.replaceChildren();
-    const media = [...dlg.querySelectorAll('[data-rep="media"]')].map(f => ({ organisation: $(".m-org", f).value.trim(), name: $(".m-name", f).value.trim(), details: $(".m-det", f).value.trim(), why: $(".m-why", f).value.trim() }));
-    const orgs = [...dlg.querySelectorAll('[data-rep="orgs"]')].map(f => ({ organisation: $(".o-org", f).value.trim(), references: $(".o-ref", f).value.trim() }));
+    const media = [...dlg.querySelectorAll('[data-rep="media"]')].map(f => ({ organisation: $(".m-org", f).value.trim(), name: $(".m-name", f).value.trim(), details: $(".m-det", f).value.trim(), why: $(".m-why", f).value.trim() })).filter(m => m.organisation || m.name || m.details || m.why);
+    const orgs = [...dlg.querySelectorAll('[data-rep="orgs"]')].map(f => ({ organisation: $(".o-org", f).value.trim(), references: $(".o-ref", f).value.trim() })).filter(o => o.organisation || o.references);
     const link = v("#p_link"), file = $("#p_file", dlg).files[0];
     if (link && !/^https?:\/\//i.test(link)) { err.append(notice("The link should start with https://")); return; }
-    if (!link && !file) { err.append(notice("Give a link to the policy briefing, or attach it.")); return; }
     if (file && file.size > STORY_FILE_MAX) { err.append(notice("That attachment is over 3 MB: send a link instead, or a smaller file.")); return; }
     const kind = v("#p_kind") === "Other" ? v("#p_kindo") : v("#p_kind");
-    const row = { pitched_name: S.profile?.full_name || S.user?.email || "", headline: head.value.trim(), other_1: v("#o1") || null, hook: v("#p_hook"), content: v("#p_content"), turn: v("#p_turn"), cta: v("#p_cta"), other_2: v("#o2") || null,
-      media, other_3: v("#o3") || null, briefing_link: link || null, cost_estimate: v("#p_cost"), orgs_work: orgs, other_4: v("#o4") || null,
-      set_piece: v("#p_set"), set_piece_kind: v("#p_set") === "yes" ? kind : null, set_piece_where: v("#p_set") === "yes" ? v("#p_where") : null, other_5: v("#o5") || null, pitched_by: S.user.id };
+    const row = { pitched_name: S.profile?.full_name || S.user?.email || "", headline: head.value.trim() || null, other_1: v("#o1") || null, hook: v("#p_hook") || null, content: v("#p_content") || null, turn: v("#p_turn") || null, cta: v("#p_cta") || null, other_2: v("#o2") || null,
+      media, other_3: v("#o3") || null, briefing_link: link || null, cost_estimate: v("#p_cost") || null, orgs_work: orgs, other_4: v("#o4") || null,
+      set_piece: v("#p_set") || null, set_piece_kind: v("#p_set") === "yes" ? kind || null : null, set_piece_where: v("#p_set") === "yes" ? v("#p_where") || null : null, other_5: v("#o5") || null, pitched_by: S.user.id };
+    const blank = !row.headline && !row.hook && !row.content && !row.turn && !row.cta && !media.length && !orgs.length && !link && !file && !row.cost_estimate && !row.set_piece && !row.other_1 && !row.other_2 && !row.other_3 && !row.other_4 && !row.other_5;
+    if (blank) { err.append(notice("Fill in at least one box before sending.")); return; }
     if (file) { row.briefing_file_name = file.name; row.briefing_mime = file.type || "application/octet-stream"; row.briefing_size = file.size; row.briefing_data = await fileBase64(file); }
     btn.disabled = true;
     const { error } = await sb.from("story_pitches").insert(row);   // no .select(): a person who may only send pitches cannot read them back
@@ -309,11 +310,11 @@ async function openStory(host, id) {
   const sec = (t, body, other) => `<h4>${esc(t)}</h4>${body}${other ? `<p class="muted small"><b>Other comments:</b> ${esc(other)}</p>` : ""}`;
   const dl = (k, v) => `<dt>${esc(k)}</dt><dd>${v ? esc(v) : '<span class="muted">—</span>'}</dd>`;
   const link = safeUrl(s.briefing_link);
-  dlg.innerHTML = `<div class="pitch view"><h3>${esc(s.headline).replace(/\n/g, "<br>")}</h3><p class="muted small">From ${esc(s.pitched_name || "someone")} · sent ${esc(fmtShort(String(s.created_at).slice(0, 10)))}</p>
+  dlg.innerHTML = `<div class="pitch view"><h3>${esc(s.headline || "(no headline)").replace(/\n/g, "<br>")}</h3><p class="muted small">From ${esc(s.pitched_name || "someone")} · sent ${esc(fmtShort(String(s.created_at).slice(0, 10)))}</p>
     ${sec("2. In a digital comms plan", `<dl>${dl("Hook", s.hook)}${dl("Content", s.content)}${dl("Turn", s.turn)}${dl("Call to action", s.cta)}</dl>`, s.other_2)}
-    ${sec("3. Who might be interested", `<ul>${(s.media || []).map(m => `<li><b>${esc(m.organisation)}</b>: ${esc(m.name)} (${esc(m.details)}). ${esc(m.why)}</li>`).join("")}</ul>`, s.other_3)}
+    ${sec("3. Who might be interested", `<ul>${(s.media || []).map(m => `<li><b>${esc(m.organisation || "")}</b>${m.name ? `: ${esc(m.name)}` : ""}${m.details ? ` (${esc(m.details)})` : ""}${m.why ? `. ${esc(m.why)}` : ""}</li>`).join("") || '<li class="muted">None given</li>'}</ul>`, s.other_3)}
     ${sec("4. The policy briefing", `<dl><dt>Briefing</dt><dd>${link ? `<a href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(s.briefing_link)}</a>` : ""}${s.briefing_file_name ? ` <button class="btn sm" data-file>${esc(s.briefing_file_name)}</button>` : ""}</dd>${dl("Expected cost or saving", s.cost_estimate)}</dl>
-      <ul>${(s.orgs_work || []).map(o => `<li><b>${esc(o.organisation)}</b>: ${esc(o.references)}</li>`).join("")}</ul>`, s.other_4)}
+      <ul>${(s.orgs_work || []).map(o => `<li><b>${esc(o.organisation || "")}</b>${o.references ? `: ${esc(o.references)}` : ""}</li>`).join("") || '<li class="muted">None given</li>'}</ul>`, s.other_4)}
     ${sec("5. Set piece", `<dl>${dl("Appropriate?", SET_LABEL[s.set_piece])}${s.set_piece === "yes" ? dl("What", s.set_piece_kind) + dl("Where", s.set_piece_where) : ""}</dl>`, s.other_5)}
     ${s.other_1 ? `<p class="muted small"><b>Other comments (the story):</b> ${esc(s.other_1)}</p>` : ""}
     ${w ? `<h4>The team</h4><label>Status <select id="s_status">${STORY_STATUS.map(([k, l]) => `<option value="${k}" ${k === s.status ? "selected" : ""}>${l}</option>`).join("")}</select></label><label>Notes<textarea id="s_notes" rows="3">${esc(s.notes || "")}</textarea></label>` : ""}
